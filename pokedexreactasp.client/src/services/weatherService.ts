@@ -1,3 +1,5 @@
+import api from "../config/axios.config";
+
 // Define the Forecast interface
 export interface Forecast {
     date: string;
@@ -8,7 +10,7 @@ export interface Forecast {
 
 // Service function to fetch weather data
 export const fetchWeatherData = async (): Promise<Forecast[]> => {
-    const response = await fetch('weatherforecast');
+    const response = await api.get("/weatherforecast");
     if (!response.ok) {
         // Handle error appropriately in a real app
         console.error("Failed to fetch weather data:", response.statusText);
