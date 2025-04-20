@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using PokedexReactASP.Infrastructure.Persistence;
 
 namespace PokedexReactASP.Server
 {
@@ -7,6 +9,9 @@ namespace PokedexReactASP.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+            );
             // Add services to the container.
 
             builder.Services.AddControllers();
