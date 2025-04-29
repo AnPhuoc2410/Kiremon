@@ -12,7 +12,7 @@ const StartScreen: React.FC = () => {
     <T.Container>
       <T.Centering>
         <Text as="h1" variant="outlined" size="xl">
-          POKEGAMES
+          Pokémon Game
         </Text>
         <Button onClick={() => navigate("/pokemons")} variant="light">
           Press Start
@@ -32,10 +32,10 @@ const StartScreen: React.FC = () => {
           alignItems: "center",
           gap: "5px",
         }}>
-        <Text variant="outlined">&copy;{new Date().getFullYear()} radespratama</Text>
+        <Text variant="outlined">&copy;{new Date().getFullYear()} Sheme</Text>
         <Text variant="outlined">
           | Want to contribute?{" "}
-          <T.A href="https://github.com/radespratama/pokegames" target="_blank">
+          <T.A href="https://github.com/AnPhuoc2410/PokeBattle" target="_blank">
             GitHub
           </T.A>
         </Text>
