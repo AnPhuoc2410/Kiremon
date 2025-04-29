@@ -11,6 +11,12 @@ const backgroundImages = [
   "/static/background/olivine_cafe.gif",
   "/static/background/national_park.gif",
   "/static/background/national_park_night.gif",
+  "/static/background/slateport_market.gif",
+  "/static/background/slateport_beach.gif",
+  "/static/background/pacifidlog_town.gif",
+  "/static/background/forest_shrine.gif",
+  "/static/background/violet_city_3.gif",
+  "/static/background/violet_city_4.gif",
 ];
 
 const getRandomBackground = () => {
