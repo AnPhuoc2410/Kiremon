@@ -62,3 +62,50 @@ export const getPokemonWithTypes = async (limit: number = 20, offset: number = 0
     return { count: 0, next: null, previous: null, results: [] };
   }
 };
+
+// Fetch Pokemon species data which includes evolution chain URL
+export const getPokemonSpecies = async (nameOrId: string = "") => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${nameOrId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Pokemon species:", error);
+    return null;
+  }
+};
+
+// Fetch evolution chain data
+export const getEvolutionChain = async (url: string) => {
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching evolution chain:", error);
+    return null;
+  }
+};
+
+// Fetch Pokemon forms (variants)
+export const getPokemonForms = async (nameOrId: string = "") => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon-form/${nameOrId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Pokemon forms:", error);
+    return null;
+  }
+};
+
+// Fetch related Pokemon (by type)
+export const getRelatedPokemonByType = async (type: string) => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
+    // Get up to 6 random Pokemon of the same type
+    const pokemonList = response.data.pokemon || [];
+    const shuffled = [...pokemonList].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6).map((p: any) => p.pokemon);
+  } catch (error) {
+    console.error("Error fetching related Pokemon:", error);
+    return [];
+  }
+};

@@ -164,9 +164,9 @@ const PokeCard: React.FC<Props> = ({
   );
 
   // If we have a pokemonId and no onClick handler, wrap in Link
-  if (pokemonId && !onClick && !nickname) {
+  if (name && !onClick && !nickname) {
     return (
-      <Link to={`/pokemon/${pokemonId}`} style={{ textDecoration: 'none' }}>
+      <Link to={`/pokemon/${name}`} style={{ textDecoration: 'none' }}>
         {cardContent}
       </Link>
     );
