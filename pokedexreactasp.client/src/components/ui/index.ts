@@ -9,3 +9,6 @@ export { default as TypeCard } from "./Card/TypeCard";
 export { default as PokeCard } from "./Card/PokeCard";
 export { default as DeleteButton } from "./Button/DeleteButton";
 export { default as NoSignal } from "./NoSignal";
+export { default as Header } from "./Header";
+export { default as TypeIcon } from "./Card/TypeIcon";
+export { default as SkeletonCard } from "./Card/SkeletonCard";

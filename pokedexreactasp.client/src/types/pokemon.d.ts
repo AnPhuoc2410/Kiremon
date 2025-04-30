@@ -9,6 +9,8 @@ export interface IPokemon {
   captured?: number;
   url?: string;
   sprite?: string;
+  id?: number;
+  types?: string[];
 }
 
 export interface IPokeSummary {
