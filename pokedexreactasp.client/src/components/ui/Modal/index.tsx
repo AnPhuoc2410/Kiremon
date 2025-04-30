@@ -9,7 +9,7 @@ interface IModal extends HTMLAttributes<HTMLDivElement> {
   solid?: boolean;
 }
 
-const Overlay = styled("div")(({ overlay = "dark", open = false, solid = false }: IModal) => ({
+const Overlay = styled.div<IModal>(({ overlay = "dark", open = false, solid = false }) => ({
   position: "fixed",
   inset: 0,
   width: "100vw",
@@ -24,7 +24,7 @@ const Overlay = styled("div")(({ overlay = "dark", open = false, solid = false }
   zIndex: open ? 50 : 0,
 }));
 
-const Content = styled("div")(({ open = false }: IModal) => ({
+const Content = styled.div<IModal>(({ open = false }) => ({
   position: "fixed",
   inset: 0,
   width: "100vw",
