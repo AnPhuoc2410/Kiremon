@@ -42,6 +42,15 @@ const PokeName = styled("div")(
       background: colors["gray-700"],
       bottom: 0,
     },
+    ".genera-text": {
+      position: "absolute",
+      top: 35,
+      left: 24,
+      fontSize: "1rem",
+      "@media (min-width: 1024px)": {
+        left: 128,
+      },
+    },
   },
   `
     div:nth-of-type(1) {
@@ -103,7 +112,7 @@ const PokemonContainer = styled("div")({
   gridTemplateColumns: "1fr",
   maxWidth: "1340px",
   margin: "0 auto",
-  padding: "20px 0",
+  alignItems: "center",
 
   "> div.img-pokemon": {
     order: 1,
@@ -217,6 +226,118 @@ const AnotherWrapper = styled("div")({
   gap: 16,
 });
 
+const StatBar = styled("div")<{ value: number; color: string }>(({ value, color }) => ({
+  height: "10px",
+  width: `${Math.min(value / 1.5, 100)}%`,
+  backgroundColor: color,
+  borderRadius: "4px",
+  transition: "width 0.5s ease-in-out",
+}));
+
+const StatContainer = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  marginBottom: "52px",
+  ".stat-name": {
+    width: "120px",
+    textTransform: "capitalize",
+  },
+  ".stat-value": {
+    width: "40px",
+    textAlign: "right",
+    marginRight: "8px",
+  },
+  ".stat-bar-container": {
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    borderRadius: "4px",
+  }
+});
+
+const InfoSection = styled("div")({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "16px",
+  padding: "16px",
+  borderRadius: "8px",
+  backgroundColor: "#FAFAFA",
+  margin: "16px 0",
+
+  ".info-item": {
+    flex: "1 1 150px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+
+  ".info-label": {
+    fontSize: "1.5rem",
+    color: "#6B7280",
+  },
+
+  ".info-value": {
+    fontWeight: "600",
+  }
+});
+
+const SpriteGallery = styled("div")({
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "center",
+  gap: "20px",
+  marginTop: "16px",
+
+  ".sprite-item": {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "8px",
+  },
+
+  ".sprite-label": {
+    fontSize: "0.8rem",
+    color: "#6B7280",
+    textAlign: "center",
+  }
+});
+
+const FlavorTextBox = styled("div")({
+  padding: "16px",
+  borderRadius: "8px",
+  backgroundColor: "transparent",
+  fontStyle: "italic",
+  position: "relative",
+  "p": {
+    padding: "0 16px",
+    lineHeight: "1.6",
+  }
+});
+
+const TabsContainer = styled("div")({
+  display: "flex",
+  borderBottom: "1px solid #E5E7EB",
+  marginBottom: "16px",
+  overflowX: "auto",
+
+  ".tab": {
+    padding: "12px 16px",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    borderBottom: "2px solid transparent",
+    transition: "all 0.2s",
+
+    "&.active": {
+      borderBottomColor: "#4F46E5",
+      color: "#4F46E5",
+      fontWeight: "600",
+    },
+
+    "&:hover:not(.active)": {
+      borderBottomColor: "#E5E7EB",
+    }
+  }
+});
+
 export {
   Content,
   Page,
@@ -233,5 +354,10 @@ export {
   PokemonContainer,
   PokemonStatsWrapper,
   AbilitiesWrapper,
-
+  StatBar,
+  StatContainer,
+  InfoSection,
+  SpriteGallery,
+  FlavorTextBox,
+  TabsContainer
 };
