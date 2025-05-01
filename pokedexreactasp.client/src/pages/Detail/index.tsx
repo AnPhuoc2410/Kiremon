@@ -16,7 +16,6 @@ import {
   TypeIcon,
   Input,
   Modal,
-  Header,
   EvolutionChain,
   RelatedPokemon
 } from "../../components/ui";
@@ -27,8 +26,9 @@ import {
   getDetailPokemon,
   getPokemonSpecies,
   getEvolutionChain,
-  getRelatedPokemonByType
+  getRelatedPokemonByGen
 } from "../../services/pokemon";
+import { skillColor } from "../../components/utils";
 
 type TypesPokemon = { type: { name: string } };
 type MovesPokemon = { move: { name: string } };
@@ -38,6 +38,14 @@ const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 `;
+
+// Function to get color for stats based on stat value
+const getStatColor = (value: number) => {
+  if (value < 50) return "#FB7185"; // Low stat - red
+  if (value < 80) return "#FBBF24"; // Medium stat - yellow/orange
+  if (value < 110) return "#34D399"; // Good stat - green
+  return "#818CF8"; // Excellent stat - purple/blue
+};
 
 const DetailPokemon = () => {
   const { name = "" } = useParams();
@@ -59,6 +67,16 @@ const DetailPokemon = () => {
   const [species, setSpecies] = useState<any>(null);
   const [isLoadingEvolution, setIsLoadingEvolution] = useState<boolean>(false);
   const [isLoadingRelated, setIsLoadingRelated] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("about");
+
+  // New state variables for additional Pokemon data
+  const [height, setHeight] = useState<number>(0);
+  const [weight, setWeight] = useState<number>(0);
+  const [baseExperience, setBaseExperience] = useState<number>(0);
+  const [captureRate, setCaptureRate] = useState<number>(0);
+  const [baseHappiness, setBaseHappiness] = useState<number>(0);
+  const [flavorText, setFlavorText] = useState<string>("");
+  const [sprites, setSprites] = useState<any>({});
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
@@ -128,6 +146,30 @@ const DetailPokemon = () => {
     return await processChain(evolutionData.chain);
   };
 
+  // Format flavor text by removing weird characters and line breaks
+  const formatFlavorText = (text: string) => {
+    if (!text) return "";
+    return text
+      .replace(/\f/g, ' ')
+      .replace(/\u00ad\n/g, '')
+      .replace(/\u00ad/g, '')
+      .replace(/\n/g, ' ');
+  };
+
+  // Get a random English flavor text
+  const getRandomFlavorText = (species: any) => {
+    if (!species || !species.flavor_text_entries || !species.flavor_text_entries.length) return "";
+
+    const englishEntries = species.flavor_text_entries.filter(
+      (entry: any) => entry.language.name === "en"
+    );
+
+    if (!englishEntries.length) return "";
+
+    const randomIndex = Math.floor(Math.random() * englishEntries.length);
+    return formatFlavorText(englishEntries[randomIndex].flavor_text);
+  };
+
   async function loadPokemon() {
     try {
       setIsLoading(true);
@@ -140,14 +182,19 @@ const DetailPokemon = () => {
       setMoves(response?.moves.map((move: MovesPokemon) => move.move?.name));
       setSprite(
         response?.sprites.versions?.["generation-v"]?.["black-white"].animated.front_default ||
-        response?.sprites.front_default,
+        response?.sprites.front_default
       );
       setStats(response?.stats);
       setAbilities(response?.abilities);
 
+      // Set new properties
+      setHeight(response?.height || 0);
+      setWeight(response?.weight || 0);
+      setBaseExperience(response?.base_experience || 0);
+      setSprites(response?.sprites || {});
+
       // Load species data, evolution chain, and related Pokemon
       loadSpeciesData(response.id);
-      loadRelatedPokemon(response?.types.map((type: TypesPokemon) => type.type?.name)[0]);
 
       // Check for special forms
       if (response.forms && response.forms.length > 1) {
@@ -163,12 +210,25 @@ const DetailPokemon = () => {
   }
 
   // Load species data and evolution chain
-  async function loadSpeciesData(pokemonId: string) {
+  async function loadSpeciesData(pokemonId: string | number) {
     try {
       setIsLoadingEvolution(true);
 
       const speciesData = await getPokemonSpecies(pokemonId);
       setSpecies(speciesData);
+
+      setCaptureRate(speciesData?.capture_rate || 0);
+      setBaseHappiness(speciesData?.base_happiness || 0);
+      setFlavorText(getRandomFlavorText(speciesData));
+
+      // Extract generation number from URL and load related Pokémon
+      if (speciesData && speciesData.generation && speciesData.generation.url) {
+        const genNumber = speciesData.generation.url.split('/').filter(Boolean).pop();
+        loadRelatedPokemon(genNumber);
+      } else {
+        // Fallback to generation 1 if we can't determine generation
+        loadRelatedPokemon(1);
+      }
 
       // Get evolution chain if available
       if (speciesData && speciesData.evolution_chain && speciesData.evolution_chain.url) {
@@ -187,14 +247,12 @@ const DetailPokemon = () => {
     }
   }
 
-  // Load related Pokemon by type
-  async function loadRelatedPokemon(type: string) {
-    if (!type) return;
-
+  // Load related Pokemon by generation
+  async function loadRelatedPokemon(gen: string | number = 1) {
     try {
       setIsLoadingRelated(true);
 
-      const relatedPokemonData = await getRelatedPokemonByType(type);
+      const relatedPokemonData = await getRelatedPokemonByGen(gen);
       // Filter out current Pokemon from related list
       const filtered = relatedPokemonData.filter((p: any) => p.name !== name);
       setRelatedPokemon(filtered.slice(0, 6));
@@ -285,12 +343,12 @@ const DetailPokemon = () => {
   }, [name]);
 
   useEffect(() => {
-    document.title = `Pokegames - ${name?.toUpperCase()}`;
+    document.title = `#${pokemonId} - ${name?.toUpperCase()}`;
 
     return () => {
-      document.title = "Pokegames";
+      document.title = "Pokémon - Catch 'em all!";
     };
-  }, []);
+  }, [pokemonId, name]);
 
   useEffect(() => {
     window.scroll({
@@ -440,188 +498,341 @@ const DetailPokemon = () => {
           height={512}
         />
 
-        <T.PokeName>
-          <div />
-          <div />
-          <div />
-          <Text as="h1" variant="outlined" size="xl" >
+        <T.PokeName style={{ background: types.length > 0 ? `linear-gradient(to right, ${skillColor[`${types[0]}-200`] || '#A8A77A'}, transparent)` : undefined }}>
+          <Text as="h1" variant="outlined" size="xl">
             {name}
           </Text>
+          <Text as="h2" variant="outlined" size="base" className="genera-text">
+            {species && species.genera && species.genera.find((g: any) => g.language.name === 'en')?.genus || ''}
+          </Text>
         </T.PokeName>
-        <Header
-          title={name}
-          subtitle={species ? `${species.genera.find((g: any) => g.language.name === 'en')?.genus || ''}` : ''}
-          backTo="/pokemons"
-        />
 
         <T.PokemonContainer>
-          <div className="pxl-border card-pxl">
-            <Text as="h4" variant="outlined" size="lg">
-              Pokemon Stats:
-            </Text>
-            <T.PokemonStatsWrapper>
-              {stats?.map((stat, index) => {
-                const pokemonBaseStat = stat?.base_stat ?? 0;
-                const pokemonStatName = stat?.stat;
-
-                return (
-                  <Text as="h4" key={index} variant="outlined" size="base">
-                    {pokemonStatName?.name} : {pokemonBaseStat}
-                  </Text>
-                );
-              })}
-            </T.PokemonStatsWrapper>
-          </div>
           <div className="img-pokemon" style={{ display: "flex", justifyContent: "center" }}>
             {!isLoading ? (
-              <PokemonAvatar
-                src={sprite}
-                alt={name}
-                width={256}
-                height={256}
-                effect="blur"
-                loading="lazy"
-                className="pokemon-dt"
-              />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <PokemonAvatar
+                  src={sprite}
+                  alt={name}
+                  width={256}
+                  height={256}
+                  effect="blur"
+                  loading="lazy"
+                  className="pokemon-dt"
+                />
+                  {/* Type Icons */}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                    {types && types.map((type: string, index: number) => (
+                      <TypeIcon key={index} type={type} size="md" />
+                    ))}
+                  </div>
+                  {/* Flavor Text */}
+                  {flavorText && (
+                    <T.FlavorTextBox>
+                      <Text>{flavorText}</Text>
+                    </T.FlavorTextBox>
+                  )}
+              </div>
             ) : (
               <T.ImageLoadingWrapper>
                 <Loading />
               </T.ImageLoadingWrapper>
             )}
           </div>
+
+          <div style={{ padding: "0 20px" }}>
+            {/* Basic Info Section */}
+            <T.InfoSection>
+              <div className="info-item">
+                <Text className="info-label">Height</Text>
+                <Text className="info-value">{(height / 10).toFixed(1)}m</Text>
+              </div>
+              <div className="info-item">
+                <Text className="info-label">Weight</Text>
+                <Text className="info-value">{(weight / 10).toFixed(1)}kg</Text>
+              </div>
+              <div className="info-item">
+                <Text className="info-label">Base Experience</Text>
+                <Text className="info-value">{baseExperience}</Text>
+              </div>
+              <div className="info-item">
+                <Text className="info-label">Capture Rate</Text>
+                <Text className="info-value">{captureRate}</Text>
+              </div>
+              <div className="info-item">
+                <Text className="info-label">Base Happiness</Text>
+                <Text className="info-value">{baseHappiness}</Text>
+              </div>
+            </T.InfoSection>
+          </div>
         </T.PokemonContainer>
 
         <T.Content style={{ marginTop: "30px" }}>
-          <T.AbilitiesWrapper>
-            <div className="pxl-type">
-              <Text as="h3">Type</Text>
-              {!isLoading ? (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  {types && types.map((type: string, index: number) => (
-                    <TypeIcon key={index} type={type} size="md" />
-                  ))}
-                </div>
-              ) : (
-                <T.DescriptionLoadingWrapper>
-                  <Loading label="Loading types..." />
-                </T.DescriptionLoadingWrapper>
-              )}
+          <T.TabsContainer>
+            <div
+              className={`tab ${activeTab === 'about' ? 'active' : ''}`}
+              onClick={() => setActiveTab('about')}
+            >
+              <Text>About</Text>
             </div>
+            <div
+              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              <Text>Stats</Text>
+            </div>
+            <div
+              className={`tab ${activeTab === 'evolution' ? 'active' : ''}`}
+              onClick={() => setActiveTab('evolution')}
+            >
+              <Text>Evolution</Text>
+            </div>
+            <div
+              className={`tab ${activeTab === 'moves' ? 'active' : ''}`}
+              onClick={() => setActiveTab('moves')}
+            >
+              <Text>Moves</Text>
+            </div>
+            <div
+              className={`tab ${activeTab === 'sprites' ? 'active' : ''}`}
+              onClick={() => setActiveTab('sprites')}
+            >
+              <Text>Sprites</Text>
+            </div>
+          </T.TabsContainer>
 
-            <div className="pxl-abilities">
-              <Text as="h3">Abilities</Text>
-              {!isLoading ? (
+          {/* About Tab */}
+          {activeTab === 'about' && (
+            <>
+              {/* Abilities section */}
+              <div style={{ marginBottom: '24px' }}>
+                <Text as="h3">Abilities</Text>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
                   {abilities && abilities.map((ability, index) => (
                     <div
                       key={index}
-                      className="pxl-border"
                       style={{
-                        padding: '4px 10px',
+                        padding: '8px 14px',
                         backgroundColor: ability.is_hidden ? '#F3F4F6' : 'white',
-                        borderRadius: '4px'
+                        borderRadius: '8px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                       }}
                     >
-                      <Text>{ability.ability?.name}</Text>
+                      <Text style={{ textTransform: 'capitalize' }}>{ability.ability?.name.replace('-', ' ')}</Text>
                       {ability.is_hidden && (
                         <Text style={{ fontSize: '10px', color: '#6B7280' }}>(Hidden)</Text>
                       )}
                     </div>
                   ))}
                 </div>
-              ) : (
-                <T.DescriptionLoadingWrapper>
-                  <Loading label="Loading abilities..." />
-                </T.DescriptionLoadingWrapper>
-              )}
-            </div>
-          </T.AbilitiesWrapper>
+              </div>
 
-          {/* Evolution chain section */}
-          {(evolutionChain.length > 0 || isLoadingEvolution) && (
-            <div className="pxl-border card-pxl" style={{ marginTop: '24px' }}>
-              <Text as="h3">Evolution Chain</Text>
+              {/* Related Pokemon section */}
+              {(relatedPokemon.length > 0 || isLoadingRelated) && (
+                <div style={{ marginBottom: '24px' }}>
+                  {isLoadingRelated ? (
+                    <T.DescriptionLoadingWrapper>
+                      <Loading label="Loading related Pokémon..." />
+                    </T.DescriptionLoadingWrapper>
+                  ) : (
+                    <RelatedPokemon
+                      pokemonList={relatedPokemon}
+                      title={species && species.generation ?
+                        `Generation ${species.generation.url.split('/').filter(Boolean).pop()} Pokémon` :
+                        'Related Pokémon'}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Special forms section (if available) */}
+              {specialForms.length > 1 && (
+                <div style={{ marginBottom: '24px' }}>
+                  <Text as="h3">Forms & Variants</Text>
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    marginTop: '16px',
+                    justifyContent: 'center'
+                  }}>
+                    {specialForms.map((form, index) => (
+                      <div key={index} style={{ textAlign: 'center' }}>
+                        <LazyLoadImage
+                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.url.split('/').filter(Boolean).pop()}.png`}
+                          alt={form.name}
+                          width={80}
+                          height={80}
+                          effect="blur"
+                        />
+                        <Text style={{ fontSize: '12px', textTransform: 'capitalize' }}>
+                          {form.name.replace(name, '').replace('-', ' ').trim() || 'Default'}
+                        </Text>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Stats Tab */}
+          {activeTab === 'stats' && (
+            <div style={{ padding: '16px 0' }}>
+              <Text as="h3" style={{ marginBottom: '16px' }}>Base Stats</Text>
+              {stats?.map((stat, index) => {
+                const pokemonBaseStat = stat?.base_stat ?? 0;
+                const pokemonStatName = stat?.stat?.name?.replace('-', ' ');
+                const statColor = getStatColor(pokemonBaseStat);
+
+                return (
+                  <T.StatContainer key={index}>
+                    <Text className="stat-name">{pokemonStatName}</Text>
+                    <Text className="stat-value">{pokemonBaseStat}</Text>
+                    <div className="stat-bar-container">
+                      <T.StatBar value={pokemonBaseStat} color={statColor} />
+                    </div>
+                  </T.StatContainer>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Evolution Tab */}
+          {activeTab === 'evolution' && (
+            <div style={{ padding: '16px 0' }}>
               {isLoadingEvolution ? (
                 <T.DescriptionLoadingWrapper>
                   <Loading label="Loading evolution data..." />
                 </T.DescriptionLoadingWrapper>
-              ) : (
+              ) : evolutionChain.length > 0 ? (
                 <EvolutionChain evolutions={evolutionChain} />
-              )}
-            </div>
-          )}
-
-          {/* Related Pokemon section */}
-          {(relatedPokemon.length > 0 || isLoadingRelated) && (
-            <div className="pxl-border card-pxl" style={{ marginTop: '24px' }}>
-              {isLoadingRelated ? (
-                <T.DescriptionLoadingWrapper>
-                  <Loading label="Loading related Pokémon..." />
-                </T.DescriptionLoadingWrapper>
               ) : (
-                <RelatedPokemon
-                  pokemonList={relatedPokemon}
-                  title={`Related ${types[0]} Pokémon`}
-                />
+                <Text>This Pokémon does not evolve.</Text>
               )}
             </div>
           )}
 
-          {/* Special forms section (if available) */}
-          {specialForms.length > 1 && (
-            <div className="pxl-border card-pxl" style={{ marginTop: '24px' }}>
-              <Text as="h3">Forms & Variants</Text>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '12px',
-                marginTop: '16px',
-                justifyContent: 'center'
-              }}>
-                {specialForms.map((form, index) => (
-                  <div key={index} style={{ textAlign: 'center' }}>
-                    <LazyLoadImage
-                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.url.split('/').filter(Boolean).pop()}.png`}
-                      alt={form.name}
-                      width={80}
-                      height={80}
-                      effect="blur"
-                    />
-                    <Text style={{ fontSize: '12px', textTransform: 'capitalize' }}>
-                      {form.name.replace(name, '').replace('-', ' ').trim() || 'Default'}
-                    </Text>
+          {/* Moves Tab */}
+          {activeTab === 'moves' && (
+            <div style={{ padding: '16px 0' }}>
+              <Text as="h3" style={{ marginBottom: '16px' }}>Learned Moves</Text>
+              <T.Grid>
+                {moves && moves.slice(0, 20).map((move: string, index: number) => (
+                  <div
+                    key={index}
+                    style={{
+                      marginBottom: 16,
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      backgroundColor: '#F9FAFB',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    }}>
+                    <Text style={{ textTransform: 'capitalize' }}>{move.replace('-', ' ')}</Text>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Moves section */}
-          <div className="pxl-border card-pxl" style={{ marginTop: '24px' }}>
-            <Text as="h3">Moves</Text>
-            {!isLoading ? (
-              <T.Grid>
-                {moves &&
-                  moves.slice(0, 20).map((move: string, index: number) => (
-                    <div
-                      key={index}
-                      className="pxl-border"
-                      style={{ marginBottom: 16, marginRight: 16, padding: '8px 12px', borderRadius: '4px' }}>
-                      <Text>{move.replace('-', ' ')}</Text>
-                    </div>
-                  ))}
                 {moves.length > 20 && (
-                  <div className="pxl-border" style={{ marginBottom: 16, marginRight: 16, padding: '8px 12px', textAlign: 'center' }}>
+                  <div style={{
+                    marginBottom: 16,
+                    padding: '10px 14px',
+                    textAlign: 'center',
+                    borderRadius: '8px',
+                    backgroundColor: '#F9FAFB',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  }}>
                     <Text>+ {moves.length - 20} more moves</Text>
                   </div>
                 )}
               </T.Grid>
-            ) : (
-              <T.DescriptionLoadingWrapper>
-                <Loading label="Loading moves..." />
-              </T.DescriptionLoadingWrapper>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Sprites Tab */}
+          {activeTab === 'sprites' && (
+            <div style={{ padding: '16px 0' }}>
+              <Text as="h3" style={{ marginBottom: '16px' }}>Sprite Gallery</Text>
+              <T.SpriteGallery>
+                {sprites && sprites.front_default && (
+                  <div className="sprite-item">
+                    <PokemonAvatar
+                      src={sprites.front_default}
+                      alt={`${name} front`}
+                      width={120}
+                      height={120}
+                      effect="blur"
+                    />
+                    <Text className="sprite-label">Front Default</Text>
+                  </div>
+                )}
+                {sprites && sprites.back_default && (
+                  <div className="sprite-item">
+                    <PokemonAvatar
+                      src={sprites.back_default}
+                      alt={`${name} back`}
+                      width={120}
+                      height={120}
+                      effect="blur"
+                    />
+                    <Text className="sprite-label">Back Default</Text>
+                  </div>
+                )}
+                {sprites && sprites.front_shiny && (
+                  <div className="sprite-item">
+                    <PokemonAvatar
+                      src={sprites.front_shiny}
+                      alt={`${name} shiny front`}
+                      width={120}
+                      height={120}
+                      effect="blur"
+                    />
+                    <Text className="sprite-label">Shiny Front</Text>
+                  </div>
+                )}
+                {sprites && sprites.back_shiny && (
+                  <div className="sprite-item">
+                    <PokemonAvatar
+                      src={sprites.back_shiny}
+                      alt={`${name} shiny back`}
+                      width={120}
+                      height={120}
+                      effect="blur"
+                    />
+                    <Text className="sprite-label">Shiny Back</Text>
+                  </div>
+                )}
+                {sprites && sprites.versions && sprites.versions["generation-v"] &&
+                  sprites.versions["generation-v"]["black-white"] &&
+                  sprites.versions["generation-v"]["black-white"].animated && (
+                    <>
+                      {sprites.versions["generation-v"]["black-white"].animated.front_default && (
+                        <div className="sprite-item">
+                          <PokemonAvatar
+                            src={sprites.versions["generation-v"]["black-white"].animated.front_default}
+                            alt={`${name} animated`}
+                            width={120}
+                            height={120}
+                            effect="blur"
+                          />
+                          <Text className="sprite-label">Animated</Text>
+                        </div>
+                      )}
+                      {sprites.versions["generation-v"]["black-white"].animated.back_default && (
+                        <div className="sprite-item">
+                          <PokemonAvatar
+                            src={sprites.versions["generation-v"]["black-white"].animated.back_default}
+                            alt={`${name} animated back`}
+                            width={120}
+                            height={120}
+                            effect="blur"
+                          />
+                          <Text className="sprite-label">Animated Back</Text>
+                        </div>
+                      )}
+                    </>
+                  )}
+              </T.SpriteGallery>
+            </div>
+          )}
         </T.Content>
       </T.Page>
 

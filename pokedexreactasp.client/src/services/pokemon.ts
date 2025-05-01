@@ -64,7 +64,7 @@ export const getPokemonWithTypes = async (limit: number = 20, offset: number = 0
 };
 
 // Fetch Pokemon species data which includes evolution chain URL
-export const getPokemonSpecies = async (nameOrId: string = "") => {
+export const getPokemonSpecies = async (nameOrId: string | number) => {
   try {
     const response = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${nameOrId}`);
     return response.data;
@@ -106,6 +106,20 @@ export const getRelatedPokemonByType = async (type: string) => {
     return shuffled.slice(0, 6).map((p: any) => p.pokemon);
   } catch (error) {
     console.error("Error fetching related Pokemon:", error);
+    return [];
+  }
+};
+
+// Fetch related Pokemon (by generation)
+export const getRelatedPokemonByGen = async (gen: number | string) => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/generation/${gen}`);
+    // Get up to 6 random Pokemon of the same generation
+    const pokemonList = response.data.pokemon_species || [];
+    const shuffled = [...pokemonList].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  } catch (error) {
+    console.error("Error fetching related Pokemon by generation:", error);
     return [];
   }
 };
