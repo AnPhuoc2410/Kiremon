@@ -295,7 +295,7 @@ const SpriteGallery = styled("div")({
   },
 
   ".sprite-label": {
-    fontSize: "0.8rem",
+    fontSize: "1rem",
     color: "#6B7280",
     textAlign: "center",
   }
@@ -310,6 +310,8 @@ const FlavorTextBox = styled("div")({
   "p": {
     padding: "0 16px",
     lineHeight: "1.6",
+    fontSize: "1.3rem",
+    fontWeight: "600",
   }
 });
 

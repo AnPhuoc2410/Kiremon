@@ -98,6 +98,7 @@ const DetailPokemon = () => {
 
       const pokemonDetailsFrom = await getDetailPokemon(chain.species.name);
 
+      // For each evolution branch from this Pokémon
       for (const evolution of chain.evolves_to) {
         const pokemonDetailsTo = await getDetailPokemon(evolution.species.name);
 
@@ -122,6 +123,7 @@ const DetailPokemon = () => {
           }
         }
 
+        // Add this evolution step to our chain
         evolutions.push({
           from: {
             id: pokemonDetailsFrom.id,
@@ -136,7 +138,7 @@ const DetailPokemon = () => {
           trigger: triggerText ? { text: triggerText } : undefined
         });
 
-        // Process the next chain
+        // Process the next chain (recursive)
         await processChain(evolution, evolutions);
       }
 
@@ -618,7 +620,7 @@ const DetailPokemon = () => {
                         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                       }}
                     >
-                      <Text style={{ textTransform: 'capitalize' }}>{ability.ability?.name.replace('-', ' ')}</Text>
+                      <Text style={{ textTransform: 'capitalize', fontSize: '20px'}}>{ability.ability?.name.replace('-', ' ')}</Text>
                       {ability.is_hidden && (
                         <Text style={{ fontSize: '10px', color: '#6B7280' }}>(Hidden)</Text>
                       )}

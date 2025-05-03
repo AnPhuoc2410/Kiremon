@@ -36,7 +36,7 @@ const PokemonCard = styled.div`
 
   .pokemon-id {
     color: #6B7280;
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
 `;
 
