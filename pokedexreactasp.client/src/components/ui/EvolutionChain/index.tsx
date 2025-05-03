@@ -1,95 +1,9 @@
 import React from 'react';
-import styled from '@emotion/styled';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link } from 'react-router-dom';
 import { Text } from '..';
 import { POKEMON_IMAGE } from '../../../config/api.config';
-
-const EvolutionContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 16px 0;
-  overflow-x: auto;
-
-  .evolution-chain {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-
-  .evolution-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .stage-pokemon {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .evolution-branch {
-    display: flex;
-    align-items: center;
-    margin: 8px 0;
-  }
-
-  .pokemon-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background-color: white;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1),
-                0px 1px 2px rgba(16, 24, 40, 0.06);
-    transition: transform 0.2s ease-in-out;
-    min-width: 140px;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08),
-                  0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-    }
-  }
-
-  .pokemon-id {
-    color: #6B7280;
-    font-size: 0.75rem;
-  }
-
-  .pokemon-name {
-    font-weight: 600;
-    text-transform: capitalize;
-    margin-top: 4px;
-  }
-
-  .evolution-arrow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 16px;
-    width: 80px;
-
-    .arrow-label {
-      color: #4B5563;
-      margin-bottom: 4px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      text-align: center;
-    }
-
-    .arrow {
-      color: #6B7280;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-`;
+import { EvolutionContainer } from './index.style';
 
 interface EvolutionItem {
   id: number;
@@ -101,14 +15,6 @@ interface EvolutionTrigger {
   text: string;
 }
 
-interface EvolutionStage {
-  pokemon: EvolutionItem[];
-  evolvesTo: {
-    pokemon: EvolutionItem;
-    trigger?: EvolutionTrigger;
-  }[][];
-}
-
 interface EvolutionChainProps {
   evolutions: {
     from: EvolutionItem;
@@ -117,15 +23,13 @@ interface EvolutionChainProps {
   }[];
 }
 
-/**
- * Given a branch index (0‑based) and total number of branches,
- * returns one of: 'up-right', 'right', or 'down-right'.
- * Note: This function is kept but not used in the current horizontal design
- */
 function getBranchDirection(
   index: number,
   total: number
-): 'up-right' | 'right' | 'down-right' {
+): 'up-right' | 'up' | 'right' | 'down-right' {
+  if (total === 1) {
+    return 'right';
+  }
   if (total === 2) {
     // For two-way splits: first goes up‑right, second down‑right
     return index === 0 ? 'up-right' : 'down-right';
@@ -135,11 +39,13 @@ function getBranchDirection(
     return index === 0
       ? 'up-right'
       : index === 1
-      ? 'right'
-      : 'down-right';
+        ? 'up'
+        : 'down-right';
   }
-  // Fallback: all point right
-  return 'right';
+  // For many splits: distribute them among available directions
+  if (index === 0) return 'up-right';
+  if (index === total - 1) return 'down-right';
+  return index % 2 === 0 ? 'up-right' : 'down-right';
 }
 
 /**
@@ -246,16 +152,20 @@ const PokemonCard = ({ pokemon }: { pokemon: EvolutionItem }) => (
   </Link>
 );
 
-const EvolutionArrow = ({ label }: { label?: string }) => (
-  <div className="evolution-arrow">
-    {label && <Text className="arrow-label">{label}</Text>}
-    <div className="arrow">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+interface EvolutionArrowProps {
+  direction: 'up-right' | 'up' | 'right' | 'down-right';
+  label?: string;
+}
+
+const EvolutionArrow: React.FC<EvolutionArrowProps> = ({ direction, label }) => {
+  // Simple horizontal arrow that matches the reference image
+  return (
+    <div className="evolution-arrow">
+      {label && <Text className="arrow-label">{label}</Text>}
+      <div className="arrow">→</div>
     </div>
-  </div>
-);
+  );
+};
 
 const EvolutionChain: React.FC<EvolutionChainProps> = ({ evolutions }) => {
   if (!evolutions || evolutions.length === 0) return null;
@@ -293,13 +203,19 @@ const EvolutionChain: React.FC<EvolutionChainProps> = ({ evolutions }) => {
                     if (Array.isArray(evo.to)) {
                       return evo.to.map((toPokemon, toIndex) => (
                         <div className="evolution-branch" key={`evo-${stageIndex}-${fromIndex}-${evoIndex}-${toIndex}`}>
-                          <EvolutionArrow label={evo.trigger?.text} />
+                          <EvolutionArrow
+                            direction="right"
+                            label={evo.trigger?.text}
+                          />
                         </div>
                       ));
                     } else {
                       return (
                         <div className="evolution-branch" key={`evo-${stageIndex}-${fromIndex}-${evoIndex}`}>
-                          <EvolutionArrow label={evo.trigger?.text} />
+                          <EvolutionArrow
+                            direction="right"
+                            label={evo.trigger?.text}
+                          />
                         </div>
                       );
                     }
