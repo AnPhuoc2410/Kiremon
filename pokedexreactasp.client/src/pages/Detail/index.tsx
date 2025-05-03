@@ -20,6 +20,13 @@ import {
   RelatedPokemon
 } from "../../components/ui";
 
+// Import tab components
+import AboutTab from "./tabs/AboutTab";
+import StatsTab from "./tabs/StatsTab";
+import EvolutionTab from "./tabs/EvolutionTab";
+import MovesTab from "./tabs/MovesTab";
+import SpritesTab from "./tabs/SpritesTab";
+
 import "react-lazy-load-image-component/src/effects/blur.css";
 import * as T from "./index.style";
 import {
@@ -605,235 +612,37 @@ const DetailPokemon = () => {
 
           {/* About Tab */}
           {activeTab === 'about' && (
-            <>
-              {/* Abilities section */}
-              <div style={{ marginBottom: '24px' }}>
-                <Text as="h3">Abilities</Text>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-                  {abilities && abilities.map((ability, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        padding: '8px 14px',
-                        backgroundColor: ability.is_hidden ? '#F3F4F6' : 'white',
-                        borderRadius: '8px',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      }}
-                    >
-                      <Text style={{ textTransform: 'capitalize', fontSize: '20px'}}>{ability.ability?.name.replace('-', ' ')}</Text>
-                      {ability.is_hidden && (
-                        <Text style={{ fontSize: '10px', color: '#6B7280' }}>(Hidden)</Text>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Related Pokemon section */}
-              {(relatedPokemon.length > 0 || isLoadingRelated) && (
-                <div style={{ marginBottom: '24px' }}>
-                  {isLoadingRelated ? (
-                    <T.DescriptionLoadingWrapper>
-                      <Loading label="Loading related Pokémon..." />
-                    </T.DescriptionLoadingWrapper>
-                  ) : (
-                    <RelatedPokemon
-                      pokemonList={relatedPokemon}
-                      title={species && species.generation ?
-                        `Generation ${species.generation.url.split('/').filter(Boolean).pop()} Pokémon` :
-                        'Related Pokémon'}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Special forms section (if available) */}
-              {specialForms.length > 1 && (
-                <div style={{ marginBottom: '24px' }}>
-                  <Text as="h3">Forms & Variants</Text>
-                  <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '12px',
-                    marginTop: '16px',
-                    justifyContent: 'center'
-                  }}>
-                    {specialForms.map((form, index) => (
-                      <div key={index} style={{ textAlign: 'center' }}>
-                        <LazyLoadImage
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.url.split('/').filter(Boolean).pop()}.png`}
-                          alt={form.name}
-                          width={80}
-                          height={80}
-                          effect="blur"
-                        />
-                        <Text style={{ fontSize: '12px', textTransform: 'capitalize' }}>
-                          {form.name.replace(name, '').replace('-', ' ').trim() || 'Default'}
-                        </Text>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+            <AboutTab
+              abilities={abilities}
+              relatedPokemon={relatedPokemon}
+              specialForms={specialForms}
+              isLoadingRelated={isLoadingRelated}
+              species={species}
+              name={name}
+            />
           )}
 
           {/* Stats Tab */}
           {activeTab === 'stats' && (
-            <div style={{ padding: '16px 0' }}>
-              <Text as="h3" style={{ marginBottom: '16px' }}>Base Stats</Text>
-              {stats?.map((stat, index) => {
-                const pokemonBaseStat = stat?.base_stat ?? 0;
-                const pokemonStatName = stat?.stat?.name?.replace('-', ' ');
-                const statColor = getStatColor(pokemonBaseStat);
-
-                return (
-                  <T.StatContainer key={index}>
-                    <Text className="stat-name">{pokemonStatName}</Text>
-                    <Text className="stat-value">{pokemonBaseStat}</Text>
-                    <div className="stat-bar-container">
-                      <T.StatBar value={pokemonBaseStat} color={statColor} />
-                    </div>
-                  </T.StatContainer>
-                );
-              })}
-            </div>
+            <StatsTab stats={stats} />
           )}
 
           {/* Evolution Tab */}
           {activeTab === 'evolution' && (
-            <div style={{ padding: '16px 0' }}>
-              {isLoadingEvolution ? (
-                <T.DescriptionLoadingWrapper>
-                  <Loading label="Loading evolution data..." />
-                </T.DescriptionLoadingWrapper>
-              ) : evolutionChain.length > 0 ? (
-                <EvolutionChain evolutions={evolutionChain} />
-              ) : (
-                <Text>This Pokémon does not evolve.</Text>
-              )}
-            </div>
+            <EvolutionTab
+              isLoadingEvolution={isLoadingEvolution}
+              evolutionChain={evolutionChain}
+            />
           )}
 
           {/* Moves Tab */}
           {activeTab === 'moves' && (
-            <div style={{ padding: '16px 0' }}>
-              <Text as="h3" style={{ marginBottom: '16px' }}>Learned Moves</Text>
-              <T.Grid>
-                {moves && moves.slice(0, 20).map((move: string, index: number) => (
-                  <div
-                    key={index}
-                    style={{
-                      marginBottom: 16,
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      backgroundColor: '#F9FAFB',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                    }}>
-                    <Text style={{ textTransform: 'capitalize' }}>{move.replace('-', ' ')}</Text>
-                  </div>
-                ))}
-                {moves.length > 20 && (
-                  <div style={{
-                    marginBottom: 16,
-                    padding: '10px 14px',
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    backgroundColor: '#F9FAFB',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                  }}>
-                    <Text>+ {moves.length - 20} more moves</Text>
-                  </div>
-                )}
-              </T.Grid>
-            </div>
+            <MovesTab moves={moves} types={types} />
           )}
 
           {/* Sprites Tab */}
           {activeTab === 'sprites' && (
-            <div style={{ padding: '16px 0' }}>
-              <Text as="h3" style={{ marginBottom: '16px' }}>Sprite Gallery</Text>
-              <T.SpriteGallery>
-                {sprites && sprites.front_default && (
-                  <div className="sprite-item">
-                    <PokemonAvatar
-                      src={sprites.front_default}
-                      alt={`${name} front`}
-                      width={120}
-                      height={120}
-                      effect="blur"
-                    />
-                    <Text className="sprite-label">Front Default</Text>
-                  </div>
-                )}
-                {sprites && sprites.back_default && (
-                  <div className="sprite-item">
-                    <PokemonAvatar
-                      src={sprites.back_default}
-                      alt={`${name} back`}
-                      width={120}
-                      height={120}
-                      effect="blur"
-                    />
-                    <Text className="sprite-label">Back Default</Text>
-                  </div>
-                )}
-                {sprites && sprites.front_shiny && (
-                  <div className="sprite-item">
-                    <PokemonAvatar
-                      src={sprites.front_shiny}
-                      alt={`${name} shiny front`}
-                      width={120}
-                      height={120}
-                      effect="blur"
-                    />
-                    <Text className="sprite-label">Shiny Front</Text>
-                  </div>
-                )}
-                {sprites && sprites.back_shiny && (
-                  <div className="sprite-item">
-                    <PokemonAvatar
-                      src={sprites.back_shiny}
-                      alt={`${name} shiny back`}
-                      width={120}
-                      height={120}
-                      effect="blur"
-                    />
-                    <Text className="sprite-label">Shiny Back</Text>
-                  </div>
-                )}
-                {sprites && sprites.versions && sprites.versions["generation-v"] &&
-                  sprites.versions["generation-v"]["black-white"] &&
-                  sprites.versions["generation-v"]["black-white"].animated && (
-                    <>
-                      {sprites.versions["generation-v"]["black-white"].animated.front_default && (
-                        <div className="sprite-item">
-                          <PokemonAvatar
-                            src={sprites.versions["generation-v"]["black-white"].animated.front_default}
-                            alt={`${name} animated`}
-                            width={120}
-                            height={120}
-                            effect="blur"
-                          />
-                          <Text className="sprite-label">Animated</Text>
-                        </div>
-                      )}
-                      {sprites.versions["generation-v"]["black-white"].animated.back_default && (
-                        <div className="sprite-item">
-                          <PokemonAvatar
-                            src={sprites.versions["generation-v"]["black-white"].animated.back_default}
-                            alt={`${name} animated back`}
-                            width={120}
-                            height={120}
-                            effect="blur"
-                          />
-                          <Text className="sprite-label">Animated Back</Text>
-                        </div>
-                      )}
-                    </>
-                  )}
-              </T.SpriteGallery>
-            </div>
+            <SpritesTab sprites={sprites} name={name} />
           )}
         </T.Content>
       </T.Page>
