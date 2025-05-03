@@ -1,8 +1,7 @@
-import React from 'react';
-import styled from '@emotion/styled';
-import { Link } from 'react-router-dom';
-import { colors } from '../../utils';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Text } from '..';
+import * as S from './index.style';
 
 interface HeaderProps {
   title: string;
@@ -11,81 +10,166 @@ interface HeaderProps {
   actions?: React.ReactNode;
 }
 
-const HeaderContainer = styled.header`
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  margin-bottom: 16px;
-
-  .header-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .header-title-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .back-button {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    color: ${colors["gray-700"]};
-    transition: color 0.2s ease;
-    font-weight: 500;
-
-    &:hover {
-      color: ${colors["gray-900"]};
-    }
-
-    svg {
-      margin-right: 4px;
-    }
-  }
-
-  .header-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: ${colors["gray-900"]};
-    margin: 0;
-  }
-
-  .header-subtitle {
-    color: ${colors["gray-600"]};
-    margin-top: 4px;
-  }
-
-  .header-actions {
-    display: flex;
-    gap: 8px;
-  }
-`;
-
+// Icons
 const BackIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M9 4L5 8L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => {
+const SearchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14 14L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+interface NavItemWithDropdownProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef]);
+
   return (
-    <HeaderContainer>
-      {backTo && (
-        <Link to={backTo} className="back-button">
-          <BackIcon />
-          <span>Back</span>
-        </Link>
-      )}
-      <div className="header-main">
-        <div className="header-title-group">
-          <Text as="h1" className="header-title">{title}</Text>
-          {subtitle && <Text className="header-subtitle">{subtitle}</Text>}
-        </div>
-        {actions && <div className="header-actions">{actions}</div>}
-      </div>
-    </HeaderContainer>
+    <S.NavItem ref={dropdownRef}>
+      <S.NavLink
+        onClick={() => setIsOpen(!isOpen)}
+        className={isOpen ? 'active' : ''}
+      >
+        {title}
+        <ChevronDownIcon />
+      </S.NavLink>
+      <S.Dropdown isOpen={isOpen}>
+        {children}
+      </S.Dropdown>
+    </S.NavItem>
+  );
+};
+
+const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  return (
+    <S.HeaderContainer>
+      <S.HeaderMain>
+        <S.HeaderTitleGroup>
+          <S.LogoContainer>
+            <Link to="/">
+              <img src="/pokeball-logo.png" alt="Pokédex Logo" />
+            </Link>
+          </S.LogoContainer>
+
+          <S.TitleContainer>
+            {backTo && (
+              <Link to={backTo} className="back-button">
+                <S.BackButton>
+                  <BackIcon />
+                  <span>Back</span>
+                </S.BackButton>
+              </Link>
+            )}
+            <S.HeaderTitle>{title}</S.HeaderTitle>
+            {subtitle && <S.HeaderSubtitle>{subtitle}</S.HeaderSubtitle>}
+          </S.TitleContainer>
+        </S.HeaderTitleGroup>
+
+        <S.HeaderActions>
+          <form onSubmit={handleSearch}>
+            <S.SearchContainer>
+              <SearchIcon />
+              <input
+                type="text"
+                placeholder="Search Pokémon..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </S.SearchContainer>
+          </form>
+
+          <S.UserAvatar>
+            <img
+              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+              alt="User Avatar"
+            />
+          </S.UserAvatar>
+
+          {actions && actions}
+        </S.HeaderActions>
+      </S.HeaderMain>
+
+      <S.NavContainer>
+        <S.NavList>
+          <S.NavItem>
+            <Link to="/pokemons">
+              <S.NavLink as="span">Pokédex</S.NavLink>
+            </Link>
+          </S.NavItem>
+
+          <S.NavItem>
+            <Link to="/my-pokemon">
+              <S.NavLink as="span">My Pokémon</S.NavLink>
+            </Link>
+          </S.NavItem>
+
+          <NavItemWithDropdown title="Mini Games">
+            <Link to="/games/combat-team">
+              <S.DropdownItem>Combat Team</S.DropdownItem>
+            </Link>
+            <Link to="/games/whos-that-pokemon">
+              <S.DropdownItem>Who's That Pokémon?</S.DropdownItem>
+            </Link>
+            <Link to="/games/type-matchup">
+              <S.DropdownItem>Type Matchup Quiz</S.DropdownItem>
+            </Link>
+            <Link to="/games/catch-challenge">
+              <S.DropdownItem>Catch Challenge</S.DropdownItem>
+            </Link>
+          </NavItemWithDropdown>
+
+          <NavItemWithDropdown title="Explore">
+            <Link to="/explore/regions">
+              <S.DropdownItem>Regions</S.DropdownItem>
+            </Link>
+            <Link to="/explore/types">
+              <S.DropdownItem>Types</S.DropdownItem>
+            </Link>
+            <Link to="/explore/generations">
+              <S.DropdownItem>Generations</S.DropdownItem>
+            </Link>
+          </NavItemWithDropdown>
+        </S.NavList>
+      </S.NavContainer>
+    </S.HeaderContainer>
   );
 };
 
