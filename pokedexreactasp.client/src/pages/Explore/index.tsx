@@ -52,7 +52,8 @@ const Explore = () => {
         });
 
         setState({ pokemons: [...(state.pokemons || []), ...filteredSummary] });
-        setNextUrl(response.next);
+        // Fix for type issue - ensure response.next is a string or null
+        setNextUrl(response.next || null);
         setHasMore(!!response.next);
         setIsLoading(false);
       } catch (error) {
