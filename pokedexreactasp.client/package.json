@@ -20,6 +20,7 @@
     "animejs": "^4.0.1",
     "axios": "^1.8.4",
     "colorcrafts": "^1.0.4",
+    "date-fns": "^4.1.0",
     "pokedexreactasp.client": "file:",
     "prettier": "^3.5.3",
     "react": "^19.0.0",
