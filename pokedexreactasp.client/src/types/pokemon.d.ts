@@ -84,3 +84,46 @@ export interface IPokemonDetailResponse {
   }>;
   [other: string]: unknown;
 }
+
+export interface IRegion {
+  id?: number;
+  name: string;
+  url?: string;
+  locations?: INameUrlPair[];
+  main_generation?: INameUrlPair;
+  pokedexes?: INameUrlPair[];
+  version_groups?: INameUrlPair[];
+  image?: string; // We'll add custom images
+  description?: string; // We'll add custom descriptions
+  pokemonCount?: number;
+}
+
+export interface IPokedex {
+  id?: number;
+  name: string;
+  url?: string;
+  descriptions?: Array<{
+    description: string;
+    language: INameUrlPair;
+  }>;
+  is_main_series?: boolean;
+  pokemon_entries?: Array<{
+    entry_number: number;
+    pokemon_species: INameUrlPair;
+  }>;
+  region?: INameUrlPair;
+  version_groups?: INameUrlPair[];
+}
+
+export interface INameUrlPair {
+  name: string;
+  url: string;
+}
+
+export interface ILocation {
+  id?: number;
+  name: string;
+  url?: string;
+  region?: INameUrlPair;
+  areas?: INameUrlPair[];
+}

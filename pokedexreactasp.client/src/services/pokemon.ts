@@ -162,3 +162,47 @@ export const getAllPokemonTypes = async () => {
     return [];
   }
 };
+
+// Fetch all available regions
+export const getAllRegions = async () => {
+  try {
+    const response = await axios.get('https://pokeapi.co/api/v2/region');
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching regions:", error);
+    return [];
+  }
+};
+
+// Fetch detailed region data including locations
+export const getRegionDetails = async (regionName: string) => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/region/${regionName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching details for ${regionName} region:`, error);
+    return null;
+  }
+};
+
+// Fetch all available pokedexes
+export const getAllPokedexes = async () => {
+  try {
+    const response = await axios.get('https://pokeapi.co/api/v2/pokedex');
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching pokedexes:", error);
+    return [];
+  }
+};
+
+// Fetch detailed pokedex data including pokemon entries
+export const getPokedexDetails = async (pokedexName: string) => {
+  try {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokedex/${pokedexName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching details for ${pokedexName} pokedex:`, error);
+    return null;
+  }
+};

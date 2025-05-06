@@ -10,6 +10,51 @@ export const colors = {
   ...Colors.Orange,
   ...Colors.Blue,
   ...Colors.Indigo,
+  ...Colors.Cyan,
+
+  // Added nested text object for proper access
+  text: {
+    primary: Colors.Gray["gray-900"],
+    secondary: Colors.Gray["gray-700"],
+    error: Colors.Red["red-500"],
+    success: Colors.Green["green-500"],
+    warning: Colors.Yellow["yellow-500"],
+    info: Colors.Blue["blue-500"],
+    light: Colors.Gray["gray-100"],
+  },
+
+  // Added background colors
+  background: {
+    light: Colors.Gray["gray-100"],
+    medium: Colors.Gray["gray-500"],
+    dark: Colors.Gray["gray-200"],
+  },
+
+  // Added primary colors as a dedicated section
+  primary: {
+    100: Colors.Blue["blue-100"],
+    200: Colors.Blue["blue-200"],
+    300: Colors.Blue["blue-300"],
+    400: Colors.Blue["blue-400"],
+    500: Colors.Blue["blue-500"],
+    600: Colors.Blue["blue-600"],
+    700: Colors.Blue["blue-700"],
+    800: Colors.Blue["blue-800"],
+    900: Colors.Blue["blue-900"],
+  },
+
+  // Added error colors as a dedicated section
+  error: {
+    100: Colors.Red["red-100"],
+    200: Colors.Red["red-200"],
+    300: Colors.Red["red-300"],
+    400: Colors.Red["red-400"],
+    500: Colors.Red["red-500"],
+    600: Colors.Red["red-600"],
+    700: Colors.Red["red-700"],
+    800: Colors.Red["red-800"],
+    900: Colors.Red["red-900"],
+  }
 };
 
 export const skillColor: { [key: string]: string } = {

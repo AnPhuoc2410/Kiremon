@@ -5,6 +5,7 @@ import { StartScreen, MyPokemon, NotFoundPage } from "../pages";
 
 const Explore = lazy(() => import("../pages/Explore"));
 const RegionsExplore = lazy(() => import("../pages/Explore/Regions"));
+const RegionDetail = lazy(() => import("../pages/Explore/Regions/RegionDetail"));
 const TypesExplore = lazy(() => import("../pages/Explore/Types"));
 const GenerationsExplore = lazy(() => import("../pages/Explore/Generations"));
 const Detail = lazy(() => import("../pages/Detail"));
@@ -23,6 +24,24 @@ export default function Routes() {
             </Suspense>
           }
         />
+        {/* Region routes */}
+        <Route
+          path="/regions"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <RegionsExplore />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/regions/:regionName"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <RegionDetail />
+            </Suspense>
+          }
+        />
+        {/* Keep the old path for backward compatibility */}
         <Route
           path="/explore/regions"
           element={
