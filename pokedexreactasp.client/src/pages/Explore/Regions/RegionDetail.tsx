@@ -1,9 +1,10 @@
 import { useState, useEffect, createRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Header, Navbar } from "../../../components/ui";
+import { Header, Navbar, PokeCard } from "../../../components/ui";
 import { getRegionDetails, getPokedexDetails } from "../../../services/pokemon";
 import { IRegion, IPokedex, INameUrlPair } from "../../../types/pokemon";
 import * as S from "./regionDetail.style";
+import { getPokemonId } from "../../../components/utils";
 
 // Map of region names to image URLs (PokeAPI doesn't provide images)
 const regionImageMap: Record<string, string> = {
@@ -42,6 +43,11 @@ const RegionDetail = () => {
   const [region, setRegion] = useState<IRegion | null>(null);
   const [pokedexData, setPokedexData] = useState<IPokedex | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pokemonEntries, setPokemonEntries] = useState<any[]>([]);
+  const [showAllPokemon, setShowAllPokemon] = useState<boolean>(false);
+  const [pokemonPage, setPokemonPage] = useState<number>(1);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const pokemonPerPage = 20;
 
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
@@ -78,6 +84,11 @@ const RegionDetail = () => {
           const mainPokedex = regionData.pokedexes[0];
           const pokedexDetails = await getPokedexDetails(mainPokedex.name);
           setPokedexData(pokedexDetails);
+
+          // Load initial batch of Pokemon data
+          if (pokedexDetails?.pokemon_entries) {
+            loadPokemonData(pokedexDetails.pokemon_entries.slice(0, 12));
+          }
         }
 
       } catch (err) {
@@ -89,7 +100,81 @@ const RegionDetail = () => {
     };
 
     fetchRegionData();
+    // Reset state when region changes
+    setShowAllPokemon(false);
+    setPokemonPage(1);
+    setPokemonEntries([]);
   }, [regionName]);
+
+  // Function to load Pokemon data with types and details
+  const loadPokemonData = async (entries: any[]) => {
+    try {
+      const detailedPokemon = await Promise.all(
+        entries.map(async (entry) => {
+          try {
+            const name = entry.pokemon_species.name;
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+
+            if (!response.ok) {
+              throw new Error(`Failed to fetch details for ${name}`);
+            }
+
+            const data = await response.json();
+            const types = data.types.map((t: any) => t.type.name);
+
+            return {
+              id: data.id,
+              name: name,
+              entryNumber: entry.entry_number,
+              types: types,
+              sprite: data.sprites.front_default,
+              url: entry.pokemon_species.url
+            };
+          } catch (error) {
+            console.error(`Error fetching details for ${entry.pokemon_species.name}:`, error);
+            return {
+              name: entry.pokemon_species.name,
+              entryNumber: entry.entry_number,
+              types: [],
+              url: entry.pokemon_species.url
+            };
+          }
+        })
+      );
+
+      setPokemonEntries(prevEntries => [...prevEntries, ...detailedPokemon]);
+    } catch (error) {
+      console.error("Error loading Pokemon data:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // Load more Pokemon
+  const loadMorePokemon = async () => {
+    if (!pokedexData?.pokemon_entries || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+
+    const startIndex = pokemonPage * pokemonPerPage;
+    const endIndex = startIndex + pokemonPerPage;
+    const nextBatch = pokedexData.pokemon_entries.slice(startIndex, endIndex);
+
+    if (nextBatch.length > 0) {
+      await loadPokemonData(nextBatch);
+      setPokemonPage(prevPage => prevPage + 1);
+    }
+
+    setIsLoadingMore(false);
+  };
+
+  // Handle "Show All Pokemon" button click
+  const handleShowAllPokemon = () => {
+    setShowAllPokemon(true);
+    if (pokemonEntries.length < pokemonPerPage) {
+      loadMorePokemon();
+    }
+  };
 
   const formatName = (name: string): string => {
     return name
@@ -98,9 +183,18 @@ const RegionDetail = () => {
       .join(' ');
   };
 
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!showAllPokemon || isLoadingMore) return;
+
+    const element = e.currentTarget;
+    if (element.scrollHeight - element.scrollTop - element.clientHeight < 200) {
+      loadMorePokemon();
+    }
+  };
+
   return (
     <>
-      <S.Container style={{ marginBottom: navHeight }}>
+      <S.Container style={{ marginBottom: navHeight }} onScroll={handleScroll}>
         <Header
           title={regionName ? formatName(regionName) + " Region" : "Region Details"}
           subtitle="Explore Pokémon, locations, and more"
@@ -125,6 +219,12 @@ const RegionDetail = () => {
               <S.RegionOverlay>
                 <S.RegionTitle>{formatName(region.name)}</S.RegionTitle>
                 <S.RegionDescription>{region.description}</S.RegionDescription>
+
+                {pokedexData && pokedexData.pokemon_entries && (
+                  <S.CatchButton onClick={handleShowAllPokemon}>
+                    Discover All {pokedexData.pokemon_entries.length} {formatName(region.name)} Pokémon
+                  </S.CatchButton>
+                )}
               </S.RegionOverlay>
             </S.RegionBanner>
 
@@ -148,7 +248,7 @@ const RegionDetail = () => {
               )}
             </S.InfoContainer>
 
-            {region.locations && region.locations.length > 0 && (
+            {!showAllPokemon && region.locations && region.locations.length > 0 && (
               <S.Section>
                 <S.SectionTitle>Locations</S.SectionTitle>
                 <S.LocationGrid>
@@ -163,32 +263,59 @@ const RegionDetail = () => {
 
             {pokedexData && pokedexData.pokemon_entries && (
               <S.Section>
-                <S.SectionTitle>Featured Pokémon</S.SectionTitle>
-                <S.PokemonGrid>
-                  {pokedexData.pokemon_entries.slice(0, 10).map((entry, index) => {
-                    // Extract Pokémon ID from URL
-                    const urlParts = entry.pokemon_species.url.split('/');
-                    const id = urlParts[urlParts.length - 2];
+                <S.SectionHeader>
+                  <S.SectionTitle>
+                    {showAllPokemon
+                      ? `All ${formatName(region.name)} Pokémon (${pokedexData.pokemon_entries.length})`
+                      : "Featured Pokémon"}
+                  </S.SectionTitle>
+                  <S.SectionSubtitle>
+                    {showAllPokemon
+                      ? `Complete list of Pokémon native to the ${formatName(region.name)} region`
+                      : `Discover the native Pokémon of ${formatName(region.name)}`}
+                  </S.SectionSubtitle>
+                </S.SectionHeader>
 
-                    return (
-                      <S.PokemonCard
-                        key={index}
-                        onClick={() => navigate(`/pokemon/${entry.pokemon_species.name}`)}
-                      >
-                        <S.PokemonImage
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`}
-                          alt={entry.pokemon_species.name}
-                        />
-                        <S.PokemonName>{formatName(entry.pokemon_species.name)}</S.PokemonName>
-                        <S.PokemonNumber>#{entry.entry_number}</S.PokemonNumber>
-                      </S.PokemonCard>
-                    );
-                  })}
+                <S.PokemonGrid>
+                  {pokemonEntries.map((pokemon, index) => (
+                    <S.PokemonCard
+                      key={`${pokemon.name}-${index}`}
+                      onClick={() => navigate(`/pokemon/${pokemon.name}`)}
+                    >
+                      <S.PokemonImage
+                        src={pokemon.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id || getPokemonId(pokemon.url)}.png`}
+                        alt={pokemon.name}
+                      />
+                      <S.PokemonName>{formatName(pokemon.name)}</S.PokemonName>
+                      <S.PokemonNumber>#{pokemon.entryNumber}</S.PokemonNumber>
+                      {pokemon.types && pokemon.types.length > 0 && (
+                        <S.TypeContainer>
+                          {pokemon.types.map((type: string, i: number) => (
+                            <S.TypeBadge key={i} type={type}>
+                              {type}
+                            </S.TypeBadge>
+                          ))}
+                        </S.TypeContainer>
+                      )}
+                    </S.PokemonCard>
+                  ))}
                 </S.PokemonGrid>
-                {pokedexData.pokemon_entries.length > 10 && (
-                  <S.ShowMoreButton onClick={() => navigate(`/pokemons?region=${region.name}`)}>
-                    View All {pokedexData.pokemon_entries.length} Pokémon
-                  </S.ShowMoreButton>
+
+                {isLoadingMore && (
+                  <S.LoadingMore>
+                    <p>Loading more Pokémon...</p>
+                  </S.LoadingMore>
+                )}
+
+                {!showAllPokemon && pokedexData.pokemon_entries.length > 12 && (
+                  <S.ShowMoreButtonContainer>
+                    <S.ShowMoreButton onClick={handleShowAllPokemon}>
+                      View All {pokedexData.pokemon_entries.length} Pokémon
+                    </S.ShowMoreButton>
+                    <S.ButtonDescription>
+                      See the complete list of Pokémon native to the {formatName(region.name)} region
+                    </S.ButtonDescription>
+                  </S.ShowMoreButtonContainer>
                 )}
               </S.Section>
             )}
