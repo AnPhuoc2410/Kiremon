@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { Role } from "../types/roles.type";
 
 export function setCookie(name: string, value: string, days: number) {

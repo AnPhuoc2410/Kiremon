@@ -21,7 +21,7 @@ const pokemonGenerations = [
     games: ["Gold", "Silver", "Crystal"],
     region: "Johto",
     releaseYear: 1999,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/6/67/Johto_first_partners_and_friends.png", // Chikorita, Cyndaquil, Totodile
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/a/a2/Johto_first_partners_anime.png/241px-Johto_first_partners_anime.png", // Chikorita, Cyndaquil, Totodile
     pokemonCount: 100
   },
   {
@@ -30,7 +30,7 @@ const pokemonGenerations = [
     games: ["Ruby", "Sapphire", "Emerald", "FireRed", "LeafGreen"],
     region: "Hoenn",
     releaseYear: 2002,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/d/df/Gen_III_starter_pokemon.png", // Treecko, Torchic, Mudkip
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/8/86/Hoenn_first_partners_anime.png/241px-Hoenn_first_partners_anime.png", // Treecko, Torchic, Mudkip
     pokemonCount: 135
   },
   {
@@ -39,7 +39,7 @@ const pokemonGenerations = [
     games: ["Diamond", "Pearl", "Platinum", "HeartGold", "SoulSilver"],
     region: "Sinnoh",
     releaseYear: 2006,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/3/38/DPPt_starters_2.png", // Turtwig, Chimchar, Piplup
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/2/27/Sinnoh_first_partners_anime.png/300px-Sinnoh_first_partners_anime.png", // Turtwig, Chimchar, Piplup
     pokemonCount: 107
   },
   {
@@ -48,7 +48,7 @@ const pokemonGenerations = [
     games: ["Black", "White", "Black 2", "White 2"],
     region: "Unova",
     releaseYear: 2010,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/6/65/BW_starters.png", // Snivy, Tepig, Oshawott
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/7/73/Unova_first_partners_anime.png/300px-Unova_first_partners_anime.png", // Snivy, Tepig, Oshawott
     pokemonCount: 156
   },
   {
@@ -57,7 +57,7 @@ const pokemonGenerations = [
     games: ["X", "Y", "Omega Ruby", "Alpha Sapphire"],
     region: "Kalos",
     releaseYear: 2013,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/5/54/XY_starters.png", // Chespin, Fennekin, Froakie
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/b/b6/Kalos_first_partners_anime.png/300px-Kalos_first_partners_anime.png", // Chespin, Fennekin, Froakie
     pokemonCount: 72
   },
   {
