@@ -9,6 +9,7 @@ export const colors = {
   ...Colors.Purple,
   ...Colors.Orange,
   ...Colors.Blue,
+  ...Colors.Indigo,
 };
 
 export const skillColor: { [key: string]: string } = {
@@ -63,6 +64,9 @@ export const skillColor: { [key: string]: string } = {
   "steel-100": "#DCDCF0",
   "steel-200": "#B8B8D0",
   "steel-300": "#787887",
+  "stellar-100": "#A8A8A8",
+  "stellar-200": "#A8A8A8",
+  "stellar-300": "#A8A8A8",
   "fairy-100": "#FFD9DD",
   "fairy-200": "#F0B6BC",
   "fairy-300": "#D87881",

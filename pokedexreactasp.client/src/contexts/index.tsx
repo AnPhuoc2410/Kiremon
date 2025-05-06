@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext } from "react";
 
-import { IPokeSummary, IPokemon } from "../types/pokemon";
+import { IPokeSummary, IPokemon, IPokemonType } from "../types/pokemon";
 import { generatePokeSummary, loadMyPokemonFromLocalStorage } from "../helpers";
 
 interface IGlobalContext {
@@ -11,11 +11,13 @@ interface IGlobalContext {
 interface IState {
   pokeSummary?: IPokeSummary[];
   pokemons?: IPokemon[];
+  pokemonTypes?: IPokemonType[];
 }
 
 const initialState: IState = {
   pokeSummary: generatePokeSummary(loadMyPokemonFromLocalStorage()),
   pokemons: [],
+  pokemonTypes: [],
 };
 
 const GlobalContext = createContext<IGlobalContext>({

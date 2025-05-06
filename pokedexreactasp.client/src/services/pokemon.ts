@@ -123,3 +123,42 @@ export const getRelatedPokemonByGen = async (gen: number | string) => {
     return [];
   }
 };
+
+// Fetch all Pokemon types
+export const getAllPokemonTypes = async () => {
+  try {
+    const response = await axios.get('https://pokeapi.co/api/v2/type');
+
+    // Fetch detailed information for each type including the number of Pokemon
+    const typesWithDetails = await Promise.all(
+      response.data.results
+        // Filter out non-standard types like "unknown" and "shadow"
+        .filter((type: any) => !["unknown", "shadow"].includes(type.name))
+        .map(async (type: any) => {
+          try {
+            const typeDetail = await axios.get(type.url);
+            return {
+              name: type.name,
+              id: typeDetail.data.id,
+              pokemonCount: typeDetail.data.pokemon?.length || 0,
+              damageRelations: typeDetail.data.damage_relations,
+              url: type.url
+            };
+          } catch (error) {
+            console.error(`Error fetching details for ${type.name} type:`, error);
+            return {
+              name: type.name,
+              id: 0,
+              pokemonCount: 0,
+              url: type.url
+            };
+          }
+        })
+    );
+
+    return typesWithDetails;
+  } catch (error) {
+    console.error("Error fetching Pokemon types:", error);
+    return [];
+  }
+};

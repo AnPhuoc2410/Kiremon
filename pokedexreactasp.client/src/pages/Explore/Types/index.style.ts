@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { colors, units } from "../../../components/utils";
+import { keyframes } from "@emotion/react";
 
 export const TypesContainer = styled.section`
   max-width: ${units.screenSize["xl"]};
@@ -15,7 +16,7 @@ export const TypesContainer = styled.section`
 export const TypesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: ${units.spacing.xs};
+  gap: ${units.spacing.lg};
   margin: ${units.spacing.xl} 0;
 `;
 
@@ -39,10 +40,11 @@ export const TypeCard = styled.div<{ typeColor: string }>`
   }
 `;
 
-export const TypeIcon = styled.div`
+export const TypeIcon = styled.div<{ icon: string }>`
   width: 60px;
   height: 60px;
   margin-bottom: ${units.spacing.sm};
+  background-image: url(${props => props.icon});
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -66,17 +68,88 @@ export const PokemonCount = styled.span`
 export const BackButton = styled.button`
   display: inline-flex;
   align-items: center;
-  padding: ${units.spacing.xs} ${units.spacing.xs};
+  padding: ${units.spacing.xs} ${units.spacing.base};
   background-color: ${colors["blue-500"]};
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  margin-top: ${units.spacing.xs};
+  margin-top: ${units.spacing.base};
   transition: background-color 0.2s ease;
 
   &:hover {
     background-color: ${colors["blue-600"]};
+  }
+`;
+
+// Loading animation
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+export const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: ${units.spacing.xl} 0;
+  color: ${colors["gray-600"]};
+`;
+
+export const LoadingSpinner = styled.div`
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: ${colors["blue-500"]};
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: ${spin} 1s linear infinite;
+  margin-bottom: ${units.spacing.base};
+`;
+
+export const ErrorMessage = styled.div`
+  color: ${colors["red-500"]};
+  padding: ${units.spacing.xl} 0;
+  text-align: center;
+`;
+
+export const SelectedTypeHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: ${units.spacing.base};
+`;
+
+export const BackToTypesButton = styled.button`
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: ${units.spacing.xs} ${units.spacing.base};
+  background: none;
+  color: ${colors["blue-500"]};
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: ${units.spacing.base};
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: ${colors["blue-600"]};
+  }
+`;
+
+export const SelectedTypeInfo = styled.div<{ typeColor: string }>`
+  display: flex;
+  align-items: center;
+  padding: ${units.spacing.sm} ${units.spacing.lg};
+  background-color: ${props => props.typeColor};
+  border-radius: 12px;
+  margin-bottom: ${units.spacing.base};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  ${TypeName} {
+    color: white;
+    margin: 0 0 0 ${units.spacing.sm};
   }
 `;
