@@ -18,6 +18,14 @@ export interface IPokeSummary {
   captured: number;
 }
 
+export interface IPokemonType {
+  id: number;
+  name: string;
+  pokemonCount: number;
+  url: string;
+  damageRelations?: any;
+}
+
 /* Poke API response */
 
 export interface IAllPokemonResponse {

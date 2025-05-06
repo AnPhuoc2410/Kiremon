@@ -66,7 +66,7 @@ const pokemonGenerations = [
     games: ["Sun", "Moon", "Ultra Sun", "Ultra Moon", "Let's Go"],
     region: "Alola",
     releaseYear: 2016,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/0/06/SM_starters.png", // Rowlet, Litten, Popplio
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/6/62/Alola_first_partners_anime.png/300px-Alola_first_partners_anime.png", // Rowlet, Litten, Popplio
     pokemonCount: 88
   },
   {
@@ -75,7 +75,7 @@ const pokemonGenerations = [
     games: ["Sword", "Shield", "Brilliant Diamond", "Shining Pearl", "Legends: Arceus"],
     region: "Galar",
     releaseYear: 2019,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/4/4e/SwSh_starters.png", // Grookey, Scorbunny, Sobble
+    starterImageUrl: "https://pm1.aminoapps.com/7120/feb252f9f727aa39c7ac120579f269fb74c1f6cdr1-993-805v2_hq.jpg", // Grookey, Scorbunny, Sobble
     pokemonCount: 89
   },
   {
@@ -84,7 +84,7 @@ const pokemonGenerations = [
     games: ["Scarlet", "Violet", "The Teal Mask", "The Indigo Disk"],
     region: "Paldea",
     releaseYear: 2022,
-    starterImageUrl: "https://archives.bulbagarden.net/media/upload/3/3c/SV_starter_Pokémon.png", // Sprigatito, Fuecoco, Quaxly
+    starterImageUrl: "https://archives.bulbagarden.net/media/upload/thumb/c/c9/Paldea_first_partners_anime.png/375px-Paldea_first_partners_anime.png", // Sprigatito, Fuecoco, Quaxly
     pokemonCount: 103
   }
 ];
