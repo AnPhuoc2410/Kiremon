@@ -255,3 +255,112 @@ export const ErrorWrapper = styled.div`
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;
+
+export const CatchButton = styled.button`
+  background: ${colors.primary[600]};
+  color: white;
+  border: none;
+  padding: ${units.spacing.sm} ${units.spacing.lg};
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: ${units.spacing.base};
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 400px;
+
+  &:before {
+    content: "🔴";
+    margin-right: ${units.spacing.xs};
+    font-size: 1.2rem;
+  }
+
+  &:hover {
+    background: ${colors.primary[700]};
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+`;
+
+export const SectionHeader = styled.div`
+  margin-bottom: ${units.spacing.base};
+`;
+
+export const SectionSubtitle = styled.p`
+  color: ${colors.text.secondary};
+  font-size: 1rem;
+  margin: 0;
+  margin-top: -5px;
+`;
+
+export const ShowMoreButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: ${units.spacing.xl};
+`;
+
+export const ButtonDescription = styled.p`
+  color: ${colors.text.secondary};
+  font-size: 0.9rem;
+  margin: ${units.spacing.xs} 0 0 0;
+  text-align: center;
+`;
+
+export const TypeContainer = styled.div`
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  justify-content: center;
+`;
+
+export const TypeBadge = styled.div<{ type: string }>`
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  text-transform: capitalize;
+  color: white;
+  background-color: ${({ type }) => {
+    switch (type) {
+      case 'normal': return '#A8A77A';
+      case 'fire': return '#EE8130';
+      case 'water': return '#6390F0';
+      case 'electric': return '#F7D02C';
+      case 'grass': return '#7AC74C';
+      case 'ice': return '#96D9D6';
+      case 'fighting': return '#C22E28';
+      case 'poison': return '#A33EA1';
+      case 'ground': return '#E2BF65';
+      case 'flying': return '#A98FF3';
+      case 'psychic': return '#F95587';
+      case 'bug': return '#A6B91A';
+      case 'rock': return '#B6A136';
+      case 'ghost': return '#735797';
+      case 'dragon': return '#6F35FC';
+      case 'dark': return '#705746';
+      case 'steel': return '#B7B7CE';
+      case 'fairy': return '#D685AD';
+      default: return '#777';
+    }
+  }};
+  font-weight: 500;
+`;
+
+export const LoadingMore = styled.div`
+  text-align: center;
+  padding: ${units.spacing.base};
+  margin-top: ${units.spacing.sm};
+
+  p {
+    color: ${colors.text.secondary};
+  }
+`;

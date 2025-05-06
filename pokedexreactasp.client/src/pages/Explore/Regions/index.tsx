@@ -6,7 +6,6 @@ import * as S from "./index.style";
 import { getAllRegions, getRegionDetails, getPokedexDetails } from "../../../services/pokemon";
 import { IRegion, IPokedex } from "../../../types/pokemon";
 
-// Map of region names to image URLs (PokeAPI doesn't provide images)
 const regionImageMap: Record<string, string> = {
   "kanto": "https://archives.bulbagarden.net/media/upload/4/43/HGSS_Kanto.png",
   "johto": "https://archives.bulbagarden.net/media/upload/thumb/6/64/JohtoMap.png/300px-JohtoMap.png",
@@ -17,10 +16,9 @@ const regionImageMap: Record<string, string> = {
   "alola": "https://archives.bulbagarden.net/media/upload/thumb/0/0b/Alola_USUM_artwork.png/300px-Alola_USUM_artwork.png",
   "galar": "https://archives.bulbagarden.net/media/upload/thumb/c/ce/Galar_artwork.png/300px-Galar_artwork.png",
   "paldea": "https://archives.bulbagarden.net/media/upload/f/fd/Paldea_artwork.png",
-  "hisui": "https://archives.bulbagarden.net/media/upload/thumb/9/93/Legends_Hisui.png/300px-Legends_Hisui.png"
+  "hisui": "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-legends/d/df/Home_features_2.jpeg"
 };
 
-// Simple region descriptions (PokeAPI doesn't provide descriptions)
 const regionDescriptionMap: Record<string, string> = {
   "kanto": "The first region in the Pokémon world, home to the original 151 Pokémon",
   "johto": "The second main region, located west of Kanto",
