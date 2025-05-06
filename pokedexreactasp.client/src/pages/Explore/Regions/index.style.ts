@@ -1,86 +1,153 @@
 import styled from "@emotion/styled";
 import { colors, units } from "../../../components/utils";
 
-export const RegionContainer = styled.section`
-  max-width: ${units.screenSize["xl"]};
+export const RegionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${units.spacing.base};
   margin: 0 auto;
-  padding: 10px 16px;
-  text-align: center;
+  max-width: 1200px;
+  min-height: calc(100vh - 60px); /* Account for navbar */
+`;
 
-  @media screen and (min-width: ${units.screenSize["xl"]}) {
-    padding: 10px 0;
+export const BackButton = styled.button`
+  background: ${colors.primary[500]};
+  color: white;
+  border: none;
+  padding: ${units.spacing.xs} ${units.spacing.base};
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: ${units.spacing.xl};
+  align-self: flex-start;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors.primary[600]};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;
 
 export const RegionGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: ${units.spacing.lg};
-  margin: ${units.spacing.xl} 0;
+  grid-template-columns: repeat(1, 1fr);
+  gap: ${units.spacing.xl};
+  width: 100%;
+
+  @media (min-width: ${units.screenSize.sm}) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: ${units.screenSize.lg}) {
+    grid-template-columns: repeat(3, 1fr);
+  }
 `;
 
 export const RegionCard = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
   }
 `;
 
 export const RegionImage = styled.div`
-  height: 160px;
+  width: 100%;
+  height: 180px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  position: relative;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+  }
 `;
 
 export const RegionInfo = styled.div`
-  padding: ${units.spacing.xs};
+  padding: ${units.spacing.base};
 `;
 
 export const RegionName = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: ${units.spacing.xs};
-  color: ${colors["gray-800"]};
+  margin: 0 0 ${units.spacing.xs} 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: ${colors.text.primary};
 `;
 
 export const RegionDescription = styled.p`
-  font-size: 0.875rem;
-  color: ${colors["gray-600"]};
-  margin-bottom: ${units.spacing.xs};
+  margin: 0 0 ${units.spacing.base} 0;
+  font-size: 0.9rem;
+  color: ${colors.text.secondary};
+  line-height: 1.5;
 `;
 
-export const PokemonCount = styled.span`
+export const PokemonCount = styled.div`
   display: inline-block;
-  padding: ${units.spacing.xs} ${units.spacing.sm};
-  background-color: ${colors["yellow-100"]};
-  color: ${colors["yellow-800"]};
-  border-radius: 20px;
-  font-size: 0.75rem;
+  background-color: ${colors.primary[100]};
+  color: ${colors.primary[700]};
   font-weight: 500;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
 `;
 
-export const BackButton = styled.button`
-  display: inline-flex;
+export const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
   align-items: center;
-  padding: ${units.spacing.xs} ${units.spacing.xs};
-  background-color: ${colors["blue-500"]};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: ${units.spacing.xs};
-  transition: background-color 0.2s ease;
+  height: 300px;
+  width: 100%;
 
-  &:hover {
-    background-color: ${colors["blue-600"]};
+  p {
+    font-size: 1.1rem;
+    color: ${colors.text.secondary};
+  }
+`;
+
+export const ErrorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+
+  p {
+    font-size: 1.1rem;
+    color: ${colors.error[500]};
+    margin-bottom: ${units.spacing.base};
+  }
+
+  button {
+    background: ${colors.primary[500]};
+    color: white;
+    border: none;
+    padding: ${units.spacing.xs} ${units.spacing.base};
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;
