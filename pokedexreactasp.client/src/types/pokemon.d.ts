@@ -36,6 +36,46 @@ export interface IAllPokemonResponse {
   results: IPokemon[];
 }
 
+// Generation interfaces
+export interface IGeneration {
+  id: number;
+  name: string;
+  abilities: INameUrlPair[];
+  main_region: INameUrlPair;
+  moves: INameUrlPair[];
+  names: IName[];
+  pokemon_species: INameUrlPair[];
+  types: INameUrlPair[];
+  version_groups: INameUrlPair[];
+}
+
+export interface IGenerationDetail {
+  id: number;
+  name: string;
+  main_region: INameUrlPair;
+  names: IName[];
+  pokemon_species: IPokemonSpeciesDetail[];
+  moves: IMoveDetail[];
+  version_groups: INameUrlPair[];
+}
+
+export interface IPokemonSpeciesDetail {
+  name: string;
+  url: string;
+  id?: number;
+  sprite?: string | null;
+}
+
+export interface IMoveDetail {
+  name: string;
+  id?: number;
+  url: string;
+  type?: string;
+  power?: number;
+  accuracy?: number;
+  pp?: number;
+}
+
 export interface IPokemonDetailResponse {
   id: number;
   name: string;

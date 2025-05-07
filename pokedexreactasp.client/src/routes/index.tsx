@@ -8,6 +8,7 @@ const RegionsExplore = lazy(() => import("../pages/Explore/Regions"));
 const RegionDetail = lazy(() => import("../pages/Explore/Regions/RegionDetail"));
 const TypesExplore = lazy(() => import("../pages/Explore/Types"));
 const GenerationsExplore = lazy(() => import("../pages/Explore/Generations"));
+const GenerationDetail = lazy(() => import("../pages/Explore/GenerationDetail"));
 const Detail = lazy(() => import("../pages/Detail"));
 const WhosThatPokemon = lazy(() => import("../pages/WhosThatPokemon"));
 
@@ -63,6 +64,14 @@ export default function Routes() {
           element={
             <Suspense fallback={<div>Loading...</div>}>
               <GenerationsExplore />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/explore/generations/:genId"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <GenerationDetail />
             </Suspense>
           }
         />

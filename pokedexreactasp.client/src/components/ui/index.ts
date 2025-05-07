@@ -14,3 +14,4 @@ export { default as TypeIcon } from "./Card/TypeIcon";
 export { default as SkeletonCard } from "./Card/SkeletonCard";
 export { default as EvolutionChain } from "./EvolutionChain";
 export { default as RelatedPokemon } from "./RelatedPokemon";
+export { default as GenerationDetail } from "./GenerationDetail";
