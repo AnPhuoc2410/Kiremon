@@ -123,3 +123,11 @@ export const BackButton = styled.button`
     background-color: ${colors["blue-600"]};
   }
 `;
+
+export const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+`;

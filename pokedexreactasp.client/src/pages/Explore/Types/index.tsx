@@ -1,7 +1,7 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Header, Navbar } from "../../../components/ui";
+import { Header, Navbar, Loading } from "../../../components/ui";
 import { getAllPokemonTypes } from "../../../services/pokemon";
 import { colors } from "../../../components/utils";
 import { useGlobalContext } from "../../../contexts";
@@ -28,7 +28,6 @@ import steelIcon from "../../../assets/type-icon/steel.png";
 import stellarIcon from "../../../assets/type-icon/stellar.png";
 import waterIcon from "../../../assets/type-icon/water.png";
 
-// Type color mapping
 const typeColors: Record<string, string> = {
   normal: "#A8A77A",
   fire: "#EE8130",
@@ -51,7 +50,6 @@ const typeColors: Record<string, string> = {
   fairy: "#D685AD"
 };
 
-// Available type icons
 const typeIcons: Record<string, string> = {
   bug: bugIcon,
   dark: darkIcon,
@@ -137,8 +135,7 @@ const TypesExplore = () => {
 
         {isLoading ? (
           <S.LoadingContainer>
-            <S.LoadingSpinner />
-            <p>Loading Pokémon types...</p>
+            <Loading label="Loading Pokémon types..." />
           </S.LoadingContainer>
         ) : error ? (
           <S.ErrorMessage>{error}</S.ErrorMessage>

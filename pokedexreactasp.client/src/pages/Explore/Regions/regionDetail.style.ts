@@ -357,10 +357,56 @@ export const TypeBadge = styled.div<{ type: string }>`
 
 export const LoadingMore = styled.div`
   text-align: center;
-  padding: ${units.spacing.base};
+  padding: ${units.spacing.xl};
   margin-top: ${units.spacing.sm};
+  display: flex;
+  justify-content: center;
+`;
 
-  p {
-    color: ${colors.text.secondary};
+export const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: ${units.spacing.base};
+`;
+
+export const NumberToggle = styled.button`
+  background: ${colors["gray-200"]};
+  color: ${colors.text.secondary};
+  border: 1px solid ${colors["gray-300"]};
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${colors.primary[100]};
+    color: ${colors.primary[700]};
+    border-color: ${colors.primary[300]};
   }
+`;
+
+export const SmallToggle = styled.button`
+  background: ${colors["gray-200"]};
+  color: ${colors.text.secondary};
+  border: 1px solid ${colors["gray-300"]};
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors.primary[100]};
+    color: ${colors.primary[700]};
+    border-color: ${colors.primary[300]};
+  }
+`;
+
+export const LocationIcon = styled.span`
+  margin-right: 6px;
+  font-size: 1rem;
+  display: inline-block;
 `;
