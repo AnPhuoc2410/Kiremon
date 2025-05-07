@@ -14,6 +14,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/7/79/Kanto_Trio_Pok%C3%A9dex_skin_m.png", // Bulbasaur, Charmander, Squirtle
 		pokemonCount: 151,
+		apiId: "generation-i",
 	},
 	{
 		id: 2,
@@ -24,6 +25,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/a/a2/Johto_first_partners_anime.png/241px-Johto_first_partners_anime.png", // Chikorita, Cyndaquil, Totodile
 		pokemonCount: 100,
+		apiId: "generation-ii",
 	},
 	{
 		id: 3,
@@ -34,6 +36,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/8/86/Hoenn_first_partners_anime.png/241px-Hoenn_first_partners_anime.png", // Treecko, Torchic, Mudkip
 		pokemonCount: 135,
+		apiId: "generation-iii",
 	},
 	{
 		id: 4,
@@ -44,6 +47,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/2/27/Sinnoh_first_partners_anime.png/300px-Sinnoh_first_partners_anime.png", // Turtwig, Chimchar, Piplup
 		pokemonCount: 107,
+		apiId: "generation-iv",
 	},
 	{
 		id: 5,
@@ -54,6 +58,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/7/73/Unova_first_partners_anime.png/300px-Unova_first_partners_anime.png", // Snivy, Tepig, Oshawott
 		pokemonCount: 156,
+		apiId: "generation-v",
 	},
 	{
 		id: 6,
@@ -64,6 +69,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/b/b6/Kalos_first_partners_anime.png/300px-Kalos_first_partners_anime.png", // Chespin, Fennekin, Froakie
 		pokemonCount: 72,
+		apiId: "generation-vi",
 	},
 	{
 		id: 7,
@@ -74,6 +80,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/6/62/Alola_first_partners_anime.png/300px-Alola_first_partners_anime.png", // Rowlet, Litten, Popplio
 		pokemonCount: 88,
+		apiId: "generation-vii",
 	},
 	{
 		id: 8,
@@ -90,6 +97,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://pm1.aminoapps.com/7120/feb252f9f727aa39c7ac120579f269fb74c1f6cdr1-993-805v2_hq.jpg", // Grookey, Scorbunny, Sobble
 		pokemonCount: 89,
+		apiId: "generation-viii",
 	},
 	{
 		id: 9,
@@ -100,6 +108,7 @@ const pokemonGenerations = [
 		starterImageUrl:
 			"https://archives.bulbagarden.net/media/upload/thumb/c/c9/Paldea_first_partners_anime.png/375px-Paldea_first_partners_anime.png", // Sprigatito, Fuecoco, Quaxly
 		pokemonCount: 103,
+		apiId: "generation-ix",
 	},
 ];
 
@@ -118,9 +127,9 @@ const GenerationsExplore = () => {
 		}, 1000);
 	}, [navRef]);
 
-	const handleGenerationClick = (genName: string) => {
-		// In a real app, you would navigate to a page showing Pokémon from this generation
-		console.log(`Exploring Pokémon from ${genName}`);
+	const handleGenerationClick = (genId: string) => {
+		// Navigate to the generation detail page
+		navigate(`/explore/generations/${genId}`);
 	};
 
 	return (
@@ -144,7 +153,7 @@ const GenerationsExplore = () => {
 						{pokemonGenerations.map((generation) => (
 							<S.GenerationCard
 								key={generation.id}
-								onClick={() => handleGenerationClick(generation.name)}
+								onClick={() => handleGenerationClick(generation.apiId)}
 							>
 								<S.GenerationBanner imageUrl={generation.starterImageUrl}>
 									<S.GenerationTitle>{generation.name}</S.GenerationTitle>

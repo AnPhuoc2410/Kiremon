@@ -4,7 +4,8 @@ import {
   speciesService,
   typesService,
   regionsService,
-  pokedexService
+  pokedexService,
+  generationsService
 } from '../../services';
 
 // Generic hook for fetching Pokemon data
@@ -165,11 +166,39 @@ export const usePokedexes = () => {
   );
 };
 
-export const usePokedexDetails = (name: string) => {
+export const usePokedexDetails = (pokedexName: string) => {
   return usePokeAPI(
     pokedexService.getPokedexDetails.bind(pokedexService),
-    [name],
-    [name],
+    [pokedexName],
+    [pokedexName],
+    null
+  );
+};
+
+// New generation hooks
+export const useAllGenerations = () => {
+  return usePokeAPI(
+    generationsService.getAllGenerations.bind(generationsService),
+    [],
+    [],
+    []
+  );
+};
+
+export const useGenerationDetails = (idOrName: string | number) => {
+  return usePokeAPI(
+    generationsService.getGenerationDetails.bind(generationsService),
+    [idOrName],
+    [idOrName],
+    null
+  );
+};
+
+export const useGenerationWithDetails = (idOrName: string | number) => {
+  return usePokeAPI(
+    generationsService.getGenerationWithDetails.bind(generationsService),
+    [idOrName],
+    [idOrName],
     null
   );
 };
