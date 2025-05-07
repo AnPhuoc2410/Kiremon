@@ -3,6 +3,7 @@ import { Text } from '../../../components/ui';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import * as T from '../index.style';
 import { RelatedPokemon } from '../../../components/ui';
+import { POKEMON_IMAGE } from '../../../config/api.config';
 import * as S from './AboutTab.style';
 
 interface AboutTabProps {
@@ -71,7 +72,7 @@ const AboutTab: React.FC<AboutTabProps> = ({
             {specialForms.map((form, index) => (
               <S.FormItem key={index}>
                 <LazyLoadImage
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${form.url.split('/').filter(Boolean).pop()}.png`}
+                  src={POKEMON_IMAGE + `${form.url.split('/').filter(Boolean).pop()}.png`}
                   alt={form.name}
                   width={80}
                   height={80}

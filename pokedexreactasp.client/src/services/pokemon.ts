@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { POKEMON_API } from "../config/api.config";
+import { POKEMON_API, buildEndpointUrl } from "../config/api.config";
 import { IAllPokemonResponse, IPokemon } from "../types/pokemon";
 
 // Simple cache implementation
@@ -23,17 +23,12 @@ const getOrSetCache = async <T>(
 ): Promise<T> => {
   const now = Date.now();
 
-  // If cache exists and is not expired, return cached data
   if (cache[key] && now < cache[key].timestamp + cache[key].expiresIn) {
-    console.log(`Cache hit for: ${key}`);
     return cache[key].data;
   }
 
-  // Otherwise, fetch fresh data
-  console.log(`Cache miss for: ${key}`);
   const data = await fetchFn();
 
-  // Store in cache
   cache[key] = {
     data,
     timestamp: now,
@@ -123,7 +118,8 @@ export const getPokemonSpecies = async (nameOrId: string | number) => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${nameOrId}`);
+      const url = buildEndpointUrl("species");
+      const response = await axios.get(url + `/${nameOrId}`);
       return response.data;
     });
   } catch (error) {
@@ -155,7 +151,8 @@ export const getPokemonForms = async (nameOrId: string = "") => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/pokemon-form/${nameOrId}`);
+      const url = buildEndpointUrl("forms");
+      const response = await axios.get(url + `/${nameOrId}`);
       return response.data;
     });
   } catch (error) {
@@ -171,7 +168,8 @@ export const getRelatedPokemonByType = async (type: string) => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
+      const url = buildEndpointUrl("types");
+      const response = await axios.get(url + `/${type}`);
       // Get all Pokemon of the specified type
       const pokemonList = response.data.pokemon || [];
       return pokemonList.map((p: any) => p.pokemon);
@@ -189,7 +187,8 @@ export const getRelatedPokemonByGen = async (gen: number | string) => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/generation/${gen}`);
+      const url = buildEndpointUrl("generations");
+      const response = await axios.get(url + `/${gen}`);
       // Get up to 6 random Pokemon of the same generation
       const pokemonList = response.data.pokemon_species || [];
       const shuffled = [...pokemonList].sort(() => 0.5 - Math.random());
@@ -207,7 +206,7 @@ export const getAllPokemonTypes = async () => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get('https://pokeapi.co/api/v2/type');
+      const response = await axios.get(buildEndpointUrl("types"));
 
       // Fetch detailed information for each type including the number of Pokemon
       const typesWithDetails = await Promise.all(
@@ -255,7 +254,7 @@ export const getAllRegions = async () => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get('https://pokeapi.co/api/v2/region');
+      const response = await axios.get(buildEndpointUrl("regions"));
       return response.data.results;
     }, 24 * 60 * 60 * 1000); // 24 hours cache for regions
   } catch (error) {
@@ -271,7 +270,8 @@ export const getRegionDetails = async (regionName: string) => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/region/${regionName}`);
+      const url = buildEndpointUrl("regions");
+      const response = await axios.get(url + `/${regionName}`);
       return response.data;
     }, 24 * 60 * 60 * 1000); // 24 hours cache for region details
   } catch (error) {
@@ -286,7 +286,7 @@ export const getAllPokedexes = async () => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get('https://pokeapi.co/api/v2/pokedex');
+      const response = await axios.get(buildEndpointUrl("pokedexes"));
       return response.data.results;
     }, 24 * 60 * 60 * 1000); // 24 hours cache for pokedex list
   } catch (error) {
@@ -302,7 +302,8 @@ export const getPokedexDetails = async (pokedexName: string) => {
 
   try {
     return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(`https://pokeapi.co/api/v2/pokedex/${pokedexName}`);
+      const url = buildEndpointUrl("pokedexes");
+      const response = await axios.get(url + `/${pokedexName}`);
       return response.data;
     });
   } catch (error) {
