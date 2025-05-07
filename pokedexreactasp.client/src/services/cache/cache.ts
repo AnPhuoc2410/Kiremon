@@ -29,12 +29,9 @@ export const cacheUtils = {
 
     // Check if cache exists and is still valid
     if (cacheStore[key] && now < cacheStore[key].timestamp + cacheStore[key].expiresIn) {
-      console.log(`Cache hit for: ${key}`);
       return cacheStore[key].data;
     }
 
-    // Fetch fresh data
-    console.log(`Cache miss for: ${key}`);
     const data = await fetchFn();
 
     // Store in cache

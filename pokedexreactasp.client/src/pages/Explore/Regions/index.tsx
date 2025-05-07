@@ -89,8 +89,6 @@ const RegionsExplore = () => {
   }, []);
 
   const handleRegionClick = (regionName: string) => {
-    // Navigate to region detail page - this would be implemented later
-    console.log(`Exploring Pokémon from the ${regionName} region`);
     navigate(`/regions/${regionName}`);
   };
 

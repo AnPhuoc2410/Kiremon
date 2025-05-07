@@ -7,6 +7,7 @@ import { colors } from "../../../components/utils";
 import { useGlobalContext } from "../../../contexts";
 import { IPokemonType } from "../../../types/pokemon";
 import * as S from "./index.style";
+import { POKEMON_IMAGE } from "../../../config/api.config";
 
 import bugIcon from "../../../assets/type-icon/bug.png";
 import darkIcon from "../../../assets/type-icon/dark.png";
@@ -93,14 +94,12 @@ const TypesExplore = () => {
     const fetchTypes = async () => {
       // Check if we already have the types data in our global state
       if (state.pokemonTypes && state.pokemonTypes.length > 0) {
-        console.log("Using cached types data");
         setIsLoading(false);
         return;
       }
 
       try {
         setIsLoading(true);
-        console.log("Fetching fresh types data from API");
         const typesData = await getAllPokemonTypes();
 
         // Sort types alphabetically
@@ -188,15 +187,6 @@ const TypesExplore = () => {
               ← Back to Types
             </S.BackToTypesButton>
 
-            <S.SelectedTypeHeader>
-              <S.SelectedTypeInfo typeColor={selectedTypeColor}>
-                {typeIcons[selectedType] && (
-                  <S.TypeIcon icon={typeIcons[selectedType]} />
-                )}
-                <S.SelectedTypeName>{selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Type Pokémon</S.SelectedTypeName>
-              </S.SelectedTypeInfo>
-            </S.SelectedTypeHeader>
-
             {isLoadingPokemon ? (
               <S.LoadingContainer>
                 <Loading label={`Loading ${selectedType} type Pokémon...`} />
@@ -212,10 +202,10 @@ const TypesExplore = () => {
                       onClick={() => navigate(`/pokemon/${pokemon.name}`)}
                     >
                       <S.PokemonImage
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.url.split('/')[6]}.png`}
+                        src={POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`}
                         alt={pokemon.name}
                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                          e.currentTarget.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.url.split('/')[6]}.png`;
+                          e.currentTarget.src = POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`;
                         }}
                       />
                       <S.PokemonName>

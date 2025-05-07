@@ -335,7 +335,7 @@ const RegionDetail = () => {
                       onClick={() => navigate(`/pokemon/${pokemon.name}`)}
                     >
                       <S.PokemonImage
-                        src={pokemon.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getPokemonId(pokemon.url)}.png`}
+                        src={pokemon.sprite}
                         alt={pokemon.name}
                       />
                       <S.PokemonName>{formatName(pokemon.name)}</S.PokemonName>
