@@ -1,8 +1,6 @@
-// API endpoints configuration
-const BASE_API_URL = import.meta.env.VITE_POKEMON_API || "https://pokeapi.co/api/v2/";
-const POKEMON_IMAGE_URL = import.meta.env.VITE_POKEMON_IMAGE || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
+const BASE_API_URL = import.meta.env.VITE_POKEMON_API;
+const POKEMON_IMAGE_URL = import.meta.env.VITE_POKEMON_IMAGE;
 
-// Ensure the BASE_API_URL ends with a trailing slash
 const normalizeUrl = (url: string): string => {
   return url.endsWith('/') ? url : `${url}/`;
 };
