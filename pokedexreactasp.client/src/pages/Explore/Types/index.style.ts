@@ -2,6 +2,13 @@ import styled from "@emotion/styled";
 import { colors, units } from "../../../components/utils";
 import { keyframes } from "@emotion/react";
 
+// New full-width container for the background color
+export const PageWrapper = styled.div`
+  width: 100%;
+  min-height: 100vh;
+  padding-bottom: 70px; // Account for navbar height
+`;
+
 export const TypesContainer = styled.section`
   max-width: ${units.screenSize["xl"]};
   margin: 0 auto;
