@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Text } from '../../components/ui';
 import Button from '../../components/ui/Button';
-import { getAllPokemon, getDetailPokemon } from '../../services/pokemon';
+import { pokemonService } from '../../services';
 import { IPokemon } from '../../types/pokemon';
 import {
   GameContainer,
@@ -48,14 +48,14 @@ const WhosThatPokemon: React.FC = () => {
 
     try {
       // Get a list of all pokemon
-      const response = await getAllPokemon();
+      const response = await pokemonService.getAllPokemon();
 
       if (response && response.results && response.results.length) {
         const randomIndex = Math.floor(Math.random() * response.results.length);
         const randomPokemon = response.results[randomIndex];
 
         // Get detailed pokemon info
-        const pokemonDetails = await getDetailPokemon(randomPokemon.name);
+        const pokemonDetails = await pokemonService.getPokemonDetail(randomPokemon.name);
 
         if (pokemonDetails && randomPokemon.url) {
           setCurrentPokemon({
