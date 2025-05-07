@@ -7,7 +7,11 @@ import { FormEvent, ChangeEvent, useEffect, useState, createRef, useRef } from "
 
 import { useGlobalContext } from "../../contexts";
 import { generatePokeSummary } from "../../helpers";
-import { IPokemonDetailResponse } from "../../types/pokemon";
+import {
+  IPokemonDetailResponse,
+  IPokemonSpecies,
+  INameUrlPair
+} from "../../types/pokemon";
 import {
   Button,
   Navbar,
@@ -37,8 +41,87 @@ import {
 } from "../../services/pokemon";
 import { skillColor } from "../../components/utils";
 
+// Define interfaces for the component's state
 type TypesPokemon = { type: { name: string } };
 type MovesPokemon = { move: { name: string } };
+
+// Interface for evolution chain items
+interface EvolutionItem {
+  from: {
+    id: number;
+    name: string;
+    sprite: string;
+  };
+  to: {
+    id: number;
+    name: string;
+    sprite: string;
+  };
+  trigger?: {
+    text: string;
+  };
+}
+
+// Interface for related Pokemon
+interface RelatedPokemonItem extends INameUrlPair {
+  id?: number;
+  sprite?: string;
+}
+
+// Interface for special forms
+interface PokemonForm extends INameUrlPair {
+  id?: number;
+  sprite?: string;
+  is_default?: boolean;
+}
+
+// Interface for Pokemon sprites
+interface PokemonSprites {
+  front_default: string;
+  front_shiny?: string;
+  front_female?: string | null;
+  front_shiny_female?: string | null;
+  back_default?: string;
+  back_shiny?: string;
+  back_female?: string | null;
+  back_shiny_female?: string | null;
+  other?: {
+    dream_world?: {
+      front_default: string | null;
+      front_female: string | null;
+    };
+    home?: {
+      front_default: string | null;
+      front_female: string | null;
+      front_shiny: string | null;
+      front_shiny_female: string | null;
+    };
+    "official-artwork"?: {
+      front_default: string;
+      front_shiny: string | null;
+    };
+  };
+  versions?: Record<string, Record<string, {
+    front_default?: string | null;
+    front_female?: string | null;
+    front_shiny?: string | null;
+    front_shiny_female?: string | null;
+    back_default?: string | null;
+    back_female?: string | null;
+    back_shiny?: string | null;
+    back_shiny_female?: string | null;
+    animated?: {
+      front_default: string | null;
+      front_female: string | null;
+      front_shiny: string | null;
+      front_shiny_female: string | null;
+      back_default: string | null;
+      back_female: string | null;
+      back_shiny: string | null;
+      back_shiny_female: string | null;
+    };
+  }>>;
+}
 
 const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: pixelated;
@@ -68,10 +151,10 @@ const DetailPokemon = () => {
   const [stats, setStats] = useState<IPokemonDetailResponse["stats"]>([]);
   const [abilities, setAbilities] = useState<IPokemonDetailResponse["abilities"]>([]);
   const [pokemonId, setPokemonId] = useState<number>(0);
-  const [evolutionChain, setEvolutionChain] = useState<any[]>([]);
-  const [relatedPokemon, setRelatedPokemon] = useState<any[]>([]);
-  const [specialForms, setSpecialForms] = useState<any[]>([]);
-  const [species, setSpecies] = useState<any>(null);
+  const [evolutionChain, setEvolutionChain] = useState<EvolutionItem[]>([]);
+  const [relatedPokemon, setRelatedPokemon] = useState<RelatedPokemonItem[]>([]);
+  const [specialForms, setSpecialForms] = useState<PokemonForm[]>([]);
+  const [species, setSpecies] = useState<IPokemonSpecies | null>(null);
   const [isLoadingEvolution, setIsLoadingEvolution] = useState<boolean>(false);
   const [isLoadingRelated, setIsLoadingRelated] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("about");
@@ -83,7 +166,7 @@ const DetailPokemon = () => {
   const [captureRate, setCaptureRate] = useState<number>(0);
   const [baseHappiness, setBaseHappiness] = useState<number>(0);
   const [flavorText, setFlavorText] = useState<string>("");
-  const [sprites, setSprites] = useState<any>({});
+  const [sprites, setSprites] = useState<PokemonSprites>({front_default: ""});
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
@@ -98,9 +181,9 @@ const DetailPokemon = () => {
   const navRef = createRef<HTMLDivElement>();
 
   // Helper function to process evolution chain data
-  const processEvolutionChain = async (evolutionData: any) => {
+  const processEvolutionChain = async (evolutionData: any): Promise<EvolutionItem[]> => {
     // Process chain data to extract evolution details
-    const processChain = async (chain: any, evolutions: any[] = []) => {
+    const processChain = async (chain: any, evolutions: EvolutionItem[] = []): Promise<EvolutionItem[]> => {
       if (!chain) return evolutions;
 
       const pokemonDetailsFrom = await getDetailPokemon(chain.species.name);

@@ -1,5 +1,5 @@
 import { useState, useEffect, createRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import { Header, Navbar, Loading } from "../../../components/ui";
 import { getAllPokemonTypes, getRelatedPokemonByType } from "../../../services/pokemon";
@@ -75,6 +75,10 @@ const typeIcons: Record<string, string> = {
 
 const TypesExplore = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const typeParam = searchParams.get('type');
+
   const navRef = createRef<HTMLDivElement>();
   const { state, setState } = useGlobalContext();
 
@@ -82,9 +86,11 @@ const TypesExplore = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // New state for showing Pokémon of selected type
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedTypeColor, setSelectedTypeColor] = useState<string>("");
+  // Track selected type from URL parameter
+  const [selectedType, setSelectedType] = useState<string | null>(typeParam);
+  const [selectedTypeColor, setSelectedTypeColor] = useState<string>(
+    typeParam ? typeColors[typeParam] || colors["gray-300"] : ""
+  );
   const [typePokemon, setTypePokemon] = useState<any[]>([]);
   const [isLoadingPokemon, setIsLoadingPokemon] = useState<boolean>(false);
 
@@ -118,9 +124,20 @@ const TypesExplore = () => {
     fetchTypes();
   }, [navRef, state.pokemonTypes, setState]);
 
-  const handleTypeClick = async (typeName: string) => {
-    setSelectedType(typeName);
-    setSelectedTypeColor(typeColors[typeName] || colors["gray-300"]);
+  // Improved effect to properly handle URL parameter changes, including when it becomes null
+  useEffect(() => {
+    if (typeParam) {
+      setSelectedType(typeParam);
+      setSelectedTypeColor(typeColors[typeParam] || colors["gray-300"]);
+      loadTypePokemons(typeParam);
+    } else {
+      // This explicitly handles the case when we navigate back and typeParam becomes null
+      setSelectedType(null);
+      setTypePokemon([]);
+    }
+  }, [typeParam]);
+
+  const loadTypePokemons = async (typeName: string) => {
     setIsLoadingPokemon(true);
 
     try {
@@ -134,7 +151,12 @@ const TypesExplore = () => {
     }
   };
 
+  const handleTypeClick = async (typeName: string) => {
+    setSearchParams({ type: typeName });
+  };
+
   const handleBackToTypes = () => {
+    setSearchParams({});
     setSelectedType(null);
     setTypePokemon([]);
     setError(null);
@@ -145,82 +167,97 @@ const TypesExplore = () => {
 
   return (
     <>
-      <S.TypesContainer style={{ marginBottom: navHeight }}>
-        <Header
-          title="Explore by Type"
-          subtitle="Discover different Pokémon types"
-        />
+      <S.PageWrapper
+        style={selectedType ? { backgroundColor: `${selectedTypeColor}10` } : undefined}
+      >
+        <S.TypesContainer style={{ marginBottom: navHeight }}>
+          <Header
+            title="Explore by Type"
+            subtitle="Discover different Pokémon types"
+          />
 
-        {!selectedType ? (
-          <>
-            <S.BackButton onClick={() => navigate('/pokemons')}>
-              ← Back to Explore
-            </S.BackButton>
+          {!selectedType ? (
+            <>
+              <S.BackButton onClick={() => navigate('/pokemons')}>
+                ← Back to Explore
+              </S.BackButton>
 
-            {isLoading ? (
-              <S.LoadingContainer>
-                <Loading label="Loading Pokémon types..." />
-              </S.LoadingContainer>
-            ) : error ? (
-              <S.ErrorMessage>{error}</S.ErrorMessage>
-            ) : (
-              <S.TypesGrid>
-                {types.map((type: IPokemonType) => (
-                  <S.TypeCard
-                    key={type.id}
-                    typeColor={typeColors[type.name] || colors["gray-300"]}
-                    onClick={() => handleTypeClick(type.name)}
-                  >
-                    {typeIcons[type.name] && (
-                      <S.TypeIcon icon={typeIcons[type.name]} />
-                    )}
-                    <S.TypeName>{type.name.charAt(0).toUpperCase() + type.name.slice(1)}</S.TypeName>
-                    <S.PokemonCount>{type.pokemonCount} Pokémon</S.PokemonCount>
-                  </S.TypeCard>
-                ))}
-              </S.TypesGrid>
-            )}
-          </>
-        ) : (
-          <>
-            <S.BackToTypesButton onClick={handleBackToTypes}>
-              ← Back to Types
-            </S.BackToTypesButton>
-
-            {isLoadingPokemon ? (
-              <S.LoadingContainer>
-                <Loading label={`Loading ${selectedType} type Pokémon...`} />
-              </S.LoadingContainer>
-            ) : error ? (
-              <S.ErrorMessage>{error}</S.ErrorMessage>
-            ) : (
-              <S.PokemonGrid>
-                {typePokemon.length > 0 ? (
-                  typePokemon.map((pokemon, index) => (
-                    <S.PokemonCard
-                      key={index}
-                      onClick={() => navigate(`/pokemon/${pokemon.name}`)}
+              {isLoading ? (
+                <S.LoadingContainer>
+                  <Loading label="Loading Pokémon types..." />
+                </S.LoadingContainer>
+              ) : error ? (
+                <S.ErrorMessage>{error}</S.ErrorMessage>
+              ) : (
+                <S.TypesGrid>
+                  {types.map((type: IPokemonType) => (
+                    <S.TypeCard
+                      key={type.id}
+                      typeColor={typeColors[type.name] || colors["gray-300"]}
+                      onClick={() => handleTypeClick(type.name)}
                     >
-                      <S.PokemonImage
-                        src={POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`}
-                        alt={pokemon.name}
-                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                          e.currentTarget.src = POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`;
-                        }}
-                      />
-                      <S.PokemonName>
-                        {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
-                      </S.PokemonName>
-                    </S.PokemonCard>
-                  ))
-                ) : (
-                  <S.ErrorMessage>No Pokémon found for this type</S.ErrorMessage>
-                )}
-              </S.PokemonGrid>
-            )}
-          </>
-        )}
-      </S.TypesContainer>
+                      {typeIcons[type.name] && (
+                        <S.TypeIcon icon={typeIcons[type.name]} />
+                      )}
+                      <S.TypeName>{type.name.charAt(0).toUpperCase() + type.name.slice(1)}</S.TypeName>
+                      <S.PokemonCount>{type.pokemonCount} Pokémon</S.PokemonCount>
+                    </S.TypeCard>
+                  ))}
+                </S.TypesGrid>
+              )}
+            </>
+          ) : (
+            <>
+              <S.BackToTypesButton onClick={handleBackToTypes}>
+                ← Back to Types
+              </S.BackToTypesButton>
+
+              <S.SelectedTypeName
+                style={{
+                  color: selectedTypeColor,
+                  marginBottom: '20px',
+                  fontSize: '1.5rem',
+                  textShadow: '0px 0px 1px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Type Pokémon
+              </S.SelectedTypeName>
+
+              {isLoadingPokemon ? (
+                <S.LoadingContainer>
+                  <Loading label={`Loading ${selectedType} type Pokémon...`} />
+                </S.LoadingContainer>
+              ) : error ? (
+                <S.ErrorMessage>{error}</S.ErrorMessage>
+              ) : (
+                <S.PokemonGrid>
+                  {typePokemon.length > 0 ? (
+                    typePokemon.map((pokemon, index) => (
+                      <S.PokemonCard
+                        key={index}
+                        onClick={() => navigate(`/pokemon/${pokemon.name}`)}
+                      >
+                        <S.PokemonImage
+                          src={POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`}
+                          alt={pokemon.name}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                            e.currentTarget.src = POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`;
+                          }}
+                        />
+                        <S.PokemonName>
+                          {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+                        </S.PokemonName>
+                      </S.PokemonCard>
+                    ))
+                  ) : (
+                    <S.ErrorMessage>No Pokémon found for this type</S.ErrorMessage>
+                  )}
+                </S.PokemonGrid>
+              )}
+            </>
+          )}
+        </S.TypesContainer>
+      </S.PageWrapper>
 
       <Navbar ref={navRef} />
     </>
