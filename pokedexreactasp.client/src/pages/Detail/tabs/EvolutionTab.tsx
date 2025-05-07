@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, EvolutionChain } from '../../../components/ui';
+import { Text, EvolutionChain, Loading } from '../../../components/ui';
 import * as T from '../index.style';
 import * as S from './EvolutionTab.style';
 
@@ -16,9 +16,9 @@ const EvolutionTab: React.FC<EvolutionTabProps> = ({
     <S.EvolutionContainer>
       {isLoadingEvolution ? (
         <S.LoadingContainer>
-          <T.DescriptionLoadingWrapper>
-            <div>Loading evolution data...</div>
-          </T.DescriptionLoadingWrapper>
+          <T.LoadingWrapper>
+            <Loading label="Loading evolution data..." />
+          </T.LoadingWrapper>
         </S.LoadingContainer>
       ) : evolutionChain.length > 0 ? (
         <EvolutionChain evolutions={evolutionChain} />

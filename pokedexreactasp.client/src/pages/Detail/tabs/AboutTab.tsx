@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text } from '../../../components/ui';
+import { Loading, Text } from '../../../components/ui';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import * as T from '../index.style';
 import { RelatedPokemon } from '../../../components/ui';
@@ -89,9 +89,9 @@ const AboutTab: React.FC<AboutTabProps> = ({
       {(relatedPokemon.length > 0 || isLoadingRelated) && (
         <S.RelatedPokemonSection>
           {isLoadingRelated ? (
-            <T.DescriptionLoadingWrapper>
-              <div>Loading related Pokémon...</div>
-            </T.DescriptionLoadingWrapper>
+            <T.LoadingWrapper>
+            <Loading label="Loading related Pokemon data..." />
+          </T.LoadingWrapper>
           ) : (
             <RelatedPokemon
               pokemonList={relatedPokemon}
@@ -109,9 +109,9 @@ const AboutTab: React.FC<AboutTabProps> = ({
           <Text as="h3">Forms & Variants</Text>
           <S.FormsGrid>
             {isLoadingSprites ? (
-              <T.DescriptionLoadingWrapper>
-                <div>Loading form sprites...</div>
-              </T.DescriptionLoadingWrapper>
+              <T.LoadingWrapper>
+              <Loading label="Loading form sprites..." />
+            </T.LoadingWrapper>
             ) : (
               specialForms.map((form, index) => (
                 <S.FormItem key={index}>
