@@ -147,9 +147,51 @@ export const SelectedTypeInfo = styled.div<{ typeColor: string }>`
   border-radius: 12px;
   margin-bottom: ${units.spacing.base};
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
 
-  ${TypeName} {
-    color: white;
-    margin: 0 0 0 ${units.spacing.sm};
+export const SelectedTypeName = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 0 ${units.spacing.sm};
+`;
+
+// Pokemon grid and card styles
+export const PokemonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: ${units.spacing.xl};
+  margin: ${units.spacing.lg} 0;
+`;
+
+export const PokemonCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: ${units.spacing.xl};
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
+`;
+
+export const PokemonImage = styled.img`
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: ${units.spacing.sm};
+`;
+
+export const PokemonName = styled.h4`
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+  color: ${colors["gray-700"]};
 `;
