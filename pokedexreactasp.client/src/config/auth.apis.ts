@@ -9,7 +9,6 @@ import {
   UpdatePasswordReqBody,
 } from "../types/auth.types";
 import { UserResponse } from "../types/users.type";
-import { ApiResponse } from "./api.config";
 import api from "./axios.config";
 
 export const login = async (
@@ -69,13 +68,13 @@ export const doLogout = async (token: string): Promise<LogoutResponse> => {
   return response.data;
 };
 
-export const doExtractUserFromToken = async (
-  token: string,
-): Promise<ApiResponse<UserResponse>> => {
-  const res = await api.post("/auth/extract-token", {
-    accessToken: token,
+export const doExtractToken = async (token: string): Promise<UserResponse> => {
+  const response = await api.get(`/auth/extract-token`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return res.data;
+  return response.data.data;
 };
 
 export const doSendOTPToExistUser = async (
