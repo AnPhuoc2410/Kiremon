@@ -100,10 +100,9 @@ export const getPokemonForms = async (nameOrId: string = "") => {
 export const getRelatedPokemonByType = async (type: string) => {
   try {
     const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
-    // Get up to 6 random Pokemon of the same type
+    // Get all Pokemon of the specified type
     const pokemonList = response.data.pokemon || [];
-    const shuffled = [...pokemonList].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 6).map((p: any) => p.pokemon);
+    return pokemonList.map((p: any) => p.pokemon);
   } catch (error) {
     console.error("Error fetching related Pokemon:", error);
     return [];
