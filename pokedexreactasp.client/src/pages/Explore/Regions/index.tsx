@@ -1,7 +1,7 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Header, Navbar } from "../../../components/ui";
+import { Header, Navbar, Loading } from "../../../components/ui";
 import * as S from "./index.style";
 import { getAllRegions, getRegionDetails, getPokedexDetails } from "../../../services/pokemon";
 import { IRegion, IPokedex } from "../../../types/pokemon";
@@ -108,7 +108,7 @@ const RegionsExplore = () => {
 
         {loading ? (
           <S.LoadingWrapper>
-            <p>Loading regions data...</p>
+            <Loading label="Loading regions data..." />
           </S.LoadingWrapper>
         ) : error ? (
           <S.ErrorWrapper>
