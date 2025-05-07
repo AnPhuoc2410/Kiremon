@@ -185,6 +185,19 @@ const DescriptionLoadingWrapper = styled("div")({
   },
 });
 
+export const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+
+  p {
+    font-size: 1.1rem;
+    color: ${colors.text.secondary};
+  }
+`;
+
 const ImageLoadingWrapper = styled("div")({
   width: 256,
   height: 256,
