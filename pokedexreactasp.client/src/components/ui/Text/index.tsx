@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { colors, units, textShadow } from "../../utils";
 
 interface ITextProps extends HTMLAttributes<HTMLParagraphElement> {
-  variant?: "default" | "darker" | "outlined" | "error";
+  variant?: "default" | "darker" | "outlined" | "error" | "light";
   size?: "base" | "lg" | "xl";
   as?: "span" | "p" | "h1" | "h2" | "h3" | "h4";
 }
@@ -21,6 +21,13 @@ const getStyle = ({ variant = "default", size = "base", as = "p" }: ITextProps) 
       return {
         as,
         color: colors["gray-900"],
+        textShadow: textShadow[`light-${size}`],
+        fontSize: units.fontSize[size],
+      };
+    case "light":
+      return {
+        as,
+        color: colors["gray-100"],
         textShadow: textShadow[`light-${size}`],
         fontSize: units.fontSize[size],
       };

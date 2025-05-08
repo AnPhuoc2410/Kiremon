@@ -6,7 +6,7 @@ import { Text } from "..";
 import { units, colors } from "../../utils";
 
 interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "light" | "dark" | "sky";
+  variant?: "light" | "dark" | "sky" | "primary" | "secondary";
   size?: "lg" | "xl";
   icon?: string;
 }
@@ -47,6 +47,34 @@ const getStyle = ({ variant = "sky" }: IButtonProps) => {
         },
         "&:active::after": {
           boxShadow: `inset 4px 4px ${colors["red-300"]}`,
+        },
+      };
+    case "primary":
+      return {
+        ...style,
+        background: colors["blue-700"],
+        "&:not(.no-inset)::after": {
+          boxShadow: `inset -4px -4px ${colors["blue-600"]}`,
+        },
+        "&:hover": {
+          backgroundColor: colors["blue-500"],
+        },
+        "&:active::after": {
+          boxShadow: `inset 4px 4px ${colors["blue-300"]}`,
+        },
+      };
+    case "secondary":
+      return {
+        ...style,
+        background: colors["purple-700"],
+        "&:not(.no-inset)::after": {
+          boxShadow: `inset -4px -4px ${colors["purple-600"]}`,
+        },
+        "&:hover": {
+          backgroundColor: colors["purple-500"],
+        },
+        "&:active::after": {
+          boxShadow: `inset 4px 4px ${colors["purple-300"]}`,
         },
       };
     default:
