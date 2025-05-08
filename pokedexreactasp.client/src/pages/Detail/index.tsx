@@ -158,6 +158,9 @@ const DetailPokemon = () => {
   const [isLoadingEvolution, setIsLoadingEvolution] = useState<boolean>(false);
   const [isLoadingRelated, setIsLoadingRelated] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("about");
+  const [heldItems, setHeldItems] = useState<IPokemonDetailResponse["held_items"]>([]);
+  const [audioRef] = useState<HTMLAudioElement | null>(typeof Audio !== 'undefined' ? new Audio() : null);
+  const [isPlayingCry, setIsPlayingCry] = useState<boolean>(false);
 
   // New state variables for additional Pokemon data
   const [height, setHeight] = useState<number>(0);
@@ -278,6 +281,7 @@ const DetailPokemon = () => {
       );
       setStats(response?.stats);
       setAbilities(response?.abilities);
+      setHeldItems(response?.held_items || []);
 
       // Set new properties
       setHeight(response?.height || 0);
@@ -414,6 +418,38 @@ const DetailPokemon = () => {
       localStorage.setItem("pokegames@myPokemon", JSON.stringify(parsed));
       setState({ pokeSummary: generatePokeSummary(parsed) });
       setIsSaved(true);
+    }
+  }
+
+  // Play Pokemon cry sound
+  async function playPokemonCry() {
+    if (!audioRef || !pokemonId) return;
+
+    try {
+      setIsPlayingCry(true);
+      // Use the official PokeAPI cries
+      audioRef.src = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
+
+      audioRef.onended = () => setIsPlayingCry(false);
+      audioRef.onerror = () => {
+        console.error("Error loading Pokemon cry");
+        // Fallback to Pokemon Showdown's audio files if the PokeAPI cry fails to load
+        if (name) {
+          const formattedName = name.toLowerCase().replace('-', '');
+          audioRef.src = `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3`;
+          audioRef.play().catch(() => {
+            console.error("Fallback cry also failed to load");
+            setIsPlayingCry(false);
+          });
+        } else {
+          setIsPlayingCry(false);
+        }
+      };
+
+      await audioRef.play();
+    } catch (error) {
+      console.error("Error playing Pokemon cry:", error);
+      setIsPlayingCry(false);
     }
   }
 
@@ -656,6 +692,54 @@ const DetailPokemon = () => {
                 <Text className="info-value">{baseHappiness}</Text>
               </div>
             </T.InfoSection>
+            <button
+              onClick={playPokemonCry}
+              disabled={isPlayingCry}
+              style={{
+                background: isPlayingCry ? `rgba(255, 255, 255, 0.3)` : 'rgba(255, 255, 255, 0.15)',
+                border: '2px solid rgba(255, 255, 255, 0.7)',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '6px',
+                transition: 'all 0.3s ease',
+                boxShadow: isPlayingCry ? '0 0 8px 2px rgba(255, 255, 255, 0.6)' : 'none',
+                width: '36px',
+                height: '36px'
+              }}
+              title="Play Pokémon cry"
+            >
+              {isPlayingCry ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Pokeball-themed sound icon (playing) */}
+                  <circle cx="12" cy="12" r="10" fill="white" />
+                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white"/>
+                  <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white"/>
+                  <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555">
+                    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                  </path>
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555">
+                    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                  </path>
+                  {/* Sound waves */}
+                  <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+                  </path>
+                </svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Pokeball-themed sound icon (not playing) */}
+                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white"/>
+                  <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white"/>
+                  <path d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555"/>
+                  <path d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555"/>
+                  {/* Sound waves */}
+                  <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )}
+            </button>
           </div>
         </T.PokemonContainer>
 
@@ -702,6 +786,7 @@ const DetailPokemon = () => {
               isLoadingRelated={isLoadingRelated}
               species={species}
               name={name}
+              heldItems={heldItems}
             />
           )}
 
