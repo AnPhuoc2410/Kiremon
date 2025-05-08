@@ -17,6 +17,13 @@ interface AboutTabProps {
   isLoadingRelated: boolean;
   species: any;
   name: string;
+  heldItems?: Array<{
+    item: { name: string; url: string };
+    version_details: Array<{
+      rarity: number;
+      version: { name: string; url: string };
+    }>;
+  }>;
 }
 
 interface FormSprite {
@@ -33,7 +40,8 @@ const AboutTab: React.FC<AboutTabProps> = ({
   specialForms,
   isLoadingRelated,
   species,
-  name
+  name,
+  heldItems
 }) => {
   const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>({});
   const [isLoadingSprites, setIsLoadingSprites] = useState<boolean>(false);
@@ -131,6 +139,27 @@ const AboutTab: React.FC<AboutTabProps> = ({
             )}
           </S.FormsGrid>
         </S.FormsContainer>
+      )}
+
+      {/* Held Items section */}
+      {heldItems && heldItems.length > 0 && (
+        <S.HeldItemsContainer>
+          <Text as="h3">Held Items</Text>
+          <S.ItemsGrid>
+            {heldItems.map((heldItem, index) => (
+              <S.ItemCard key={index}>
+                <S.ItemName>{heldItem.item.name.replace('-', ' ')}</S.ItemName>
+                <S.ItemDetails>
+                  {heldItem.version_details.map((detail, idx) => (
+                    <S.ItemDetail key={idx}>
+                      {detail.version.name}: {detail.rarity}%
+                    </S.ItemDetail>
+                  ))}
+                </S.ItemDetails>
+              </S.ItemCard>
+            ))}
+          </S.ItemsGrid>
+        </S.HeldItemsContainer>
       )}
     </>
   );

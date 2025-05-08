@@ -54,3 +54,47 @@ export const FormName = styled.div`
   font-size: 12px;
   text-transform: capitalize;
 `;
+
+export const HeldItemsContainer = styled.div`
+  margin-bottom: 24px;
+`;
+
+export const ItemsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+`;
+
+export const ItemCard = styled.div`
+  padding: 12px 16px;
+  background-color: #F9FAFB;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  }
+`;
+
+export const ItemName = styled.div`
+  text-transform: capitalize;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #111827;
+`;
+
+export const ItemDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const ItemDetail = styled.div`
+  font-size: 12px;
+  color: #6B7280;
+  text-transform: capitalize;
+`;
