@@ -1,3 +1,23 @@
+// Team interfaces
+export interface ICombatPokemon {
+  id: number;
+  name: string;
+  originalName?: string; // Added to store original species name when using nicknames
+  sprite: string;
+  types: string[];
+  stats: IStat[];
+  abilities: string[];
+  moves: string[];
+  level: number;
+  experience: number;
+}
+
+export interface ICombatTeam {
+  active: ICombatPokemon[];
+  dream: ICombatPokemon[];
+  storage: ICombatPokemon[];
+}
+
 // Basic Pokemon interfaces
 export interface IMyPokemon {
   name: string;

@@ -6,4 +6,5 @@ export { default as TypesExplore } from './Explore/Types';
 export { default as GenerationsExplore } from './Explore/Generations';
 export { default as Detail } from './Detail';
 export { default as WhosThatPokemon } from './WhosThatPokemon';
+export { default as CombatTeam } from './CombatTeam';
 export { default as NotFoundPage } from "./Errors/404";
