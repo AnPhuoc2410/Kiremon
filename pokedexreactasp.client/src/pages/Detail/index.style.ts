@@ -353,6 +353,51 @@ const TabsContainer = styled("div")({
   }
 });
 
+const SoundBar = styled("div")({
+  width: "100%",
+  height: "30px",
+  marginTop: "8px",
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "15px",
+  overflow: "hidden",
+  backgroundColor: "rgba(0, 0, 0, 0.1)",
+  cursor: "pointer",
+
+  ".sound-bar-progress": {
+    position: "absolute",
+    height: "100%",
+    left: 0,
+    top: 0,
+    backgroundColor: "#FF5555",
+    transition: "width 0.1s linear",
+  },
+
+  ".sound-bar-visualization": {
+    display: "flex",
+    alignItems: "center",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+    padding: "0 8px",
+    justifyContent: "space-between",
+  },
+
+  ".sound-bar-line": {
+    width: "3px",
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    height: "40%",
+    borderRadius: "2px",
+    transformOrigin: "center bottom",
+    transition: "transform 0.1s ease",
+  }
+});
+
 export {
   Content,
   Page,
@@ -374,5 +419,6 @@ export {
   InfoSection,
   SpriteGallery,
   FlavorTextBox,
-  TabsContainer
+  TabsContainer,
+  SoundBar
 };
