@@ -161,6 +161,9 @@ const DetailPokemon = () => {
   const [heldItems, setHeldItems] = useState<IPokemonDetailResponse["held_items"]>([]);
   const [audioRef] = useState<HTMLAudioElement | null>(typeof Audio !== 'undefined' ? new Audio() : null);
   const [isPlayingCry, setIsPlayingCry] = useState<boolean>(false);
+  const [audioProgress, setAudioProgress] = useState<number>(0);
+  const [audioDuration, setAudioDuration] = useState<number>(0);
+  const [audioVisualization, setAudioVisualization] = useState<number[]>(Array(10).fill(1));
 
   // New state variables for additional Pokemon data
   const [height, setHeight] = useState<number>(0);
@@ -169,7 +172,7 @@ const DetailPokemon = () => {
   const [captureRate, setCaptureRate] = useState<number>(0);
   const [baseHappiness, setBaseHappiness] = useState<number>(0);
   const [flavorText, setFlavorText] = useState<string>("");
-  const [sprites, setSprites] = useState<PokemonSprites>({front_default: ""});
+  const [sprites, setSprites] = useState<PokemonSprites>({ front_default: "" });
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
@@ -485,6 +488,48 @@ const DetailPokemon = () => {
     });
   }, []);
 
+  // Setup audio event listeners for progress tracking and visualization
+  useEffect(() => {
+    if (!audioRef) return;
+
+    // Track audio time updates to update progress bar
+    const handleTimeUpdate = () => {
+      if (!audioRef.duration) return;
+      setAudioProgress(audioRef.currentTime / audioRef.duration);
+
+      // Generate random visualization data for sound waves
+      const newVisualization = audioVisualization.map(() => {
+        // Create dynamic heights between 0.4 and 1.0 for the sound bars
+        return Math.max(0.4, Math.random() * 0.6 + 0.4);
+      });
+      setAudioVisualization(newVisualization);
+    };
+
+    // Set the duration when audio data is loaded
+    const handleLoadedMetadata = () => {
+      setAudioDuration(audioRef.duration);
+    };
+
+    // Reset states when audio ends
+    const handleEnded = () => {
+      setAudioProgress(0);
+      setIsPlayingCry(false);
+      setAudioVisualization(Array(10).fill(1));
+    };
+
+    // Add event listeners
+    audioRef.addEventListener('timeupdate', handleTimeUpdate);
+    audioRef.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audioRef.addEventListener('ended', handleEnded);
+
+    // Clean up event listeners
+    return () => {
+      audioRef.removeEventListener('timeupdate', handleTimeUpdate);
+      audioRef.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audioRef.removeEventListener('ended', handleEnded);
+    };
+  }, [audioRef, audioVisualization]);
+
   return (
     <>
       <Modal open={isCatching}>
@@ -648,18 +693,18 @@ const DetailPokemon = () => {
                   loading="lazy"
                   className="pokemon-dt"
                 />
-                  {/* Type Icons */}
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                    {types && types.map((type: string, index: number) => (
-                      <TypeIcon key={index} type={type} size="md" />
-                    ))}
-                  </div>
-                  {/* Flavor Text */}
-                  {flavorText && (
-                    <T.FlavorTextBox>
-                      <Text>{flavorText}</Text>
-                    </T.FlavorTextBox>
-                  )}
+                {/* Type Icons */}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                  {types && types.map((type: string, index: number) => (
+                    <TypeIcon key={index} type={type} size="md" />
+                  ))}
+                </div>
+                {/* Flavor Text */}
+                {flavorText && (
+                  <T.FlavorTextBox>
+                    <Text>{flavorText}</Text>
+                  </T.FlavorTextBox>
+                )}
               </div>
             ) : (
               <T.ImageLoadingWrapper>
@@ -686,60 +731,89 @@ const DetailPokemon = () => {
               <div className="info-item">
                 <Text className="info-label">Capture Rate</Text>
                 <Text className="info-value">{captureRate}</Text>
+                <Text style={{ fontSize: '0.75rem', color: '#6B7280' }}>
+                  {Math.round((captureRate / 255) * 100)}% at full health
+                </Text>
               </div>
               <div className="info-item">
                 <Text className="info-label">Base Happiness</Text>
                 <Text className="info-value">{baseHappiness}</Text>
               </div>
             </T.InfoSection>
-            <button
-              onClick={playPokemonCry}
-              disabled={isPlayingCry}
-              style={{
-                background: isPlayingCry ? `rgba(255, 255, 255, 0.3)` : 'rgba(255, 255, 255, 0.15)',
-                border: '2px solid rgba(255, 255, 255, 0.7)',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '6px',
-                transition: 'all 0.3s ease',
-                boxShadow: isPlayingCry ? '0 0 8px 2px rgba(255, 255, 255, 0.6)' : 'none',
-                width: '36px',
-                height: '36px'
-              }}
-              title="Play Pokémon cry"
-            >
-              {isPlayingCry ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Pokeball-themed sound icon (playing) */}
-                  <circle cx="12" cy="12" r="10" fill="white" />
-                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white"/>
-                  <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white"/>
-                  <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555">
-                    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
-                  </path>
-                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555">
-                    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
-                  </path>
-                  {/* Sound waves */}
-                  <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round">
-                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
-                  </path>
-                </svg>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Pokeball-themed sound icon (not playing) */}
-                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white"/>
-                  <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white"/>
-                  <path d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555"/>
-                  <path d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555"/>
-                  {/* Sound waves */}
-                  <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+            <div className="info-item" style={{ alignItems: "center", justifyContent: "left", paddingTop: '12px', display: 'flex', flexDirection: 'row' }}>
+              <button
+                onClick={playPokemonCry}
+                disabled={isPlayingCry}
+                style={{
+                  background: isPlayingCry ? `rgba(255, 255, 255, 0.3)` : 'rgba(255, 255, 255, 0.15)',
+                  border: '2px solid rgba(100, 100, 100, 0.3)',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '12px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: isPlayingCry ? '0 0 8px 2px rgba(255, 255, 255, 0.6)' : 'none',
+                  width: '60px',
+                  height: '60px'
+                }}
+                title="Play Pokémon cry"
+              >
+                {isPlayingCry ? (
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Pokeball-themed sound icon (playing) */}
+                    <circle cx="12" cy="12" r="10" fill="#FF5555" />
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white" />
+                    <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white" />
+                    <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FFF">
+                      <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                    </path>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FFF">
+                      <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                    </path>
+                    {/* Sound waves */}
+                    <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round">
+                      <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+                    </path>
+                  </svg>
+                ) : (
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Pokeball-themed sound icon (not playing) */}
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="#333" />
+                    <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="#333" />
+                    <path d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555" />
+                    <path d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555" />
+                    {/* Sound waves */}
+                    <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="#333" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                )}
+              </button>
+              {/* Sound bar visualization */}
+              {isPlayingCry && (
+                <T.SoundBar>
+                  <div
+                    className="sound-bar-progress"
+                    style={{ width: `${audioProgress * 100}%` }}
+                  />
+                  <div className="sound-bar-visualization">
+                    {audioVisualization.map((height, index) => (
+                      <div
+                        key={index}
+                        className="sound-bar-line"
+                        style={{
+                          transform: `scaleY(${height})`,
+                          backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)'
+                        }}
+                      />
+                    ))}
+                  </div>
+                </T.SoundBar>
               )}
-            </button>
+            </div>
+            <Text style={{ marginLeft: "10px" }} variant="outlined" size="lg">
+              {isPlayingCry ? "Playing..." : "Cry"}
+            </Text>
           </div>
         </T.PokemonContainer>
 

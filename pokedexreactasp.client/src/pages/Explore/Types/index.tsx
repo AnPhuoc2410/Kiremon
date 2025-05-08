@@ -168,7 +168,7 @@ const TypesExplore = () => {
   return (
     <>
       <S.PageWrapper
-        style={selectedType ? { backgroundColor: `${selectedTypeColor}10` } : undefined}
+        style={selectedType ? { backgroundColor: `${selectedTypeColor}20` } : undefined}
       >
         <S.TypesContainer style={{ marginBottom: navHeight }}>
           <Header
