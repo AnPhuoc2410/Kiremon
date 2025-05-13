@@ -4,7 +4,7 @@ import { colors, units, textShadow } from "../../utils";
 
 interface ITextProps extends HTMLAttributes<HTMLParagraphElement> {
   variant?: "default" | "darker" | "outlined" | "error" | "light";
-  size?: "base" | "lg" | "xl";
+  size?: "sm" | "md" | "base" | "lg" | "xl";
   as?: "span" | "p" | "h1" | "h2" | "h3" | "h4";
 }
 

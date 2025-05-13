@@ -35,10 +35,10 @@ const CombatTeam: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showMoveModal, setShowMoveModal] = useState<boolean>(false);
   const [targetTeam, setTargetTeam] = useState<"active" | "dream" | "storage">("active");
-  const [simulationLog, setSimulationLog] = useState<Array<{text: string, type?: 'attack' | 'info' | 'critical' | 'heal'}>>([]);
+  const [simulationLog, setSimulationLog] = useState<Array<{ text: string, type?: 'attack' | 'info' | 'critical' | 'heal' }>>([]);
   const [isBattling, setIsBattling] = useState<boolean>(false);
   const [computerTeam, setComputerTeam] = useState<ICombatPokemon[]>([]);
-  const [myCaughtPokemon, setMyCaughtPokemon] = useState<{name: string, nickname: string, sprite: string}[]>([]);
+  const [myCaughtPokemon, setMyCaughtPokemon] = useState<{ name: string, nickname: string, sprite: string }[]>([]);
   const [availablePokemon, setAvailablePokemon] = useState<ICombatPokemon[]>([]);
   const [isLoadingPokemonDetails, setIsLoadingPokemonDetails] = useState<boolean>(false);
   const [showAddPokemonModal, setShowAddPokemonModal] = useState<boolean>(false);
@@ -172,7 +172,7 @@ const CombatTeam: React.FC = () => {
 
   // Replace the existing loadCaughtPokemonDetailsForStorage with a simplified version that doesn't make API calls
   const loadCaughtPokemonDetailsForStorage = async (
-    caughtPokemon: {name: string, nickname: string, sprite: string}[],
+    caughtPokemon: { name: string, nickname: string, sprite: string }[],
     existingTeamPokemonNames: string[]
   ): Promise<ICombatPokemon[]> => {
     try {
@@ -320,7 +320,7 @@ const CombatTeam: React.FC = () => {
             const statName = stat.stat.name.replace('-', '');
             const baseStat = stat.base_stat || 0;
 
-            switch(statName) {
+            switch (statName) {
               case 'hp':
                 totalStats.hp += baseStat;
                 break;
@@ -400,30 +400,42 @@ const CombatTeam: React.FC = () => {
         sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
         types: ["fire", "flying"],
         stats: [
-          { base_stat: 78, effort: 0, stat: {
-            name: "hp",
-            url: ""
-          } },
-          { base_stat: 84, effort: 0, stat: {
-            name: "attack",
-            url: ""
-          } },
-          { base_stat: 78, effort: 0, stat: {
-            name: "defense",
-            url: ""
-          } },
-          { base_stat: 109, effort: 2, stat: {
-            name: "special-attack",
-            url: ""
-          } },
-          { base_stat: 85, effort: 0, stat: {
-            name: "special-defense",
-            url: ""
-          } },
-          { base_stat: 100, effort: 0, stat: {
-            name: "speed",
-            url: ""
-          } }
+          {
+            base_stat: 78, effort: 0, stat: {
+              name: "hp",
+              url: ""
+            }
+          },
+          {
+            base_stat: 84, effort: 0, stat: {
+              name: "attack",
+              url: ""
+            }
+          },
+          {
+            base_stat: 78, effort: 0, stat: {
+              name: "defense",
+              url: ""
+            }
+          },
+          {
+            base_stat: 109, effort: 2, stat: {
+              name: "special-attack",
+              url: ""
+            }
+          },
+          {
+            base_stat: 85, effort: 0, stat: {
+              name: "special-defense",
+              url: ""
+            }
+          },
+          {
+            base_stat: 100, effort: 0, stat: {
+              name: "speed",
+              url: ""
+            }
+          }
         ],
         abilities: ["blaze", "solar-power"],
         moves: ["flamethrower", "dragon-claw", "air-slash", "earthquake"],
@@ -436,30 +448,42 @@ const CombatTeam: React.FC = () => {
         sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
         types: ["water"],
         stats: [
-          { base_stat: 79, effort: 0, stat: {
-            name: "hp",
-            url: ""
-          } },
-          { base_stat: 83, effort: 0, stat: {
-            name: "attack",
-            url: ""
-          } },
-          { base_stat: 100, effort: 0, stat: {
-            name: "defense",
-            url: ""
-          } },
-          { base_stat: 85, effort: 0, stat: {
-            name: "special-attack",
-            url: ""
-          } },
-          { base_stat: 105, effort: 3, stat: {
-            name: "special-defense",
-            url: ""
-          } },
-          { base_stat: 78, effort: 0, stat: {
-            name: "speed",
-            url: ""
-          } }
+          {
+            base_stat: 79, effort: 0, stat: {
+              name: "hp",
+              url: ""
+            }
+          },
+          {
+            base_stat: 83, effort: 0, stat: {
+              name: "attack",
+              url: ""
+            }
+          },
+          {
+            base_stat: 100, effort: 0, stat: {
+              name: "defense",
+              url: ""
+            }
+          },
+          {
+            base_stat: 85, effort: 0, stat: {
+              name: "special-attack",
+              url: ""
+            }
+          },
+          {
+            base_stat: 105, effort: 3, stat: {
+              name: "special-defense",
+              url: ""
+            }
+          },
+          {
+            base_stat: 78, effort: 0, stat: {
+              name: "speed",
+              url: ""
+            }
+          }
         ],
         abilities: ["torrent", "rain-dish"],
         moves: ["hydro-pump", "ice-beam", "flash-cannon", "dark-pulse"],
@@ -663,16 +687,16 @@ const CombatTeam: React.FC = () => {
         <S.PokemonActions>
           <S.ActionButton onClick={() => openMoveModal(pokemon, source)} title="Move to another team">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 10L12 5L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M7 14L12 19L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 10L12 5L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7 14L12 19L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </S.ActionButton>
           {/* Only show remove button for active and dream teams */}
           {source !== "storage" && (
             <S.ActionButton onClick={() => handleRemovePokemon(pokemon, source)} title="Remove from team">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </S.ActionButton>
           )}
@@ -746,8 +770,8 @@ const CombatTeam: React.FC = () => {
           onClick={() => setShowAddPokemonModal(true)}
         >
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <Text variant="light" style={{ marginTop: '8px' }}>Add Pokémon</Text>
         </S.TeamSlot>
@@ -765,8 +789,8 @@ const CombatTeam: React.FC = () => {
         style={{ minHeight: '150px' }}
       >
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <Text variant="light" style={{ marginTop: '8px' }}>Add Pokémon</Text>
       </S.TeamSlot>
@@ -789,7 +813,7 @@ const CombatTeam: React.FC = () => {
           {isDreamTeam && team.length > 0 && (
             <Button
               variant="primary"
-              size="sm" // Changed from "xl" to "sm" for smaller button
+              size="sm"
               onClick={() => {
                 // Replace active team with dream team if dream team is valid
                 if (team.length <= MAX_TEAM_SIZE) {
@@ -1005,17 +1029,17 @@ const CombatTeam: React.FC = () => {
                 {renderTeamSection("Storage", teamData.storage, "storage")}
 
                 {teamData.active.length === 0 &&
-                 teamData.dream.length === 0 &&
-                 teamData.storage.length === 0 &&
-                 availablePokemon.length === 0 && (
-                  <S.EmptyState>
-                    <Text>You haven't caught any Pokémon yet.</Text>
-                    <Text>Catch Pokémon to build your battle teams!</Text>
-                    <Button onClick={() => navigate("/pokemons")} variant="primary" style={{ marginTop: '1rem' }}>
-                      Explore Pokémon
-                    </Button>
-                  </S.EmptyState>
-                )}
+                  teamData.dream.length === 0 &&
+                  teamData.storage.length === 0 &&
+                  availablePokemon.length === 0 && (
+                    <S.EmptyState>
+                      <Text>You haven't caught any Pokémon yet.</Text>
+                      <Text>Catch Pokémon to build your battle teams!</Text>
+                      <Button onClick={() => navigate("/pokemons")} variant="primary" style={{ marginTop: '1rem' }}>
+                        Explore Pokémon
+                      </Button>
+                    </S.EmptyState>
+                  )}
               </>
             )}
 

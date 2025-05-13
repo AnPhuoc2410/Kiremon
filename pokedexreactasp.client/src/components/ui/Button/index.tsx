@@ -7,7 +7,7 @@ import { units, colors } from "../../utils";
 
 interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "light" | "dark" | "sky" | "primary" | "secondary";
-  size?: "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl";
   icon?: string;
 }
 
@@ -96,18 +96,53 @@ const getStyle = ({ variant = "sky" }: IButtonProps) => {
 
 const PixelatedButton = styled("button")((props: IButtonProps) => getStyle(props));
 
+// Map Button sizes to Text sizes
+const getTextSize = (buttonSize: "sm" | "md" | "lg" | "xl"): "base" | "lg" | "xl" => {
+  switch (buttonSize) {
+    case "sm":
+      return "base";
+    case "md":
+      return "base";
+    case "lg":
+      return "lg";
+    case "xl":
+      return "xl";
+    default:
+      return "base";
+  }
+};
+
+// Get icon size based on button size
+const getIconSize = (buttonSize: "sm" | "md" | "lg" | "xl"): number => {
+  switch (buttonSize) {
+    case "sm":
+      return 12;
+    case "md":
+      return 16;
+    case "lg":
+      return 20;
+    case "xl":
+      return 40;
+    default:
+      return 20;
+  }
+};
+
 const Button: React.FC<IButtonProps> = ({ children, size = "lg", icon, ...props }) => {
+  const textSize = getTextSize(size);
+  const iconSize = getIconSize(size);
+
   return (
     <PixelatedButton className="pxl-border" {...props}>
       {icon && (
         <LazyLoadImage
           src={icon}
           alt="button icon"
-          width={size === "xl" ? 40 : 20}
-          height={size === "xl" ? 40 : 20}
+          width={iconSize}
+          height={iconSize}
         />
       )}
-      <Text variant="outlined" size={size}>
+      <Text variant="outlined" size={textSize}>
         {children}
       </Text>
     </PixelatedButton>
