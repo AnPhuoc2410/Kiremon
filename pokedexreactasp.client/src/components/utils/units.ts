@@ -1,4 +1,6 @@
 const fontSize = {
+  sm: "0.85rem",
+  md: "1rem",
   base: "1.15rem",
   lg: "1.8rem",
   xl: "3.5rem",
@@ -24,6 +26,8 @@ const spacing = {
 };
 
 export const shadowSpacing = {
+  sm: ["0.020rem", "0.035rem", "0.055rem", "0.083rem"],
+  md: ["0.035rem", "0.042rem", "0.066rem", "0.111rem"],
   base: ["0.042rem", "0.055rem", "0.083rem", "0.166rem"],
   lg: ["0.055rem", "0.111rem", "0.166rem", "0.222rem"],
   xl: ["0.111rem", "0.222rem", "0.333rem", "0.444rem"],
