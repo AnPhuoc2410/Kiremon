@@ -82,239 +82,129 @@ const CombatTeam: React.FC = () => {
           }
         }
 
-        // Extract all Pokemon names that are already in teams
-        const allTeamPokemonNames = [
-          ...(parsedTeamData.active || []).map((p: ICombatPokemon) => p.name),
-          ...(parsedTeamData.dream || []).map((p: ICombatPokemon) => p.name),
-          ...(parsedTeamData.storage || []).map((p: ICombatPokemon) => p.name)
-        ];
-        console.log("CombatTeam: Found existing Pokemon in teams:", allTeamPokemonNames);
-
-        // Load caught Pokemon
-        const caughtPokemonData = localStorage.getItem("pokegames@myPokemon");
-        if (caughtPokemonData) {
-          try {
-            console.log("CombatTeam: Retrieved caught Pokemon data from localStorage");
-            const parsedCaughtPokemon = JSON.parse(caughtPokemonData) || [];
-            setMyCaughtPokemon(parsedCaughtPokemon);
-            console.log("CombatTeam: Found", parsedCaughtPokemon.length, "caught Pokemon");
-
-            if (parsedCaughtPokemon.length > 0) {
-              // Load detailed data for caught Pokemon
-              console.log("CombatTeam: Loading details for caught Pokemon...");
-              try {
-                const detailedPokemon = await loadCaughtPokemonDetailsForStorage(
-                  parsedCaughtPokemon,
-                  allTeamPokemonNames
-                );
-                console.log("CombatTeam: Successfully loaded details for", detailedPokemon.length, "Pokemon");
-
-                // Add new Pokemon to storage if they're not in any team yet
-                if (detailedPokemon.length > 0) {
-                  parsedTeamData.storage = [...parsedTeamData.storage, ...detailedPokemon];
-                  console.log("CombatTeam: Added", detailedPokemon.length, "new Pokemon to storage");
-                }
-              } catch (detailsError) {
-                console.error("CombatTeam: Error loading Pokemon details:", detailsError);
-                // Continue with the current team data if loading details fails
-              }
-            }
-          } catch (parseError) {
-            console.error("CombatTeam: Error parsing caught Pokemon data:", parseError);
-            // Continue with the current team data if parsing fails
-          }
-        } else {
-          console.log("CombatTeam: No caught Pokemon data found");
-        }
-
-        // Finally set the team data with any newly added Pokemon
-        console.log("CombatTeam: Setting final team data");
+        // Set team data immediately so UI can render even while loading Pokemon details
         setTeamData(parsedTeamData);
+
+        // Load caught Pokemon in the background
+        loadCaughtPokemon(parsedTeamData);
+
       } catch (error) {
         console.error("CombatTeam: Critical error loading data:", error);
         toast.error("Failed to load your teams. Please try again.");
-      } finally {
-        console.log("CombatTeam: Finished loading data, setting isLoading to false");
-        setIsLoading(false);
+        setIsLoading(false); // Ensure loading state is turned off on error
       }
     };
 
     loadData();
 
+    // Add a safety timeout to ensure loading state doesn't get stuck
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000); // 5 second safety timeout
+
+    return () => clearTimeout(safetyTimer);
     // Empty dependency array means this effect runs only once on mount
   }, []);
 
-  // Load detailed Pokemon data for caught Pokemon
-  const loadCaughtPokemonDetails = async (caughtPokemon: {name: string, nickname: string, sprite: string}[]) => {
+  // New function to load caught Pokemon in the background
+  const loadCaughtPokemon = async (currentTeamData: ICombatTeam) => {
     try {
-      setIsLoadingPokemonDetails(true);
+      // Extract all Pokemon names that are already in teams
+      const allTeamPokemonNames = [
+        ...(currentTeamData.active || []).map((p: ICombatPokemon) => p.name),
+        ...(currentTeamData.dream || []).map((p: ICombatPokemon) => p.name),
+        ...(currentTeamData.storage || []).map((p: ICombatPokemon) => p.name)
+      ];
 
-      // Get all Pokemon that are caught but not in a team yet
-      const existingTeamPokemonNames = getAllTeamPokemonNames();
-      const uniqueCaughtPokemon = caughtPokemon.filter(
-        p => !existingTeamPokemonNames.includes(p.nickname)
-      );
-
-      if (uniqueCaughtPokemon.length === 0) {
-        setAvailablePokemon([]);
-        setIsLoadingPokemonDetails(false);
-        return;
-      }
-
-      // Load detailed data for each Pokemon
-      const detailedPokemonPromises = uniqueCaughtPokemon.map(async (pokemon) => {
+      // Load caught Pokemon
+      const caughtPokemonData = localStorage.getItem("pokegames@myPokemon");
+      if (caughtPokemonData) {
         try {
-          // Get detailed Pokemon data from API
-          const detailResponse = await getDetailPokemon(pokemon.name.toLowerCase());
+          console.log("CombatTeam: Retrieved caught Pokemon data from localStorage");
+          const parsedCaughtPokemon = JSON.parse(caughtPokemonData) || [];
+          setMyCaughtPokemon(parsedCaughtPokemon);
 
-          if (!detailResponse) {
-            // Skip if we couldn't get details
-            return null;
+          if (parsedCaughtPokemon.length > 0) {
+            // Use simplified loading that doesn't make API calls
+            const simplifiedPokemon = parsedCaughtPokemon
+              .filter((pokemon: { nickname: string; }) => !allTeamPokemonNames.includes(pokemon.nickname))
+              .map((pokemon: { nickname: any; name: string; sprite: any; }) => {
+                return {
+                  id: Math.floor(Math.random() * 1000) + 1000, // Generate random ID
+                  name: pokemon.nickname,
+                  originalName: pokemon.name.toUpperCase(),
+                  sprite: pokemon.sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+                  types: [],
+                  stats: [
+                    { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
+                    { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
+                    { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
+                    { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
+                    { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
+                    { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
+                  ],
+                  abilities: [],
+                  moves: [],
+                  level: 50,
+                  experience: 100
+                } as ICombatPokemon;
+              });
+
+            // Add simplified Pokemon to storage
+            if (simplifiedPokemon.length > 0) {
+              setTeamData(prevData => ({
+                ...prevData,
+                storage: [...prevData.storage, ...simplifiedPokemon]
+              }));
+            }
           }
-
-          // Create a combat Pokemon object
-          return {
-            id: detailResponse.id,
-            name: pokemon.nickname, // Use nickname for combat
-            originalName: pokemon.name.toUpperCase(), // Store original name
-            sprite: pokemon.sprite,
-            types: detailResponse.types.map((type: any) => type.type.name),
-            stats: detailResponse.stats,
-            abilities: detailResponse.abilities.map((a: any) => a.ability.name),
-            moves: detailResponse.moves
-              .slice(0, Math.min(4, detailResponse.moves.length))
-              .map((m: any) => m.move.name),
-            level: 50, // Default level for battle
-            experience: detailResponse.base_experience || 100,
-          } as ICombatPokemon;
-        } catch (error) {
-          console.error(`Error loading details for ${pokemon.name}:`, error);
-          return null;
+        } catch (parseError) {
+          console.error("CombatTeam: Error parsing caught Pokemon data:", parseError);
         }
-      });
-
-      // Wait for all Pokemon details to load
-      const detailedPokemon = await Promise.all(detailedPokemonPromises);
-
-      // Filter out null values and explicitly type as ICombatPokemon[]
-      const validPokemon: ICombatPokemon[] = detailedPokemon.filter((p): p is ICombatPokemon => p !== null);
-      setAvailablePokemon(validPokemon);
-
+      }
     } catch (error) {
-      console.error("Error loading Pokemon details:", error);
-      toast.error("Failed to load Pokemon details.");
+      console.error("Error loading caught Pokemon:", error);
     } finally {
-      setIsLoadingPokemonDetails(false);
+      // Ensure loading state is turned off regardless of success/failure
+      setIsLoading(false);
     }
   };
 
-  // Load detailed Pokemon data for caught Pokemon to add to storage
+  // Replace the existing loadCaughtPokemonDetailsForStorage with a simplified version that doesn't make API calls
   const loadCaughtPokemonDetailsForStorage = async (
     caughtPokemon: {name: string, nickname: string, sprite: string}[],
     existingTeamPokemonNames: string[]
   ): Promise<ICombatPokemon[]> => {
     try {
-      console.log("Starting to load details for", caughtPokemon.length, "caught Pokemon");
-
       // Get all Pokemon that are caught but not in a team yet
       const uniqueCaughtPokemon = caughtPokemon.filter(
         p => !existingTeamPokemonNames.includes(p.nickname)
       );
 
-      console.log("Filtered to", uniqueCaughtPokemon.length, "unique Pokemon not in teams");
-
       if (uniqueCaughtPokemon.length === 0) {
         return [];
       }
 
-      // To avoid overwhelming the API, process in batches
-      const results: ICombatPokemon[] = [];
-      const batchSize = 3; // Process 3 at a time to avoid rate limiting
-
-      for (let i = 0; i < uniqueCaughtPokemon.length; i += batchSize) {
-        const batch = uniqueCaughtPokemon.slice(i, i + batchSize);
-        console.log(`Processing batch ${i/batchSize + 1} of ${Math.ceil(uniqueCaughtPokemon.length/batchSize)}`);
-
-        // Process each Pokemon in the batch
-        const batchPromises = batch.map(async (pokemon) => {
-          try {
-            // Use the sprite URL if we already have it rather than hitting the API
-            if (pokemon.sprite) {
-              // Extract the Pokemon ID from the sprite URL if possible
-              const idMatch = pokemon.sprite.match(/\/(\d+)\.png$/);
-              const id = idMatch ? parseInt(idMatch[1]) : 0;
-
-              // Create a minimal combat Pokemon object with the data we have
-              return {
-                id: id,
-                name: pokemon.nickname,
-                originalName: pokemon.name.toUpperCase(),
-                sprite: pokemon.sprite,
-                types: [], // Will be populated from API if available
-                stats: [{ base_stat: 50, effort: 0, stat: { name: "hp", url: "" } }], // Default stats
-                abilities: [],
-                moves: [],
-                level: 50,
-                experience: 100
-              } as ICombatPokemon;
-            }
-
-            // Get detailed Pokemon data from API only if needed
-            console.log(`Fetching details for ${pokemon.name}`);
-            const detailResponse = await getDetailPokemon(pokemon.name.toLowerCase());
-
-            if (!detailResponse) {
-              console.log(`No data returned for ${pokemon.name}`);
-              return null;
-            }
-
-            // Create a combat Pokemon object
-            return {
-              id: detailResponse.id,
-              name: pokemon.nickname,
-              originalName: pokemon.name.toUpperCase(),
-              sprite: pokemon.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${detailResponse.id}.png`,
-              types: detailResponse.types.map((type: any) => type.type.name),
-              stats: detailResponse.stats,
-              abilities: detailResponse.abilities.map((a: any) => a.ability.name),
-              moves: detailResponse.moves
-                .slice(0, Math.min(4, detailResponse.moves.length))
-                .map((m: any) => m.move.name),
-              level: 50,
-              experience: detailResponse.base_experience || 100,
-            } as ICombatPokemon;
-          } catch (error) {
-            console.error(`Error loading details for ${pokemon.name}:`, error);
-            // Return a minimal Pokemon object so the app doesn't break
-            return {
-              id: Math.floor(Math.random() * 1000) + 1000, // Random ID to avoid collisions
-              name: pokemon.nickname,
-              originalName: pokemon.name.toUpperCase(),
-              sprite: pokemon.sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
-              types: [],
-              stats: [{ base_stat: 50, effort: 0, stat: { name: "hp", url: "" } }],
-              abilities: [],
-              moves: [],
-              level: 50,
-              experience: 100
-            } as ICombatPokemon;
-          }
-        });
-
-        // Wait for the current batch to complete
-        const batchResults = await Promise.all(batchPromises);
-
-        // Add valid results to our collection
-        results.push(...batchResults.filter((p): p is ICombatPokemon => p !== null));
-
-        // Small delay between batches to avoid rate limiting
-        if (i + batchSize < uniqueCaughtPokemon.length) {
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-      }
-
-      console.log("Successfully loaded", results.length, "Pokemon details");
-      return results;
+      // Create simplified Pokemon objects without API calls
+      return uniqueCaughtPokemon.map(pokemon => ({
+        id: Math.floor(Math.random() * 1000) + 1000, // Generate random ID
+        name: pokemon.nickname,
+        originalName: pokemon.name.toUpperCase(),
+        sprite: pokemon.sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+        types: [],
+        stats: [
+          { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
+          { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
+          { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
+          { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
+          { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
+          { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
+        ],
+        abilities: [],
+        moves: [],
+        level: 50,
+        experience: 100
+      }));
     } catch (error) {
       console.error("Error loading Pokemon details for storage:", error);
       return []; // Return empty array instead of throwing
@@ -381,19 +271,24 @@ const CombatTeam: React.FC = () => {
     setShowAddPokemonModal(false);
   };
 
-  const handleRemovePokemon = (pokemon: ICombatPokemon) => {
+  const handleRemovePokemon = (pokemon: ICombatPokemon, sourceTeam: "active" | "dream" | "storage") => {
+    // Prevent removing Pokémon from storage
+    if (sourceTeam === "storage") {
+      toast.error("Pokémon in storage can't be removed directly. Move them to your active or dream team first.");
+      return;
+    }
+
     setTeamData(prevTeamData => {
       return {
-        active: prevTeamData.active.filter(p => p.name !== pokemon.name),
-        dream: prevTeamData.dream.filter(p => p.name !== pokemon.name),
-        storage: prevTeamData.storage.filter(p => p.name !== pokemon.name)
+        // Remove from source team
+        active: sourceTeam === "active" ? prevTeamData.active.filter(p => p.name !== pokemon.name) : prevTeamData.active,
+        dream: sourceTeam === "dream" ? prevTeamData.dream.filter(p => p.name !== pokemon.name) : prevTeamData.dream,
+        // Add to storage if not already there
+        storage: [...prevTeamData.storage, pokemon]
       };
     });
 
-    toast.success(`${pokemon.name} was removed from your teams.`);
-
-    // Refresh available Pokemon list
-    loadCaughtPokemonDetails(myCaughtPokemon);
+    toast.success(`${pokemon.name} was moved to storage from your ${sourceTeam} team.`);
   };
 
   const openMoveModal = (pokemon: ICombatPokemon, team: "active" | "dream" | "storage") => {
@@ -404,7 +299,7 @@ const CombatTeam: React.FC = () => {
 
   // Calculate total stats for a team
   const calculateTeamStats = (team: ICombatPokemon[]) => {
-    if (!team.length) return { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0, total: 0 };
+    if (!team || !team.length) return { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0, total: 0 };
 
     // Initial object with all stats at 0
     const totalStats = {
@@ -419,31 +314,37 @@ const CombatTeam: React.FC = () => {
 
     // Sum up all stats from team Pokémon
     team.forEach(pokemon => {
-      pokemon.stats.forEach(stat => {
-        const statName = stat.stat.name.replace('-', '');
-        switch(statName) {
-          case 'hp':
-            totalStats.hp += stat.base_stat;
-            break;
-          case 'attack':
-            totalStats.attack += stat.base_stat;
-            break;
-          case 'defense':
-            totalStats.defense += stat.base_stat;
-            break;
-          case 'specialattack':
-          case 'special-attack':
-            totalStats.specialAttack += stat.base_stat;
-            break;
-          case 'specialdefense':
-          case 'special-defense':
-            totalStats.specialDefense += stat.base_stat;
-            break;
-          case 'speed':
-            totalStats.speed += stat.base_stat;
-            break;
-        }
-      });
+      if (pokemon && pokemon.stats && Array.isArray(pokemon.stats)) {
+        pokemon.stats.forEach(stat => {
+          if (stat && stat.stat && stat.stat.name) {
+            const statName = stat.stat.name.replace('-', '');
+            const baseStat = stat.base_stat || 0;
+
+            switch(statName) {
+              case 'hp':
+                totalStats.hp += baseStat;
+                break;
+              case 'attack':
+                totalStats.attack += baseStat;
+                break;
+              case 'defense':
+                totalStats.defense += baseStat;
+                break;
+              case 'specialattack':
+              case 'special-attack':
+                totalStats.specialAttack += baseStat;
+                break;
+              case 'specialdefense':
+              case 'special-defense':
+                totalStats.specialDefense += baseStat;
+                break;
+              case 'speed':
+                totalStats.speed += baseStat;
+                break;
+            }
+          }
+        });
+      }
     });
 
     // Calculate total of all stats
@@ -673,10 +574,92 @@ const CombatTeam: React.FC = () => {
     return userTeamCopy.length > 0;
   };
 
+  // Define drag types
+  enum DragItemTypes {
+    POKEMON_CARD = 'pokemon_card',
+  }
+
+  // Handle drag start for a Pokemon card
+  const handleDragStart = (event: React.DragEvent<HTMLDivElement>, pokemon: ICombatPokemon, team: "active" | "dream" | "storage") => {
+    // Store Pokemon data and source team in dataTransfer
+    event.dataTransfer.setData("application/json", JSON.stringify({
+      pokemon,
+      sourceTeam: team
+    }));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  // Handle drag over for a team section
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  };
+
+  // Handle drop for a team section
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>, targetTeam: "active" | "dream" | "storage") => {
+    event.preventDefault();
+
+    try {
+      // Get the Pokemon data from dataTransfer
+      const data = JSON.parse(event.dataTransfer.getData("application/json"));
+      const pokemon = data.pokemon as ICombatPokemon;
+      const sourceTeam = data.sourceTeam as "active" | "dream" | "storage";
+
+      // Don't do anything if dropping on the same team
+      if (sourceTeam === targetTeam) return;
+
+      // Check if active team is full
+      if (targetTeam === "active" && teamData.active.length >= MAX_TEAM_SIZE) {
+        toast.error(`Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`);
+        return;
+      }
+
+      // Move the Pokemon from source team to target team
+      setTeamData(prevTeamData => {
+        const updatedTeams = {
+          active: [...prevTeamData.active],
+          dream: [...prevTeamData.dream],
+          storage: [...prevTeamData.storage]
+        };
+
+        // Remove from source team
+        updatedTeams[sourceTeam] = updatedTeams[sourceTeam].filter(p => p.name !== pokemon.name);
+
+        // Add to target team
+        updatedTeams[targetTeam] = [...updatedTeams[targetTeam], pokemon];
+
+        toast.success(`${pokemon.name} moved to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`);
+        return updatedTeams;
+      });
+    } catch (error) {
+      console.error("Error handling drop:", error);
+    }
+  };
+
+  // Check if a Pokemon is available in storage (i.e., caught)
+  const isInStorage = (pokemon: ICombatPokemon): boolean => {
+    // Check if this Pokemon exists in storage by name
+    return teamData.storage.some(p =>
+      p.name === pokemon.name ||
+      (pokemon.originalName && p.originalName === pokemon.originalName) ||
+      (pokemon.originalName && p.name === pokemon.originalName) ||
+      (p.originalName && p.originalName === pokemon.name)
+    );
+  };
+
   // Render a pokemon card
   const renderPokemonCard = (pokemon: ICombatPokemon, source: "active" | "dream" | "storage") => {
+    // Check if this is a Dream Team Pokémon that isn't in storage (wishlist item)
+    const isWishlistPokemon = source === "dream" && !isInStorage(pokemon);
+
     return (
-      <S.TeamSlot key={pokemon.id + pokemon.name}>
+      <S.TeamSlot
+        key={pokemon.id + pokemon.name}
+        draggable
+        onDragStart={(e) => handleDragStart(e, pokemon, source)}
+        className={`pokemon-card ${source}-pokemon ${isWishlistPokemon ? 'wishlist-pokemon' : ''}`}
+        style={isWishlistPokemon ? { filter: 'grayscale(1)', opacity: 0.7 } : {}}
+      >
         <S.PokemonActions>
           <S.ActionButton onClick={() => openMoveModal(pokemon, source)} title="Move to another team">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -684,12 +667,15 @@ const CombatTeam: React.FC = () => {
               <path d="M7 14L12 19L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </S.ActionButton>
-          <S.ActionButton onClick={() => handleRemovePokemon(pokemon)} title="Remove from team">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </S.ActionButton>
+          {/* Only show remove button for active and dream teams */}
+          {source !== "storage" && (
+            <S.ActionButton onClick={() => handleRemovePokemon(pokemon, source)} title="Remove from team">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </S.ActionButton>
+          )}
         </S.PokemonActions>
 
         <LazyLoadImage
@@ -705,6 +691,12 @@ const CombatTeam: React.FC = () => {
           <Text variant="light" style={{ fontSize: '0.75rem' }}>({pokemon.originalName})</Text>
         )}
         <Text variant="light">Lvl. {pokemon.level}</Text>
+
+        {isWishlistPokemon && (
+          <Text variant="light" style={{ fontSize: '0.7rem', color: '#f87171', marginTop: '4px' }}>
+            Not caught yet
+          </Text>
+        )}
 
         <div style={{ display: 'flex', marginTop: '8px', gap: '4px' }}>
           {pokemon.types.map(type => (
@@ -797,13 +789,13 @@ const CombatTeam: React.FC = () => {
           {isDreamTeam && team.length > 0 && (
             <Button
               variant="primary"
-              size="xl"
+              size="sm" // Changed from "xl" to "sm" for smaller button
               onClick={() => {
                 // Replace active team with dream team if dream team is valid
                 if (team.length <= MAX_TEAM_SIZE) {
                   setTeamData(prev => ({
                     ...prev,
-                    active: [...team]
+                    active: [...team.filter(p => isInStorage(p))] // Only activate Pokémon we have
                   }));
                   toast.success("Dream team activated!");
                 } else {
@@ -827,7 +819,11 @@ const CombatTeam: React.FC = () => {
           )}
         </S.TeamHeader>
 
-        <S.PokemonGrid>
+        <S.PokemonGrid
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, teamType)}
+          className={`drop-target ${teamType}-team`}
+        >
           {team.map(pokemon => renderPokemonCard(pokemon, teamType))}
           {emptySlots > 0 && renderEmptySlot(emptySlots, teamType)}
           {teamType === "storage" && renderAddButton()}
