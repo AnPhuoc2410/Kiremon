@@ -12,6 +12,7 @@ const GenerationDetail = lazy(() => import("../pages/Explore/GenerationDetail"))
 const Detail = lazy(() => import("../pages/Detail"));
 const WhosThatPokemon = lazy(() => import("../pages/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("../pages/CombatTeam"));
+const Search = lazy(() => import("../pages/Search"));
 
 export default function Routes() {
   return (
@@ -94,6 +95,15 @@ export default function Routes() {
           }
         />
         <Route path="/games/combat-team" element={<CombatTeam />} />
+        {/* New search route */}
+        <Route
+          path="/search"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Search />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Switch>
     </BrowserRouter>

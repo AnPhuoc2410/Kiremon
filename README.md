@@ -1,4 +1,4 @@
-# PokedexReactASP
+# Kiremon
 
 A full-stack Pokémon application that allows users to explore Pokémon, catch them, manage their collection, battle with other trainers, and enjoy mini-games in a modern web interface.
 
