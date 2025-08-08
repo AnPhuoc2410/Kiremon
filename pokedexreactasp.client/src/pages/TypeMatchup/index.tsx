@@ -4,8 +4,10 @@ import TypeIcon from '../../components/ui/Card/TypeIcon';
 import { typesService } from '../../services';
 import { IPokemonType } from '../../types/pokemon';
 import { GameContainer, GameCard, OptionsGrid, OptionButton, ScoreBar } from './index.style';
+import { sfx } from '../../components/utils/sfx';
 
 const EFFECT_OPTIONS = [2, 1, 0.5, 0];
+const LEADERBOARD_KEY = 'pokegames@typeLeaderboard';
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -17,7 +19,13 @@ const TypeMatchup: React.FC = () => {
   const [correct, setCorrect] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [best, setBest] = useState<number>(() => Number(localStorage.getItem('pokegames@typeBest') || 0));
+  const [timeLeft, setTimeLeft] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const difficulty = (localStorage.getItem('pokegames@difficulty') as 'easy'|'normal'|'hard') || 'normal';
+
+  const questionTime = useMemo(() => difficulty === 'easy' ? 18 : difficulty === 'hard' ? 8 : 12, [difficulty]);
 
   useEffect(() => {
     const load = async () => {
@@ -47,6 +55,7 @@ const TypeMatchup: React.FC = () => {
     setDefending(def);
     setSelected(null);
     setCorrect(null);
+    setTimeLeft(questionTime);
   };
 
   useEffect(() => {
@@ -54,13 +63,55 @@ const TypeMatchup: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
+  useEffect(() => {
+    if (timeLeft <= 0 || selected !== null) return;
+    const id = setTimeout(() => {
+      setTimeLeft(t => t - 1);
+      sfx.tick();
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [timeLeft, selected]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && selected === null && !loading && attacking && defending) {
+      // time out -> wrong
+      handleSelect(-1);
+    }
+  }, [timeLeft]);
+
+  const saveLeaderboard = (newScore: number) => {
+    try {
+      const list = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]') as Array<{score:number, date:string, difficulty:string}>;
+      list.push({ score: newScore, date: new Date().toISOString(), difficulty });
+      list.sort((a,b) => b.score - a.score);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, 20)));
+    } catch {}
+  };
+
   const handleSelect = (opt: number) => {
     if (!attacking || !defending || selected !== null) return;
     const mult = computeMultiplier(attacking, defending.name);
     setSelected(opt);
     setCorrect(mult);
     setTotal(t => t + 1);
-    if (opt === mult) setScore(s => s + 1);
+
+    const isCorrect = opt === mult;
+    if (isCorrect) {
+      sfx.success();
+      setScore(s => s + 1);
+      setStreak(s => s + 1);
+    } else {
+      sfx.fail();
+      setStreak(0);
+      saveLeaderboard(score);
+    }
+
+    // best streak
+    setBest(b => {
+      const nb = Math.max(b, isCorrect ? streak + 1 : 0);
+      localStorage.setItem('pokegames@typeBest', String(nb));
+      return nb;
+    });
   };
 
   return (
@@ -73,7 +124,9 @@ const TypeMatchup: React.FC = () => {
           <>
             <ScoreBar>
               <Text as="span">Score: {score} / {total}</Text>
-              <Button variant="light" onClick={() => { setScore(0); setTotal(0); nextQuestion(); }}>Reset</Button>
+              <Text as="span">Streak: {streak} (Best {best})</Text>
+              <Text as="span">Time: {timeLeft}s</Text>
+              <Button variant="light" onClick={() => { setScore(0); setTotal(0); setStreak(0); nextQuestion(); }}>Reset</Button>
             </ScoreBar>
 
             <div style={{ marginTop: 12 }}>
@@ -90,7 +143,7 @@ const TypeMatchup: React.FC = () => {
               {EFFECT_OPTIONS.map(v => (
                 <OptionButton
                   key={v}
-                  onClick={() => handleSelect(v)}
+                  onClick={() => { sfx.click(); handleSelect(v); }}
                   correct={selected !== null && v === correct}
                   wrong={selected !== null && v === selected && v !== correct}
                   className="pxl-border"
