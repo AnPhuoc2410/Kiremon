@@ -11,7 +11,7 @@ import { getPokemonId } from "../../components/utils";
 import { POKEMON_API } from "../../config/api.config";
 
 import * as T from "./index.style";
-import { getPokemonWithTypes } from "../../services/pokemon";
+import { pokemonService } from "../../services";
 
 const Explore = () => {
   const { state, setState } = useGlobalContext();
@@ -30,8 +30,8 @@ const Explore = () => {
         // Get the current offset from state
         const offset = state?.pokemons?.length || 0;
 
-        // Fetch pokemon with their types
-        const response = await getPokemonWithTypes(20, offset);
+        // Fetch pokemon with their types via service layer
+        const response = await pokemonService.getPokemonWithTypes(20, offset);
 
         if (!response || !response.results) {
           setHasMore(false);
@@ -52,9 +52,9 @@ const Explore = () => {
         });
 
         setState({ pokemons: [...(state.pokemons || []), ...filteredSummary] });
-        // Fix for type issue - ensure response.next is a string or null
-        setNextUrl(response.next || null);
-        setHasMore(!!response.next);
+        const nextStr = (response as any).next as string | null | undefined;
+        setNextUrl(nextStr || null);
+        setHasMore(!!nextStr);
         setIsLoading(false);
       } catch (error) {
         toast.error("Oops! Failed to get Pokémon. Please try again!");

@@ -1,60 +1,27 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { Header, Navbar, PokeCard, SkeletonCard, Text } from "../../components/ui";
 import * as T from "../Explore/index.style";
 import { IPokemon } from "../../types/pokemon";
-import { getAllPokemon } from "../../services/pokemon";
 import { getPokemonId } from "../../components/utils";
-
-// Simple in-module cache so we don't re-download the list for every search
-let ALL_POKEMON_CACHE: IPokemon[] | null = null;
+import { useAllPokemon } from "../../components/hooks/usePokeAPI";
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const q = (searchParams.get("q") || "").trim();
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [allPokemon, setAllPokemon] = useState<IPokemon[]>(ALL_POKEMON_CACHE || []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function ensureAllPokemonLoaded() {
-      if (ALL_POKEMON_CACHE && ALL_POKEMON_CACHE.length) return;
-      try {
-        setLoading(true);
-        // Fetch a large list once and keep it cached in memory
-        const resp = await getAllPokemon(20000, 0);
-        const list = resp?.results || [];
-        if (!cancelled) {
-          ALL_POKEMON_CACHE = list;
-          setAllPokemon(list);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    // Load list only if not already cached
-    if (!ALL_POKEMON_CACHE || !ALL_POKEMON_CACHE.length) {
-      ensureAllPokemonLoaded();
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Fetch a large page once; service layer caches by (limit, offset)
+  const { data, isLoading } = useAllPokemon(2000, 0);
+  const allPokemon = (data?.results as IPokemon[] | undefined) || [];
 
   const filtered = useMemo(() => {
     if (!q) return [] as IPokemon[];
-    const source = ALL_POKEMON_CACHE?.length ? ALL_POKEMON_CACHE : allPokemon;
     const term = q.toLowerCase();
-    return (source || []).filter((p) => p.name.toLowerCase().includes(term));
+    return (allPokemon || []).filter((p) => p.name.toLowerCase().includes(term));
   }, [q, allPokemon]);
 
   const isEmptyQuery = q.length === 0;
-  const isSearching = loading && (!ALL_POKEMON_CACHE || !ALL_POKEMON_CACHE.length);
 
   return (
     <>
@@ -65,7 +32,7 @@ const SearchPage: React.FC = () => {
           <div style={{ padding: 24 }}>
             <Text>Start typing a Pokémon name in the search bar.</Text>
           </div>
-        ) : isSearching ? (
+        ) : isLoading ? (
           <T.Grid>
             {Array(8)
               .fill(0)
