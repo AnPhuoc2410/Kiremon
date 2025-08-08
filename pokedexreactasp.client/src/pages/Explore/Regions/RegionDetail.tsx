@@ -1,10 +1,9 @@
 import { useState, useEffect, createRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header, Navbar, Loading } from "../../../components/ui";
-import { getRegionDetails, getPokedexDetails } from "../../../services/pokemon";
+import { regionsService, pokedexService, pokemonService } from "../../../services";
 import { IRegion, IPokedex, INameUrlPair } from "../../../types/pokemon";
 import * as S from "./regionDetail.style";
-import { getPokemonId } from "../../../components/utils";
 
 // Map of region names to image URLs (PokeAPI doesn't provide images)
 const regionImageMap: Record<string, string> = {
@@ -78,14 +77,13 @@ const RegionDetail = () => {
         entries.map(async (entry) => {
           try {
             const name = entry.pokemon_species.name;
-            // Get Pokémon details
-            const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+            // Get Pokémon details via service layer
+            const pokemonData = await pokemonService.getPokemonDetail(name);
 
-            if (!pokemonResponse.ok) {
+            if (!pokemonData) {
               throw new Error(`Failed to fetch details for ${name}`);
             }
 
-            const pokemonData = await pokemonResponse.json();
             const types = pokemonData.types.map((t: any) => t.type.name);
 
             return {
@@ -129,7 +127,7 @@ const RegionDetail = () => {
 
       try {
         // Get detailed region data
-        const regionData = await getRegionDetails(regionName);
+        const regionData = await regionsService.getRegionDetails(regionName);
 
         if (!regionData) {
           setError(`Could not find details for region: ${regionName}`);
@@ -149,7 +147,7 @@ const RegionDetail = () => {
         // Get pokedex data if available
         if (regionData.pokedexes && regionData.pokedexes.length > 0) {
           const mainPokedex = regionData.pokedexes[0];
-          const pokedexDetails = await getPokedexDetails(mainPokedex.name);
+          const pokedexDetails = await pokedexService.getPokedexDetails(mainPokedex.name);
           setPokedexData(pokedexDetails);
 
           // Load initial batch of Pokemon data

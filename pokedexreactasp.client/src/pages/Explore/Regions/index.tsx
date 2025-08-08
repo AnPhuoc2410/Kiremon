@@ -3,8 +3,15 @@ import { useNavigate } from "react-router-dom";
 
 import { Header, Navbar, Loading } from "../../../components/ui";
 import * as S from "./index.style";
-import { getAllRegions, getRegionDetails, getPokedexDetails } from "../../../services/pokemon";
-import { IRegion, IPokedex } from "../../../types/pokemon";
+import { regionsService, pokedexService } from "../../../services";
+
+type RegionCardData = {
+  id?: number;
+  name: string;
+  image: string;
+  description: string;
+  pokemonCount: number;
+};
 
 const regionImageMap: Record<string, string> = {
   "kanto": "https://archives.bulbagarden.net/media/upload/4/43/HGSS_Kanto.png",
@@ -37,7 +44,7 @@ const RegionsExplore = () => {
   const navRef = createRef<HTMLDivElement>();
   const [navHeight, setNavHeight] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [regions, setRegions] = useState<IRegion[]>([]);
+  const [regions, setRegions] = useState<RegionCardData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,29 +57,31 @@ const RegionsExplore = () => {
         setLoading(true);
         setError(null);
 
-        // Get basic region data
-        const regionsData = await getAllRegions();
+        // Get basic region data via service layer
+        const regionsData = await regionsService.getAllRegions();
 
         // Get detailed info for each region including pokedex info
-        const detailedRegionsPromises = regionsData.map(async (region: { name: string, url: string }) => {
-          const regionDetail = await getRegionDetails(region.name);
+        const detailedRegionsPromises = regionsData.map(async (region: { name: string; url: string }) => {
+          const regionDetail = await regionsService.getRegionDetails(region.name);
           let pokemonCount = 0;
 
           // If there are pokedexes associated with this region, get the pokemon count
-          if (regionDetail?.pokedexes?.length > 0) {
-            const mainPokedex = regionDetail.pokedexes[0]; // Take the first pokedex
-            const pokedexDetail = await getPokedexDetails(mainPokedex.name);
-            pokemonCount = pokedexDetail?.pokemon_entries?.length || 0;
+          const hasPokedexes = !!regionDetail && Array.isArray((regionDetail as any).pokedexes) && (regionDetail as any).pokedexes.length > 0;
+          if (hasPokedexes) {
+            const mainPokedex = (regionDetail as any).pokedexes[0]; // Take the first pokedex
+            const pokedexDetail = await pokedexService.getPokedexDetails(mainPokedex.name);
+            pokemonCount = (pokedexDetail as any)?.pokemon_entries?.length || 0;
           }
 
           // Build the region object with custom image and description
-          return {
-            ...regionDetail,
+          const data: RegionCardData = {
+            id: (regionDetail as any)?.id,
             name: region.name,
-            image: regionImageMap[region.name] || "", // Use our image map
+            image: regionImageMap[region.name] || "",
             description: regionDescriptionMap[region.name] || `The ${region.name} region of the Pokémon world`,
-            pokemonCount
+            pokemonCount,
           };
+          return data;
         });
 
         const detailedRegions = await Promise.all(detailedRegionsPromises);
@@ -116,7 +125,7 @@ const RegionsExplore = () => {
         ) : (
           <S.RegionGrid>
             {regions.map((region) => (
-              <S.RegionCard key={region.id} onClick={() => handleRegionClick(region.name)}>
+              <S.RegionCard key={region.id || region.name} onClick={() => handleRegionClick(region.name)}>
                 <S.RegionImage style={{ backgroundImage: `url(${region.image})` }} />
                 <S.RegionInfo>
                   <S.RegionName>{region.name.charAt(0).toUpperCase() + region.name.slice(1)}</S.RegionName>
