@@ -21,20 +21,20 @@ export const GenerationsGrid = styled.div`
 
 export const GenerationCard = styled.div`
   background-color: white;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
   }
 `;
 
 export const GenerationBanner = styled.div<{ imageUrl: string }>`
-  height: 150px;
+  height: 160px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -46,19 +46,17 @@ export const GenerationBanner = styled.div<{ imageUrl: string }>`
   &::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+    inset: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55));
+    backdrop-filter: blur(1px);
   }
 `;
 
 export const GenerationTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.55rem;
+  font-weight: 800;
   color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
   z-index: 1;
 `;
 
@@ -102,7 +100,7 @@ export const DetailLabel = styled.span`
 `;
 
 export const DetailValue = styled.span`
-  font-weight: 600;
+  font-weight: 700;
   color: ${colors["gray-800"]};
 `;
 
@@ -113,14 +111,15 @@ export const BackButton = styled.button`
   background-color: ${colors["blue-500"]};
   color: white;
   border: none;
-  border-radius: 8px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
   margin-top: ${units.spacing.base};
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
     background-color: ${colors["blue-600"]};
+    transform: translateY(-2px);
   }
 `;
 

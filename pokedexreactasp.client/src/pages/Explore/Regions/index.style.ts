@@ -10,28 +10,23 @@ export const RegionContainer = styled.div`
   min-height: calc(100vh - 60px); /* Account for navbar */
 `;
 
-export const BackButton = styled.button`
-  background: ${colors.primary[500]};
+export const BackButton = styled.button<{ bg?: string; hoverBg?: string }>`
+  background: ${({ bg }) => bg || colors.primary[500]};
   color: white;
   border: none;
   padding: ${units.spacing.xs} ${units.spacing.base};
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   margin-bottom: ${units.spacing.xl};
   align-self: flex-start;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${colors.primary[600]};
+    background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[600]};
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.14);
   }
 `;
 
@@ -54,15 +49,15 @@ export const RegionCard = styled.div`
   display: flex;
   flex-direction: column;
   background-color: white;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
   }
 `;
 
@@ -80,7 +75,7 @@ export const RegionImage = styled.div`
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 40px;
+    height: 50px;
     background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
   }
 `;
@@ -92,25 +87,26 @@ export const RegionInfo = styled.div`
 export const RegionName = styled.h3`
   margin: 0 0 ${units.spacing.xs} 0;
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 800;
   color: ${colors.text.primary};
 `;
 
 export const RegionDescription = styled.p`
   margin: 0 0 ${units.spacing.base} 0;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: ${colors.text.secondary};
-  line-height: 1.5;
+  line-height: 1.6;
 `;
 
-export const PokemonCount = styled.div`
+export const PokemonCount = styled.div<{ bg?: string; text?: string }>`
   display: inline-block;
-  background-color: ${colors.primary[100]};
-  color: ${colors.primary[700]};
-  font-weight: 500;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background-color: ${({ bg }) => bg || colors.primary[100]};
+  color: ${({ text }) => text || colors.primary[700]};
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 `;
 
 export const LoadingWrapper = styled.div`
