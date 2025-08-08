@@ -13,6 +13,7 @@ const Detail = lazy(() => import("../pages/Detail"));
 const WhosThatPokemon = lazy(() => import("../pages/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("../pages/CombatTeam"));
 const Search = lazy(() => import("../pages/Search"));
+const GamesHub = lazy(() => import("../pages/Games"));
 // New games
 const TypeMatchup = lazy(() => import("../pages/TypeMatchup/index.tsx"));
 const CatchChallenge = lazy(() => import("../pages/CatchChallenge/index.tsx"));
@@ -89,6 +90,14 @@ export default function Routes() {
           }
         />
         <Route path="/my-pokemon" element={<MyPokemon />} />
+        <Route
+          path="/games"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <GamesHub />
+            </Suspense>
+          }
+        />
         <Route
           path="/games/whos-that-pokemon"
           element={

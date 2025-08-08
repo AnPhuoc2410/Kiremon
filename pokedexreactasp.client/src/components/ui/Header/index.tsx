@@ -141,6 +141,12 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
             </Link>
           </S.NavItem>
 
+          <S.NavItem>
+            <Link to="/games">
+              <S.NavLink as="span">Games</S.NavLink>
+            </Link>
+          </S.NavItem>
+
           <NavItemWithDropdown title="Mini Games">
             <Link to="/games/combat-team">
               <S.DropdownItem>Combat Team</S.DropdownItem>
