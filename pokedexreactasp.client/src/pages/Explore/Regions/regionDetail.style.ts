@@ -10,8 +10,8 @@ export const Container = styled.div`
   min-height: calc(100vh - 60px); /* Account for navbar */
 `;
 
-export const BackButton = styled.button`
-  background: ${colors.primary[500]};
+export const BackButton = styled.button<{ bg?: string; hoverBg?: string }>`
+  background: ${({ bg }) => bg || colors.primary[500]};
   color: white;
   border: none;
   padding: ${units.spacing.xs} ${units.spacing.base};
@@ -24,7 +24,7 @@ export const BackButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${colors.primary[600]};
+    background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[600]};
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
   }
@@ -44,36 +44,39 @@ export const Content = styled.div`
 
 export const RegionBanner = styled.div`
   width: 100%;
-  height: 240px;
+  height: 280px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   position: relative;
   margin-bottom: ${units.spacing.base};
 `;
 
-export const RegionOverlay = styled.div`
+export const RegionOverlay = styled.div<{ overlayTint?: string }>`
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 40px ${units.spacing.xl} ${units.spacing.xl};
-  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+  padding: 48px ${units.spacing.xl} ${units.spacing.xl};
+  background: ${({ overlayTint }) =>
+    overlayTint
+      ? `linear-gradient(to top, rgba(0,0,0,0.65), ${overlayTint} 40%, rgba(0,0,0,0) 70%)`
+      : `linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0))`};
   color: white;
 `;
 
 export const RegionTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 800;
   margin: 0 0 ${units.spacing.xs} 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.35);
 `;
 
 export const RegionDescription = styled.p`
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
   max-width: 80%;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
@@ -81,9 +84,9 @@ export const RegionDescription = styled.p`
 
 export const InfoContainer = styled.div`
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: ${units.spacing.xl};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
   margin-bottom: ${units.spacing.sm};
 `;
 
@@ -94,7 +97,7 @@ export const Section = styled.div`
 
 export const SectionTitle = styled.h3`
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 ${units.spacing.base} 0;
   color: ${colors.text.primary};
 `;
@@ -132,16 +135,16 @@ export const LocationGrid = styled.div`
 export const LocationCard = styled.div`
   background-color: ${colors["gray-100"]};
   padding: ${units.spacing.sm};
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: ${colors.text.primary};
   transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
     background-color: ${colors.primary[100]};
   }
 `;
@@ -161,32 +164,46 @@ export const PokemonGrid = styled.div`
 `;
 
 export const PokemonCard = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: white;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: ${units.spacing.base} ${units.spacing.xs};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
     background-color: ${colors.primary[100]};
   }
 `;
 
+export const NumberBadge = styled.div<{ bg?: string }>`
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  background: ${({ bg }) => bg || colors.primary[600]};
+  color: white;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+`;
+
 export const PokemonImage = styled.img`
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   margin-bottom: ${units.spacing.xs};
 `;
 
 export const PokemonName = styled.div`
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.95rem;
   text-align: center;
   color: ${colors.text.primary};
 `;
@@ -197,23 +214,23 @@ export const PokemonNumber = styled.div`
   margin-top: 4px;
 `;
 
-export const ShowMoreButton = styled.button`
+export const ShowMoreButton = styled.button<{ bg?: string; hoverBg?: string }>`
   display: block;
   margin: ${units.spacing.xl} auto 0;
-  background: ${colors.primary[500]};
+  background: ${({ bg }) => bg || colors.primary[500]};
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${colors.primary[600]};
+    background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[600]};
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
   }
 `;
 
@@ -256,31 +273,31 @@ export const ErrorWrapper = styled.div`
   }
 `;
 
-export const CatchButton = styled.button`
-  background: ${colors.primary[600]};
+export const CatchButton = styled.button<{ bg?: string; hoverBg?: string }>`
+  background: ${({ bg }) => bg || colors.primary[600]};
   color: white;
   border: none;
   padding: ${units.spacing.sm} ${units.spacing.lg};
   border-radius: 30px;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   cursor: pointer;
   margin-top: ${units.spacing.base};
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  max-width: 400px;
+  max-width: 420px;
 
   &:before {
     content: "🔴";
     margin-right: ${units.spacing.xs};
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   &:hover {
-    background: ${colors.primary[700]};
+    background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[700]};
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   }
@@ -318,9 +335,10 @@ export const ButtonDescription = styled.p`
 
 export const TypeContainer = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 6px;
   margin-top: 6px;
   justify-content: center;
+  flex-wrap: wrap;
 `;
 
 export const TypeBadge = styled.div<{ type: string }>`
@@ -370,10 +388,10 @@ export const HeaderContainer = styled.div`
   margin-bottom: ${units.spacing.base};
 `;
 
-export const NumberToggle = styled.button`
-  background: ${colors["gray-200"]};
-  color: ${colors.text.secondary};
-  border: 1px solid ${colors["gray-300"]};
+export const NumberToggle = styled.button<{ bg?: string; hoverBg?: string; textColor?: string; borderColor?: string }>`
+  background: ${({ bg }) => bg || colors["gray-200"]};
+  color: ${({ textColor }) => textColor || colors.text.secondary};
+  border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -382,16 +400,16 @@ export const NumberToggle = styled.button`
   white-space: nowrap;
 
   &:hover {
-    background: ${colors.primary[100]};
+    background: ${({ hoverBg }) => hoverBg || colors.primary[100]};
     color: ${colors.primary[700]};
     border-color: ${colors.primary[300]};
   }
 `;
 
-export const SmallToggle = styled.button`
-  background: ${colors["gray-200"]};
-  color: ${colors.text.secondary};
-  border: 1px solid ${colors["gray-300"]};
+export const SmallToggle = styled.button<{ bg?: string; hoverBg?: string; textColor?: string; borderColor?: string }>`
+  background: ${({ bg }) => bg || colors["gray-200"]};
+  color: ${({ textColor }) => textColor || colors.text.secondary};
+  border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -399,7 +417,7 @@ export const SmallToggle = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${colors.primary[100]};
+    background: ${({ hoverBg }) => hoverBg || colors.primary[100]};
     color: ${colors.primary[700]};
     border-color: ${colors.primary[300]};
   }
@@ -409,4 +427,58 @@ export const LocationIcon = styled.span`
   margin-right: 6px;
   font-size: 1rem;
   display: inline-block;
+`;
+
+// New: Stats row and pills
+export const StatsRow = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: ${units.spacing.xs};
+`;
+
+export const StatPill = styled.span`
+  background: ${colors["gray-100"]};
+  color: ${colors.text.primary};
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+`;
+
+// New: Hero actions under banner
+export const HeroActions = styled.div`
+  margin-top: ${units.spacing.sm};
+  display: flex;
+  gap: ${units.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+export const PrimaryAction = styled.button<{ bg?: string; hoverBg?: string }>`
+  background: ${({ bg }) => bg || colors.primary[600]};
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[700]}; }
+`;
+
+export const SecondaryAction = styled.button<{ borderColor?: string; textColor?: string; hoverBg?: string }>`
+  background: rgba(255,255,255,0.85);
+  color: ${({ textColor }) => textColor || colors.text.primary};
+  border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); background: ${({ hoverBg }) => hoverBg || 'rgba(255,255,255,0.95)'}; }
 `;

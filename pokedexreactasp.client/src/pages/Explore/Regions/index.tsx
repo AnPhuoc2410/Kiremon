@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Header, Navbar, Loading } from "../../../components/ui";
 import * as S from "./index.style";
 import { regionsService, pokedexService } from "../../../services";
+import { getRegionTheme } from "../../../components/utils/regionThemes";
 
 type RegionCardData = {
   id?: number;
@@ -124,16 +125,19 @@ const RegionsExplore = () => {
           </S.ErrorWrapper>
         ) : (
           <S.RegionGrid>
-            {regions.map((region) => (
-              <S.RegionCard key={region.id || region.name} onClick={() => handleRegionClick(region.name)}>
-                <S.RegionImage style={{ backgroundImage: `url(${region.image})` }} />
-                <S.RegionInfo>
-                  <S.RegionName>{region.name.charAt(0).toUpperCase() + region.name.slice(1)}</S.RegionName>
-                  <S.RegionDescription>{region.description}</S.RegionDescription>
-                  <S.PokemonCount>{region.pokemonCount} Pokémon</S.PokemonCount>
-                </S.RegionInfo>
-              </S.RegionCard>
-            ))}
+            {regions.map((region) => {
+              const theme = getRegionTheme(region.name);
+              return (
+                <S.RegionCard key={region.id || region.name} onClick={() => handleRegionClick(region.name)}>
+                  <S.RegionImage style={{ backgroundImage: `url(${region.image})` }} />
+                  <S.RegionInfo>
+                    <S.RegionName>{region.name.charAt(0).toUpperCase() + region.name.slice(1)}</S.RegionName>
+                    <S.RegionDescription>{region.description}</S.RegionDescription>
+                    <S.PokemonCount bg={theme.overlay} text={theme.primary}>{region.pokemonCount} Pokémon</S.PokemonCount>
+                  </S.RegionInfo>
+                </S.RegionCard>
+              );
+            })}
           </S.RegionGrid>
         )}
       </S.RegionContainer>

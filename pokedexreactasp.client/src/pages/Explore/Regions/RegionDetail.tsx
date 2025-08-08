@@ -1,9 +1,10 @@
-import { useState, useEffect, createRef, useCallback } from "react";
+import { useState, useEffect, createRef, useCallback, useRef, type RefObject } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header, Navbar, Loading } from "../../../components/ui";
 import { regionsService, pokedexService, pokemonService } from "../../../services";
 import { IRegion, IPokedex, INameUrlPair } from "../../../types/pokemon";
 import * as S from "./regionDetail.style";
+import { getRegionTheme } from "../../../components/utils/regionThemes";
 
 // Map of region names to image URLs (PokeAPI doesn't provide images)
 const regionImageMap: Record<string, string> = {
@@ -49,6 +50,13 @@ const RegionDetail = () => {
   const [expandedLocations, setExpandedLocations] = useState<boolean>(false);
   const pokemonPerPage = 20;
   const locationsPerPage = 8; // Show 8 locations initially
+
+  // New refs for smooth scrolling to sections
+  const locationsRef = useRef<HTMLDivElement | null>(null);
+  const pokedexRef = useRef<HTMLDivElement | null>(null);
+
+  // Compute theme from regionName
+  const theme = getRegionTheme(regionName || 'default');
 
   // Reset all state when the region changes
   useEffect(() => {
@@ -214,6 +222,17 @@ const RegionDetail = () => {
     setExpandedLocations(prev => !prev);
   };
 
+  // Smooth scroll helpers
+  const scrollToRef = (ref: RefObject<HTMLElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const goToLocations = () => scrollToRef(locationsRef);
+  const goToPokedexAll = () => {
+    handleShowAllPokemon();
+    scrollToRef(pokedexRef);
+  };
+
   return (
     <>
       <S.Container style={{ marginBottom: navHeight }} onScroll={handleScroll}>
@@ -222,7 +241,7 @@ const RegionDetail = () => {
           subtitle="Explore Pokémon, locations, and more"
         />
 
-        <S.BackButton onClick={() => navigate('/regions')}>
+        <S.BackButton onClick={() => navigate('/regions')} bg={theme.secondary} hoverBg={theme.primary}>
           ← Back to Regions
         </S.BackButton>
 
@@ -238,12 +257,24 @@ const RegionDetail = () => {
         ) : region ? (
           <S.Content>
             <S.RegionBanner style={{ backgroundImage: `url(${region.image})` }}>
-              <S.RegionOverlay>
+              <S.RegionOverlay overlayTint={theme.overlay}>
                 <S.RegionTitle>{formatName(region.name)}</S.RegionTitle>
                 <S.RegionDescription>{region.description}</S.RegionDescription>
 
+                {/* New: quick actions under hero */}
+                <S.HeroActions>
+                  {region.locations && region.locations.length > 0 && (
+                    <S.PrimaryAction onClick={goToLocations} bg={theme.primary} hoverBg={theme.secondary}>Explore Locations</S.PrimaryAction>
+                  )}
+                  {pokedexData && pokedexData.pokemon_entries && (
+                    <S.SecondaryAction borderColor={theme.primary} textColor={theme.primary} hoverBg={theme.overlay}>
+                      View Pokédex ({pokedexData.pokemon_entries.length})
+                    </S.SecondaryAction>
+                  )}
+                </S.HeroActions>
+
                 {pokedexData && pokedexData.pokemon_entries && (
-                  <S.CatchButton onClick={handleShowAllPokemon}>
+                  <S.CatchButton onClick={handleShowAllPokemon} bg={theme.accent} hoverBg={theme.primary}>
                     Discover All {pokedexData.pokemon_entries.length} {formatName(region.name)} Pokémon
                   </S.CatchButton>
                 )}
@@ -268,10 +299,19 @@ const RegionDetail = () => {
                   </S.InfoValue>
                 </S.InfoItem>
               )}
+
+              {/* New: compact stats row */}
+              <S.StatsRow>
+                <S.StatPill>📍 {region.locations?.length || 0} Locations</S.StatPill>
+                <S.StatPill>📘 {pokedexData?.pokemon_entries?.length || 0} Pokémon</S.StatPill>
+                {region.main_generation && (
+                  <S.StatPill>🧬 {formatName(region.main_generation.name)}</S.StatPill>
+                )}
+              </S.StatsRow>
             </S.InfoContainer>
 
             {!showAllPokemon && region.locations && region.locations.length > 0 && (
-              <S.Section>
+              <S.Section ref={locationsRef}>
                 <S.SectionHeader>
                   <S.HeaderContainer>
                     <div>
@@ -310,7 +350,7 @@ const RegionDetail = () => {
             )}
 
             {pokedexData && pokedexData.pokemon_entries && (
-              <S.Section>
+              <S.Section ref={pokedexRef}>
                 <S.SectionHeader>
                   <div>
                     <S.SectionTitle>
@@ -332,6 +372,11 @@ const RegionDetail = () => {
                       key={`${pokemon.name}-${pokemon.entryNumber}`}
                       onClick={() => navigate(`/pokemon/${pokemon.name}`)}
                     >
+                      {/* Themed number badge */}
+                      <S.NumberBadge bg={theme.primary}>
+                        #{String(pokemon.entryNumber).padStart(3, '0')}
+                      </S.NumberBadge>
+
                       <S.PokemonImage
                         src={pokemon.sprite}
                         alt={pokemon.name}
@@ -361,7 +406,7 @@ const RegionDetail = () => {
 
                 {!showAllPokemon && pokedexData.pokemon_entries.length > 12 && (
                   <S.ShowMoreButtonContainer>
-                    <S.ShowMoreButton onClick={handleShowAllPokemon}>
+                    <S.ShowMoreButton onClick={handleShowAllPokemon} bg={theme.primary} hoverBg={theme.secondary}>
                       View All {pokedexData.pokemon_entries.length} Pokémon
                     </S.ShowMoreButton>
                     <S.ButtonDescription>
@@ -372,7 +417,7 @@ const RegionDetail = () => {
 
                 {showAllPokemon && !isLoadingMore && pokemonEntries.length < pokedexData.pokemon_entries.length && (
                   <S.ShowMoreButtonContainer>
-                    <S.ShowMoreButton onClick={loadMorePokemon}>
+                    <S.ShowMoreButton onClick={loadMorePokemon} bg={theme.primary} hoverBg={theme.secondary}>
                       Load More Pokémon
                     </S.ShowMoreButton>
                   </S.ShowMoreButtonContainer>
