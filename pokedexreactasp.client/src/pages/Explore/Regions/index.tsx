@@ -15,16 +15,16 @@ type RegionCardData = {
 };
 
 const regionImageMap: Record<string, string> = {
-  "kanto": "https://archives.bulbagarden.net/media/upload/4/43/HGSS_Kanto.png",
-  "johto": "https://archives.bulbagarden.net/media/upload/thumb/6/64/JohtoMap.png/300px-JohtoMap.png",
-  "hoenn": "https://archives.bulbagarden.net/media/upload/thumb/8/85/Hoenn_ORAS.png/300px-Hoenn_ORAS.png",
-  "sinnoh": "https://archives.bulbagarden.net/media/upload/thumb/0/08/Sinnoh_BDSP_artwork.png/300px-Sinnoh_BDSP_artwork.png",
-  "unova": "https://archives.bulbagarden.net/media/upload/thumb/f/fc/Unova_B2W2_alt.png/300px-Unova_B2W2_alt.png",
-  "kalos": "https://archives.bulbagarden.net/media/upload/thumb/8/8a/Kalos_alt.png/300px-Kalos_alt.png",
-  "alola": "https://archives.bulbagarden.net/media/upload/thumb/0/0b/Alola_USUM_artwork.png/300px-Alola_USUM_artwork.png",
-  "galar": "https://archives.bulbagarden.net/media/upload/thumb/c/ce/Galar_artwork.png/300px-Galar_artwork.png",
-  "paldea": "https://archives.bulbagarden.net/media/upload/f/fd/Paldea_artwork.png",
-  "hisui": "https://oyster.ignimgs.com/mediawiki/apis.ign.com/pokemon-legends/d/df/Home_features_2.jpeg"
+  "kanto": "/region/Kanto_Map.png",
+  "johto": "/region/Johto_Map.png",
+  "hoenn": "/region/Hoenn_Map.png",
+  "sinnoh": "/region/Sinnoh_Map.png",
+  "unova": "/region/Unova_Map.png",
+  "kalos": "/region/Kalos_Map.png",
+  "alola": "/region/Alola_Map.png",
+  "galar": "/region/Galar_Map.png",
+  "paldea": "/region/Paldea_Map.png",
+  "hisui": "/region/Hisui_Map.png"
 };
 
 const regionDescriptionMap: Record<string, string> = {

@@ -1,13 +1,14 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
-import { Header, Navbar, Loading } from "../../../components/ui";
-import { getAllPokemonTypes, getRelatedPokemonByType } from "../../../services/pokemon";
+import { Header, Navbar, Loading, PokeCard } from "../../../components/ui";
+import { getAllPokemonTypes, getRelatedPokemonByType, getDetailPokemon } from "../../../services/pokemon";
 import { colors } from "../../../components/utils";
 import { useGlobalContext } from "../../../contexts";
 import { IPokemonType } from "../../../types/pokemon";
 import * as S from "./index.style";
 import { POKEMON_IMAGE } from "../../../config/api.config";
+import { getPokemonId } from "../../../components/utils";
 
 import bugIcon from "../../../assets/type-icon/bug.png";
 import darkIcon from "../../../assets/type-icon/dark.png";
@@ -141,8 +142,35 @@ const TypesExplore = () => {
     setIsLoadingPokemon(true);
 
     try {
-      const pokemonOfType = await getRelatedPokemonByType(typeName);
-      setTypePokemon(pokemonOfType);
+      const rawList = await getRelatedPokemonByType(typeName);
+
+      // rawList items are typically { name, url } but could be { pokemon: { name, url } }
+      const normalized = rawList.map((p: any) => ({
+        name: p?.name ?? p?.pokemon?.name,
+        url: p?.url ?? p?.pokemon?.url
+      }));
+
+      // Fetch details for each pokemon to obtain types and id
+      const detailed = await Promise.all(
+        normalized.map(async (p: any) => {
+          try {
+            const details = await getDetailPokemon(p.name);
+            const types = details?.types?.map((t: any) => t.type.name) || [];
+            return {
+              name: p.name,
+              url: p.url,
+              id: details?.id || undefined,
+              types,
+              captured: 0
+            };
+          } catch (e) {
+            console.error(`Failed to load details for ${p.name}:`, e);
+            return { name: p.name, url: p.url, types: [], captured: 0 };
+          }
+        })
+      );
+
+      setTypePokemon(detailed);
       setIsLoadingPokemon(false);
     } catch (err) {
       console.error(`Error fetching Pokémon of ${typeName} type:`, err);
@@ -232,23 +260,23 @@ const TypesExplore = () => {
               ) : (
                 <S.PokemonGrid>
                   {typePokemon.length > 0 ? (
-                    typePokemon.map((pokemon, index) => (
-                      <S.PokemonCard
-                        key={index}
-                        onClick={() => navigate(`/pokemon/${pokemon.name}`)}
-                      >
-                        <S.PokemonImage
-                          src={POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`}
-                          alt={pokemon.name}
-                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                            e.currentTarget.src = POKEMON_IMAGE + `${pokemon.url.split('/')[6]}.png`;
-                          }}
+                    typePokemon.map((pokemon, index) => {
+                      // Handle different response shapes: some endpoints return { pokemon: { name, url } }
+                      const name = pokemon?.name ?? pokemon?.pokemon?.name ?? "";
+                      const url = pokemon?.url ?? pokemon?.pokemon?.url ?? "";
+                      const pokemonId = getPokemonId(url) || index;
+
+                      return (
+                        <PokeCard
+                          key={`${name}-${pokemonId}`}
+                          pokemonId={pokemonId}
+                          name={name}
+                          captured={pokemon?.captured ?? 0}
+                          types={pokemon?.types ?? pokemon?.pokemon?.types ?? []}
+                          onClick={() => navigate(`/pokemon/${name}`)}
                         />
-                        <S.PokemonName>
-                          {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
-                        </S.PokemonName>
-                      </S.PokemonCard>
-                    ))
+                      );
+                    })
                   ) : (
                     <S.ErrorMessage>No Pokémon found for this type</S.ErrorMessage>
                   )}
