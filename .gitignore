@@ -87,6 +87,8 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
+appsettings.json
+appsettings.Development.json
 
 # Visual Studio profiler
 *.psess
