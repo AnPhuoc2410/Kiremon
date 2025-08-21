@@ -123,6 +123,9 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
             />
           </S.UserAvatar>
 
+          {/* Temporary Login button (UI only). We'll wire auth/context later. */}
+          <S.LoginButton onClick={() => navigate('/login')}>Login</S.LoginButton>
+
           {actions && actions}
         </S.HeaderActions>
       </S.HeaderMain>
