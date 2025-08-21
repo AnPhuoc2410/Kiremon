@@ -737,3 +737,4 @@ sketch
 secrets/
 .env
 .env.*
+docker-compose.yml
