@@ -50,9 +50,9 @@ namespace PokedexReactASP.Server
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                // Enable HTTPS redirection for development if dev certs are available.
+                app.UseHttpsRedirection();
             }
-
-            app.UseHttpsRedirection();
 
             app.UseCors("AllowReactApp");
 
