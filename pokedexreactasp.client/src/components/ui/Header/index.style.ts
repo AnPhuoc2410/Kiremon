@@ -119,6 +119,23 @@ export const UserAvatar = styled.div`
   }
 `;
 
+export const LoginButton = styled.button`
+  background-color: ${colors['blue-600']};
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background-color: ${colors['blue-700']};
+  }
+`;
+
 export const NavContainer = styled.nav`
   margin-top: 16px;
   border-top: 1px solid ${colors["gray-200"]};

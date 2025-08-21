@@ -9,4 +9,7 @@ export { default as WhosThatPokemon } from './WhosThatPokemon';
 export { default as CombatTeam } from './CombatTeam';
 export { default as TypeMatchup } from './TypeMatchup';
 export { default as CatchChallenge } from './CatchChallenge';
+export { default as Login } from './Auth/Login';
+export { default as Register } from './Auth/Register';
+export { default as Forgot } from './Auth/Forgot';
 export { default as NotFoundPage } from "./Errors/404";

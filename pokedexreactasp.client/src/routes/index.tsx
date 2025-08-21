@@ -17,6 +17,9 @@ const GamesHub = lazy(() => import("../pages/Games"));
 // New games
 const TypeMatchup = lazy(() => import("../pages/TypeMatchup/index.tsx"));
 const CatchChallenge = lazy(() => import("../pages/CatchChallenge/index.tsx"));
+const Login = lazy(() => import('../pages/Auth/Login'));
+const Register = lazy(() => import('../pages/Auth/Register'));
+const Forgot = lazy(() => import('../pages/Auth/Forgot'));
 
 export default function Routes() {
   return (
@@ -130,6 +133,30 @@ export default function Routes() {
           element={
             <Suspense fallback={<div>Loading...</div>}>
               <Search />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Login />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Register />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/forgot"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Forgot />
             </Suspense>
           }
         />
