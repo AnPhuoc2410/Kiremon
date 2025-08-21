@@ -1,0 +1,6 @@
+version: "3.9"
+
+services:
+  pokedex_app:
+    environment:
+      - DOTNET_ENVIRONMENT=Development
