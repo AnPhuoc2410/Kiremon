@@ -1,0 +1,109 @@
+using Microsoft.AspNetCore.Mvc;
+using PokedexReactASP.Application.DTOs.Auth;
+using PokedexReactASP.Application.Interfaces;
+
+namespace PokedexReactASP.Server.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
+        {
+            _authService = authService;
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Check if user already exists
+                if (await _authService.UserExistsAsync(registerDto.Username))
+                {
+                    return BadRequest(new { message = "Username already exists" });
+                }
+
+                if (await _authService.UserExistsAsync(registerDto.Email))
+                {
+                    return BadRequest(new { message = "Email already exists" });
+                }
+
+                var response = await _authService.RegisterAsync(registerDto);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var response = await _authService.LoginAsync(loginDto);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("change-password")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
+                if (result)
+                {
+                    return Ok(new { message = "Password changed successfully" });
+                }
+
+                return BadRequest(new { message = "Failed to change password" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("check-username/{username}")]
+        public async Task<ActionResult<bool>> CheckUsername(string username)
+        {
+            var exists = await _authService.UserExistsAsync(username);
+            return Ok(new { exists });
+        }
+    }
+}

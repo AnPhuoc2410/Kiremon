@@ -1,6 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Mappings;
+using PokedexReactASP.Application.Services;
+using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using PokedexReactASP.Server.Hubs;
+using System.Text;
 
 namespace PokedexReactASP.Server
 {
@@ -10,36 +18,155 @@ namespace PokedexReactASP.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddControllers();
-            
-            // Add Infrastructure services (Entity Framework, MySQL)
-            builder.Services.AddInfrastructure(builder.Configuration);
-            
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
-            // Add CORS
+            builder.Services.AddInfrastructure(builder.Configuration);
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+
+                options.User.RequireUniqueEmail = true;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+            })
+            .AddEntityFrameworkStores<PokemonDbContext>()
+            .AddDefaultTokenProviders();
+
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                // Configure JWT for SignalR
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            // Add Authorization
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile(new MappingProfile());
+            });
+
+            // Add Application Services
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IPokemonService, PokemonService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+
+            // Add SignalR
+            builder.Services.AddSignalR();
+
+            // Add Swagger/OpenAPI
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "Pokedex API", Version = "v1" });
+
+                // Add JWT Authentication to Swagger
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+                    Name = "Authorization",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
+
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowReactApp",
-                    policy =>
-                    {
-                        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
-                              .AllowAnyHeader()
-                              .AllowAnyMethod();
-                    });
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins(
+                        "http://localhost:3000",
+                        "https://localhost:3000",
+                        "http://localhost:5173",
+                        "https://localhost:5173",
+                        "http://localhost:56708",
+                        "https://localhost:56708"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+                });
             });
 
             var app = builder.Build();
 
-            // Ensure database is created and apply any pending migrations
             using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<PokemonDbContext>();
-                context.Database.EnsureCreated();
-                // Optionally apply migrations: context.Database.Migrate();
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<PokemonDbContext>();
+                    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    context.Database.EnsureCreated();
+
+                    SeedRoles(roleManager).Wait();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+                }
             }
 
             app.UseDefaultFiles();
@@ -50,19 +177,35 @@ namespace PokedexReactASP.Server
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                // Enable HTTPS redirection for development if dev certs are available.
-                app.UseHttpsRedirection();
             }
+
+            app.UseHttpsRedirection();
 
             app.UseCors("AllowReactApp");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
 
+            app.MapHub<PokemonHub>("/hubs/pokemon");
+
             app.MapFallbackToFile("/index.html");
 
             app.Run();
+        }
+
+        private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+        {
+            string[] roles = { "Admin", "User" };
+
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
         }
     }
 }
