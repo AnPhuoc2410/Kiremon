@@ -17,7 +17,8 @@ namespace PokedexReactASP.Application.Interfaces
 
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Pokemon> Pokemon { get; }
+        // Removed: Pokemon repository - Pokemon data comes from PokeAPI
+        // IRepository<Pokemon> Pokemon { get; }
         IRepository<UserPokemon> UserPokemon { get; }
         Task<int> SaveChangesAsync();
     }

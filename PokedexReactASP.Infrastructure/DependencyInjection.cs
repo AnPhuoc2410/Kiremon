@@ -13,28 +13,23 @@ namespace PokedexReactASP.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Get PostgreSQL connection string
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            // Add DbContext with PostgreSQL
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("DefaultConnection is not configured.");
+            }
+
             services.AddDbContext<PokemonDbContext>(options =>
             {
-                options.UseNpgsql(connectionString,
-                    npgsqlOptions =>
-                    {
-                        npgsqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 3,
-                            maxRetryDelay: TimeSpan.FromSeconds(10),
-                            errorNumbersToAdd: null);
-
-                        npgsqlOptions.CommandTimeout(30);
-                    });
+                options.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);
+                    npgsqlOptions.CommandTimeout(30);
+                });
             });
 
-            // Add Repository and UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            
-            // Add Token Service
             services.AddScoped<ITokenService, TokenService>();
 
             return services;

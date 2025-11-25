@@ -7,7 +7,8 @@ namespace PokedexReactASP.Infrastructure.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly PokemonDbContext _context;
-        private IRepository<Pokemon>? _pokemonRepository;
+        // Removed: Pokemon repository - Pokemon data comes from PokeAPI
+        // private IRepository<Pokemon>? _pokemonRepository;
         private IRepository<UserPokemon>? _userPokemonRepository;
 
         public UnitOfWork(PokemonDbContext context)
@@ -15,13 +16,14 @@ namespace PokedexReactASP.Infrastructure.Repositories
             _context = context;
         }
 
-        public IRepository<Pokemon> Pokemon
-        {
-            get
-            {
-                return _pokemonRepository ??= new Repository<Pokemon>(_context);
-            }
-        }
+        // Removed: Pokemon property - use PokeAPI service instead
+        // public IRepository<Pokemon> Pokemon
+        // {
+        //     get
+        //     {
+        //         return _pokemonRepository ??= new Repository<Pokemon>(_context);
+        //     }
+        // }
 
         public IRepository<UserPokemon> UserPokemon
         {
