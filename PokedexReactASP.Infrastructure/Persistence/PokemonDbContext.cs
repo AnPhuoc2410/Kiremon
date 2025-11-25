@@ -1,16 +1,16 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PokedexReactASP.Domain.Entities;
 
 namespace PokedexReactASP.Infrastructure.Persistence
 {
-    public class PokemonDbContext : DbContext
+    public class PokemonDbContext : IdentityDbContext<ApplicationUser>
     {
         public PokemonDbContext(DbContextOptions<PokemonDbContext> options) : base(options)
         {
         }
 
         public DbSet<Pokemon> Pokemon { get; set; }
-        public DbSet<Trainer> Trainers { get; set; }
         public DbSet<UserPokemon> UserPokemon { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,40 +25,39 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.Type1).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Type2).HasMaxLength(50);
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Abilities).HasMaxLength(500);
                 
-                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.Name);
             });
 
-            // Configure Trainer entity
-            modelBuilder.Entity<Trainer>(entity =>
+            // Configure ApplicationUser entity
+            modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.DateJoined).IsRequired();
-                
-                entity.HasIndex(e => e.Username).IsUnique();
-                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.FirstName).HasMaxLength(50);
+                entity.Property(e => e.LastName).HasMaxLength(50);
+                entity.Property(e => e.AvatarUrl).HasMaxLength(500);
             });
 
             // Configure UserPokemon (many-to-many) entity
             modelBuilder.Entity<UserPokemon>(entity =>
             {
                 // Composite primary key
-                entity.HasKey(e => new { e.TrainerId, e.PokemonId });
+                entity.HasKey(e => new { e.UserId, e.PokemonId });
 
                 // Configure relationships
-                entity.HasOne(e => e.Trainer)
-                    .WithMany(e => e.UserPokemons)
-                    .HasForeignKey(e => e.TrainerId)
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserPokemons)
+                    .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(e => e.Pokemon)
-                    .WithMany(e => e.UserPokemons)
+                    .WithMany(p => p.UserPokemons)
                     .HasForeignKey(e => e.PokemonId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.Property(e => e.Nickname).HasMaxLength(50);
                 entity.Property(e => e.CaughtDate).IsRequired();
             });
 
@@ -77,8 +76,16 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     Type2 = "Poison",
                     Height = 7,
                     Weight = 69,
-                    Level = 5,
-                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+                    Description = "A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokemon.",
+                    BaseExperience = 64,
+                    Category = "Seed Pokemon",
+                    Hp = 45,
+                    Attack = 49,
+                    Defense = 49,
+                    SpecialAttack = 65,
+                    SpecialDefense = 65,
+                    Speed = 45
                 },
                 new Pokemon
                 {
@@ -88,8 +95,16 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     Type2 = null,
                     Height = 6,
                     Weight = 85,
-                    Level = 5,
-                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
+                    Description = "Obviously prefers hot places. When it rains, steam is said to spout from the tip of its tail.",
+                    BaseExperience = 62,
+                    Category = "Lizard Pokemon",
+                    Hp = 39,
+                    Attack = 52,
+                    Defense = 43,
+                    SpecialAttack = 60,
+                    SpecialDefense = 50,
+                    Speed = 65
                 },
                 new Pokemon
                 {
@@ -99,8 +114,16 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     Type2 = null,
                     Height = 5,
                     Weight = 90,
-                    Level = 5,
-                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
+                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
+                    Description = "After birth, its back swells and hardens into a shell. Powerfully sprays foam from its mouth.",
+                    BaseExperience = 63,
+                    Category = "Tiny Turtle Pokemon",
+                    Hp = 44,
+                    Attack = 48,
+                    Defense = 65,
+                    SpecialAttack = 50,
+                    SpecialDefense = 64,
+                    Speed = 43
                 },
                 new Pokemon
                 {
@@ -110,8 +133,16 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     Type2 = null,
                     Height = 4,
                     Weight = 60,
-                    Level = 5,
-                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+                    ImageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+                    Description = "When several of these Pokemon gather, their electricity could build and cause lightning storms.",
+                    BaseExperience = 112,
+                    Category = "Mouse Pokemon",
+                    Hp = 35,
+                    Attack = 55,
+                    Defense = 40,
+                    SpecialAttack = 50,
+                    SpecialDefense = 50,
+                    Speed = 90
                 }
             );
         }
