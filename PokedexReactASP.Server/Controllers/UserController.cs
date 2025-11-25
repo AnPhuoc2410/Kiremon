@@ -101,8 +101,8 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Pokemon caught successfully!" });
         }
 
-        [HttpDelete("pokemon/{pokemonId}")]
-        public async Task<ActionResult> ReleasePokemon(int pokemonId)
+        [HttpDelete("pokemon/{userPokemonId}")]
+        public async Task<ActionResult> ReleasePokemon(int userPokemonId)
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
@@ -110,7 +110,7 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _userService.ReleasePokemonAsync(userId, pokemonId);
+            var result = await _userService.ReleasePokemonAsync(userId, userPokemonId);
             if (!result)
             {
                 return NotFound(new { message = "Pokemon not found in your collection" });
@@ -119,8 +119,8 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Pokemon released successfully" });
         }
 
-        [HttpPut("pokemon/{pokemonId}/nickname")]
-        public async Task<ActionResult> UpdatePokemonNickname(int pokemonId, [FromBody] string nickname)
+        [HttpPut("pokemon/{userPokemonId}/nickname")]
+        public async Task<ActionResult> UpdatePokemonNickname(int userPokemonId, [FromBody] string nickname)
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
@@ -128,7 +128,7 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _userService.UpdatePokemonNicknameAsync(userId, pokemonId, nickname);
+            var result = await _userService.UpdatePokemonNicknameAsync(userId, userPokemonId, nickname);
             if (!result)
             {
                 return NotFound(new { message = "Pokemon not found in your collection" });
@@ -137,8 +137,8 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Nickname updated successfully" });
         }
 
-        [HttpPut("pokemon/{pokemonId}/favorite")]
-        public async Task<ActionResult> ToggleFavoritePokemon(int pokemonId)
+        [HttpPut("pokemon/{userPokemonId}/favorite")]
+        public async Task<ActionResult> ToggleFavoritePokemon(int userPokemonId)
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
@@ -146,7 +146,7 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _userService.ToggleFavoritePokemonAsync(userId, pokemonId);
+            var result = await _userService.ToggleFavoritePokemonAsync(userId, userPokemonId);
             if (!result)
             {
                 return NotFound(new { message = "Pokemon not found in your collection" });

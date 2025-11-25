@@ -23,23 +23,26 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
 
-            // Pokemon mappings
-            CreateMap<Pokemon, PokemonDto>().ReverseMap();
-            CreateMap<CreatePokemonDto, Pokemon>();
-
-            // UserPokemon mappings
             CreateMap<UserPokemon, UserPokemonDto>()
-                .ForMember(dest => dest.PokemonId, opt => opt.MapFrom(src => src.Pokemon.Id))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Pokemon.Name))
-                .ForMember(dest => dest.Type1, opt => opt.MapFrom(src => src.Pokemon.Type1))
-                .ForMember(dest => dest.Type2, opt => opt.MapFrom(src => src.Pokemon.Type2))
-                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Pokemon.ImageUrl))
-                .ForMember(dest => dest.Hp, opt => opt.MapFrom(src => src.Pokemon.Hp))
-                .ForMember(dest => dest.Attack, opt => opt.MapFrom(src => src.Pokemon.Attack))
-                .ForMember(dest => dest.Defense, opt => opt.MapFrom(src => src.Pokemon.Defense))
-                .ForMember(dest => dest.SpecialAttack, opt => opt.MapFrom(src => src.Pokemon.SpecialAttack))
-                .ForMember(dest => dest.SpecialDefense, opt => opt.MapFrom(src => src.Pokemon.SpecialDefense))
-                .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Pokemon.Speed));
+                .ForMember(dest => dest.CustomMoveIds, opt => opt.MapFrom(src =>
+                    !string.IsNullOrEmpty(src.CustomMoveIds)
+                        ? src.CustomMoveIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()
+                        : null));
+
+            // CatchPokemonDto to UserPokemon
+            CreateMap<CatchPokemonDto, UserPokemon>()
+                .ForMember(dest => dest.CurrentLevel, opt => opt.MapFrom(src => src.CaughtLevel))
+                .ForMember(dest => dest.CaughtDate, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.LastInteractionDate, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            // UserPokemon summary mapping
+            CreateMap<UserPokemon, UserPokemonSummaryDto>()
+                .ForMember(dest => dest.Name, opt => opt.Ignore())
+                .ForMember(dest => dest.DisplayName, opt => opt.Ignore())
+                .ForMember(dest => dest.Type1, opt => opt.Ignore())
+                .ForMember(dest => dest.Type2, opt => opt.Ignore())
+                .ForMember(dest => dest.SpriteUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.MaxHp, opt => opt.Ignore());
         }
     }
 }

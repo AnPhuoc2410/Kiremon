@@ -27,8 +27,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.FavoriteType).HasMaxLength(20);
                 entity.Property(e => e.CurrentRegion).HasMaxLength(50);
                 entity.Property(e => e.CurrentLocation).HasMaxLength(100);
-                entity.Property(e => e.AchievementsJson).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.BadgesJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.Achievements).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.Badges).HasColumnType("nvarchar(max)");
             });
 
             // Configure UserPokemon entity
@@ -62,7 +62,6 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.PokemonApiId).IsRequired();
                 entity.Property(e => e.CaughtDate).IsRequired();
                 
-                // Default values are set in entity class
             });
         }
     }
