@@ -1,15 +1,18 @@
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 
 namespace PokedexReactASP.Domain.Entities
 {
-    public class Trainer
+    public class ApplicationUser : IdentityUser
     {
-        public int Id { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public DateTime DateJoined { get; set; }
-        public string PasswordHash { get; set; } = string.Empty; // Store a hash, not the plain password
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime DateJoined { get; set; } = DateTime.UtcNow;
+        public string? AvatarUrl { get; set; }
+        public int PokemonCaught { get; set; } = 0;
+        public int Level { get; set; } = 1;
+        public int Experience { get; set; } = 0;
 
         // Navigation property for the many-to-many relationship
         public ICollection<UserPokemon> UserPokemons { get; set; } = new List<UserPokemon>();
