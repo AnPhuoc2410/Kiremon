@@ -91,6 +91,7 @@ namespace PokedexReactASP.Server
 
             // Add Application Services
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
             builder.Services.AddScoped<IUserService, UserService>();
 
@@ -101,7 +102,12 @@ namespace PokedexReactASP.Server
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new() { Title = "Pokedex API", Version = "v1" });
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+                { 
+                    Title = "Pokedex API", 
+                    Version = "v1",
+                    Description = "API for Pokedex application"
+                });
 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -146,7 +152,7 @@ namespace PokedexReactASP.Server
                     .AllowCredentials();
                 });
             });
-
+             
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
