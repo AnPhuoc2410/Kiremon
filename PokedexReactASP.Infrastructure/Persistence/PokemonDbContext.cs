@@ -10,7 +10,6 @@ namespace PokedexReactASP.Infrastructure.Persistence
         {
         }
 
-        // Removed Pokemon DbSet - Pokemon data comes from PokeAPI
         public DbSet<UserPokemon> UserPokemon { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,8 +26,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.FavoriteType).HasMaxLength(20);
                 entity.Property(e => e.CurrentRegion).HasMaxLength(50);
                 entity.Property(e => e.CurrentLocation).HasMaxLength(100);
-                entity.Property(e => e.Achievements).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.Badges).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.Achievements).HasColumnType("text");
+                entity.Property(e => e.Badges).HasColumnType("text");
             });
 
             // Configure UserPokemon entity

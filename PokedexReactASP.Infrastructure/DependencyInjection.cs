@@ -25,7 +25,7 @@ namespace PokedexReactASP.Infrastructure
                 options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
                     npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);
-                    npgsqlOptions.CommandTimeout(30);
+                    npgsqlOptions.CommandTimeout(180);
                 });
             });
 
