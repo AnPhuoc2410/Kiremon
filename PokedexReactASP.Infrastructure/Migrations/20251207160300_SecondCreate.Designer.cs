@@ -12,8 +12,8 @@ using PokedexReactASP.Infrastructure.Persistence;
 namespace PokedexReactASP.Infrastructure.Migrations
 {
     [DbContext(typeof(PokemonDbContext))]
-    [Migration("20251126034038_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251207160300_SecondCreate")]
+    partial class SecondCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

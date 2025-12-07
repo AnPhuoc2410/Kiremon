@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Mappings;
@@ -102,9 +103,9 @@ namespace PokedexReactASP.Server
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
-                { 
-                    Title = "Pokedex API", 
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Pokedex API",
                     Version = "v1",
                     Description = "API for Pokedex application"
                 });
@@ -135,42 +136,46 @@ namespace PokedexReactASP.Server
                 });
             });
 
+            var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowReactApp", policy =>
                 {
-                    policy.WithOrigins(
-                        "http://localhost:3000",
-                        "https://localhost:3000",
-                        "http://localhost:5173",
-                        "https://localhost:5173",
-                        "http://localhost:56708",
-                        "https://localhost:56708"
-                    )
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    policy.WithOrigins(allowedOrigins ?? [])
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
-             
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
                 try
                 {
                     var context = services.GetRequiredService<PokemonDbContext>();
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-                    context.Database.EnsureCreated();
+                    /*
+                     * GetPending là để lấy ra các Migration chưa được áp dụng lên Database
+                     * Lý do chính là để Logging (Ghi log) hoặc kiểm soát dòng chảy của chương trình (ví dụ: nếu có migration mới thì mới chạy Seed data, còn không thì thôi cho nhanh).
+                     */
+                    if (app.Environment.IsDevelopment() && context.Database.GetPendingMigrations().Any())
+                    {
+                        // LOG RA MÀN HÌNH (Để biết chuyện gì sắp xảy ra)
+                        logger.LogInformation("Phát hiện thay đổi Migration, đang cập nhật database...");
+
+                        context.Database.Migrate();
+                    }
 
                     SeedRoles(roleManager).Wait();
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred while migrating or seeding the database.");
                 }
             }
