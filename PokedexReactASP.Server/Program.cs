@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Mappings;
+using PokedexReactASP.Application.Options;
 using PokedexReactASP.Application.Services;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
 using PokedexReactASP.Server.Hubs;
+using PokedexReactASP.Server.Seed;
 using System.Text;
 
 namespace PokedexReactASP.Server
@@ -35,6 +37,7 @@ namespace PokedexReactASP.Server
 
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
             })
             .AddEntityFrameworkStores<PokemonDbContext>()
             .AddDefaultTokenProviders();
@@ -95,6 +98,8 @@ namespace PokedexReactASP.Server
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+
 
             // Add SignalR
             builder.Services.AddSignalR();
@@ -150,35 +155,7 @@ namespace PokedexReactASP.Server
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<Program>>();
-                try
-                {
-                    var context = services.GetRequiredService<PokemonDbContext>();
-                    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-                    /*
-                     * GetPending là để lấy ra các Migration chưa được áp dụng lên Database
-                     * Lý do chính là để Logging (Ghi log) hoặc kiểm soát dòng chảy của chương trình (ví dụ: nếu có migration mới thì mới chạy Seed data, còn không thì thôi cho nhanh).
-                     */
-                    if (app.Environment.IsDevelopment() && context.Database.GetPendingMigrations().Any())
-                    {
-                        // LOG RA MÀN HÌNH (Để biết chuyện gì sắp xảy ra)
-                        logger.LogInformation("Phát hiện thay đổi Migration, đang cập nhật database...");
-
-                        context.Database.Migrate();
-                    }
-
-                    SeedRoles(roleManager).Wait();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-                }
-            }
+            IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger).Wait();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -206,17 +183,5 @@ namespace PokedexReactASP.Server
             app.Run();
         }
 
-        private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
-        {
-            string[] roles = { "Admin", "User" };
-
-            foreach (var role in roles)
-            {
-                if (!await roleManager.RoleExistsAsync(role))
-                {
-                    await roleManager.CreateAsync(new IdentityRole(role));
-                }
-            }
-        }
     }
 }
