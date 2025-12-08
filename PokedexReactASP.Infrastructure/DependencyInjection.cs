@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Options;
 using PokedexReactASP.Infrastructure.Persistence;
 using PokedexReactASP.Infrastructure.Repositories;
 using PokedexReactASP.Infrastructure.Services;
@@ -31,6 +32,7 @@ namespace PokedexReactASP.Infrastructure
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }
