@@ -19,6 +19,7 @@ export const login = async (
   const response = await api.post<LoginResponse>("/auth/login", {
     usernameOrEmail: user.usernameOrEmail,
     password: user.password,
+    reCaptchaToken: user.reCaptchaToken,
   });
   return response.data;
 };
@@ -60,7 +61,6 @@ export const doExtractToken = async (token: string): Promise<UserResponse> => {
   return response.data.data;
 };
 
-// Wrapper for AuthContext compatibility
 export const doExtractUserFromToken = async (token: string): Promise<{ data: UserResponse }> => {
   const data = await doExtractToken(token);
   return { data };
