@@ -9,8 +9,6 @@ namespace PokedexReactASP.Application.Options
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string FrontendBaseUrl { get; set; } = string.Empty;
-        public string EmailConfirmationPath { get; set; } = "/Auth/confirm-email";
-        public string ResetPasswordPath { get; set; } = "/Auth/reset-password";
     }
 }
 

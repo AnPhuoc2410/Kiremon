@@ -2,6 +2,7 @@ import { BrowserRouter, Routes as Switch, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { StartScreen, MyPokemon, NotFoundPage } from "../pages";
+import { AuthProvider } from "../contexts";
 
 const Explore = lazy(() => import("../pages/Explore"));
 const RegionsExplore = lazy(() => import("../pages/Explore/Regions"));
@@ -20,11 +21,14 @@ const CatchChallenge = lazy(() => import("../pages/CatchChallenge/index.tsx"));
 const Login = lazy(() => import('../pages/Auth/Login'));
 const Register = lazy(() => import('../pages/Auth/Register'));
 const Forgot = lazy(() => import('../pages/Auth/Forgot'));
+const ConfirmEmail = lazy(() => import('../pages/Auth/ConfirmEmail'));
+const ResetPassword = lazy(() => import('../pages/Auth/ResetPassword'));
 
 export default function Routes() {
   return (
     <BrowserRouter>
-      <Switch>
+      <AuthProvider>
+        <Switch>
         <Route path="/" element={<StartScreen />} />
         <Route
           path="/pokemons"
@@ -160,8 +164,25 @@ export default function Routes() {
             </Suspense>
           }
         />
+        <Route
+          path="/auth/confirm-email"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <ConfirmEmail />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/auth/reset-password"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <ResetPassword />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
-      </Switch>
+        </Switch>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

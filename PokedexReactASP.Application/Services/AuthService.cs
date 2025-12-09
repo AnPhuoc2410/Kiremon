@@ -67,10 +67,10 @@ namespace PokedexReactASP.Application.Services
 
             if (!user.EmailConfirmed)
             {
+                await SendConfirmationEmail(user);
                 throw new UnauthorizedAccessException("Email is not verified. Please confirm your email before logging in.");
             }
 
-            //Kiểm tra mật khẩu có kích hoạt tính năng KHÓA TÀI KHOẢN (Lockout)
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
 
             if (result.Succeeded)
@@ -117,7 +117,7 @@ namespace PokedexReactASP.Application.Services
                 return;
             }
 
-            var decodedToken = WebUtility.UrlDecode(confirmEmailDto.Token);
+            var decodedToken = Uri.UnescapeDataString(confirmEmailDto.Token);
             var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
             if (!result.Succeeded)
             {
@@ -151,7 +151,7 @@ namespace PokedexReactASP.Application.Services
                 throw new InvalidOperationException("User not found");
             }
 
-            var decodedToken = WebUtility.UrlDecode(resetPasswordDto.Token);
+            var decodedToken = Uri.UnescapeDataString(resetPasswordDto.Token);
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.NewPassword);
             if (!result.Succeeded)
             {
@@ -214,23 +214,20 @@ namespace PokedexReactASP.Application.Services
 
         private string BuildEmailConfirmationLink(string token, string userId)
         {
-            var encodedToken = WebUtility.UrlEncode(token);
-            var path = string.IsNullOrWhiteSpace(_emailSettings.EmailConfirmationPath)
-                ? "/Auth/confirm-email"
-                : _emailSettings.EmailConfirmationPath;
+            var encodedToken = Uri.EscapeDataString(token);
+            var baseUrl = _emailSettings.FrontendBaseUrl?.TrimEnd('/');
+            var path = "/auth/confirm-email";
 
-            return $"https://localhost:7051/api{path}?userId={userId}&token={encodedToken}";
+            return $"{baseUrl}{path}?userId={userId}&token={encodedToken}";
         }
 
         private string BuildResetPasswordLink(string token, string email)
         {
-            var encodedToken = WebUtility.UrlEncode(token);
+            var encodedToken = Uri.EscapeDataString(token);
             var baseUrl = _emailSettings.FrontendBaseUrl?.TrimEnd('/');
-            var path = string.IsNullOrWhiteSpace(_emailSettings.ResetPasswordPath)
-                ? "/Auth/reset-password"
-                : _emailSettings.ResetPasswordPath;
+            var path = "/auth/reset-password";
 
-            return $"{baseUrl}{path}?email={WebUtility.UrlEncode(email)}&token={encodedToken}";
+            return $"{baseUrl}{path}?email={Uri.EscapeDataString(email)}&token={encodedToken}";
         }
     }
 }
