@@ -136,6 +136,55 @@ export const LoginButton = styled.button`
   }
 `;
 
+export const UserMenuContainer = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+export const UserButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid ${colors['gray-200']};
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: ${colors['blue-400']};
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: ${colors['gray-800']};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: ${colors['gray-600']};
+  }
+`;
+
+export const UserDropdown = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid ${colors['gray-200']};
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  min-width: 180px;
+  padding: 8px 0;
+  z-index: 200;
+  display: ${props => props.isOpen ? 'block' : 'none'};
+`;
+
 export const NavContainer = styled.nav`
   margin-top: 16px;
   border-top: 1px solid ${colors["gray-200"]};

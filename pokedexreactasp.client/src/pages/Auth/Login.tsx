@@ -36,14 +36,26 @@ const Login: React.FC = () => {
         reCaptchaToken: recaptchaToken,
       });
 
-      if (response && response.token) {
+      if (response?.token) {
         const expiresDate = response.expiresAt
           ? new Date(response.expiresAt).toISOString()
           : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-        await authLogin({
+        // Pass full user info to context
+        authLogin({
           accessToken: response.token,
           expires: expiresDate,
+          user: {
+            userId: response.userId,
+            username: response.username,
+            email: response.email,
+            firstName: response.firstName,
+            lastName: response.lastName,
+            avatarUrl: response.avatarUrl,
+            level: response.level,
+            pokemonCaught: response.pokemonCaught,
+            emailConfirmed: response.emailConfirmed,
+          },
         });
         toast.success('Login successful!');
         navigate('/pokemons');

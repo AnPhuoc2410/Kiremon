@@ -1,19 +1,15 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doExtractUserFromToken, doLogout } from "../config/auth.apis";
-import { AuthLoginData } from "../types/auth.types";
+import { AuthLoginData, AuthUser } from "../types/auth.types";
 import { eraseCookie, getCookie, setCookie } from "../components/utils/cookieUtils";
 import toast from "react-hot-toast";
-import { UserResponse } from "../types/users.type";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isInitialized: boolean;
   authData: AuthLoginData | null;
-  userDetails: UserResponse | null;
-  authLogin: (userData: AuthLoginData) => Promise<UserResponse | null>;
+  user: AuthUser | null;
+  authLogin: (data: AuthLoginData) => void;
   authLogout: () => void;
   getToken: () => string | null;
 }
@@ -23,8 +19,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [authData, setAuthData] = useState<AuthLoginData | null>(null); // Store token-related info
-  const [userDetails, setUserDetails] = useState<UserResponse | null>(null); // Store user-related info
+  const [authData, setAuthData] = useState<AuthLoginData | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const navigate = useNavigate();
 
   // Check token expiration
@@ -44,22 +40,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
         const token = getCookie("accessToken");
-        if (token) {
+        const expiresTimestamp = getCookie("expires");
+        const storedUser = getCookie("authUser");
+
+        if (token && expiresTimestamp) {
           // Check if token is expired before proceeding
           if (!checkTokenExpiration()) {
             setIsInitialized(true);
             return;
           }
 
-          // Extract user details from token
-          const { data } = await doExtractUserFromToken(token);
-          if (data) {
-            setIsAuthenticated(true);
-            setUserDetails(data); // Set user details from token
+          // Restore user from cookie
+          let parsedUser: AuthUser | null = null;
+          if (storedUser) {
+            try {
+              parsedUser = JSON.parse(decodeURIComponent(storedUser));
+            } catch {
+              console.warn("Failed to parse stored user");
+            }
           }
+
+          setIsAuthenticated(true);
+          setUser(parsedUser);
+          setAuthData({
+            accessToken: token,
+            expires: expiresTimestamp,
+            user: parsedUser!,
+          });
         }
       } catch (error) {
         console.error("Failed to initialize auth:", error);
@@ -82,52 +92,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [isAuthenticated]);
 
-  const authLogin = async (loginData: AuthLoginData): Promise<UserResponse | null> => {
-    if (!loginData) {
+  const authLogin = (loginData: AuthLoginData): void => {
+    if (!loginData?.accessToken || !loginData?.user) {
       console.error("Invalid login data");
-      return null;
+      return;
     }
 
-    try {
-      // Set login state and store token
-      setIsAuthenticated(true);
-      setAuthData(loginData);
+    setIsAuthenticated(true);
+    setAuthData(loginData);
+    setUser(loginData.user);
 
-      // Store token and expiration in cookies
-      setCookie("accessToken", loginData.accessToken, 1);
-      setCookie("expires", loginData.expires, 1);
-
-      // Extract and store user details
-      const { data } = await doExtractUserFromToken(loginData.accessToken);
-      if (data) {
-        setUserDetails(data);
-        return data;
-      }
-      return null;
-    } catch (error) {
-      console.error("Error during login:", error);
-      return null;
-    }
+    setCookie("accessToken", loginData.accessToken, 7);
+    setCookie("expires", loginData.expires, 7);
+    setCookie("authUser", encodeURIComponent(JSON.stringify(loginData.user)), 7);
   };
 
-  const authLogout = async () => {
-    const token = getCookie("accessToken");
-    if (token) {
-      try {
-        // await doLogout(token);
-      } catch (error) {
-        console.error("Error during logout:", error);
-      }
+  const authLogout = () => {
+    setIsAuthenticated(false);
+    setAuthData(null);
+    setUser(null);
 
-      setIsAuthenticated(false);
-      setAuthData(null);
-      setUserDetails(null); // Clear the user details on logout
-      eraseCookie("accessToken");
-      eraseCookie("expires");
+    eraseCookie("accessToken");
+    eraseCookie("expires");
+    eraseCookie("authUser");
 
-      toast.success("Đăng xuất thành công", { removeDelay: 2500 });
-      navigate("/");
-    }
+    toast.success("Đăng xuất thành công", { duration: 2500 });
+    navigate("/");
   };
 
   const getToken = () => {
@@ -144,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         isInitialized,
         authData,
-        userDetails,
+        user,
         authLogin,
         authLogout,
         getToken,

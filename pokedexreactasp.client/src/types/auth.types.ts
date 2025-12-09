@@ -1,11 +1,7 @@
-import { UserResponse } from "./users.type";
-
-export type AuthResponse = {
+export type AuthUser = {
   userId: string;
   username: string;
   email: string;
-  token: string;
-  expiresAt: string;
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
@@ -14,9 +10,15 @@ export type AuthResponse = {
   emailConfirmed: boolean;
 };
 
+export type AuthResponse = AuthUser & {
+  token: string;
+  expiresAt: string;
+};
+
 export type AuthLoginData = {
   accessToken: string;
   expires: string;
+  user: AuthUser;
 };
 
 export type LoginRequest = {
@@ -67,22 +69,3 @@ export type ApiResponse<T = unknown> = {
   isSuccess?: boolean;
   reason?: string | null;
 };
-
-export type LogoutRequest = {
-  token: string;
-};
-
-export type LogoutResponse = {
-  message: string;
-  statusCode: number;
-  isSuccess: boolean;
-};
-
-export type ExtractTokenResponse = {
-  message: string;
-  statusCode: number;
-  reason: string | null;
-  isSuccess: boolean;
-  data: UserResponse;
-};
-
