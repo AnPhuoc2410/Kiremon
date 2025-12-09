@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Text } from '..';
 import * as S from './index.style';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface HeaderProps {
   title: string;
@@ -71,6 +72,9 @@ const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({ title, childr
 const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const { isAuthenticated, user, authLogout } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +82,27 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Build display name: firstName + lastName, fallback to username
+  const displayName = user?.firstName && user?.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user?.username ?? 'Trainer';
+
+  const avatarUrl =
+    user?.avatarUrl ?? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
 
   return (
     <S.HeaderContainer>
@@ -116,15 +141,37 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
             </S.SearchContainer>
           </form>
 
-          <S.UserAvatar>
-            <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-              alt="User Avatar"
-            />
-          </S.UserAvatar>
-
-          {/* Temporary Login button (UI only). We'll wire auth/context later. */}
-          <S.LoginButton onClick={() => navigate('/login')}>Login</S.LoginButton>
+          {!isAuthenticated ? (
+            <S.LoginButton onClick={() => navigate('/login')}>Login</S.LoginButton>
+          ) : (
+            <S.UserMenuContainer ref={userMenuRef}>
+              <S.UserButton onClick={() => setIsUserMenuOpen((prev) => !prev)}>
+                <S.UserAvatar>
+                  <img src={avatarUrl} alt="User Avatar" />
+                </S.UserAvatar>
+                <span>{displayName}</span>
+                <ChevronDownIcon />
+              </S.UserButton>
+              <S.UserDropdown isOpen={isUserMenuOpen}>
+                <Link to="/profile">
+                  <S.DropdownItem>Profile</S.DropdownItem>
+                </Link>
+                <Link to="/settings">
+                  <S.DropdownItem>Settings</S.DropdownItem>
+                </Link>
+                <S.DropdownItem
+                  as="button"
+                  type="button"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    authLogout();
+                  }}
+                >
+                  Logout
+                </S.DropdownItem>
+              </S.UserDropdown>
+            </S.UserMenuContainer>
+          )}
 
           {actions && actions}
         </S.HeaderActions>

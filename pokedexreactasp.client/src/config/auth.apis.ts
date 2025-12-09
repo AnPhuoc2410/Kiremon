@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   LoginRequest,
   LoginResponse,
@@ -8,9 +7,7 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
-  LogoutResponse,
 } from "../types/auth.types";
-import { UserResponse } from "../types/users.type";
 import api from "./axios.config";
 
 export const login = async (
@@ -36,34 +33,6 @@ export const signup = async (
     lastName: payload.lastName,
   });
   return response.data;
-};
-
-export const doLogout = async (token: string): Promise<LogoutResponse> => {
-  const response = await axios.post(
-    `/auth/logout`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`, // Pass token in Authorization header
-      },
-    },
-  );
-
-  return response.data;
-};
-
-export const doExtractToken = async (token: string): Promise<UserResponse> => {
-  const response = await api.get(`/auth/extract-token`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data.data;
-};
-
-export const doExtractUserFromToken = async (token: string): Promise<{ data: UserResponse }> => {
-  const data = await doExtractToken(token);
-  return { data };
 };
 
 export const doSendOTPToExistUser = async (
