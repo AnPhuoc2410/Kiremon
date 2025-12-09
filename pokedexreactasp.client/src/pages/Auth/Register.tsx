@@ -78,7 +78,7 @@ const Register: React.FC = () => {
 
         <div style={{ marginTop: 12 }}>
           <S.SmallText>
-            Already have an account? <Link to="/login">Sign in</Link>
+            Already have an account? <Link to="/login" style={{ color: '#2563EB', fontWeight: 600 }}>Sign in</Link>
           </S.SmallText>
         </div>
       </S.Card>
