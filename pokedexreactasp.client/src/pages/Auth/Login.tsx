@@ -1,16 +1,46 @@
 import React, { useState } from 'react';
 import * as S from './Login.style';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { login } from '../../config/auth.apis';
+import toast from 'react-hot-toast';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { authLogin } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only for now: navigate to home after "login"
-    navigate('/');
+    setLoading(true);
+    try {
+      const response = await login({
+        usernameOrEmail,
+        password,
+      });
+      
+      if (response && response.token) {
+        const expiresDate = response.expiresAt 
+          ? new Date(response.expiresAt).toISOString()
+          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        
+        await authLogin({
+          accessToken: response.token,
+          expires: expiresDate,
+        });
+        toast.success('Login successful!');
+        navigate('/');
+      } else {
+        toast.error('Login failed. Please check your credentials.');
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'Login failed. Please check your credentials.';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,14 +55,14 @@ const Login: React.FC = () => {
         </S.Header>
 
         <S.Form onSubmit={handleSubmit} aria-label="login form">
-          <label htmlFor="email" style={{ fontSize: 13, color: '#626876' }}>Trainer ID (Email)</label>
+          <label htmlFor="email" style={{ fontSize: 13, color: '#626876' }}>Trainer ID (Username or Email)</label>
           <S.Input
             id="email"
             name="email"
-            type="email"
-            placeholder="you@pokemon.world"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="username or you@pokemon.world"
+            value={usernameOrEmail}
+            onChange={(e) => setUsernameOrEmail(e.target.value)}
             required
           />
 
@@ -47,7 +77,9 @@ const Login: React.FC = () => {
             required
           />
 
-          <S.Submit type="submit">Start Journey</S.Submit>
+          <S.Submit type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Start Journey'}
+          </S.Submit>
         </S.Form>
 
         <div style={{ marginTop: 12 }}>

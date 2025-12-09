@@ -1,8 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import { Role } from "../types/roles.type";
+/**
+ * Cookie utility functions for managing authentication tokens and user data
+ */
 
-export function setCookie(name: string, value: string, days: number) {
+/**
+ * Sets a cookie with the specified name, value, and expiration days
+ * @param name Cookie name
+ * @param value Cookie value
+ * @param days Number of days until expiration
+ */
+export function setCookie(name: string, value: string, days: number): void {
   const date = new Date();
   date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
   const expires = "; expires=" + date.toUTCString();
@@ -14,6 +20,11 @@ export function setCookie(name: string, value: string, days: number) {
     "; path=/; SameSite=Strict";
 }
 
+/**
+ * Gets a cookie value by name
+ * @param name Cookie name
+ * @returns Cookie value or null if not found
+ */
 export function getCookie(name: string): string | null {
   const nameEQ = name + "=";
   const ca = document.cookie.split(";");
@@ -21,34 +32,17 @@ export function getCookie(name: string): string | null {
     const c = ca[i].trim();
     if (c.indexOf(nameEQ) === 0) {
       const rawValue = c.substring(nameEQ.length);
-      // For access_token, remove any appended information
-      if (name === "access_token") {
-        const cleanedToken = rawValue.split("localhost")[0];
-        return decodeURIComponent(cleanedToken);
-      }
       return decodeURIComponent(rawValue);
     }
   }
   return null;
 }
 
-export function eraseCookie(name: string) {
+/**
+ * Erases a cookie by setting it to expire in the past
+ * @param name Cookie name
+ */
+export function eraseCookie(name: string): void {
   document.cookie =
     name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict";
-}
-
-export function parseRoles(rolesString: string | null): Role[] {
-  if (!rolesString) return [];
-  try {
-    const parsedRoles = JSON.parse(rolesString);
-    if (Array.isArray(parsedRoles)) {
-      return parsedRoles.filter((role): role is Role =>
-        ["ROLE_MEMBER", "ROLE_STAFF", "ROLE_MANAGER"].includes(role),
-      );
-    }
-    return [];
-  } catch (error) {
-    console.error("Error parsing roles:", error);
-    return [];
-  }
 }

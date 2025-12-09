@@ -2,9 +2,9 @@
 // @ts-nocheck
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doExtractUserFromToken, doLogout } from "../apis/auth.apis";
+import { doExtractUserFromToken, doLogout } from "../config/auth.apis";
 import { AuthLoginData } from "../types/auth.types";
-import { eraseCookie, getCookie, setCookie } from "../utils/cookieUtils";
+import { eraseCookie, getCookie, setCookie } from "../components/utils/cookieUtils";
 import toast from "react-hot-toast";
 import { UserResponse } from "../types/users.type";
 
