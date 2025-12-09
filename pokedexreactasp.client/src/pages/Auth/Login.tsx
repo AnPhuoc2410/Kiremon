@@ -20,18 +20,18 @@ const Login: React.FC = () => {
         usernameOrEmail,
         password,
       });
-      
+
       if (response && response.token) {
-        const expiresDate = response.expiresAt 
+        const expiresDate = response.expiresAt
           ? new Date(response.expiresAt).toISOString()
           : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        
+
         await authLogin({
           accessToken: response.token,
           expires: expiresDate,
         });
         toast.success('Login successful!');
-        navigate('/');
+        navigate('/pokemons');
       } else {
         toast.error('Login failed. Please check your credentials.');
       }
