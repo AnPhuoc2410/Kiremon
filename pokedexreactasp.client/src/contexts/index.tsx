@@ -38,3 +38,5 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <GlobalContext.Provider value={{ state, setState }}>{children}</GlobalContext.Provider>;
 };
+
+export { AuthProvider, useAuth } from "./AuthContext";

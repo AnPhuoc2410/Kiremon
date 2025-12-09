@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { getCookie } from "../components/utils/cookieUtils";
 
 const api = axios.create({
-  baseURL: "https://localhost:7051",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: false,
 });
 
