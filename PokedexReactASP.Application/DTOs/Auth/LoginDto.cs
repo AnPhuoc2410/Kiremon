@@ -9,5 +9,8 @@ namespace PokedexReactASP.Application.DTOs.Auth
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "reCAPTCHA token is required")]
+        public string ReCaptchaToken { get; set; } = string.Empty;
     }
 }

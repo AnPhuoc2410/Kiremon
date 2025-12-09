@@ -9,6 +9,7 @@ using PokedexReactASP.Application.Services;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
+using PokedexReactASP.Infrastructure.Services;
 using PokedexReactASP.Server.Hubs;
 using PokedexReactASP.Server.Seed;
 using System.Text;
@@ -99,6 +100,12 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IPokemonService, PokemonService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+            builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
+            builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
+            {
+                client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
 
 
             // Add SignalR

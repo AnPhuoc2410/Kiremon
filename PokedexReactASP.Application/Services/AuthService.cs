@@ -15,6 +15,7 @@ namespace PokedexReactASP.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IRecaptchaService _recaptchaService;
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly EmailSettings _emailSettings;
@@ -24,6 +25,7 @@ namespace PokedexReactASP.Application.Services
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ITokenService tokenService,
+            IRecaptchaService recaptchaService,
             IMapper mapper,
             IEmailService emailService,
             IOptions<EmailSettings> emailOptions,
@@ -32,6 +34,7 @@ namespace PokedexReactASP.Application.Services
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _recaptchaService = recaptchaService;
             _mapper = mapper;
             _emailService = emailService;
             _emailSettings = emailOptions.Value;
@@ -59,6 +62,12 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
+            var captchaPassed = await _recaptchaService.ValidateAsync(loginDto.ReCaptchaToken);
+            if (!captchaPassed)
+            {
+                throw new UnauthorizedAccessException("reCAPTCHA validation failed.");
+            }
+
             var user = loginDto.UsernameOrEmail.Contains("@")
                 ? await _userManager.FindByEmailAsync(loginDto.UsernameOrEmail)
                 : await _userManager.FindByNameAsync(loginDto.UsernameOrEmail);
