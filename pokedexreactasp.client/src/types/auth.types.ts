@@ -22,6 +22,7 @@ export type AuthLoginData = {
 export type LoginRequest = {
   usernameOrEmail: string;
   password: string;
+  reCaptchaToken?: string | null;
 };
 
 export type RegisterRequest = {

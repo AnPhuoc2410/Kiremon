@@ -1,6 +1,6 @@
 const BASE_API_URL = import.meta.env.VITE_POKEMON_API;
 const POKEMON_IMAGE_URL = import.meta.env.VITE_POKEMON_IMAGE;
-
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY
 const normalizeUrl = (url: string): string => {
   return url.endsWith('/') ? url : `${url}/`;
 };
@@ -34,3 +34,4 @@ export const buildEndpointUrl = (endpoint: keyof typeof API_CONFIG.endpoints): s
 // For backwards compatibility
 export const POKEMON_API = buildEndpointUrl('pokemon');
 export const POKEMON_IMAGE = API_CONFIG.imageUrl;
+export const RECAPTCHA_KEY = RECAPTCHA_SITE_KEY;

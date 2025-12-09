@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import * as S from './Login.style';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { login } from '../../config/auth.apis';
 import toast from 'react-hot-toast';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { RECAPTCHA_KEY } from '../../config/api.config';
 
 const Login: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
   const { authLogin } = useAuth();
 
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!recaptchaToken) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await login({
         usernameOrEmail,
         password,
+        reCaptchaToken: recaptchaToken,
       });
 
       if (response && response.token) {
@@ -38,6 +53,9 @@ const Login: React.FC = () => {
     } catch (error: any) {
       const message = error?.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(message);
+      // Reset reCAPTCHA on error
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -82,14 +100,16 @@ const Login: React.FC = () => {
           </S.Submit>
         </S.Form>
 
-        <div style={{ marginTop: 12 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input type="checkbox" />
-            <S.SmallText>I'm not a robot (reCAPTCHA mock)</S.SmallText>
-          </label>
+        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={RECAPTCHA_KEY}
+            onChange={handleRecaptchaChange}
+            theme="light"
+          />
         </div>
 
-        <S.Row style={{ marginTop: 10 }}>
+        <S.Row style={{ marginTop: 16 }}>
           <S.Text>
             New trainer? <Link to="/register" style={{ color: '#2563EB', fontWeight: 600 }}>Create an account</Link>
           </S.Text>
