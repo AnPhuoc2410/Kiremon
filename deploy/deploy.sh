@@ -114,9 +114,9 @@ health_check() {
     print_status "Running health check..."
     
     # Check API
-    if curl -sf http://localhost:5000/health > /dev/null 2>&1; then
+    if curl -sf http://localhost:2410/health > /dev/null 2>&1; then
         print_success "API is healthy!"
-        curl -s http://localhost:5000/health | head -c 200
+        curl -s http://localhost:2410/health | head -c 200
         echo ""
     else
         print_warning "API health check failed (might still be starting)"
