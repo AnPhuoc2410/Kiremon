@@ -145,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
             <S.LoginButton onClick={() => navigate('/login')}>Login</S.LoginButton>
           ) : (
             <S.UserMenuContainer ref={userMenuRef}>
-              <S.UserButton onClick={() => setIsUserMenuOpen((prev) => !prev)}>
+              <S.UserButton isOpen={isUserMenuOpen} onClick={() => setIsUserMenuOpen((prev) => !prev)}>
                 <S.UserAvatar>
                   <img src={avatarUrl} alt="User Avatar" />
                 </S.UserAvatar>
