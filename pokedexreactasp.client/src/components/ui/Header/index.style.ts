@@ -108,8 +108,8 @@ export const UserAvatar = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid ${colors["blue-300"]};
+  overflow: contain;
+  border: 2px transparent solid;
   cursor: pointer;
 
   img {
@@ -142,7 +142,7 @@ export const UserMenuContainer = styled.div`
   align-items: center;
 `;
 
-export const UserButton = styled.button`
+export const UserButton = styled.button<{ isOpen?: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -151,7 +151,7 @@ export const UserButton = styled.button`
   border-radius: 20px;
   background: #fff;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.25s ease;
 
   &:hover {
     border-color: ${colors['blue-400']};
@@ -168,6 +168,8 @@ export const UserButton = styled.button`
     width: 16px;
     height: 16px;
     color: ${colors['gray-600']};
+    transition: transform 0.25s ease;
+    transform: ${props => props.isOpen ? 'rotate(0deg)' : 'rotate(90deg)'};
   }
 `;
 
@@ -178,11 +180,18 @@ export const UserDropdown = styled.div<{ isOpen: boolean }>`
   background: #fff;
   border: 1px solid ${colors['gray-200']};
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-  min-width: 180px;
-  padding: 8px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  padding: 6px 0;
   z-index: 200;
-  display: ${props => props.isOpen ? 'block' : 'none'};
+  overflow: hidden;
+
+  /* Animation */
+  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  opacity: ${props => props.isOpen ? 1 : 0};
+  transform: ${props => props.isOpen ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)'};
+  transform-origin: top right;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 export const NavContainer = styled.nav`
@@ -236,31 +245,46 @@ export const NavLink = styled.button`
 
 export const Dropdown = styled.div<{ isOpen: boolean }>`
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
   padding: 8px 0;
   min-width: 200px;
   z-index: 100;
-  display: ${props => (props.isOpen ? 'block' : 'none')};
-  opacity: ${props => (props.isOpen ? '1' : '0')};
-  transform: ${props => (props.isOpen ? 'translateY(8px)' : 'translateY(-8px)')};
-  transition: opacity 0.2s, transform 0.2s;
+  overflow: hidden;
+
+  /* Animation */
+  visibility: ${props => (props.isOpen ? 'visible' : 'hidden')};
+  opacity: ${props => (props.isOpen ? 1 : 0)};
+  transform: ${props => (props.isOpen ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)')};
+  transform-origin: top left;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 export const DropdownItem = styled.a`
   display: block;
-  padding: 8px 16px;
+  padding: 10px 16px;
   color: ${colors["gray-700"]};
   text-decoration: none;
   font-size: 14px;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
 
   &:hover {
     background-color: ${colors["gray-100"]};
     color: ${colors["blue-600"]};
+    padding-left: 20px;
+  }
+
+  &:active {
+    background-color: ${colors["gray-200"]};
   }
 `;
 
