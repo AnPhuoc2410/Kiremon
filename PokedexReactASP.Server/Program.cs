@@ -185,6 +185,9 @@ namespace PokedexReactASP.Server
 
             app.MapHub<PokemonHub>("/hubs/pokemon");
 
+            // Health check endpoint for Docker/Load Balancer
+            app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
             app.MapFallbackToFile("/index.html");
 
             app.Run();
