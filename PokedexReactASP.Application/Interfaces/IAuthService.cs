@@ -6,6 +6,7 @@ namespace PokedexReactASP.Application.Interfaces
     {
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<AuthResponseDto> ExternalLoginAsync(ExternalLoginDto loginDto);
         Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
         Task<bool> UserExistsAsync(string usernameOrEmail);
         Task ResendConfirmationEmailAsync(string email);

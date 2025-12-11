@@ -23,7 +23,6 @@ namespace PokedexReactASP.Application.DTOs.Auth
         public string? Username { get; set; }                   // Github sẽ có cái này (login name)
 
         // --- Thông tin Profile (Map vào Bio, Avatar, Location của Trainer) ---
-        public string? PictureUrl { get; set; }
         public string? Locale { get; set; }                     // Ví dụ: "vi", "en-US" -> Có thể dùng set ngôn ngữ game
         public string? Location { get; set; }                   // Github hay có (vd: "Hanoi, Vietnam") -> Map vào CurrentLocation?
         public string? Bio { get; set; }                        // Github có Bio -> Map vào Trainer Bio
