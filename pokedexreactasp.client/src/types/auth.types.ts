@@ -58,6 +58,11 @@ export type ChangePasswordRequest = {
   confirmNewPassword: string;
 };
 
+export type ExternalLoginRequest = {
+  provider: string;
+  token: string;
+};
+
 export type LoginResponse = AuthResponse;
 
 export type RegisterResponse = AuthResponse;

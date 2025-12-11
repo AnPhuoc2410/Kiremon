@@ -112,6 +112,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("external-login")]
         public async Task<ActionResult<AuthResponseDto>> ExternalLogin([FromBody] ExternalLoginDto externalLoginDto)
         {
+            _logger.LogInformation("Provider: {Provider} \nToken: {token} ", externalLoginDto.Provider, externalLoginDto.Token);
             try
             {
                 if (!ModelState.IsValid)

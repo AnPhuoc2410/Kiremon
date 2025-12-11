@@ -13,7 +13,9 @@ namespace PokedexReactASP.Application.Services
 
             if (socialUser == null)
                 throw new ApplicationException("External authenticaton failed.");
+
             var user = await _userManager.FindByLoginAsync(socialUser.Provider, socialUser.ProviderKey);
+            bool isNewUser = false;
 
             if (user != null)
             {
@@ -26,7 +28,14 @@ namespace PokedexReactASP.Application.Services
 
                 if (user == null)
                 {
+                    isNewUser = true;
                     user = _mapper.Map<ApplicationUser>(socialUser);
+
+                    if (socialUser.IsEmailVerified)
+                    {
+                        user.EmailConfirmed = true;
+                    }
+
                     var result = await _userManager.CreateAsync(user);
 
                     if (!result.Succeeded)
@@ -36,7 +45,10 @@ namespace PokedexReactASP.Application.Services
 
                     await _userManager.AddToRoleAsync(user, "User");
 
-                    await SendWelcomeEmailForExternalUser(user, loginDto.Provider);
+                    if (!socialUser.IsEmailVerified)
+                    {
+                        await SendWelcomeEmailForExternalUser(user, loginDto.Provider);
+                    }
                 }
                 else
                 {
@@ -45,22 +57,23 @@ namespace PokedexReactASP.Application.Services
                 }
 
                 var addLoginResult = await _userManager.AddLoginAsync(
-                        user,
-                        new UserLoginInfo(
-                            loginDto.Provider,
-                            socialUser.ProviderKey,
-                            $"{loginDto.Provider.ToLower()} account"
-                        )
-                    );
+                    user,
+                    new UserLoginInfo(
+                        loginDto.Provider,
+                        socialUser.ProviderKey,
+                        $"{loginDto.Provider.ToLower()} account"
+                    )
+                );
 
                 if (!addLoginResult.Succeeded)
                 {
-                    throw new Exception("Failed to link external login provider.");
+                    _logger.LogWarning("Failed to link {Provider} for user {Email}: {Errors}",
+                        loginDto.Provider, user.Email,
+                        string.Join(", ", addLoginResult.Errors.Select(e => e.Description)));
                 }
-
-                
             }
-            return GenerateAuthResponse(user);
+
+            return GenerateAuthResponse(user, includeToken: user.EmailConfirmed);
         }
 
         private async Task SendWelcomeEmailForExternalUser(ApplicationUser user, string provider)
