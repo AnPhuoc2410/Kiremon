@@ -10,10 +10,12 @@ namespace PokedexReactASP.Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -104,6 +106,29 @@ namespace PokedexReactASP.Server.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("external-login")]
+        public async Task<ActionResult<AuthResponseDto>> ExternalLogin([FromBody] ExternalLoginDto externalLoginDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var response = await _authService.ExternalLoginAsync(externalLoginDto);
+                return Ok(response);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Social Login Error");
+                return StatusCode(500, new { message = "An error occurred while processing your request." });
             }
         }
 
