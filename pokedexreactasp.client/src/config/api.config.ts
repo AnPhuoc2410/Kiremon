@@ -2,6 +2,7 @@ const BASE_API_URL = import.meta.env.VITE_POKEMON_API;
 const POKEMON_IMAGE_URL = import.meta.env.VITE_POKEMON_IMAGE;
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const GOOGLE_CLIENT_ID_KEY = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const FACEBOOK_APP_ID_KEY = import.meta.env.VITE_FACEBOOK_APP_ID;
 const normalizeUrl = (url: string): string => {
   return url.endsWith("/") ? url : `${url}/`;
 };
@@ -39,3 +40,4 @@ export const POKEMON_API = buildEndpointUrl("pokemon");
 export const POKEMON_IMAGE = API_CONFIG.imageUrl;
 export const RECAPTCHA_KEY = RECAPTCHA_SITE_KEY;
 export const GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID_KEY;
+export const FACEBOOK_APP_ID = FACEBOOK_APP_ID_KEY;
