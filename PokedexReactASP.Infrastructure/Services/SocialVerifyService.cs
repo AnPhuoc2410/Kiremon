@@ -59,7 +59,6 @@ namespace PokedexReactASP.Infrastructure.Services
                     FirstName = payload.GivenName ?? fallbackFirstName,
                     LastName = payload.FamilyName ?? fallbackLastName,
                     Username = payload.Email.Split('@')[0],
-                    PictureUrl = payload.Picture,
                     Locale = payload.Locale
                 };
             }
@@ -108,9 +107,6 @@ namespace PokedexReactASP.Infrastructure.Services
                     FullName = node["name"]?.ToString() ?? "",
                     FirstName = node["first_name"]?.ToString() ?? fallbackFirstName,
                     LastName = node["last_name"]?.ToString() ?? fallbackLastName,
-
-                    // Truy cập lồng nhau cực gọn: picture -> data -> url
-                    PictureUrl = node["picture"]?["data"]?["url"]?.ToString(),
 
                     Locale = node["locale"]?.ToString(),
                     ProfileLink = node["link"]?.ToString(),

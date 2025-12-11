@@ -10,7 +10,7 @@ using PokedexReactASP.Domain.Entities;
 
 namespace PokedexReactASP.Application.Services
 {
-    public class AuthService : IAuthService
+    public partial class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -19,6 +19,7 @@ namespace PokedexReactASP.Application.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly EmailSettings _emailSettings;
+        private readonly ISocialAuthService _socialAuthService;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
@@ -29,6 +30,7 @@ namespace PokedexReactASP.Application.Services
             IMapper mapper,
             IEmailService emailService,
             IOptions<EmailSettings> emailOptions,
+            ISocialAuthService socialAuthService,
             ILogger<AuthService> logger)
         {
             _userManager = userManager;
@@ -38,6 +40,7 @@ namespace PokedexReactASP.Application.Services
             _mapper = mapper;
             _emailService = emailService;
             _emailSettings = emailOptions.Value;
+            _socialAuthService = socialAuthService;
             _logger = logger;
         }
 
