@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
     environment:
       - DOTNET_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://0.0.0.0:2410
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
       # Database (Supabase)
       - ConnectionStrings__DefaultConnection=${SUPABASE_CONNECTION_STRING:?SUPABASE_CONNECTION_STRING is required}
       # JWT
@@ -39,10 +39,13 @@ services:
       - SeedAdmin__Password=${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
       # ReCaptcha
       - RecaptchaSettings__SecretKey=${RECAPTCHA_SECRET_KEY}
+      # Swagger Authentication (Required for Production)
+      - Swagger__Username=${SWAGGER_USERNAME:?SWAGGER_USERNAME is required}
+      - Swagger__Password=${SWAGGER_PASSWORD:?SWAGGER_PASSWORD is required}
     ports:
-      - "${API_PORT:-2410}:2410"
+      - "${API_PORT:-2410}:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:2410/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

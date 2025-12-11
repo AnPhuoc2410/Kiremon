@@ -738,3 +738,4 @@ secrets/
 .env
 .env.*
 docker-compose.yml
+DEPLOYMENT.md

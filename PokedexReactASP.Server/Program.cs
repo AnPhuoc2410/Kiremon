@@ -168,11 +168,18 @@ namespace PokedexReactASP.Server
             app.UseStaticFiles();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            // Enable Swagger with authentication protection
+            if (!app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseMiddleware<PokedexReactASP.Server.Middleware.SwaggerAuthMiddleware>();
             }
+            
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pokedex API v1");
+                c.RoutePrefix = "swagger"; // Access via /swagger
+            });
 
             app.UseHttpsRedirection();
 
