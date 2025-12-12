@@ -11,8 +11,10 @@ using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
 using PokedexReactASP.Infrastructure.Services;
 using PokedexReactASP.Server.Hubs;
+using PokedexReactASP.Server.Middleware;
 using PokedexReactASP.Server.Seed;
 using System.Text;
+using System.Text.Json;
 
 namespace PokedexReactASP.Server
 {
@@ -171,7 +173,7 @@ namespace PokedexReactASP.Server
             // Enable Swagger with authentication protection
             if (!app.Environment.IsDevelopment())
             {
-                app.UseMiddleware<PokedexReactASP.Server.Middleware.SwaggerAuthMiddleware>();
+                app.UseMiddleware<SwaggerAuthMiddleware>();
             }
             
             app.UseSwagger();
