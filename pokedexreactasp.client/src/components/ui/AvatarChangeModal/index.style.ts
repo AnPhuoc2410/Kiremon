@@ -347,9 +347,51 @@ export const SkeletonId = styled.div`
 export const UploadContainer = styled.div`
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
+  gap: 20px;
+`;
+
+export const UploadProgress = styled.div`
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const ProgressBar = styled.div<{ progress: number }>`
+  width: 100%;
+  height: 8px;
+  background: ${colors["gray-200"]};
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: ${(props) => props.progress}%;
+    background: linear-gradient(
+      90deg,
+      ${colors["red-500"]},
+      ${colors["red-600"]}
+    );
+    transition: width 0.3s ease;
+  }
+`;
+
+export const ProgressText = styled.p`
+  font-size: 0.875rem;
+  color: ${colors["gray-600"]};
+  text-align: center;
+  margin: 0;
+  font-weight: 500;
 `;
 
 export const UploadBox = styled.div`
@@ -378,9 +420,21 @@ export const UploadBox = styled.div`
     }
   }
 
+  &.dragging {
+    border-color: ${colors["red-500"]};
+    background: ${colors["red-200"]};
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+
+    svg {
+      color: ${colors["red-600"]};
+      transform: scale(1.1);
+    }
+  }
+
   svg {
     color: ${colors["gray-400"]};
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
   }
 `;
 
