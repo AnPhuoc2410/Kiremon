@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { POKEMON_API } from "../../../config/api.config";
+import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
 import * as S from "./index.style";
 
 interface Pokemon {
@@ -23,6 +24,8 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   onSelectAvatar,
   currentAvatar,
 }) => {
+  const { uploadFile, uploading, uploadProgress } = useSupabaseStorage();
+
   const [activeTab, setActiveTab] = useState<"system" | "upload" | "url">(
     "system",
   );
@@ -38,7 +41,10 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchedPokemon, setSearchedPokemon] = useState<Pokemon | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   // Search pokemon by ID or name
   const searchPokemon = async (query: string) => {
@@ -145,31 +151,108 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
       setSelectedAvatar(currentAvatar || null);
       setImageUrl("");
       setUploadedImage(null);
+      setPendingFile(null);
     }
   }, [isOpen, currentAvatar]);
 
+  // Process file from any source (upload, drag-drop, paste) - only preview
+  const processFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setUploadedImage(result);
+      setSelectedAvatar(result); // Set preview as selected
+    };
+    reader.readAsDataURL(file);
+
+    // Store file for later upload
+    setPendingFile(file);
+    toast.success("Image selected! Click Save to upload.");
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
+    if (!file) return;
+    processFile(file);
+  };
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setUploadedImage(result);
-        setSelectedAvatar(result);
-      };
-      reader.readAsDataURL(file);
+  // Drag and Drop handlers
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!uploading) {
+      setIsDragging(true);
     }
   };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set dragging to false if leaving the drop zone
+    if (e.currentTarget === dropZoneRef.current) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (uploading) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processFile(file);
+    }
+  };
+
+  // Paste handler
+  const handlePaste = (e: ClipboardEvent) => {
+    if (activeTab !== "upload" || uploading) return;
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          processFile(file);
+          break;
+        }
+      }
+    }
+  };
+
+  // Add paste event listener when upload tab is active
+  useEffect(() => {
+    if (isOpen && activeTab === "upload") {
+      document.addEventListener("paste", handlePaste);
+      return () => {
+        document.removeEventListener("paste", handlePaste);
+      };
+    }
+  }, [isOpen, activeTab, uploading]);
 
   const handleUrlSubmit = () => {
     if (!imageUrl) {
@@ -187,14 +270,40 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedAvatar) {
       toast.error("Please select an avatar");
       return;
     }
 
-    onSelectAvatar(selectedAvatar);
-    onClose();
+    try {
+      // If there's a pending file, upload it to Supabase first
+      if (pendingFile) {
+        toast.loading("Uploading avatar...", { id: "upload-avatar" });
+        const { url, error } = await uploadFile(
+          pendingFile,
+          "Kiremon",
+          "user-avatars",
+        );
+
+        if (error || !url) {
+          throw new Error(error?.message || "Upload failed");
+        }
+
+        toast.dismiss("upload-avatar");
+        onSelectAvatar(url);
+      } else {
+        // Use the selected avatar (from system or URL)
+        onSelectAvatar(selectedAvatar);
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload avatar. Please try again.", {
+        id: "upload-avatar",
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -389,17 +498,42 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
                 accept="image/*"
                 onChange={handleFileUpload}
                 style={{ display: "none" }}
+                disabled={uploading}
               />
+
+              {uploading && (
+                <S.UploadProgress>
+                  <S.ProgressBar progress={uploadProgress} />
+                  <S.ProgressText>
+                    {uploadProgress}% Uploading...
+                  </S.ProgressText>
+                </S.UploadProgress>
+              )}
 
               {uploadedImage ? (
                 <S.PreviewContainer>
                   <S.PreviewImage src={uploadedImage} alt="Uploaded avatar" />
-                  <S.ChangeButton onClick={() => fileInputRef.current?.click()}>
+                  <S.ChangeButton
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
                     Change Image
                   </S.ChangeButton>
                 </S.PreviewContainer>
               ) : (
-                <S.UploadBox onClick={() => fileInputRef.current?.click()}>
+                <S.UploadBox
+                  ref={dropZoneRef}
+                  onClick={() => !uploading && fileInputRef.current?.click()}
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{
+                    opacity: uploading ? 0.5 : 1,
+                    cursor: uploading ? "not-allowed" : "pointer",
+                  }}
+                  className={isDragging ? "dragging" : ""}
+                >
                   <svg
                     width="64"
                     height="64"
@@ -412,7 +546,11 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                  <S.UploadText>Click to upload an image</S.UploadText>
+                  <S.UploadText>
+                    {isDragging
+                      ? "Drop image here"
+                      : "Click, drag & drop, or paste (Ctrl+V)"}
+                  </S.UploadText>
                   <S.UploadHint>PNG, JPG, GIF up to 5MB</S.UploadHint>
                 </S.UploadBox>
               )}
@@ -453,9 +591,14 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
         </S.ModalBody>
 
         <S.ModalFooter>
-          <S.CancelButton onClick={onClose}>Cancel</S.CancelButton>
-          <S.SaveButton onClick={handleSave} disabled={!selectedAvatar}>
-            Save Avatar
+          <S.CancelButton onClick={onClose} disabled={uploading}>
+            Cancel
+          </S.CancelButton>
+          <S.SaveButton
+            onClick={handleSave}
+            disabled={!selectedAvatar || uploading}
+          >
+            {uploading ? "Uploading..." : "Save Avatar"}
           </S.SaveButton>
         </S.ModalFooter>
       </S.ModalContainer>
