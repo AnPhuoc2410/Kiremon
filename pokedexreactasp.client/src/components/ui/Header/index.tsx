@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Text } from "..";
 import * as S from "./index.style";
 import { useAuth } from "../../../contexts/AuthContext";
 
@@ -214,15 +213,14 @@ const Header: React.FC<HeaderProps> = ({
                 <ChevronDownIcon />
               </S.UserButton>
               <S.UserDropdown isOpen={isUserMenuOpen}>
-                <S.DropdownItem as={Link} to="/profile">
-                  Profile
-                </S.DropdownItem>
-                <S.DropdownItem as={Link} to="/settings">
-                  Settings
-                </S.DropdownItem>
+                <Link to="/profile">
+                  <S.DropdownItem>Profile</S.DropdownItem>
+                </Link>
+                <Link to="/settings">
+                  <S.DropdownItem>Settings</S.DropdownItem>
+                </Link>
                 <S.DropdownItem
                   as="button"
-                  type="button"
                   onClick={() => {
                     setIsUserMenuOpen(false);
                     authLogout();
