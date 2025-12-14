@@ -21,7 +21,7 @@ export const pokeItemService = {
         itemsprites(
           where: {
             item: {
-              name: { _eq: "master-ball" }
+              name: { _eq: "timer-ball" }
             }
           }
         ) {

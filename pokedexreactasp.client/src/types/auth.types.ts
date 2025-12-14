@@ -8,6 +8,7 @@ export type AuthUser = {
   level: number;
   pokemonCaught: number;
   emailConfirmed: boolean;
+  twoFactorEnabled?: boolean;
 };
 
 export type AuthResponse = AuthUser & {
@@ -63,7 +64,23 @@ export type ExternalLoginRequest = {
   token: string;
 };
 
-export type LoginResponse = AuthResponse;
+export type TwoFactorLoginRequest = {
+  userId: string;
+  code: string;
+};
+
+export type TwoFactorSetupResponse = {
+  sharedKey: string;
+  qrCodeUri: string;
+};
+
+export type Enable2FARequest = {
+  code: string;
+};
+
+export type LoginResponse = AuthResponse & {
+  requiresTwoFactor?: boolean;
+};
 
 export type RegisterResponse = AuthResponse;
 
