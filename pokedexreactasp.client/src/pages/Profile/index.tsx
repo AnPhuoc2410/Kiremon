@@ -317,6 +317,14 @@ const Profile: React.FC = () => {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
 
+  // Edit profile state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    firstName: "",
+    lastName: "",
+  });
+
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
       toast.error("Please login to view your profile");
@@ -330,12 +338,43 @@ const Profile: React.FC = () => {
     }
   }, [isInitialized, isAuthenticated, navigate]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isEditMode) return;
+
+      // Ctrl+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (!isUpdatingProfile) {
+          handleEditProfile();
+        }
+      }
+
+      // Esc to cancel
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (!isUpdatingProfile) {
+          handleCancelEdit();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEditMode, isUpdatingProfile, editFormData]);
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await userService.getProfile();
       setProfile(data);
+      // Initialize edit form data
+      setEditFormData({
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+      });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       console.error("Failed to fetch profile:", err);
@@ -379,6 +418,58 @@ const Profile: React.FC = () => {
     } finally {
       setIsUpdatingAvatar(false);
     }
+  };
+
+  const handleEditProfile = async () => {
+    try {
+      setIsUpdatingProfile(true);
+
+      // Validate form
+      if (!editFormData.firstName?.trim() && !editFormData.lastName?.trim()) {
+        toast.error("Please enter at least first name or last name");
+        return;
+      }
+
+      await userService.updateProfile({
+        firstName: editFormData.firstName?.trim() || null,
+        lastName: editFormData.lastName?.trim() || null,
+      });
+
+      // Update local profile state
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              firstName: editFormData.firstName?.trim() || null,
+              lastName: editFormData.lastName?.trim() || null,
+            }
+          : null,
+      );
+
+      // Update AuthContext
+      updateUser({
+        firstName: editFormData.firstName?.trim() || null,
+        lastName: editFormData.lastName?.trim() || null,
+      });
+
+      setIsEditMode(false);
+      toast.success("Profile updated successfully!");
+      await fetchProfile(); // Refresh profile data
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form data to current profile values
+    setEditFormData({
+      firstName: profile?.firstName || "",
+      lastName: profile?.lastName || "",
+    });
+    setIsEditMode(false);
   };
 
   // Get display data
@@ -629,10 +720,12 @@ const Profile: React.FC = () => {
                     {/* Account Info Card */}
                     <S.ProfileCard>
                       <S.ProfileSection>
-                        <S.SectionTitle>
-                          <CalendarIcon />
-                          Account Information
-                        </S.SectionTitle>
+                        <S.SectionTitleRow>
+                          <S.SectionTitle>
+                            <CalendarIcon />
+                            Account Information
+                          </S.SectionTitle>
+                        </S.SectionTitleRow>
                         <S.InfoGrid>
                           <S.InfoItem>
                             <S.InfoLabel>Username</S.InfoLabel>
@@ -645,6 +738,48 @@ const Profile: React.FC = () => {
                             <S.InfoValue>
                               {profile?.email || authUser?.email}
                             </S.InfoValue>
+                          </S.InfoItem>
+                          <S.InfoItem>
+                            <S.InfoLabel>First Name</S.InfoLabel>
+                            {isEditMode ? (
+                              <S.InfoInput
+                                type="text"
+                                value={editFormData.firstName}
+                                onChange={(e) =>
+                                  setEditFormData((prev) => ({
+                                    ...prev,
+                                    firstName: e.target.value,
+                                  }))
+                                }
+                                placeholder="Enter first name"
+                                disabled={isUpdatingProfile}
+                              />
+                            ) : (
+                              <S.InfoValue>
+                                {profile?.firstName || "Not set"}
+                              </S.InfoValue>
+                            )}
+                          </S.InfoItem>
+                          <S.InfoItem>
+                            <S.InfoLabel>Last Name</S.InfoLabel>
+                            {isEditMode ? (
+                              <S.InfoInput
+                                type="text"
+                                value={editFormData.lastName}
+                                onChange={(e) =>
+                                  setEditFormData((prev) => ({
+                                    ...prev,
+                                    lastName: e.target.value,
+                                  }))
+                                }
+                                placeholder="Enter last name"
+                                disabled={isUpdatingProfile}
+                              />
+                            ) : (
+                              <S.InfoValue>
+                                {profile?.lastName || "Not set"}
+                              </S.InfoValue>
+                            )}
                           </S.InfoItem>
                           <S.InfoItem>
                             <S.InfoLabel>Member Since</S.InfoLabel>
@@ -666,18 +801,40 @@ const Profile: React.FC = () => {
                       </S.ProfileSection>
 
                       <S.ActionButtons>
-                        <S.Button onClick={() => navigate("/settings")}>
-                          <EditIcon />
-                          Edit Profile
-                        </S.Button>
-                        <S.Button
-                          variant="secondary"
-                          onClick={() => setIsAvatarModalOpen(true)}
-                          disabled={isUpdatingAvatar}
-                        >
-                          <CameraIcon />
-                          {isUpdatingAvatar ? "Updating..." : "Change Avatar"}
-                        </S.Button>
+                        {isEditMode ? (
+                          <>
+                            <S.Button
+                              variant="secondary"
+                              onClick={handleCancelEdit}
+                              disabled={isUpdatingProfile}
+                            >
+                              Cancel
+                            </S.Button>
+                            <S.Button
+                              onClick={handleEditProfile}
+                              disabled={isUpdatingProfile}
+                            >
+                              {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                            </S.Button>
+                          </>
+                        ) : (
+                          <>
+                            <S.Button onClick={() => setIsEditMode(true)}>
+                              <EditIcon />
+                              Edit Profile
+                            </S.Button>
+                            <S.Button
+                              variant="secondary"
+                              onClick={() => setIsAvatarModalOpen(true)}
+                              disabled={isUpdatingAvatar}
+                            >
+                              <CameraIcon />
+                              {isUpdatingAvatar
+                                ? "Updating..."
+                                : "Change Avatar"}
+                            </S.Button>
+                          </>
+                        )}
                       </S.ActionButtons>
                     </S.ProfileCard>
                   </>

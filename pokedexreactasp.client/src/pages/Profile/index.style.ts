@@ -489,6 +489,116 @@ export const InfoValue = styled.span`
   font-weight: 500;
 `;
 
+export const InfoInput = styled.input`
+  font-size: 0.95rem;
+  color: ${colors["gray-800"]};
+  font-weight: 500;
+  padding: 8px 12px;
+  border: 2px solid ${colors["gray-300"]};
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors["red-500"]};
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  &:disabled {
+    background: ${colors["gray-100"]};
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &::placeholder {
+    color: ${colors["gray-400"]};
+  }
+`;
+
+export const SectionTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+export const EditButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: ${colors["blue-500"]};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["blue-600"]};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+export const EditActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const CancelButton = styled.button`
+  padding: 8px 16px;
+  background: white;
+  color: ${colors["gray-700"]};
+  border: 2px solid ${colors["gray-300"]};
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${colors["gray-400"]};
+    background: ${colors["gray-50"]};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const SaveButton = styled.button`
+  padding: 8px 16px;
+  background: ${colors["green-500"]};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["green-600"]};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 export const AchievementBadges = styled.div`
   display: flex;
   gap: 10px;
