@@ -21,7 +21,6 @@ export const Page = styled.div`
     ${colors["gray-200"]} 100%
   );
   position: relative;
-  padding-top: 80px;
 
   &::before {
     content: "";
