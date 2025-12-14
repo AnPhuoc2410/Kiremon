@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthLoginData, AuthUser } from "../types/auth.types";
-import { eraseCookie, getCookie, setCookie } from "../components/utils/cookieUtils";
+import {
+  eraseCookie,
+  getCookie,
+  setCookie,
+} from "../components/utils/cookieUtils";
 import toast from "react-hot-toast";
 
 interface AuthContextType {
@@ -11,12 +15,15 @@ interface AuthContextType {
   user: AuthUser | null;
   authLogin: (data: AuthLoginData) => void;
   authLogout: () => void;
+  updateUser: (updates: Partial<AuthUser>) => void;
   getToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [authData, setAuthData] = useState<AuthLoginData | null>(null);
@@ -104,7 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setCookie("accessToken", loginData.accessToken, 7);
     setCookie("expires", loginData.expires, 7);
-    setCookie("authUser", encodeURIComponent(JSON.stringify(loginData.user)), 7);
+    setCookie(
+      "authUser",
+      encodeURIComponent(JSON.stringify(loginData.user)),
+      7,
+    );
   };
 
   const authLogout = () => {
@@ -118,6 +129,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     toast.success("Đăng xuất thành công", { duration: 2500 });
     navigate("/");
+  };
+
+  const updateUser = (updates: Partial<AuthUser>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      setCookie("authUser", encodeURIComponent(JSON.stringify(updatedUser)), 7);
+    }
   };
 
   const getToken = () => {
@@ -137,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         authLogin,
         authLogout,
+        updateUser,
         getToken,
       }}
     >

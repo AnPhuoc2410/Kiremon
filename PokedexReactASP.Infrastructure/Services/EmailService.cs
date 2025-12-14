@@ -27,6 +27,13 @@ namespace PokedexReactASP.Infrastructure.Services
             await SendEmailAsync(user.Email!, subject, htmlBody);
         }
 
+        public async Task SendExternalWelcomeConfirmationAsync(ApplicationUser user, string confirmationLink, string provider)
+        {
+            var subject = $"🌟 Welcome via {provider}! Your Kiremon Adventure Awaits!";
+            var htmlBody = BuildExternalWelcomeTemplate(user, confirmationLink, provider);
+            await SendEmailAsync(user.Email!, subject, htmlBody);
+        }
+
         public async Task SendPasswordResetAsync(ApplicationUser user, string resetLink, string token)
         {
             var subject = "⚡ Password Recovery - Kiremon Trainer Center";
@@ -335,6 +342,137 @@ namespace PokedexReactASP.Infrastructure.Services
                                       </p>
                                       <p style="margin:0;font-size:11px;color:#777777;">
                                         © 2024 Kiremon • Trainer Center • Stay safe, Trainer!
+                                      </p>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """;
+        }
+
+        private string BuildExternalWelcomeTemplate(ApplicationUser user, string confirmationLink, string provider)
+        {
+            var firstName = string.IsNullOrWhiteSpace(user.FirstName) ? user.UserName : user.FirstName;
+            return $"""
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  </head>
+                  <body style="margin:0;padding:0;background:#f5f5f5;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:20px 0;">
+                      <tr>
+                        <td align="center">
+                          <!-- Main Container -->
+                          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);border:4px solid #ffcb05;">
+                            
+                            <!-- Header with Pokeball SVG -->
+                            <tr>
+                              <td style="background:#dc0a2d;padding:0;position:relative;">
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                  <tr>
+                                    <td style="padding:24px 32px;text-align:center;">
+                                      <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 16px;">
+                                        <!-- Outer circle -->
+                                        <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#2c2c2c" stroke-width="4"/>
+                                        <!-- Top red half -->
+                                        <path d="M 2 50 A 48 48 0 0 1 98 50 L 98 2 A 48 48 0 0 0 2 2 Z" fill="#dc0a2d"/>
+                                        <!-- Bottom white half -->
+                                        <path d="M 2 50 A 48 48 0 0 0 98 50 L 98 98 A 48 48 0 0 1 2 98 Z" fill="#ffffff"/>
+                                        <!-- Black middle band -->
+                                        <rect x="2" y="46" width="96" height="8" fill="#2c2c2c"/>
+                                        <!-- Center button outer -->
+                                        <circle cx="50" cy="50" r="16" fill="#ffffff" stroke="#2c2c2c" stroke-width="3"/>
+                                        <!-- Center button inner -->
+                                        <circle cx="50" cy="50" r="8" fill="#2c2c2c"/>
+                                      </svg>
+                                      <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">
+                                        Welcome, Trainer!
+                                      </h1>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+
+                            <!-- Yellow Divider -->
+                            <tr>
+                              <td style="background:#ffcb05;height:8px;"></td>
+                            </tr>
+
+                            <!-- Content Area -->
+                            <tr>
+                              <td style="padding:32px;">
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                  <tr>
+                                    <td>
+                                      <div style="background:#f8f8f8;border-left:4px solid #3b4cca;padding:20px;border-radius:8px;margin-bottom:24px;">
+                                        <p style="margin:0 0 8px 0;font-size:18px;font-weight:700;color:#2c2c2c;">
+                                          👋 Hi, {WebUtility.HtmlEncode(firstName)}!
+                                        </p>
+                                        <p style="margin:0;font-size:15px;color:#555555;line-height:1.7;">
+                                          You've successfully signed up using your <strong>{WebUtility.HtmlEncode(provider)}</strong> account! Your Kiremon adventure is about to begin!
+                                        </p>
+                                      </div>
+
+                                      <p style="margin:0 0 20px 0;font-size:15px;color:#555555;line-height:1.7;">
+                                        🎯 <strong>Your next step:</strong> Verify your Trainer ID to unlock your account and start catching Kiremons!
+                                      </p>
+
+                                      <!-- Action Button -->
+                                      <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+                                        <tr>
+                                          <td align="center">
+                                            <a href="{confirmationLink}" style="display:inline-block;background:#dc0a2d;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 6px 16px rgba(220,10,45,0.4);border:3px solid #2c2c2c;">
+                                              ⚡ Confirm My Trainer ID
+                                            </a>
+                                          </td>
+                                        </tr>
+                                      </table>
+
+                                      <!-- Stats Box -->
+                                      <div style="background:#3b4cca;color:#ffffff;padding:16px;border-radius:8px;margin:24px 0;text-align:center;">
+                                        <p style="margin:0;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+                                          🏆 Ready to Start Your Adventure? 🏆
+                                        </p>
+                                      </div>
+
+                                      <div style="border:2px dashed #cccccc;padding:16px;border-radius:8px;background:#fafafa;">
+                                        <p style="margin:0 0 8px 0;font-size:13px;color:#777777;font-weight:600;">
+                                          🔗 Button not working? Copy this link:
+                                        </p>
+                                        <p style="margin:0;font-size:12px;color:#3b4cca;word-break:break-all;font-family:monospace;">
+                                          {confirmationLink}
+                                        </p>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+
+                            <!-- Footer -->
+                            <tr>
+                              <td style="background:#2c2c2c;padding:20px 32px;">
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                  <tr>
+                                    <td style="text-align:center;">
+                                      <p style="margin:0 0 8px 0;font-size:13px;color:#ffcb05;font-weight:700;">
+                                        ⏱️ Quick Reminder!
+                                      </p>
+                                      <p style="margin:0;font-size:12px;color:#aaaaaa;line-height:1.6;">
+                                        This verification link will expire soon. If you didn't create a Kiremon account, you can safely ignore this email.
+                                      </p>
+                                      <p style="margin:12px 0 0 0;font-size:11px;color:#777777;">
+                                        © 2024 Kiremon • Trainer Center • Gotta catch 'em all!
                                       </p>
                                     </td>
                                   </tr>

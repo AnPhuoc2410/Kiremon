@@ -23,6 +23,10 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
 
+            CreateMap<SocialUserDto, ApplicationUser>()
+                .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.LastActiveDate, opt => opt.MapFrom(src => DateTime.UtcNow));
+
             CreateMap<UserPokemon, UserPokemonDto>()
                 .ForMember(dest => dest.CustomMoveIds, opt => opt.MapFrom(src =>
                     !string.IsNullOrEmpty(src.CustomMoveIds)

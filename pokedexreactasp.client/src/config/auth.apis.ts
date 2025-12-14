@@ -7,12 +7,11 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
+  ExternalLoginRequest,
 } from "../types/auth.types";
 import api from "./axios.config";
 
-export const login = async (
-  user: LoginRequest,
-): Promise<LoginResponse> => {
+export const login = async (user: LoginRequest): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>("/auth/login", {
     usernameOrEmail: user.usernameOrEmail,
     password: user.password,
@@ -90,6 +89,17 @@ export const changePassword = async (data: ChangePasswordRequest) => {
     currentPassword: data.currentPassword,
     newPassword: data.newPassword,
     confirmNewPassword: data.confirmNewPassword,
+  });
+  return response.data;
+};
+
+// External login (Google, Facebook, GitHub)
+export const externalLogin = async (
+  data: ExternalLoginRequest,
+): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>("/auth/external-login", {
+    provider: data.provider,
+    token: data.token,
   });
   return response.data;
 };

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Text } from '..';
-import * as S from './index.style';
-import { useAuth } from '../../../contexts/AuthContext';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import * as S from "./index.style";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface HeaderProps {
   title: string;
@@ -13,21 +12,63 @@ interface HeaderProps {
 
 // Icons
 const BackIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9 4L5 8L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M9 4L5 8L9 12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M14 14L11 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14 14L11 11"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const ChevronDownIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M4 6L8 10L12 6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -36,20 +77,26 @@ interface NavItemWithDropdownProps {
   children: React.ReactNode;
 }
 
-const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({ title, children }) => {
+const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({
+  title,
+  children,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
 
@@ -57,20 +104,23 @@ const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({ title, childr
     <S.NavItem ref={dropdownRef}>
       <S.NavLink
         onClick={() => setIsOpen(!isOpen)}
-        className={isOpen ? 'active' : ''}
+        className={isOpen ? "active" : ""}
       >
         {title}
         <ChevronDownIcon />
       </S.NavLink>
-      <S.Dropdown isOpen={isOpen}>
-        {children}
-      </S.Dropdown>
+      <S.Dropdown isOpen={isOpen}>{children}</S.Dropdown>
     </S.NavItem>
   );
 };
 
-const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const Header: React.FC<HeaderProps> = ({
+  title,
+  subtitle,
+  backTo,
+  actions,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated, user, authLogout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -85,24 +135,29 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // Build display name: firstName + lastName, fallback to username
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.username ?? 'Trainer';
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : (user?.username ?? "Trainer");
 
   const avatarUrl =
-    user?.avatarUrl ?? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png';
+    user?.avatarUrl ??
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png";
 
   return (
     <S.HeaderContainer>
@@ -142,10 +197,15 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
           </form>
 
           {!isAuthenticated ? (
-            <S.LoginButton onClick={() => navigate('/login')}>Login</S.LoginButton>
+            <S.LoginButton onClick={() => navigate("/login")}>
+              Login
+            </S.LoginButton>
           ) : (
             <S.UserMenuContainer ref={userMenuRef}>
-              <S.UserButton isOpen={isUserMenuOpen} onClick={() => setIsUserMenuOpen((prev) => !prev)}>
+              <S.UserButton
+                isOpen={isUserMenuOpen}
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              >
                 <S.UserAvatar>
                   <img src={avatarUrl} alt="User Avatar" />
                 </S.UserAvatar>
@@ -161,7 +221,6 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle, backTo, actions }) => 
                 </Link>
                 <S.DropdownItem
                   as="button"
-                  type="button"
                   onClick={() => {
                     setIsUserMenuOpen(false);
                     authLogout();

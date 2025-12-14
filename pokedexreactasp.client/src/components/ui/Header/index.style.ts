@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
-import { colors } from '../../utils';
+import styled from "@emotion/styled";
+import { colors } from "../../utils";
 
 export const HeaderContainer = styled.header`
   display: flex;
@@ -105,12 +105,12 @@ export const SearchContainer = styled.div`
 `;
 
 export const UserAvatar = styled.div`
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  overflow: contain;
-  border: 2px transparent solid;
-  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid transparent;
 
   img {
     width: 100%;
@@ -120,7 +120,7 @@ export const UserAvatar = styled.div`
 `;
 
 export const LoginButton = styled.button`
-  background-color: ${colors['blue-600']};
+  background-color: ${colors["blue-600"]};
   color: white;
   border: none;
   padding: 8px 12px;
@@ -132,7 +132,7 @@ export const LoginButton = styled.button`
   gap: 8px;
 
   &:hover {
-    background-color: ${colors['blue-700']};
+    background-color: ${colors["blue-700"]};
   }
 `;
 
@@ -146,7 +146,7 @@ export const UserButton = styled.button<{ isOpen?: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid ${colors['gray-200']};
+  border: 1px solid ${colors["gray-200"]};
   padding: 6px 10px;
   border-radius: 20px;
   background: #fff;
@@ -154,22 +154,22 @@ export const UserButton = styled.button<{ isOpen?: boolean }>`
   transition: all 0.25s ease;
 
   &:hover {
-    border-color: ${colors['blue-400']};
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border-color: ${colors["blue-400"]};
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 
   span {
     font-size: 14px;
     font-weight: 600;
-    color: ${colors['gray-800']};
+    color: ${colors["gray-800"]};
   }
 
   svg {
     width: 16px;
     height: 16px;
-    color: ${colors['gray-600']};
+    color: ${colors["gray-600"]};
     transition: transform 0.25s ease;
-    transform: ${props => props.isOpen ? 'rotate(0deg)' : 'rotate(90deg)'};
+    transform: ${(props) => (props.isOpen ? "rotate(0deg)" : "rotate(90deg)")};
   }
 `;
 
@@ -178,7 +178,7 @@ export const UserDropdown = styled.div<{ isOpen: boolean }>`
   top: calc(100% + 8px);
   right: 0;
   background: #fff;
-  border: 1px solid ${colors['gray-200']};
+  border: 1px solid ${colors["gray-200"]};
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   min-width: 140px;
@@ -187,9 +187,10 @@ export const UserDropdown = styled.div<{ isOpen: boolean }>`
   overflow: hidden;
 
   /* Animation */
-  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
-  opacity: ${props => props.isOpen ? 1 : 0};
-  transform: ${props => props.isOpen ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)'};
+  visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  transform: ${(props) =>
+    props.isOpen ? "translateY(0) scale(1)" : "translateY(-10px) scale(0.95)"};
   transform-origin: top right;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
@@ -256,14 +257,15 @@ export const Dropdown = styled.div<{ isOpen: boolean }>`
   overflow: hidden;
 
   /* Animation */
-  visibility: ${props => (props.isOpen ? 'visible' : 'hidden')};
-  opacity: ${props => (props.isOpen ? 1 : 0)};
-  transform: ${props => (props.isOpen ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)')};
+  visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  transform: ${(props) =>
+    props.isOpen ? "translateY(0) scale(1)" : "translateY(-10px) scale(0.95)"};
   transform-origin: top left;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-export const DropdownItem = styled.a`
+export const DropdownItem = styled.div`
   display: block;
   padding: 10px 16px;
   color: ${colors["gray-700"]};

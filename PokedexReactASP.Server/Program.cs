@@ -101,6 +101,8 @@ namespace PokedexReactASP.Server
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
+            builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
             builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
             builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
