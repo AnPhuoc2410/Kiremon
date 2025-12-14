@@ -292,11 +292,7 @@ const Settings: React.FC = () => {
 
   return (
     <S.Page>
-      <Header
-        title="Settings"
-        subtitle="Manage your account preferences"
-        backTo="/profile"
-      />
+      <Header title="Settings" subtitle="Manage your account preferences" />
 
       <S.Container>
         {/* Sidebar Navigation */}
