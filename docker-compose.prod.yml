@@ -49,6 +49,11 @@ services:
       # Swagger Authentication (Required for Production)
       - Swagger__Username=${SWAGGER_USERNAME:?SWAGGER_USERNAME is required}
       - Swagger__Password=${SWAGGER_PASSWORD:?SWAGGER_PASSWORD is required}
+      # OAuth Credentials (Optional)
+      - OAuth__Google__ClientId=${GOOGLE_OAUTH_CLIENT_ID}
+      - OAuth__Google__ClientSecret=${GOOGLE_OAUTH_CLIENT_SECRET}
+      - OAuth__Facebook__AppId=${FACEBOOK_OAUTH_APP_ID}
+      - OAuth__Facebook__AppSecret=${FACEBOOK_OAUTH_APP_SECRET}
     ports:
       - "${API_PORT:-2410}:8080"
     healthcheck:
