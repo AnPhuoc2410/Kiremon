@@ -1,0 +1,740 @@
+import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
+import { colors } from "../../components/utils";
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+`;
+
+// ============ LAYOUT ============
+export const Page = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    ${colors["gray-100"]} 0%,
+    ${colors["gray-200"]} 100%
+  );
+  position: relative;
+  padding-top: 80px;
+
+  &::before {
+    content: "";
+    position: fixed;
+    right: -150px;
+    top: -50px;
+    width: 400px;
+    height: 400px;
+    background: url("/static/pokeball-transparent.png") no-repeat center;
+    background-size: contain;
+    opacity: 0.05;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    left: -100px;
+    bottom: -100px;
+    width: 300px;
+    height: 300px;
+    background: url("/static/pokeball-transparent.png") no-repeat center;
+    background-size: contain;
+    opacity: 0.03;
+    z-index: 0;
+    pointer-events: none;
+    transform: rotate(45deg);
+  }
+`;
+
+export const Container = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 24px 80px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 32px;
+  align-items: stretch;
+  min-height: calc(100vh - 120px);
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 16px 60px;
+  }
+`;
+
+// ============ SIDEBAR NAVIGATION ============
+export const Sidebar = styled.nav`
+  width: 280px;
+  background: white;
+  border-right: 1px solid ${colors["gray-200"]};
+  flex-shrink: 0;
+  align-self: stretch;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid ${colors["gray-200"]};
+    padding: 16px;
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: ${colors["gray-100"]};
+      border-radius: 2px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: ${colors["red-400"]};
+      border-radius: 2px;
+    }
+  }
+`;
+
+export const SidebarSection = styled.div`
+  &:not(:first-of-type) {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid ${colors["gray-200"]};
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+`;
+
+export const SidebarSectionTitle = styled.div`
+  padding: 0 20px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: ${colors["gray-500"]};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+`;
+
+export const SidebarTitle = styled.div`
+  padding: 24px 20px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: ${colors["red-500"]};
+    display: none;
+  }
+`;
+
+export const NavItem = styled.button<{ active?: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: none;
+  background: ${({ active }) =>
+    active
+      ? `linear-gradient(90deg, ${colors["red-100"]} 0%, transparent 100%)`
+      : "transparent"};
+  color: ${({ active }) => (active ? colors["red-600"] : colors["gray-600"])};
+  font-size: 15px;
+  font-weight: ${({ active }) => (active ? "600" : "500")};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  border-left: 3px solid
+    ${({ active }) => (active ? colors["red-500"] : "transparent")};
+
+  &:hover {
+    background: ${({ active }) =>
+      active
+        ? `linear-gradient(90deg, ${colors["red-100"]} 0%, transparent 100%)`
+        : colors["gray-100"]};
+    color: ${({ active }) => (active ? colors["red-600"] : colors["gray-800"])};
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 1024px) {
+    border-left: none;
+    border-bottom: 3px solid
+      ${(props) => (props.active ? colors["red-500"] : "transparent")};
+    padding: 12px 16px;
+    white-space: nowrap;
+    border-radius: 8px;
+    min-width: fit-content;
+  }
+`;
+
+export const ContentArea = styled.div`
+  flex: 1;
+  min-width: 0;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid ${colors["gray-200"]};
+  overflow: hidden;
+`;
+
+export const ContentHeader = styled.div`
+  padding: 32px;
+`;
+
+export const ContentTitle = styled.h1`
+  font-size: 28px;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+  margin: 0 0 8px 0;
+`;
+
+export const ContentDescription = styled.p`
+  font-size: 15px;
+  color: ${colors["gray-600"]};
+  margin: 0;
+  line-height: 1.6;
+`;
+
+export const Section = styled.section`
+  scroll-margin-top: 140px;
+  border-top: 1px solid ${colors["gray-200"]};
+
+  @media (max-width: 768px) {
+    scroll-margin-top: 120px;
+  }
+`;
+
+export const SectionHeader = styled.div`
+  padding: 24px 32px;
+  background: ${colors["gray-50"]};
+  border-bottom: 1px solid ${colors["gray-200"]};
+
+  &:not(:first-of-type) {
+    border-top: 1px solid ${colors["gray-200"]};
+  }
+`;
+
+export const SectionTitle = styled.h2`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: ${colors["red-500"]};
+  }
+`;
+
+// ============ SECTION DIVIDER ============
+export const SectionBody = styled.div`
+  padding: 0;
+`;
+
+export const EmptyState = styled.div`
+  padding: 80px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const EmptyStateIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: ${colors["gray-100"]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${colors["gray-400"]};
+  margin-bottom: 8px;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+export const EmptyStateTitle = styled.h3`
+  font-size: 20px;
+  font-weight: 600;
+  color: ${colors["gray-900"]};
+  margin: 0;
+`;
+
+export const EmptyStateDescription = styled.p`
+  font-size: 14px;
+  color: ${colors["gray-600"]};
+  margin: 0 0 24px 0;
+  max-width: 600px;
+  line-height: 1.6;
+`;
+
+export const EmptyStateButton = styled.button`
+  padding: 12px 24px;
+  background: ${colors["green-600"]};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["green-700"]};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+// ============ SETTINGS ITEMS ============
+export const SettingItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid ${colors["gray-200"]};
+  gap: 24px;
+  transition: background 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: ${colors["gray-50"]};
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px 24px;
+  }
+`;
+
+export const SettingItemMain = styled.div`
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+`;
+
+export const SettingItemIcon = styled.div<{ color?: string }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: ${(props) => props.color || colors["red-50"]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${(props) => props.color?.replace("50", "600") || colors["red-600"]};
+  flex-shrink: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+export const SettingItemContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const SettingItemTitle = styled.div`
+  font-size: 15px;
+  font-weight: 600;
+  color: ${colors["gray-900"]};
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const SettingItemDescription = styled.div`
+  font-size: 14px;
+  color: ${colors["gray-600"]};
+  line-height: 1.5;
+`;
+
+export const SettingItemActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-end;
+  }
+`;
+
+// ============ BUTTONS ============
+export const Button = styled.button<{
+  variant?: "primary" | "secondary" | "danger";
+}>`
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+
+  ${(props) => {
+    if (props.variant === "danger") {
+      return `
+        background: ${colors["red-500"]};
+        color: white;
+        &:hover:not(:disabled) {
+          background: ${colors["red-600"]};
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+      `;
+    } else if (props.variant === "secondary") {
+      return `
+        background: ${colors["gray-100"]};
+        color: ${colors["gray-700"]};
+        &:hover:not(:disabled) {
+          background: ${colors["gray-200"]};
+        }
+      `;
+    } else {
+      return `
+        background: ${colors["red-500"]};
+        color: white;
+        &:hover:not(:disabled) {
+          background: ${colors["red-600"]};
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+      `;
+    }
+  }}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+// ============ TOGGLE SWITCH ============
+export const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 30px;
+`;
+
+export const ToggleInput = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + span {
+    background-color: ${colors["green-500"]};
+  }
+
+  &:checked + span:before {
+    transform: translateX(26px);
+  }
+`;
+
+export const ToggleSlider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: ${colors["gray-300"]};
+  transition: 0.3s;
+  border-radius: 30px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+// ============ 2FA MODAL ============
+export const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+export const ModalContent = styled.div`
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid ${colors["gray-200"]};
+`;
+
+export const ModalHeader = styled.div`
+  padding: 24px;
+  background: white;
+  color: ${colors["gray-900"]};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid ${colors["gray-100"]};
+`;
+
+export const ModalTitle = styled.h3`
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  svg {
+    color: ${colors["red-500"]};
+  }
+`;
+
+export const CloseButton = styled.button`
+  background: ${colors["gray-100"]};
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: ${colors["gray-600"]};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["red-500"]};
+    color: white;
+    transform: rotate(90deg);
+  }
+`;
+
+export const ModalBody = styled.div`
+  padding: 24px;
+`;
+
+export const QRCodeContainer = styled.div`
+  background: ${colors["gray-50"]};
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  border: 2px dashed ${colors["gray-300"]};
+`;
+
+export const QRCodeWrapper = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+`;
+
+export const SecretKeyContainer = styled.div`
+  background: ${colors["gray-50"]};
+  border: 2px solid ${colors["gray-200"]};
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const SecretKey = styled.code`
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  color: ${colors["red-600"]};
+  font-weight: 600;
+  flex: 1;
+  word-break: break-all;
+`;
+
+export const CopyButton = styled.button`
+  background: ${colors["red-500"]};
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    background: ${colors["red-600"]};
+    transform: translateY(-1px);
+  }
+`;
+
+export const Input = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid ${colors["gray-200"]};
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  text-align: center;
+  letter-spacing: 4px;
+  font-weight: 600;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors["red-500"]};
+    box-shadow: 0 0 0 3px ${colors["red-100"]};
+  }
+`;
+
+export const Label = styled.label`
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${colors["gray-700"]};
+  margin-bottom: 8px;
+`;
+
+export const InfoBox = styled.div<{ type?: "info" | "warning" | "success" }>`
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+
+  ${(props) => {
+    if (props.type === "warning") {
+      return `
+        background: ${colors["yellow-50"]};
+        border: 1px solid ${colors["yellow-300"]};
+        color: ${colors["yellow-900"]};
+      `;
+    } else if (props.type === "success") {
+      return `
+        background: ${colors["green-50"]};
+        border: 1px solid ${colors["green-300"]};
+        color: ${colors["green-900"]};
+      `;
+    } else {
+      return `
+        background: ${colors["blue-50"]};
+        border: 1px solid ${colors["blue-300"]};
+        color: ${colors["blue-900"]};
+      `;
+    }
+  }}
+`;
+
+export const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+// ============ STATUS BADGE ============
+export const StatusBadge = styled.span<{ active?: boolean }>`
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  ${(props) =>
+    props.active
+      ? `
+    background: ${colors["green-100"]};
+    color: ${colors["green-700"]};
+  `
+      : `
+    background: ${colors["gray-100"]};
+    color: ${colors["gray-600"]};
+  `}
+`;

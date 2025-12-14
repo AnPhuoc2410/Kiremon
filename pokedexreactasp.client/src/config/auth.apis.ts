@@ -8,6 +8,9 @@ import {
   ResetPasswordRequest,
   ChangePasswordRequest,
   ExternalLoginRequest,
+  TwoFactorLoginRequest,
+  TwoFactorSetupResponse,
+  Enable2FARequest,
 } from "../types/auth.types";
 import api from "./axios.config";
 
@@ -102,4 +105,35 @@ export const externalLogin = async (
     token: data.token,
   });
   return response.data;
+};
+
+// Two-factor authentication login
+export const loginTwoFactor = async (
+  data: TwoFactorLoginRequest,
+): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>("/auth/login-2fa", {
+    userId: data.userId,
+    code: data.code,
+  });
+  return response.data;
+};
+
+// Get 2FA setup information (QR code and secret key)
+export const getTwoFactorSetup = async (): Promise<TwoFactorSetupResponse> => {
+  const response = await api.get<TwoFactorSetupResponse>("/auth/2fa/setup");
+  return response.data;
+};
+
+// Enable 2FA with verification code
+export const enableTwoFactor = async (
+  data: Enable2FARequest,
+): Promise<void> => {
+  await api.post("/auth/2fa/enable", {
+    code: data.code,
+  });
+};
+
+// Disable 2FA
+export const disableTwoFactor = async (): Promise<void> => {
+  await api.post("/auth/2fa/disable");
 };

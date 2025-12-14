@@ -13,5 +13,12 @@ namespace PokedexReactASP.Application.Interfaces
         Task ConfirmEmailAsync(ConfirmEmailDto confirmEmailDto);
         Task ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
         Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
+
+        // Two-Factor Authentication
+
+        Task<TwoFactorDto> GetTwoFactorAsync(string userId);
+        Task<bool> EnableTwoFactorAsync(string userId, Enable2FADto dto);
+        Task<AuthResponseDto> LoginTwoFactorAsync(TwoFactorLoginDto dto);
+
     }
 }

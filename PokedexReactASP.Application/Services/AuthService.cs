@@ -1,4 +1,3 @@
-using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -7,6 +6,7 @@ using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Options;
 using PokedexReactASP.Domain.Entities;
+using System.Text.Encodings.Web;
 
 namespace PokedexReactASP.Application.Services
 {
@@ -20,6 +20,7 @@ namespace PokedexReactASP.Application.Services
         private readonly IEmailService _emailService;
         private readonly EmailSettings _emailSettings;
         private readonly ISocialAuthService _socialAuthService;
+        private readonly UrlEncoder _urlEncoder;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
@@ -31,6 +32,7 @@ namespace PokedexReactASP.Application.Services
             IEmailService emailService,
             IOptions<EmailSettings> emailOptions,
             ISocialAuthService socialAuthService,
+            UrlEncoder urlEncoder,
             ILogger<AuthService> logger)
         {
             _userManager = userManager;
@@ -41,6 +43,7 @@ namespace PokedexReactASP.Application.Services
             _emailService = emailService;
             _emailSettings = emailOptions.Value;
             _socialAuthService = socialAuthService;
+            _urlEncoder = urlEncoder;
             _logger = logger;
         }
 
@@ -91,6 +94,9 @@ namespace PokedexReactASP.Application.Services
                 await _userManager.ResetAccessFailedCountAsync(user);
                 return GenerateAuthResponse(user);
             }
+
+            if (result.RequiresTwoFactor)
+                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
 
             if (result.IsLockedOut)
             {
@@ -196,16 +202,18 @@ namespace PokedexReactASP.Application.Services
             return await _userManager.FindByNameAsync(usernameOrEmail) != null;
         }
 
-        private AuthResponseDto GenerateAuthResponse(ApplicationUser user, bool includeToken = true)
+        private AuthResponseDto GenerateAuthResponse(ApplicationUser user, bool includeToken = true, bool requiresTwoFactor = false)
         {
             var response = _mapper.Map<AuthResponseDto>(user);
             response.EmailConfirmed = user.EmailConfirmed;
+            response.RequiresTwoFactor = requiresTwoFactor;
 
             if (includeToken && user.EmailConfirmed)
             {
                 response.Token = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
                 response.ExpiresAt = DateTime.UtcNow.AddDays(7); // Production nên cân nhắc Refresh Token
             }
+
             return response;
         }
 
@@ -241,5 +249,6 @@ namespace PokedexReactASP.Application.Services
 
             return $"{baseUrl}{path}?email={Uri.EscapeDataString(email)}&token={encodedToken}";
         }
+
     }
 }
