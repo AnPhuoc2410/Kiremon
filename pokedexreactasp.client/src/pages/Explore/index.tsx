@@ -68,7 +68,7 @@ const Explore = () => {
         setNextUrl(nextStr || null);
         setHasMore(!!nextStr);
         setIsLoading(false);
-      } catch (error) {
+      } catch{
         toast.error("Oops! Failed to get Pokémon. Please try again!");
         setIsLoading(false);
       }
