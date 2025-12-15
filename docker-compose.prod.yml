@@ -1,69 +1,31 @@
-﻿# =========================================
-# KIREMON PRODUCTION - API ONLY
-# Frontend: Vercel | Database: Supabase
-# =========================================
-
-services:
-  # .NET Backend API
+﻿services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: be/kiremon-api:latest
     container_name: kiremon_api
     restart: unless-stopped
-    read_only: false  # Set to true if app doesn't need to write to filesystem
+
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
     cap_add:
       - NET_BIND_SERVICE
-    environment:
-      - DOTNET_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://0.0.0.0:8080
-      # Database (Supabase)
-      - ConnectionStrings__DefaultConnection=${SUPABASE_CONNECTION_STRING:?SUPABASE_CONNECTION_STRING is required}
-      # JWT
-      - JwtSettings__SecretKey=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
-      - JwtSettings__Issuer=${JWT_ISSUER:-KiremonAPI}
-      - JwtSettings__Audience=${JWT_AUDIENCE:-KiremonClient}
-      - JwtSettings__ExpirationDays=${JWT_EXPIRATION_DAYS:-7}
-      # Email
-      - Email__SmtpServer=${SMTP_SERVER:-smtp.gmail.com}
-      - Email__SmtpPort=${SMTP_PORT:-587}
-      - Email__FromEmail=${SMTP_FROM_EMAIL}
-      - Email__FromName=${SMTP_FROM_NAME:-Kiremon Support}
-      - Email__Username=${SMTP_USERNAME}
-      - Email__Password=${SMTP_PASSWORD}
-      - Email__FrontendBaseUrl=${FRONTEND_URL_LOCAL}
-      # CORS - Allow Vercel frontend
-      - AllowedOrigins__0=${FRONTEND_URL}
-      - AllowedOrigins__1=${FRONTEND_URL_WWW:-}
-      - AllowedOrigins__2=${FRONTEND_URL_LOCAL:-}
-      # Admin Seed
-      - SeedAdmin__Email=${ADMIN_EMAIL:-admin@kiremon.com}
-      - SeedAdmin__Username=${ADMIN_USERNAME:-admin}
-      - SeedAdmin__Password=${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
-      # ReCaptcha
-      - RecaptchaSettings__SecretKey=${RECAPTCHA_SECRET_KEY}
-      # Swagger Authentication (Required for Production)
-      - Swagger__Username=${SWAGGER_USERNAME:?SWAGGER_USERNAME is required}
-      - Swagger__Password=${SWAGGER_PASSWORD:?SWAGGER_PASSWORD is required}
-      # OAuth Credentials (Optional)
-      - OAuth__Google__ClientId=${GOOGLE_OAUTH_CLIENT_ID}
-      - OAuth__Google__ClientSecret=${GOOGLE_OAUTH_CLIENT_SECRET}
-      - OAuth__Facebook__AppId=${FACEBOOK_OAUTH_APP_ID}
-      - OAuth__Facebook__AppSecret=${FACEBOOK_OAUTH_APP_SECRET}
+
+    env_file:
+      - .env
+
     ports:
       - "${API_PORT:-2410}:8080"
+
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
+
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
