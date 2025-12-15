@@ -20,6 +20,7 @@ namespace PokedexReactASP.Application.DTOs.Auth
     {
         public string UserId { get; set; }
         public string Code { get; set; }
+        public bool IsPersistent { get; set; }
     }
     public class Disable2FADto
     {

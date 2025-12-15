@@ -74,10 +74,7 @@ namespace PokedexReactASP.Application.Services
                 _userManager.Options.Tokens.AuthenticatorTokenProvider,
                 dto.Code);
 
-            if (!isTokenValid)
-            {
-                throw new UnauthorizedAccessException("Invalid 2FA Code");
-            }
+            if (!isTokenValid) throw new UnauthorizedAccessException("Invalid 2FA Code");
 
             return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
         }

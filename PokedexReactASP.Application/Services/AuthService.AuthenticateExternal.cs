@@ -75,6 +75,13 @@ namespace PokedexReactASP.Application.Services
 
             if (user.TwoFactorEnabled)
             {
+                var isTrustedDevice = await _signInManager.IsTwoFactorClientRememberedAsync(user);
+
+                if (isTrustedDevice)
+                {
+                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+                }
+
                 return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
             }
 

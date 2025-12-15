@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Mappings;
@@ -14,7 +13,6 @@ using PokedexReactASP.Server.Hubs;
 using PokedexReactASP.Server.Middleware;
 using PokedexReactASP.Server.Seed;
 using System.Text;
-using System.Text.Json;
 
 namespace PokedexReactASP.Server
 {
@@ -153,16 +151,26 @@ namespace PokedexReactASP.Server
             });
 
             var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowReactApp", policy =>
+            builder.Services
+                .AddCors(options =>
                 {
-                    policy.WithOrigins(allowedOrigins ?? [])
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
+                    options.AddPolicy("AllowReactApp", policy =>
+                    {
+                        policy.WithOrigins(allowedOrigins ?? [])
+                              .AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials();
+                    });
+                })
+                .ConfigureApplicationCookie(options =>
+                {
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.None;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 });
-            });
+
+
 
             var app = builder.Build();
 
@@ -177,7 +185,7 @@ namespace PokedexReactASP.Server
             {
                 app.UseMiddleware<SwaggerAuthMiddleware>();
             }
-            
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
