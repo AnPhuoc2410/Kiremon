@@ -88,3 +88,16 @@ jobs:
           echo "❌ Health check failed"
           docker compose -f docker-compose.prod.yml logs --tail=50
           exit 1
+      - name: Cleanup unused Docker images
+        if: success()
+        run: |
+          echo "🧹 Cleaning up unused Docker images..."
+
+          # Remove dangling images
+          docker image prune -f
+
+          # Remove unused images older than 7 days
+          docker image prune -a -f --filter "until=168h"
+
+          echo "✅ Docker image cleanup completed"
+
