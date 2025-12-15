@@ -268,5 +268,26 @@ namespace PokedexReactASP.Server.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [Authorize]
+        [HttpPost("2fa/disable")]
+        public async Task<IActionResult> DisableTwoFactor([FromBody] Disable2FADto dto)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var isSuccess = await _authService.DisableTwoFactorAsync(userId, dto.Code);
+                if (isSuccess)
+                    return Ok(new { message = "2FA disabled successfully" });
+
+                return BadRequest(new { message = "Failed to disable 2FA." });
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

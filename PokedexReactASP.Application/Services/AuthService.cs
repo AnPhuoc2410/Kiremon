@@ -249,6 +249,5 @@ namespace PokedexReactASP.Application.Services
 
             return $"{baseUrl}{path}?email={Uri.EscapeDataString(email)}&token={encodedToken}";
         }
-
     }
 }

@@ -1,16 +1,5 @@
 import styled from "@emotion/styled";
-import { keyframes } from "@emotion/react";
 import { colors } from "../../components/utils";
-
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-`;
-
-const shimmer = keyframes`
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-`;
 
 // ============ LAYOUT ============
 export const Page = styled.div`
@@ -234,7 +223,7 @@ export const Section = styled.section`
 
 export const SectionHeader = styled.div`
   padding: 24px 32px;
-  background: ${colors["gray-50"]};
+  background: ${colors["gray-100"]};
   border-bottom: 1px solid ${colors["gray-200"]};
 
   &:not(:first-of-type) {
@@ -343,7 +332,7 @@ export const SettingItem = styled.div`
   }
 
   &:hover {
-    background: ${colors["gray-50"]};
+    background: ${colors["gray-100"]};
   }
 
   @media (max-width: 768px) {
@@ -365,7 +354,7 @@ export const SettingItemIcon = styled.div<{ color?: string }>`
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: ${(props) => props.color || colors["red-50"]};
+  background: ${(props) => props.color || colors["red-100"]};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -546,17 +535,24 @@ export const ModalContent = styled.div`
 `;
 
 export const ModalHeader = styled.div`
-  padding: 24px;
+  padding: 32px 32px 24px;
   background: white;
   color: ${colors["gray-900"]};
   display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-bottom: 1px solid ${colors["gray-200"]};
+`;
+
+export const ModalHeaderTop = styled.div`
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2px solid ${colors["gray-100"]};
+  width: 100%;
 `;
 
 export const ModalTitle = styled.h3`
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   margin: 0;
   display: flex;
@@ -566,6 +562,63 @@ export const ModalTitle = styled.h3`
   svg {
     color: ${colors["red-500"]};
   }
+`;
+
+export const ProgressSteps = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+`;
+
+export const ProgressStep = styled.div<{
+  active?: boolean;
+  completed?: boolean;
+}>`
+  display: flex;
+  align-items: center;
+
+  &:not(:last-child)::after {
+    content: "";
+    width: 60px;
+    height: 2px;
+    background: ${(props) =>
+      props.completed ? colors["red-500"] : colors["gray-300"]};
+    margin: 0 12px;
+  }
+`;
+
+export const StepCircle = styled.div<{ active?: boolean; completed?: boolean }>`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+
+  ${(props) => {
+    if (props.active) {
+      return `
+        background: ${colors["red-500"]};
+        color: white;
+        box-shadow: 0 0 0 4px ${colors["red-100"]};
+      `;
+    } else if (props.completed) {
+      return `
+        background: ${colors["red-500"]};
+        color: white;
+      `;
+    } else {
+      return `
+        background: ${colors["gray-200"]};
+        color: ${colors["gray-600"]};
+        border: 2px solid ${colors["gray-300"]};
+      `;
+    }
+  }}
 `;
 
 export const CloseButton = styled.button`
@@ -589,53 +642,116 @@ export const CloseButton = styled.button`
 `;
 
 export const ModalBody = styled.div`
-  padding: 24px;
+  padding: 32px;
+  max-height: 70vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${colors["gray-100"]};
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${colors["red-400"]};
+    border-radius: 4px;
+  }
+`;
+
+export const ModalSection = styled.div`
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+export const ModalSectionTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+  margin: 0 0 8px 0;
+`;
+
+export const ModalSectionDescription = styled.p`
+  font-size: 14px;
+  color: ${colors["gray-600"]};
+  margin: 0 0 16px 0;
+  line-height: 1.6;
 `;
 
 export const QRCodeContainer = styled.div`
-  background: ${colors["gray-50"]};
+  background: white;
+  border: 2px solid ${colors["gray-200"]};
   border-radius: 12px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0;
-  border: 2px dashed ${colors["gray-300"]};
+  margin: 16px 0;
 `;
 
 export const QRCodeWrapper = styled.div`
   background: white;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    display: block;
+    width: 200px;
+    height: 200px;
+  }
+`;
+
+export const QRCodeHelp = styled.div`
+  margin-top: 16px;
+  font-size: 13px;
+  color: ${colors["gray-600"]};
+  text-align: center;
+
+  a {
+    color: ${colors["red-500"]};
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 `;
 
 export const SecretKeyContainer = styled.div`
-  background: ${colors["gray-50"]};
-  border: 2px solid ${colors["gray-200"]};
+  background: ${colors["gray-100"]};
+  border: 1px solid ${colors["gray-200"]};
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 12px;
   margin: 12px 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 `;
 
 export const SecretKey = styled.code`
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  color: ${colors["red-600"]};
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  color: ${colors["gray-900"]};
   font-weight: 600;
   flex: 1;
   word-break: break-all;
+  letter-spacing: 1px;
 `;
 
 export const CopyButton = styled.button`
-  background: ${colors["red-500"]};
-  color: white;
-  border: none;
-  padding: 8px 12px;
+  background: transparent;
+  color: ${colors["gray-600"]};
+  border: 1px solid ${colors["gray-300"]};
+  padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
@@ -646,21 +762,35 @@ export const CopyButton = styled.button`
   gap: 4px;
 
   &:hover {
-    background: ${colors["red-600"]};
-    transform: translateY(-1px);
+    background: ${colors["gray-100"]};
+    border-color: ${colors["gray-400"]};
   }
+
+  &:active {
+    background: ${colors["gray-200"]};
+  }
+`;
+
+export const VerificationSection = styled.div`
+  margin-top: 24px;
 `;
 
 export const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid ${colors["gray-200"]};
+  border: 2px solid ${colors["gray-300"]};
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   transition: all 0.2s ease;
-  text-align: center;
-  letter-spacing: 4px;
+  font-family: "Consolas", "Monaco", monospace;
+  letter-spacing: 8px;
   font-weight: 600;
+  text-align: center;
+
+  &::placeholder {
+    letter-spacing: 2px;
+    color: ${colors["gray-400"]};
+  }
 
   &:focus {
     outline: none;
@@ -677,46 +807,15 @@ export const Label = styled.label`
   margin-bottom: 8px;
 `;
 
-export const InfoBox = styled.div<{ type?: "info" | "warning" | "success" }>`
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin: 16px 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 14px;
-  line-height: 1.6;
-
-  ${(props) => {
-    if (props.type === "warning") {
-      return `
-        background: ${colors["yellow-50"]};
-        border: 1px solid ${colors["yellow-300"]};
-        color: ${colors["yellow-900"]};
-      `;
-    } else if (props.type === "success") {
-      return `
-        background: ${colors["green-50"]};
-        border: 1px solid ${colors["green-300"]};
-        color: ${colors["green-900"]};
-      `;
-    } else {
-      return `
-        background: ${colors["blue-50"]};
-        border: 1px solid ${colors["blue-300"]};
-        color: ${colors["blue-900"]};
-      `;
-    }
-  }}
-`;
-
 export const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid ${colors["gray-200"]};
 
   @media (max-width: 768px) {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 `;
 
