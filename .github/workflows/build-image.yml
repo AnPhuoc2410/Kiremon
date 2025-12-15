@@ -27,5 +27,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            be/kiremon-api:latest
-            be/kiremon-api:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/kiremon-api:latest
+            ${{ secrets.DOCKER_USERNAME }}/kiremon-api:${{ github.sha }}
