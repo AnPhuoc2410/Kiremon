@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Create .env file
         run: |
-          cat > /opt/kiremon/.env << 'EOF'
+          cat > /home/thang/Phuoc/Kiremon/.env << 'EOF'
           DOTNET_ENVIRONMENT=Production
           ASPNETCORE_URLS=http://0.0.0.0:8080
 
@@ -60,7 +60,7 @@ jobs:
 
       - name: Pull & run containers
         run: |
-          cd /opt/kiremon
+          cd /home/thang/Phuoc/Kiremon
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d
 
