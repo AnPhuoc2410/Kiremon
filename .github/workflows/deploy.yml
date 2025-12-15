@@ -33,35 +33,36 @@ jobs:
 
           ConnectionStrings__DefaultConnection=${{ secrets.SUPABASE_CONNECTION_STRING }}
 
-          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          JWT_ISSUER=${{ secrets.JWT_ISSUER }}
-          JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE }}
-          JWT_EXPIRATION_DAYS=${{ secrets.JWT_EXPIRATION_DAYS }}
+          JwtSettings__SecretKey=${{ secrets.JWT_SECRET_KEY }}
+          JwtSettings__Issuer=${{ secrets.JWT_ISSUER }}
+          JwtSettings__Audience=${{ secrets.JWT_AUDIENCE }}
+          JwtSettings__ExpirationDays=${{ secrets.JWT_EXPIRATION_DAYS }}
 
-          SMTP_SERVER=smtp.gmail.com
-          SMTP_PORT=587
-          SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}
-          SMTP_FROM_NAME=Kiremon Support
+          Email__SmtpServer=smtp.gmail.com
+          Email__SmtpPort=587
+          Email__SmtpUsername=${{ secrets.SMTP_USERNAME }}
+          Email__SmtpPassword=${{ secrets.SMTP_PASSWORD }}
+          Email__FromEmail=${{ secrets.SMTP_FROM_EMAIL }}
+          Email__FromName=Kiremon Support
+          Email__FrontendBaseUrl=${{ secrets.FRONTEND_URL }}
 
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-          FRONTEND_URL_WWW=${{ secrets.FRONTEND_URL_WWW }}
-          FRONTEND_URL_LOCAL=${{ secrets.FRONTEND_URL_LOCAL }}
+          AllowedOrigins__0=${{ secrets.FRONTEND_URL }}
+          AllowedOrigins__1=${{ secrets.FRONTEND_URL_WWW }}
+          AllowedOrigins__2=${{ secrets.FRONTEND_URL_LOCAL }}
 
-          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
-          ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
-          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          SeedAdmin__Email=${{ secrets.ADMIN_EMAIL }}
+          SeedAdmin__Username=${{ secrets.ADMIN_USERNAME }}
+          SeedAdmin__Password=${{ secrets.ADMIN_PASSWORD }}
 
-          SWAGGER_USERNAME=${{ secrets.SWAGGER_USERNAME }}
-          SWAGGER_PASSWORD=${{ secrets.SWAGGER_PASSWORD }}
+          Swagger__Username=${{ secrets.SWAGGER_USERNAME }}
+          Swagger__Password=${{ secrets.SWAGGER_PASSWORD }}
 
-          RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}
+          RecaptchaSettings__SecretKey=${{ secrets.RECAPTCHA_SECRET_KEY }}
 
-          GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
-          GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
-          FACEBOOK_OAUTH_APP_ID=${{ secrets.FACEBOOK_OAUTH_APP_ID }}
-          FACEBOOK_OAUTH_APP_SECRET=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
+          OAuth__Google__ClientId=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          OAuth__Google__ClientSecret=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          OAuth__Facebook__AppId=${{ secrets.FACEBOOK_OAUTH_APP_ID }}
+          OAuth__Facebook__AppSecret=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
 
           API_PORT=2410
 
