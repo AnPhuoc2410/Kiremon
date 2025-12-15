@@ -7,6 +7,9 @@
     <SpaRoot>..\pokedexreactasp.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:56708</SpaProxyServerUrl>
+
+    <SkipClientBuild>true</SkipClientBuild>
+    <SpaBuild>false</SpaBuild>
   </PropertyGroup>
 
   <ItemGroup>
