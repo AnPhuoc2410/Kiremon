@@ -1,0 +1,79 @@
+name: Deploy Kiremon API (Production)
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Kiremon API Image"]
+    types:
+      - completed
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - name: Create .env file
+        run: |
+          cat > /opt/kiremon/.env << 'EOF'
+          DOTNET_ENVIRONMENT=Production
+          ASPNETCORE_URLS=http://0.0.0.0:8080
+
+          SUPABASE_CONNECTION_STRING=${{ secrets.SUPABASE_CONNECTION_STRING }}
+
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          JWT_ISSUER=${{ secrets.JWT_ISSUER }}
+          JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE }}
+          JWT_EXPIRATION_DAYS=${{ secrets.JWT_EXPIRATION_DAYS }}
+
+          SMTP_SERVER=smtp.gmail.com
+          SMTP_PORT=587
+          SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }}
+          SMTP_FROM_NAME=Kiremon Support
+
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          FRONTEND_URL_WWW=${{ secrets.FRONTEND_URL_WWW }}
+          FRONTEND_URL_LOCAL=${{ secrets.FRONTEND_URL_LOCAL }}
+
+          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+          ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+
+          SWAGGER_USERNAME=${{ secrets.SWAGGER_USERNAME }}
+          SWAGGER_PASSWORD=${{ secrets.SWAGGER_PASSWORD }}
+
+          RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}
+
+          GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          FACEBOOK_OAUTH_APP_ID=${{ secrets.FACEBOOK_OAUTH_APP_ID }}
+          FACEBOOK_OAUTH_APP_SECRET=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
+
+          API_PORT=2410
+          EOF
+
+      - name: Pull & run containers
+        run: |
+          cd /opt/kiremon
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d
+
+      - name: Health check
+        run: |
+          for i in {1..30}; do
+            if curl -fs http://localhost:2410/health; then
+              echo "✅ API healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "❌ Health check failed"
+          docker compose -f docker-compose.prod.yml logs --tail=50
+          exit 1
