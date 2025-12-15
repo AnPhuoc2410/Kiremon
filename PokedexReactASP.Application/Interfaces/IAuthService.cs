@@ -19,6 +19,7 @@ namespace PokedexReactASP.Application.Interfaces
         Task<TwoFactorDto> GetTwoFactorAsync(string userId);
         Task<bool> EnableTwoFactorAsync(string userId, Enable2FADto dto);
         Task<AuthResponseDto> LoginTwoFactorAsync(TwoFactorLoginDto dto);
+        Task<bool> DisableTwoFactorAsync(string userId, string password);
 
     }
 }

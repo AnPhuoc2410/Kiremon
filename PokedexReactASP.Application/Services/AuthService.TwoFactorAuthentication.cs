@@ -54,9 +54,9 @@ namespace PokedexReactASP.Application.Services
 
             if (!isTokenValid)
             {
-                 _logger.LogWarning("EnableTwoFactorAsync: Invalid 2FA code for user ID {UserId}", userId);
+                _logger.LogWarning("EnableTwoFactorAsync: Invalid 2FA code for user ID {UserId}", userId);
                 return false;
-            }    
+            }
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
 
@@ -80,7 +80,30 @@ namespace PokedexReactASP.Application.Services
             }
 
             return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
+        }
 
+        public async Task<bool> DisableTwoFactorAsync(string userId, string code)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            var isTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user,
+                _userManager.Options.Tokens.AuthenticatorTokenProvider,
+                code);
+
+            if (!isTokenValid) return false;
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, false);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("DisableTwoFactorAsync: Failed to disable 2FA for user ID {UserId}", userId);
+                return false;
+            }
+
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            return true;
         }
     }
 }

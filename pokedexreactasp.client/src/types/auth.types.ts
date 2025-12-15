@@ -78,6 +78,10 @@ export type Enable2FARequest = {
   code: string;
 };
 
+export type Disable2FARequest = {
+  code: string;
+};
+
 export type LoginResponse = AuthResponse & {
   requiresTwoFactor?: boolean;
 };

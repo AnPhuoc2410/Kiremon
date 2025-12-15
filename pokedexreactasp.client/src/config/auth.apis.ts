@@ -11,6 +11,7 @@ import {
   TwoFactorLoginRequest,
   TwoFactorSetupResponse,
   Enable2FARequest,
+  Disable2FARequest,
 } from "../types/auth.types";
 import api from "./axios.config";
 
@@ -134,6 +135,10 @@ export const enableTwoFactor = async (
 };
 
 // Disable 2FA
-export const disableTwoFactor = async (): Promise<void> => {
-  await api.post("/auth/2fa/disable");
+export const disableTwoFactor = async (
+  data: Disable2FARequest,
+): Promise<void> => {
+  await api.post("/auth/2fa/disable", {
+    code: data.code,
+  });
 };
