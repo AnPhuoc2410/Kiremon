@@ -17,6 +17,14 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Deploy Folder
+        run: |
+          mkdir -p /home/thang/Phuoc/Kiremon
+          cp docker-compose.prod.yml /home/thang/Phuoc/Kiremon/docker-compose.prod.yml
+      
       - name: Create .env file
         run: |
           cat > /home/thang/Phuoc/Kiremon/.env << 'EOF'
@@ -56,6 +64,8 @@ jobs:
           FACEBOOK_OAUTH_APP_SECRET=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
 
           API_PORT=2410
+
+          DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/kiremon-api
           EOF
 
       - name: Pull & run containers
