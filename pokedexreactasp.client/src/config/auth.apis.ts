@@ -115,6 +115,7 @@ export const loginTwoFactor = async (
   const response = await api.post<LoginResponse>("/auth/login-2fa", {
     userId: data.userId,
     code: data.code,
+    rememberMe: data.rememberMe || false,
   });
   return response.data;
 };

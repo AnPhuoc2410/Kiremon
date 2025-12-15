@@ -76,6 +76,11 @@ namespace PokedexReactASP.Application.Services
 
             if (!isTokenValid) throw new UnauthorizedAccessException("Invalid 2FA Code");
 
+            if (dto.RememberMe)
+            {
+                await _signInManager.RememberTwoFactorClientAsync(user);
+            }
+
             return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
         }
 

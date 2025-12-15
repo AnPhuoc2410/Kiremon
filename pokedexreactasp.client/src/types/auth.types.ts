@@ -67,6 +67,7 @@ export type ExternalLoginRequest = {
 export type TwoFactorLoginRequest = {
   userId: string;
   code: string;
+  rememberMe?: boolean;
 };
 
 export type TwoFactorSetupResponse = {

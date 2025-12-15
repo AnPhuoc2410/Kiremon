@@ -12,7 +12,7 @@ namespace PokedexReactASP.Application.DTOs.Auth
         public string QrCodeUri { get; set; }
     }
 
-    public class  Enable2FADto
+    public class Enable2FADto
     {
         public string Code { get; set; }
     }
@@ -20,7 +20,7 @@ namespace PokedexReactASP.Application.DTOs.Auth
     {
         public string UserId { get; set; }
         public string Code { get; set; }
-        public bool IsPersistent { get; set; }
+        public bool RememberMe { get; set; }
     }
     public class Disable2FADto
     {

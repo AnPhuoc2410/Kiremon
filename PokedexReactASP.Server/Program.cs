@@ -165,9 +165,18 @@ namespace PokedexReactASP.Server
                 .ConfigureApplicationCookie(options =>
                 {
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.SameSite = SameSiteMode.None;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                    if (builder.Environment.IsDevelopment())
+                    {
+                        options.Cookie.SameSite = SameSiteMode.Lax;
+
+                        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    }
+                    else
+                    {
+                        options.Cookie.SameSite = SameSiteMode.None;
+                        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    }
                 });
 
 
