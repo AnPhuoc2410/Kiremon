@@ -31,7 +31,7 @@ jobs:
           DOTNET_ENVIRONMENT=Production
           ASPNETCORE_URLS=http://0.0.0.0:8080
 
-          SUPABASE_CONNECTION_STRING=${{ secrets.SUPABASE_CONNECTION_STRING }}
+          ConnectionStrings__DefaultConnection=${{ secrets.SUPABASE_CONNECTION_STRING }}
 
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_ISSUER=${{ secrets.JWT_ISSUER }}
