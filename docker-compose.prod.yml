@@ -1,6 +1,6 @@
 ﻿services:
   api:
-    image: be/kiremon-api:latest
+    image: ${DOCKER_IMAGE_NAME:-be/kiremon-api}:latest
     container_name: kiremon_api
     restart: unless-stopped
 
