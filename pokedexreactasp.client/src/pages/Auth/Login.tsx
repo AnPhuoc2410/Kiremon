@@ -26,6 +26,7 @@ const LoginForm: React.FC = () => {
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorUserId, setTwoFactorUserId] = useState("");
+  const [rememberDevice, setRememberDevice] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
   const { authLogin } = useAuth();
@@ -126,6 +127,7 @@ const LoginForm: React.FC = () => {
       const response = await loginTwoFactor({
         userId: twoFactorUserId,
         code: twoFactorCode,
+        rememberMe: rememberDevice,
       });
 
       if (response?.token) {
@@ -168,6 +170,7 @@ const LoginForm: React.FC = () => {
     setRequiresTwoFactor(false);
     setTwoFactorCode("");
     setTwoFactorUserId("");
+    setRememberDevice(false);
     setUsernameOrEmail("");
     setPassword("");
     recaptchaRef.current?.reset();
@@ -285,6 +288,34 @@ const LoginForm: React.FC = () => {
                 letterSpacing: "8px",
               }}
             />
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginTop: "8px",
+              }}
+            >
+              <input
+                type="checkbox"
+                id="rememberDevice"
+                checked={rememberDevice}
+                onChange={(e) => setRememberDevice(e.target.checked)}
+                style={{ cursor: "pointer" }}
+              />
+              <label
+                htmlFor="rememberDevice"
+                style={{
+                  fontSize: 13,
+                  color: "#626876",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                Trust this device for 30 days
+              </label>
+            </div>
 
             <S.Submit type="submit" disabled={loading}>
               {loading ? "Verifying..." : "Verify Code"}
