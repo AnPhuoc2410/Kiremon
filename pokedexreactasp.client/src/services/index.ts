@@ -8,5 +8,15 @@ export { generationsService } from "./pokemon/generations.service";
 // Export user service
 export { userService } from "./user/user.service";
 export type { UserProfile, UpdateProfileRequest } from "./user/user.service";
+// Export collection service
+export { collectionService } from "./collection/collection.service";
+export type {
+  UserPokemonDto,
+  CatchPokemonRequest,
+  CatchResultDto,
+  CollectionStatsDto,
+  UserPokemonSummaryDto,
+  LocalPokemonDto
+} from "./collection/collection.service";
 // Export cache utility
 export { cacheUtils as pokeApiCache } from "./cache/cache";
