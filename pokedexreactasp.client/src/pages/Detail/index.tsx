@@ -5,8 +5,9 @@ import { clearTimeout, setTimeout } from "worker-timers";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FormEvent, ChangeEvent, useEffect, useState, createRef, useRef } from "react";
 
-import { useGlobalContext } from "../../contexts";
-import { generatePokeSummary } from "../../helpers";
+import { useGlobalContext, useAuth } from "../../contexts";
+import { generatePokeSummary, loadMyPokemonFromLocalStorage } from "../../helpers";
+import { collectionService } from "../../services";
 import {
   IPokemonDetailResponse,
   IPokemonSpecies,
@@ -182,8 +183,16 @@ const DetailPokemon = () => {
 
   const [nicknameModal, setNicknameModal] = useState<boolean>(false);
   const [nicknameIsValid, setNicknameIsValid] = useState<boolean>(true);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [catchResult, setCatchResult] = useState<{
+    ivTotal?: number;
+    ivRating?: string;
+    isNewSpecies?: boolean;
+    experienceGained?: number;
+  } | null>(null);
 
   const { setState } = useGlobalContext();
+  const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
 
   // Helper function to process evolution chain data
@@ -396,32 +405,88 @@ const DetailPokemon = () => {
   async function onNicknameSave(e: FormEvent) {
     e.preventDefault();
 
-    const currentCollection = localStorage.getItem("pokegames@myPokemon");
-    const parsed: { name: string; nickname: string; sprite: string }[] =
-      JSON.parse(currentCollection!) || [];
+    if (!nickname.trim()) {
+      setNicknameIsValid(false);
+      return;
+    }
 
-    let isUnique = true;
-    for (const collection of parsed) {
-      if (collection.nickname === nickname) {
-        setNicknameIsValid(false);
-        isUnique = false;
-        return;
+    setIsSaving(true);
+
+    try {
+      // If user is authenticated, save to backend
+      if (isAuthenticated) {
+        const result = await collectionService.catchPokemon({
+          pokemonApiId: pokemonId,
+          nickname: nickname.trim(),
+          caughtLocation: "Wild",
+          caughtLevel: Math.floor(Math.random() * 20) + 1,
+          isShiny: false, // Could add shiny encounter logic
+        });
+
+        if (result.success) {
+          setCatchResult({
+            ivTotal: result.ivTotal,
+            ivRating: result.ivRating,
+            isNewSpecies: result.isNewSpecies,
+            experienceGained: result.experienceGained,
+          });
+
+          // Also save to localStorage for offline access
+          saveToLocalStorage();
+
+          toast.success(
+            `${result.caughtPokemon?.displayName} was caught! IVs: ${result.ivRating}`,
+            { duration: 4000 }
+          );
+
+          if (result.isNewSpecies) {
+            toast.success("New species registered in Pokédex!", { duration: 3000 });
+          }
+
+          if (result.trainerLeveledUp) {
+            toast.success(`Trainer leveled up to ${result.newTrainerLevel}!`, { duration: 3000 });
+          }
+
+          setIsSaved(true);
+        } else {
+          toast.error(result.message);
+          setNicknameIsValid(false);
+        }
       } else {
-        !nicknameIsValid && setNicknameIsValid(true);
-        isUnique = true;
-      }
-    }
+        // Fallback to localStorage only for non-authenticated users
+        const parsed = loadMyPokemonFromLocalStorage();
 
-    if (isUnique) {
-      parsed.push({
-        name: name!.toUpperCase(),
-        nickname,
-        sprite,
-      });
-      localStorage.setItem("pokegames@myPokemon", JSON.stringify(parsed));
-      setState({ pokeSummary: generatePokeSummary(parsed) });
-      setIsSaved(true);
+        // Check for duplicate nickname
+        const isDuplicate = parsed.some(p => p.nickname === nickname.trim());
+        if (isDuplicate) {
+          setNicknameIsValid(false);
+          toast.error("You already have a Pokémon with this nickname!");
+          setIsSaving(false);
+          return;
+        }
+
+        saveToLocalStorage();
+        toast.success(`${nickname} was caught!`);
+        setIsSaved(true);
+      }
+    } catch (error: any) {
+      console.error("Error saving Pokemon:", error);
+      toast.error(error.response?.data?.message || "Failed to save Pokemon");
+      setNicknameIsValid(false);
+    } finally {
+      setIsSaving(false);
     }
+  }
+
+  function saveToLocalStorage() {
+    const parsed = loadMyPokemonFromLocalStorage();
+    parsed.push({
+      name: name!.toUpperCase(),
+      nickname: nickname.trim(),
+      sprite,
+    });
+    localStorage.setItem("pokegames@myPokemon", JSON.stringify(parsed));
+    setState({ pokeSummary: generatePokeSummary(parsed) });
   }
 
   // Play Pokemon cry sound
@@ -627,6 +692,11 @@ const DetailPokemon = () => {
                   <Text>You just caught a {name?.toUpperCase()}</Text>
                   <br />
                   <Text>Now please give {name?.toUpperCase()} a nickname...</Text>
+                  {!isAuthenticated && (
+                    <Text variant="light" size="sm" style={{ marginTop: 8 }}>
+                      💡 Log in to save to your collection and track IVs!
+                    </Text>
+                  )}
                 </div>
               ) : (
                 <div className="pxl-border" style={{ textAlign: "left" }}>
@@ -641,18 +711,39 @@ const DetailPokemon = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setNickname(e.target.value.toUpperCase())
                 }
+                disabled={isSaving}
               />
 
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
             </T.NicknamingForm>
           ) : (
             <T.AnotherWrapper>
               <div className="pxl-border" style={{ textAlign: "left" }}>
-                <Text>Whoosh! {nickname} is now in your Pokemon list</Text>
+                <Text>Whoosh! {nickname} is now in your Pokémon list!</Text>
+
+                {catchResult && isAuthenticated && (
+                  <div style={{ marginTop: 12, padding: "8px 0" }}>
+                    <Text size="sm" style={{ color: "#60A5FA" }}>
+                      ⭐ IV Rating: <strong>{catchResult.ivRating}</strong> ({catchResult.ivTotal}/186)
+                    </Text>
+                    {catchResult.experienceGained && (
+                      <Text size="sm" style={{ color: "#34D399", marginTop: 4 }}>
+                        +{catchResult.experienceGained} XP gained!
+                      </Text>
+                    )}
+                    {catchResult.isNewSpecies && (
+                      <Text size="sm" style={{ color: "#FBBF24", marginTop: 4 }}>
+                        🆕 New species registered!
+                      </Text>
+                    )}
+                  </div>
+                )}
               </div>
 
               <Link to="/my-pokemon">
-                <Button variant="light">See My Pokemon</Button>
+                <Button variant="light">See My Pokémon</Button>
               </Link>
               <Link to="/pokemons">
                 <Button>Catch Another</Button>
