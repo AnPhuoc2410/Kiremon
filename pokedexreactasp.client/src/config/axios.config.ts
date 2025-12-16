@@ -3,7 +3,7 @@ import { getCookie } from "../components/utils/cookieUtils";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: false,
+  withCredentials: true, 
 });
 
 const handleBefore = (

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.Interfaces;
+using System.Security.Claims;
 
 namespace PokedexReactASP.Server.Controllers
 {
@@ -207,6 +208,86 @@ namespace PokedexReactASP.Server.Controllers
         {
             var exists = await _authService.UserExistsAsync(username);
             return Ok(new { exists });
+        }
+
+        [HttpPost("login-2fa")]
+        [AllowAnonymous]
+        public async Task<ActionResult<AuthResponseDto>> LoginTwoFactor([FromBody] TwoFactorLoginDto dto)
+        {
+            try
+            {
+                var response = await _authService.LoginTwoFactorAsync(dto);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("2fa/setup")]
+        public async Task<ActionResult<TwoFactorDto>> SetupTwoFactor()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var result = await _authService.GetTwoFactorAsync(userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("2fa/enable")]
+        public async Task<IActionResult> EnableTwoFactor([FromBody] Enable2FADto dto)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var isSuccess = await _authService.EnableTwoFactorAsync(userId, dto);
+
+                if (isSuccess)
+                {
+                    return Ok(new { message = "2FA enabled successfully" });
+                }
+
+                return BadRequest(new { message = "Invalid 2FA code." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("2fa/disable")]
+        public async Task<IActionResult> DisableTwoFactor([FromBody] Disable2FADto dto)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var isSuccess = await _authService.DisableTwoFactorAsync(userId, dto.Code);
+                if (isSuccess)
+                    return Ok(new { message = "2FA disabled successfully" });
+
+                return BadRequest(new { message = "Failed to disable 2FA." });
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

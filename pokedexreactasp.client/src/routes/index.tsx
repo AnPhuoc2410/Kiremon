@@ -28,6 +28,7 @@ const Forgot = lazy(() => import("../pages/Auth/Forgot"));
 const ConfirmEmail = lazy(() => import("../pages/Auth/ConfirmEmail"));
 const ResetPassword = lazy(() => import("../pages/Auth/ResetPassword"));
 const Profile = lazy(() => import("../pages/Profile"));
+const Settings = lazy(() => import("../pages/Settings"));
 
 export default function Routes() {
   return (
@@ -190,6 +191,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <Profile />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Settings />
               </Suspense>
             }
           />

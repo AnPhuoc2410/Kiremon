@@ -1,12 +1,13 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 // Create a base axios instance with common configuration
 const createApiClient = (baseURL: string): AxiosInstance => {
   const client = axios.create({
     baseURL,
     timeout: 15000, // 15 seconds timeout
+    withCredentials: false, 
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -18,7 +19,7 @@ const createApiClient = (baseURL: string): AxiosInstance => {
     },
     (error) => {
       return Promise.reject(error);
-    }
+    },
   );
 
   // Response interceptor for handling common response operations
@@ -28,14 +29,14 @@ const createApiClient = (baseURL: string): AxiosInstance => {
     },
     (error) => {
       // Handle common errors (network errors, timeouts, etc.)
-      if (error.code === 'ECONNABORTED') {
-        console.error('Request timeout');
+      if (error.code === "ECONNABORTED") {
+        console.error("Request timeout");
       } else if (!error.response) {
-        console.error('Network error');
+        console.error("Network error");
       }
 
       return Promise.reject(error);
-    }
+    },
   );
 
   return client;
@@ -54,17 +55,32 @@ export class ApiService {
     return response.data;
   }
 
-  protected async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.post(url, data, config);
+  protected async post<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
+    const response: AxiosResponse<T> = await this.client.post(
+      url,
+      data,
+      config,
+    );
     return response.data;
   }
 
-  protected async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  protected async put<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
     const response: AxiosResponse<T> = await this.client.put(url, data, config);
     return response.data;
   }
 
-  protected async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  protected async delete<T>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
     const response: AxiosResponse<T> = await this.client.delete(url, config);
     return response.data;
   }

@@ -24,6 +24,8 @@ namespace PokedexReactASP.Server.Controllers
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         }
 
+        #region Profile Endpoints
+
         [HttpGet("profile")]
         public async Task<ActionResult<UserProfileDto>> GetProfile()
         {
@@ -65,6 +67,13 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Profile updated successfully" });
         }
 
+        #endregion
+
+        #region Pokemon Collection Endpoints
+
+        /// <summary>
+        /// Get all Pokemon in user's collection with enriched PokeAPI data
+        /// </summary>
         [HttpGet("pokemon")]
         public async Task<ActionResult<IEnumerable<UserPokemonDto>>> GetMyPokemon()
         {
@@ -78,8 +87,48 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(pokemon);
         }
 
+        /// <summary>
+        /// Get a specific Pokemon from user's collection
+        /// </summary>
+        [HttpGet("pokemon/{userPokemonId}")]
+        public async Task<ActionResult<UserPokemonDto>> GetPokemonById(int userPokemonId)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var pokemon = await _userService.GetUserPokemonByIdAsync(userId, userPokemonId);
+            if (pokemon == null)
+            {
+                return NotFound(new { message = "Pokemon not found in your collection" });
+            }
+
+            return Ok(pokemon);
+        }
+
+        /// <summary>
+        /// Get collection statistics
+        /// </summary>
+        [HttpGet("pokemon/stats")]
+        public async Task<ActionResult<CollectionStatsDto>> GetCollectionStats()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var stats = await _userService.GetCollectionStatsAsync(userId);
+            return Ok(stats);
+        }
+
+        /// <summary>
+        /// Catch a Pokemon and add it to collection
+        /// </summary>
         [HttpPost("pokemon/catch")]
-        public async Task<ActionResult> CatchPokemon([FromBody] CatchPokemonDto catchPokemonDto)
+        public async Task<ActionResult<CatchResultDto>> CatchPokemon([FromBody] CatchPokemonDto catchPokemonDto)
         {
             if (!ModelState.IsValid)
             {
@@ -93,14 +142,17 @@ namespace PokedexReactASP.Server.Controllers
             }
 
             var result = await _userService.CatchPokemonAsync(userId, catchPokemonDto);
-            if (!result)
+            if (!result.Success)
             {
-                return BadRequest(new { message = "Failed to catch Pokemon. It may already be in your collection or doesn't exist." });
+                return BadRequest(result);
             }
 
-            return Ok(new { message = "Pokemon caught successfully!" });
+            return Ok(result);
         }
 
+        /// <summary>
+        /// Release a Pokemon from collection
+        /// </summary>
         [HttpDelete("pokemon/{userPokemonId}")]
         public async Task<ActionResult> ReleasePokemon(int userPokemonId)
         {
@@ -119,8 +171,11 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Pokemon released successfully" });
         }
 
+        /// <summary>
+        /// Update Pokemon nickname
+        /// </summary>
         [HttpPut("pokemon/{userPokemonId}/nickname")]
-        public async Task<ActionResult> UpdatePokemonNickname(int userPokemonId, [FromBody] string nickname)
+        public async Task<ActionResult> UpdatePokemonNickname(int userPokemonId, [FromBody] UpdateNicknameDto dto)
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
@@ -128,7 +183,7 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _userService.UpdatePokemonNicknameAsync(userId, userPokemonId, nickname);
+            var result = await _userService.UpdatePokemonNicknameAsync(userId, userPokemonId, dto.Nickname);
             if (!result)
             {
                 return NotFound(new { message = "Pokemon not found in your collection" });
@@ -137,6 +192,9 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Nickname updated successfully" });
         }
 
+        /// <summary>
+        /// Toggle favorite status
+        /// </summary>
         [HttpPut("pokemon/{userPokemonId}/favorite")]
         public async Task<ActionResult> ToggleFavoritePokemon(int userPokemonId)
         {
@@ -154,5 +212,47 @@ namespace PokedexReactASP.Server.Controllers
 
             return Ok(new { message = "Favorite status updated successfully" });
         }
+
+        /// <summary>
+        /// Update Pokemon notes
+        /// </summary>
+        [HttpPut("pokemon/{userPokemonId}/notes")]
+        public async Task<ActionResult> UpdatePokemonNotes(int userPokemonId, [FromBody] UpdateNotesDto dto)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userService.UpdatePokemonNotesAsync(userId, userPokemonId, dto.Notes);
+            if (!result)
+            {
+                return NotFound(new { message = "Pokemon not found in your collection" });
+            }
+
+            return Ok(new { message = "Notes updated successfully" });
+        }
+
+        /// <summary>
+        /// Sync Pokemon from localStorage (for migration from local to server)
+        /// </summary>
+        [HttpPost("pokemon/sync")]
+        public async Task<ActionResult> SyncFromLocalStorage([FromBody] IEnumerable<LocalPokemonDto> localPokemon)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var syncedCount = await _userService.SyncFromLocalStorageAsync(userId, localPokemon);
+            return Ok(new { 
+                message = $"Successfully synced {syncedCount} Pokemon",
+                syncedCount 
+            });
+        }
+
+        #endregion
     }
 }

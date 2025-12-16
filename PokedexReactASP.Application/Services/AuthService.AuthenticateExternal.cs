@@ -73,7 +73,19 @@ namespace PokedexReactASP.Application.Services
                 }
             }
 
-            return GenerateAuthResponse(user, includeToken: user.EmailConfirmed);
+            if (user.TwoFactorEnabled)
+            {
+                var isTrustedDevice = await _signInManager.IsTwoFactorClientRememberedAsync(user);
+
+                if (isTrustedDevice)
+                {
+                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+                }
+
+                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
+            }
+
+            return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
         }
 
         private async Task SendWelcomeEmailForExternalUser(ApplicationUser user, string provider)
