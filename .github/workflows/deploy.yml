@@ -1,0 +1,103 @@
+name: Deploy Kiremon API (Production)
+
+on:
+  workflow_run:
+    workflows: ["Build & Push Kiremon API Image"]
+    types:
+      - completed
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Deploy Folder
+        run: |
+          mkdir -p /home/thang/Phuoc/Kiremon
+          cp docker-compose.prod.yml /home/thang/Phuoc/Kiremon/docker-compose.prod.yml
+      
+      - name: Create .env file
+        run: |
+          cat > /home/thang/Phuoc/Kiremon/.env << 'EOF'
+          DOTNET_ENVIRONMENT=Production
+          ASPNETCORE_URLS=http://0.0.0.0:8080
+
+          ConnectionStrings__DefaultConnection=${{ secrets.SUPABASE_CONNECTION_STRING }}
+
+          JwtSettings__SecretKey=${{ secrets.JWT_SECRET_KEY }}
+          JwtSettings__Issuer=${{ secrets.JWT_ISSUER }}
+          JwtSettings__Audience=${{ secrets.JWT_AUDIENCE }}
+          JwtSettings__ExpirationDays=${{ secrets.JWT_EXPIRATION_DAYS }}
+
+          Email__SmtpServer=smtp.gmail.com
+          Email__SmtpPort=587
+          Email__SmtpUsername=${{ secrets.SMTP_USERNAME }}
+          Email__SmtpPassword=${{ secrets.SMTP_PASSWORD }}
+          Email__FromEmail=${{ secrets.SMTP_FROM_EMAIL }}
+          Email__FromName=Kiremon Support
+          Email__FrontendBaseUrl=${{ secrets.FRONTEND_URL }}
+
+          AllowedOrigins__0=${{ secrets.FRONTEND_URL }}
+          AllowedOrigins__1=${{ secrets.FRONTEND_URL_WWW }}
+          AllowedOrigins__2=${{ secrets.FRONTEND_URL_LOCAL }}
+
+          SeedAdmin__Email=${{ secrets.ADMIN_EMAIL }}
+          SeedAdmin__Username=${{ secrets.ADMIN_USERNAME }}
+          SeedAdmin__Password=${{ secrets.ADMIN_PASSWORD }}
+
+          Swagger__Username=${{ secrets.SWAGGER_USERNAME }}
+          Swagger__Password=${{ secrets.SWAGGER_PASSWORD }}
+
+          RecaptchaSettings__SecretKey=${{ secrets.RECAPTCHA_SECRET_KEY }}
+
+          OAuth__Google__ClientId=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          OAuth__Google__ClientSecret=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          OAuth__Facebook__AppId=${{ secrets.FACEBOOK_OAUTH_APP_ID }}
+          OAuth__Facebook__AppSecret=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
+
+          API_PORT=2410
+
+          DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/kiremon-api
+          EOF
+
+      - name: Pull & run containers
+        run: |
+          cd /home/thang/Phuoc/Kiremon
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d
+
+      - name: Health check
+        run: |
+          for i in {1..30}; do
+            if curl -fs http://localhost:2410/health; then
+              echo "✅ API healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "❌ Health check failed"
+          docker compose -f docker-compose.prod.yml logs --tail=50
+          exit 1
+      - name: Cleanup unused Docker images
+        if: success()
+        run: |
+          echo "🧹 Cleaning up unused Docker images..."
+
+          # Remove dangling images
+          docker image prune -f
+
+          # Remove unused images older than 7 days
+          docker image prune -a -f --filter "until=168h"
+
+          echo "✅ Docker image cleanup completed"
+

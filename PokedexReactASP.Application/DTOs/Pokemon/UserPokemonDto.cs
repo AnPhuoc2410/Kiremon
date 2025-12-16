@@ -115,6 +115,22 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
     }
 
     /// <summary>
+    /// Result of catching a Pokemon
+    /// </summary>
+    public class CatchResultDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public UserPokemonDto? CaughtPokemon { get; set; }
+        public int ExperienceGained { get; set; }
+        public bool IsNewSpecies { get; set; }
+        public bool TrainerLeveledUp { get; set; }
+        public int NewTrainerLevel { get; set; }
+        public int IvTotal { get; set; }
+        public string IvRating { get; set; } = string.Empty;
+    }
+
+    /// <summary>
     /// DTO for Pokemon battle result
     /// </summary>
     public class PokemonBattleResultDto
@@ -134,7 +150,23 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
     }
 
     /// <summary>
-    /// DTO for Pokemon summary (for lists)
+    /// DTO for collection statistics
+    /// </summary>
+    public class CollectionStatsDto
+    {
+        public int TotalCaught { get; set; }
+        public int UniqueCaught { get; set; }
+        public int ShinyCount { get; set; }
+        public int FavoriteCount { get; set; }
+        public int TotalBattles { get; set; }
+        public int TotalBattlesWon { get; set; }
+        public int HighestLevel { get; set; }
+        public int AverageLevel { get; set; }
+        public Dictionary<string, int> TypeDistribution { get; set; } = new();
+    }
+
+    /// <summary>
+    /// DTO for Pokemon list item summary
     /// </summary>
     public class UserPokemonSummaryDto
     {
@@ -169,5 +201,31 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public int UserPokemonId { get; set; }
         public string ToUserId { get; set; } = string.Empty;
         public int? ForUserPokemonId { get; set; } // Optional: trading for another Pokemon
+    }
+
+    /// <summary>
+    /// DTO for syncing Pokemon from localStorage
+    /// </summary>
+    public class LocalPokemonDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Nickname { get; set; } = string.Empty;
+        public string? Sprite { get; set; }
+    }
+
+    /// <summary>
+    /// DTO for updating nickname
+    /// </summary>
+    public class UpdateNicknameDto
+    {
+        public string Nickname { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO for updating notes
+    /// </summary>
+    public class UpdateNotesDto
+    {
+        public string Notes { get; set; } = string.Empty;
     }
 }

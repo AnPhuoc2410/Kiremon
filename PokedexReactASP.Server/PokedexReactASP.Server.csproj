@@ -7,6 +7,9 @@
     <SpaRoot>..\pokedexreactasp.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:56708</SpaProxyServerUrl>
+
+    <SkipClientBuild>true</SkipClientBuild>
+    <SpaBuild>false</SpaBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,9 +31,12 @@
   <ItemGroup>
     <ProjectReference Include="..\PokedexReactASP.Application\PokedexReactASP.Application.csproj" />
     <ProjectReference Include="..\PokedexReactASP.Infrastructure\PokedexReactASP.Infrastructure.csproj" />
-    <ProjectReference Include="..\pokedexreactasp.client\pokedexreactasp.client.esproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ProjectReference Include="..\pokedexreactasp.client\pokedexreactasp.client.esproj">
+    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
 
 </Project>

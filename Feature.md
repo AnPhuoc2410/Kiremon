@@ -15,3 +15,9 @@
 **Marketplace trao đổi Pokémon**: thêm escrow logic, check quyền sở hữu, log giao dịch, và rule chống giao dịch bất thường.
 
 **Mobile push**: nếu có app/SPA hỗ trợ PWA, đăng ký push token và quản lý opt-in/opt-out.
+
+**GAME Feature**
+Trading system - Đổi Pokemon với người khác
+Battle experience - Tăng XP và EVs khi chiến đấu
+Evolution - Tiến hóa Pokemon khi đủ điều kiện
+Leaderboard - Xếp hạng trainer theo collection
