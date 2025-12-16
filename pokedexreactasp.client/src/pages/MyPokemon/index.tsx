@@ -54,7 +54,7 @@ const MyPokemon: React.FC = () => {
           id: p.id,
           name: p.name.toUpperCase(),
           nickname: p.displayName,
-          sprite: p.spriteUrl || p.officialArtworkUrl,
+          sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
           isFavorite: p.isFavorite,
           ivRating: p.ivRating || undefined,
           currentLevel: p.currentLevel,
