@@ -51,7 +51,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
                 return new SocialUserDto
                 {
-                    Provider = AuthProvider.Google.ToString().ToLower(),
+                    Provider = AuthProvider.Google.ToString(),
                     ProviderKey = payload.Subject,
                     Email = payload.Email,
                     IsEmailVerified = payload.EmailVerified,

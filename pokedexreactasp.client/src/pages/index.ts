@@ -13,4 +13,5 @@ export { default as Login } from "./Auth/Login";
 export { default as Register } from "./Auth/Register";
 export { default as Forgot } from "./Auth/Forgot";
 export { default as Profile } from "./Profile";
+export { default as Settings } from "./Settings";
 export { default as NotFoundPage } from "./Errors/404";

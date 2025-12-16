@@ -5,22 +5,32 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useGlobalContext } from "../../contexts";
 import { IPokemon } from "../../types/pokemon";
-import { Text, Navbar, PokeCard, Header, SkeletonCard } from "../../components/ui";
+import {
+  Text,
+  Navbar,
+  PokeCard,
+  Header,
+  SkeletonCard,
+} from "../../components/ui";
 
 import { getPokemonId } from "../../components/utils";
 import { POKEMON_API } from "../../config/api.config";
 
 import * as T from "./index.style";
-import { pokemonService } from "../../services";
+import { pokemonService, pokeItemService } from "../../services";
 
 const Explore = () => {
   const { state, setState } = useGlobalContext();
   const navRef = createRef<HTMLDivElement>();
 
-  const [nextUrl, setNextUrl] = useState<string | null>(`${POKEMON_API}?limit=20&offset=0`);
+  const [nextUrl, setNextUrl] = useState<string | null>(
+    `${POKEMON_API}?limit=20&offset=0`,
+  );
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [navHeight, setNavHeight] = useState<number>(0);
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+  const [pokeballSprite, setPokeballSprite] = useState<string | null>(null);
 
   async function loadPokemons() {
     if (nextUrl && !isLoading) {
@@ -41,7 +51,9 @@ const Explore = () => {
 
         const filteredSummary = response.results.map((result: any) => {
           const summaryIdx =
-            state?.pokeSummary?.findIndex((el) => el.name === result.name.toUpperCase()) || 0;
+            state?.pokeSummary?.findIndex(
+              (el) => el.name === result.name.toUpperCase(),
+            ) || 0;
           return {
             name: result.name,
             url: result.url,
@@ -56,7 +68,7 @@ const Explore = () => {
         setNextUrl(nextStr || null);
         setHasMore(!!nextStr);
         setIsLoading(false);
-      } catch (error) {
+      } catch{
         toast.error("Oops! Failed to get Pokémon. Please try again!");
         setIsLoading(false);
       }
@@ -68,15 +80,36 @@ const Explore = () => {
     if (!state.pokemons?.length) {
       loadPokemons();
     }
+
+    // Fetch pokeball sprite
+    const fetchPokeballSprite = async () => {
+      const sprite = await pokeItemService.getPokeballSprite();
+      setPokeballSprite(sprite);
+    };
+    fetchPokeballSprite();
   }, []);
+
+  // Scroll to top functionality
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <>
       <T.Container style={{ marginBottom: navHeight }}>
-        <Header
-          title="Explore Pokémon"
-          subtitle="Challenge & catch them all"
-        />
+        <Header title="Explore Pokémon" subtitle="Challenge & catch them all" />
 
         <InfiniteScroll
           dataLength={state?.pokemons?.length || 0}
@@ -84,13 +117,15 @@ const Explore = () => {
           hasMore={hasMore}
           loader={
             <T.Grid>
-              {Array(8).fill(0).map((_, index) => (
-                <SkeletonCard key={`skeleton-${index}`} />
-              ))}
+              {Array(8)
+                .fill(0)
+                .map((_, index) => (
+                  <SkeletonCard key={`skeleton-${index}`} />
+                ))}
             </T.Grid>
           }
           endMessage={
-            <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div style={{ textAlign: "center", padding: "20px" }}>
               <Text>You've caught them all! No more Pokémon to display.</Text>
             </div>
           }
@@ -98,7 +133,8 @@ const Explore = () => {
           <T.Grid>
             {state?.pokemons?.length
               ? state?.pokemons.map((pokemon: IPokemon) => {
-                  const pokemonId = pokemon.id || getPokemonId(pokemon?.url ?? "");
+                  const pokemonId =
+                    pokemon.id || getPokemonId(pokemon?.url ?? "");
                   return (
                     <PokeCard
                       key={`${pokemon.name}-${Math.random()}`}
@@ -113,6 +149,18 @@ const Explore = () => {
           </T.Grid>
         </InfiniteScroll>
       </T.Container>
+
+      <T.ScrollToTop
+        onClick={scrollToTop}
+        className={showScrollTop ? "visible" : ""}
+        aria-label="Scroll to top"
+      >
+        {pokeballSprite ? (
+          <T.PokeballImage src={pokeballSprite} alt="Poke Ball" />
+        ) : (
+          <T.FallbackIcon>↑</T.FallbackIcon>
+        )}
+      </T.ScrollToTop>
 
       <Navbar ref={navRef} />
     </>

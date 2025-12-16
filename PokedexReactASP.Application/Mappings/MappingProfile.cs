@@ -17,7 +17,8 @@ namespace PokedexReactASP.Application.Mappings
 
             CreateMap<ApplicationUser, AuthResponseDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.TwoFactorEnabled, opt => opt.MapFrom(src => src.TwoFactorEnabled));
 
             CreateMap<ApplicationUser, UserProfileDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))

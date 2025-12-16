@@ -1,4 +1,4 @@
-import React, { HTMLAttributes } from "react";
+import React, { HTMLAttributes, useState, useEffect } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
@@ -80,7 +80,15 @@ const getStyle = ({ nickname }: Props) => {
   img {
     margin: 0 auto;
     object-fit: contain;
-    max-height: 100%;
+    max-width: 96px;
+    max-height: 96px;
+    width: auto;
+    height: auto;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
   }
 
   .pokemon-id {
@@ -121,21 +129,50 @@ const PokeCard: React.FC<Props> = ({
   pokemonId,
   types = [],
   children,
-  onClick
+  onClick,
 }) => {
-  const formattedId = pokemonId ? String(pokemonId).padStart(3, '0') : '';
-  const imageUrl = nickname ? sprite : `${POKEMON_IMAGE}/${pokemonId}.png`;
+  const [isHovered, setIsHovered] = useState(false);
+  const formattedId = pokemonId ? String(pokemonId).padStart(3, "0") : "";
+
+  const staticImageUrl = nickname
+    ? sprite
+    : `${POKEMON_IMAGE}/${pokemonId}.png`;
+  const animatedImageUrl = `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${pokemonId}.gif`;
+
+  // Preload animated image
+  useEffect(() => {
+    if (!nickname && pokemonId) {
+      const img = new Image();
+      img.src = animatedImageUrl;
+    }
+  }, [pokemonId, nickname, animatedImageUrl]);
+
+  const handleMouseEnter = () => {
+    if (!nickname) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!nickname) {
+      setIsHovered(false);
+    }
+  };
 
   const cardContent = (
-    <PixelatedPokemonCard nickname={nickname} onClick={onClick}>
+    <PixelatedPokemonCard
+      nickname={nickname}
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div className="pokemon-image-container">
         <PokemonAvatar
-          src={imageUrl}
+          src={isHovered && !nickname ? animatedImageUrl : staticImageUrl}
           alt={`pokemon ${name}`}
           width={96}
           height={96}
-          loading="lazy"
-          effect="blur"
+          loading="eager"
         />
       </div>
 
@@ -156,7 +193,12 @@ const PokeCard: React.FC<Props> = ({
 
       {captured ? (
         <div className="capture-qty">
-          <LazyLoadImage src="/static/pokeball.png" alt="pokeball" width={16} height={16} />
+          <LazyLoadImage
+            src="/static/pokeball.png"
+            alt="pokeball"
+            width={16}
+            height={16}
+          />
           <Text>x{captured}</Text>
         </div>
       ) : null}
@@ -166,7 +208,7 @@ const PokeCard: React.FC<Props> = ({
   // If we have a pokemonId and no onClick handler, wrap in Link
   if (name && !onClick && !nickname) {
     return (
-      <Link to={`/pokemon/${name}`} style={{ textDecoration: 'none' }}>
+      <Link to={`/pokemon/${name}`} style={{ textDecoration: "none" }}>
         {cardContent}
       </Link>
     );

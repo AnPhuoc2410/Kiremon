@@ -13,5 +13,7 @@ namespace PokedexReactASP.Application.DTOs.Auth
         public int Level { get; set; }
         public int PokemonCaught { get; set; }
         public bool EmailConfirmed { get; set; }
+        public bool RequiresTwoFactor { get; set; }
+        public bool TwoFactorEnabled { get; set; }
     }
 }
