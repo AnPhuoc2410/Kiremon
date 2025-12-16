@@ -52,3 +52,22 @@ export type UserInfo = {
   avatarUrl?: string;
   idCard: string;
 };
+
+export interface UserProfile {
+  userId: string;
+  username: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatarUrl?: string | null;
+  dateJoined: string;
+  pokemonCaught: number;
+  level: number;
+  experience: number;
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string | null;
+  lastName?: string | null;
+  avatarUrl?: string | null;
+}

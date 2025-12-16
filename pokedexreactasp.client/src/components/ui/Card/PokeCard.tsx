@@ -1,6 +1,7 @@
 import React, { HTMLAttributes, useState, useEffect } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
 
 import { Text } from "..";
@@ -20,8 +21,15 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   onClick?: () => void;
 }
 
-const getStyle = ({ nickname }: Props) => {
-  return `
+const gentlePopUpAnimation = keyframes`
+  0% { transform: scale(1) translateY(0); }
+  40% { transform: scale(1.2) translateY(-16px); }
+  60% { transform: scale(1.05) translateY(-4px); }
+  80% { transform: scale(1.12) translateY(-7px); }
+  100% { transform: scale(1.1) translateY(-5px); }
+`;
+
+const PixelatedPokemonCard = styled.div<Props>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -30,44 +38,21 @@ const getStyle = ({ nickname }: Props) => {
   border-radius: 12px;
   transition: all 0.2s ease-in-out;
 
-  /* Radix UI-inspired shadow system */
+  overflow: visible;
+  z-index: 1;
+
   box-shadow:
     0px 1px 3px rgba(16, 24, 40, 0.1),
     0px 1px 2px rgba(16, 24, 40, 0.06);
 
-  .capture-qty,
-  button {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    display: flex;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .pokemon-image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 120px;
-    margin-bottom: 12px;
-  }
-
-  .pokemon-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  cursor: ${nickname ? "default" : "pointer"};
+  cursor: ${(props) => (props.nickname ? "default" : "pointer")};
 
   &:hover {
     transform: translateY(-4px);
+    background-color: ${(props) => (props.nickname ? "white" : colors["gray-200"])};
     box-shadow:
       0px 12px 16px -4px rgba(16, 24, 40, 0.08),
       0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-    background-color: ${nickname ? "white" : colors["gray-200"]};
   }
 
   &:active {
@@ -77,49 +62,66 @@ const getStyle = ({ nickname }: Props) => {
       0px 2px 4px -1px rgba(16, 24, 40, 0.06);
   }
 
-  img {
-    margin: 0 auto;
-    object-fit: contain;
-    max-width: 96px;
-    max-height: 96px;
-    width: auto;
-    height: auto;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  .capture-qty,
+  button {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    z-index: 5;
   }
 
-  &:hover img {
-    transform: scale(1.05);
-  }
-
-  .pokemon-id {
-    color: ${colors["gray-500"]};
-    font-size: 0.875rem;
-    margin-bottom: 2px;
-  }
-
-  .pokemon-name {
-    font-weight: 600;
-    font-size: 1.125rem;
-    text-transform: capitalize;
-    color: ${colors["gray-900"]};
-    margin-bottom: 8px;
-  }
-
-  .types-container {
+  .pokemon-image-container {
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
+    align-items: center;
+    height: 120px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: visible;
   }
-  `;
-};
+
+  .pokemon-image-container img {
+    margin: 0 auto;
+    object-fit: contain;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+
+    transition: filter 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+
+    transform-origin: center bottom;
+    will-change: transform;
+  }
+
+  &:hover .pokemon-image-container img {
+    animation: ${gentlePopUpAnimation} 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  .pokemon-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .capture-qty img { width: 14px; height: 14px; object-fit: contain; }
+  .pokemon-id { color: ${colors["gray-500"]}; font-size: 0.875rem; margin-bottom: 2px; }
+  .pokemon-name { font-weight: 600; font-size: 1.125rem; text-transform: capitalize; color: ${colors["gray-900"]}; margin-bottom: 8px; }
+  .types-container { display: flex; justify-content: center; gap: 0.5rem; }
+`;
 
 const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 `;
-
-const PixelatedPokemonCard = styled("div")((props: Props) => getStyle(props));
 
 const PokeCard: React.FC<Props> = ({
   name,
@@ -132,6 +134,7 @@ const PokeCard: React.FC<Props> = ({
   onClick,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [hasAnimatedImage, setHasAnimatedImage] = useState(false);
   const formattedId = pokemonId ? String(pokemonId).padStart(3, "0") : "";
 
   const staticImageUrl = nickname
@@ -139,11 +142,12 @@ const PokeCard: React.FC<Props> = ({
     : `${POKEMON_IMAGE}/${pokemonId}.png`;
   const animatedImageUrl = `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${pokemonId}.gif`;
 
-  // Preload animated image
   useEffect(() => {
     if (!nickname && pokemonId) {
       const img = new Image();
       img.src = animatedImageUrl;
+      img.onload = () => setHasAnimatedImage(true);
+      img.onerror = () => setHasAnimatedImage(false);
     }
   }, [pokemonId, nickname, animatedImageUrl]);
 
@@ -168,7 +172,7 @@ const PokeCard: React.FC<Props> = ({
     >
       <div className="pokemon-image-container">
         <PokemonAvatar
-          src={isHovered && !nickname ? animatedImageUrl : staticImageUrl}
+          src={isHovered && !nickname && hasAnimatedImage ? animatedImageUrl : staticImageUrl}
           alt={`pokemon ${name}`}
           width={96}
           height={96}
@@ -205,7 +209,6 @@ const PokeCard: React.FC<Props> = ({
     </PixelatedPokemonCard>
   );
 
-  // If we have a pokemonId and no onClick handler, wrap in Link
   if (name && !onClick && !nickname) {
     return (
       <Link to={`/pokemon/${name}`} style={{ textDecoration: "none" }}>
