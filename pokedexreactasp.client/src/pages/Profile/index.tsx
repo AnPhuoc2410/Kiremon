@@ -12,7 +12,7 @@ import {
 } from "../../components/ui";
 import { useAuth } from "../../contexts/AuthContext";
 import { useGlobalContext } from "../../contexts";
-import { userService, UserProfile } from "../../services/user/user.service";
+import { userService } from "../../services/user/user.service";
 import { IMyPokemon } from "../../types/pokemon";
 import {
   generatePokeSummary,
@@ -20,6 +20,7 @@ import {
 } from "../../helpers";
 import * as S from "./index.style";
 import toast from "react-hot-toast";
+import { UserProfile } from "../../types/users.type";
 
 // Tab types
 type TabType = "profile" | "my-pokemon";
@@ -405,7 +406,7 @@ const Profile: React.FC = () => {
       await userService.updateProfile({ avatarUrl });
 
       // Update local profile state
-      setProfile((prev) => (prev ? { ...prev, avatarUrl } : null));
+      setProfile((prev: UserProfile | null) => (prev ? { ...prev, avatarUrl } : null));
 
       // Update AuthContext to sync avatar across all components
       updateUser({ avatarUrl });
@@ -436,7 +437,7 @@ const Profile: React.FC = () => {
       });
 
       // Update local profile state
-      setProfile((prev) =>
+      setProfile((prev: UserProfile | null) =>
         prev
           ? {
               ...prev,
