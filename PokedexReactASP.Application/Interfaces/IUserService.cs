@@ -7,10 +7,16 @@ namespace PokedexReactASP.Application.Interfaces
     {
         Task<UserProfileDto?> GetUserProfileAsync(string userId);
         Task<bool> UpdateUserProfileAsync(string userId, UpdateProfileDto updateProfileDto);
+        
+        // Pokemon Collection
         Task<IEnumerable<UserPokemonDto>> GetUserPokemonAsync(string userId);
-        Task<bool> CatchPokemonAsync(string userId, CatchPokemonDto catchPokemonDto);
-        Task<bool> ReleasePokemonAsync(string userId, int userPokemonId); // Changed from pokemonId to userPokemonId
-        Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname); // Changed parameter name
-        Task<bool> ToggleFavoritePokemonAsync(string userId, int userPokemonId); // Changed parameter name
+        Task<UserPokemonDto?> GetUserPokemonByIdAsync(string userId, int userPokemonId);
+        Task<CollectionStatsDto> GetCollectionStatsAsync(string userId);
+        Task<CatchResultDto> CatchPokemonAsync(string userId, CatchPokemonDto catchPokemonDto);
+        Task<bool> ReleasePokemonAsync(string userId, int userPokemonId);
+        Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname);
+        Task<bool> ToggleFavoritePokemonAsync(string userId, int userPokemonId);
+        Task<bool> UpdatePokemonNotesAsync(string userId, int userPokemonId, string notes);
+        Task<int> SyncFromLocalStorageAsync(string userId, IEnumerable<LocalPokemonDto> localPokemon);
     }
 }
