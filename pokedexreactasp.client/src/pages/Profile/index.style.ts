@@ -567,7 +567,7 @@ export const CancelButton = styled.button`
 
   &:hover {
     border-color: ${colors["gray-400"]};
-    background: ${colors["gray-50"]};
+    background: ${colors["gray-500"]};
   }
 
   &:disabled {
