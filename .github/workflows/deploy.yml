@@ -103,6 +103,9 @@ jobs:
           echo "✅ Docker image cleanup completed"
 
       - name: Clean up sensitive files
-        if: success()
-        run: rm -f .env
+        if: always()
+        run: |
+          echo "🧹 Cleaning up .env file..."
+          rm -f /home/thang/Phuoc/Kiremon/.env
+          echo "✅ Cleanup completed"
 
