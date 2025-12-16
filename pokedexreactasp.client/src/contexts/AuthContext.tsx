@@ -7,7 +7,8 @@ import {
   setCookie,
 } from "../components/utils/cookieUtils";
 import toast from "react-hot-toast";
-import { collectionService, LocalPokemonDto } from "../services";
+import { collectionService } from "../services";
+import { LocalPokemonDto } from "../types/userspokemon.types";
 
 interface AuthContextType {
   isAuthenticated: boolean;
