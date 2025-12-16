@@ -169,7 +169,7 @@ export const UserButton = styled.button<{ isOpen?: boolean }>`
     height: 16px;
     color: ${colors["gray-600"]};
     transition: transform 0.25s ease;
-    transform: ${(props) => (props.isOpen ? "rotate(0deg)" : "rotate(90deg)")};
+    transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   }
 `;
 

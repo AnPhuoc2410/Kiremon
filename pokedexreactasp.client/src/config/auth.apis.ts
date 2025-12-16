@@ -13,7 +13,9 @@ import {
   Enable2FARequest,
   Disable2FARequest,
 } from "../types/auth.types";
-import api from "./axios.config";
+import createAuthenticatedClient from "../services/api/api-client.auth";
+
+const api = createAuthenticatedClient();
 
 export const login = async (user: LoginRequest): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>("/auth/login", {
