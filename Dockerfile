@@ -9,9 +9,7 @@ COPY PokedexReactASP.Application/PokedexReactASP.Application.csproj PokedexReact
 COPY PokedexReactASP.Infrastructure/PokedexReactASP.Infrastructure.csproj PokedexReactASP.Infrastructure/
 COPY PokedexReactASP.Server/PokedexReactASP.Server.csproj PokedexReactASP.Server/
 
-RUN sed -i '/.esproj/d' PokedexReactASP.Server/PokedexReactASP.Server.csproj
-
-RUN dotnet restore "PokedexReactASP.Server/PokedexReactASP.Server.csproj"
+RUN dotnet restore "PokedexReactASP.Server/PokedexReactASP.Server.csproj" /p:Configuration=Release
 
 COPY . .
 WORKDIR /src/PokedexReactASP.Server
