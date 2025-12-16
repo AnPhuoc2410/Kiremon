@@ -14,9 +14,10 @@ import {
   DeleteButton,
   Loading
 } from "../../components/ui";
-import { collectionService, UserPokemonDto } from "../../services";
+import { collectionService } from "../../services";
 
 import * as T from "./index.style";
+import { UserPokemonDto } from "../../types/userspokemon.types";
 
 // Extended Pokemon type for API data
 interface DisplayPokemon {

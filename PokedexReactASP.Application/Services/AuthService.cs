@@ -86,33 +86,41 @@ namespace PokedexReactASP.Application.Services
                 throw new UnauthorizedAccessException("Email is not verified. Please confirm your email before logging in.");
             }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
-
-            if (result.Succeeded)
-            {
-                // Reset bộ đếm số lần sai về 0 nếu login thành công
-                await _userManager.ResetAccessFailedCountAsync(user);
-                return GenerateAuthResponse(user);
-            }
-
-            if (result.RequiresTwoFactor)
-            {
-                var isTrustedDevice = await _signInManager.IsTwoFactorClientRememberedAsync(user);
-
-                if (isTrustedDevice)
-                {
-                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
-                }
-
-                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
-            }
+            var result = await _signInManager.PasswordSignInAsync(
+                user,
+                loginDto.Password,
+                isPersistent: false,
+                lockoutOnFailure: true
+            );
 
             if (result.IsLockedOut)
             {
                 throw new UnauthorizedAccessException("Account is locked due to multiple failed attempts. Please try again later.");
             }
 
-            throw new UnauthorizedAccessException("Invalid credentials");
+            if (!result.Succeeded && !result.RequiresTwoFactor)
+            {
+                throw new UnauthorizedAccessException("Invalid credentials");
+            }
+
+            await _userManager.ResetAccessFailedCountAsync(user);
+
+            if (result.RequiresTwoFactor)
+            {
+                await _signInManager.SignOutAsync();
+
+                var isTrustedDevice = await _signInManager.IsTwoFactorClientRememberedAsync(user);
+
+                if (isTrustedDevice)
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+                }
+
+                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
+            }
+
+            return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
         }
 
         public async Task ResendConfirmationEmailAsync(string email)
