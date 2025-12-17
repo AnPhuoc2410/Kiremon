@@ -8,7 +8,7 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
     public class CatchPokemonDto
     {
         [Required]
-        public int PokemonApiId { get; set; } // Changed from PokemonId to PokemonApiId
+        public int PokemonApiId { get; set; }
 
         [StringLength(50)]
         public string? Nickname { get; set; }
@@ -21,7 +21,6 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         
         public bool IsShiny { get; set; } = false;
         
-        // Optional: Pre-generate IVs (if null, will be random)
         [Range(0, 31)]
         public int? IvHp { get; set; }
         
