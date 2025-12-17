@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes as Switch, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
-import { StartScreen, MyPokemon, NotFoundPage } from "../pages";
+import { StartScreen, NotFoundPage } from "../pages";
 import { AuthProvider } from "../contexts";
+
+const MyPokemon = lazy(() => import("../pages/MyPokemon"));
 
 const Explore = lazy(() => import("../pages/Explore"));
 const RegionsExplore = lazy(() => import("../pages/Explore/Regions"));
@@ -102,7 +104,14 @@ export default function Routes() {
               </Suspense>
             }
           />
-          <Route path="/my-pokemon" element={<MyPokemon />} />
+          <Route
+            path="/my-pokemon"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <MyPokemon />
+              </Suspense>
+            }
+          />
           <Route
             path="/games"
             element={
@@ -119,7 +128,14 @@ export default function Routes() {
               </Suspense>
             }
           />
-          <Route path="/games/combat-team" element={<CombatTeam />} />
+          <Route
+            path="/games/combat-team"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <CombatTeam />
+              </Suspense>
+            }
+          />
           {/* New games routes */}
           <Route
             path="/games/type-matchup"
