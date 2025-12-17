@@ -128,14 +128,3 @@ export interface UserPokemonSummaryDto {
   currentHp: number;
   maxHp: number;
 }
-
-export interface LocalPokemonDto {
-  name: string;
-  nickname: string;
-  sprite?: string;
-}
-
-export interface SyncResultDto {
-  message: string;
-  syncedCount: number;
-}

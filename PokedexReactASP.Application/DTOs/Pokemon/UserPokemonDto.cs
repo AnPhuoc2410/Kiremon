@@ -204,16 +204,6 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
     }
 
     /// <summary>
-    /// DTO for syncing Pokemon from localStorage
-    /// </summary>
-    public class LocalPokemonDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Nickname { get; set; } = string.Empty;
-        public string? Sprite { get; set; }
-    }
-
-    /// <summary>
     /// DTO for updating nickname
     /// </summary>
     public class UpdateNicknameDto

@@ -250,25 +250,6 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(new { message = "Notes updated successfully" });
         }
 
-        /// <summary>
-        /// Sync Pokemon from localStorage (for migration from local to server)
-        /// </summary>
-        [HttpPost("pokemon/sync")]
-        public async Task<ActionResult> SyncFromLocalStorage([FromBody] IEnumerable<LocalPokemonDto> localPokemon)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
-            var syncedCount = await _userService.SyncFromLocalStorageAsync(userId, localPokemon);
-            return Ok(new { 
-                message = $"Successfully synced {syncedCount} Pokemon",
-                syncedCount 
-            });
-        }
-
         #endregion
     }
 }
