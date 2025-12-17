@@ -18,6 +18,5 @@ namespace PokedexReactASP.Application.Interfaces
         Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname);
         Task<bool> ToggleFavoritePokemonAsync(string userId, int userPokemonId);
         Task<bool> UpdatePokemonNotesAsync(string userId, int userPokemonId, string notes);
-        Task<int> SyncFromLocalStorageAsync(string userId, IEnumerable<LocalPokemonDto> localPokemon);
     }
 }
