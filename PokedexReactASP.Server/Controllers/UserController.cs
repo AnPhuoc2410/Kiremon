@@ -125,6 +125,22 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         /// <summary>
+        /// Get Pokemon summary
+        /// </summary>
+        [HttpGet("pokemon/summary")]
+        public async Task<ActionResult<PokeSummaryResponseDto>> GetPokeSummary()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var summary = await _userService.GetPokeSummaryAsync(userId);
+            return Ok(summary);
+        }
+
+        /// <summary>
         /// Catch a Pokemon and add it to collection
         /// </summary>
         [HttpPost("pokemon/catch")]

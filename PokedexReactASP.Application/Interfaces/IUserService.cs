@@ -12,6 +12,7 @@ namespace PokedexReactASP.Application.Interfaces
         Task<IEnumerable<UserPokemonDto>> GetUserPokemonAsync(string userId);
         Task<UserPokemonDto?> GetUserPokemonByIdAsync(string userId, int userPokemonId);
         Task<CollectionStatsDto> GetCollectionStatsAsync(string userId);
+        Task<PokeSummaryResponseDto> GetPokeSummaryAsync(string userId);
         Task<CatchResultDto> CatchPokemonAsync(string userId, CatchPokemonDto catchPokemonDto);
         Task<bool> ReleasePokemonAsync(string userId, int userPokemonId);
         Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname);
