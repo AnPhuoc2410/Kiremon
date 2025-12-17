@@ -101,6 +101,18 @@ export interface CollectionStatsDto {
   typeDistribution: Record<string, number>;
 }
 
+// Optimized Pokemon summary for captured status display
+export interface PokeSummaryDto {
+  name: string;
+  captured: number;
+}
+
+export interface PokeSummaryResponseDto {
+  summary: PokeSummaryDto[];
+  totalCaptured: number;
+  uniqueSpecies: number;
+}
+
 // Summary for list view
 export interface UserPokemonSummaryDto {
   id: number;
