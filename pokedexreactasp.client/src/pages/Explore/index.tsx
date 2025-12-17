@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useState, createRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useGlobalContext } from "../../contexts";
+import { useGlobalContext, useAuth } from "../../contexts";
 import { IPokemon } from "../../types/pokemon";
 import {
   Text,
@@ -20,7 +20,8 @@ import * as T from "./index.style";
 import { pokemonService, pokeItemService } from "../../services";
 
 const Explore = () => {
-  const { state, setState } = useGlobalContext();
+  const { state, setState, refreshPokeSummary } = useGlobalContext();
+  const { isAuthenticated, isInitialized } = useAuth();
   const navRef = createRef<HTMLDivElement>();
 
   const [nextUrl, setNextUrl] = useState<string | null>(
@@ -74,6 +75,27 @@ const Explore = () => {
       }
     }
   }
+
+  useEffect(() => {
+    if (isInitialized && isAuthenticated && (!state.pokeSummary || state.pokeSummary.length === 0)) {
+      refreshPokeSummary();
+    }
+  }, [isInitialized, isAuthenticated]);
+
+  useEffect(() => {
+    if (state.pokemons && state.pokeSummary && state.pokeSummary.length > 0) {
+      const updatedPokemons = state.pokemons.map((pokemon) => {
+        const summaryIdx = state.pokeSummary?.findIndex(
+          (el) => el.name === pokemon.name.toUpperCase(),
+        ) ?? -1;
+        return {
+          ...pokemon,
+          captured: summaryIdx >= 0 ? state.pokeSummary![summaryIdx].captured : 0,
+        };
+      });
+      setState({ pokemons: updatedPokemons });
+    }
+  }, [state.pokeSummary]);
 
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
