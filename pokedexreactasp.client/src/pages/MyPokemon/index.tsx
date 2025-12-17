@@ -2,9 +2,8 @@ import React, { createRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { IMyPokemon } from "../../types/pokemon";
 import { useGlobalContext, useAuth } from "../../contexts";
-import { generatePokeSummary, loadMyPokemonFromLocalStorage } from "../../helpers";
+import { generatePokeSummary } from "../../helpers";
 import {
   Button,
   Navbar,
@@ -64,27 +63,13 @@ const MyPokemon: React.FC = () => {
         }));
         setPokemons(displayPokemon);
       } else {
-        // Fallback to localStorage
-        const parsed = loadMyPokemonFromLocalStorage();
-        const displayPokemon: DisplayPokemon[] = parsed.map((p: IMyPokemon) => ({
-          name: p.name,
-          nickname: p.nickname,
-          sprite: p.sprite,
-          isFromApi: false,
-        }));
-        setPokemons(displayPokemon);
+        // Require authentication - no localStorage fallback
+        setPokemons([]);
       }
     } catch (error) {
       console.error("Error loading Pokemon:", error);
       toast.error("Failed to load collection");
-      // Fallback to localStorage on error
-      const parsed = loadMyPokemonFromLocalStorage();
-      setPokemons(parsed.map((p: IMyPokemon) => ({
-        name: p.name,
-        nickname: p.nickname,
-        sprite: p.sprite,
-        isFromApi: false,
-      })));
+      setPokemons([]);
     } finally {
       setIsLoading(false);
     }
@@ -97,17 +82,15 @@ const MyPokemon: React.FC = () => {
 
   async function releasePokemon(pokemon: DisplayPokemon) {
     try {
-      if (pokemon.isFromApi && pokemon.id) {
-        await collectionService.releasePokemon(pokemon.id);
-        toast.success(`${pokemon.nickname} was released!`);
+      if (!pokemon.isFromApi || !pokemon.id) {
+        toast.error("Cannot release this Pokemon");
+        return;
       }
 
-      // Also remove from localStorage
-      const localPokemon = loadMyPokemonFromLocalStorage();
-      const newCollection = localPokemon.filter((p: IMyPokemon) => p.nickname !== pokemon.nickname);
-      localStorage.setItem("pokegames@myPokemon", JSON.stringify(newCollection));
-      setState({ pokeSummary: generatePokeSummary(newCollection) });
+      await collectionService.releasePokemon(pokemon.id);
+      toast.success(`${pokemon.nickname} was released!`);
 
+      // Reload collection from API
       loadMyPokemon();
     } catch (error) {
       console.error("Error releasing Pokemon:", error);
@@ -303,19 +286,22 @@ const MyPokemon: React.FC = () => {
           </T.EmptyState>
         )}
 
-        {!isAuthenticated && pokemons.length > 0 && (
+        {!isAuthenticated && (
           <div style={{
             textAlign: "center",
-            padding: 16,
+            padding: 24,
             background: "rgba(96, 165, 250, 0.1)",
             borderRadius: 8,
             marginTop: 16
           }}>
-            <Text size="sm">
-              💡 Log in to sync your collection, track IVs, and use favorites!
+            <Text size="lg" style={{ marginBottom: 12 }}>
+              🔒 Login Required
             </Text>
-            <Link to="/login" style={{ marginLeft: 8 }}>
-              <Button size="sm" variant="sky">Log In</Button>
+            <Text size="sm">
+              You need to log in to view and manage your Pokémon collection.
+            </Text>
+            <Link to="/login" style={{ display: "inline-block", marginTop: 12 }}>
+              <Button variant="sky">Log In</Button>
             </Link>
           </div>
         )}
