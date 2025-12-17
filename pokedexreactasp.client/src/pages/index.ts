@@ -1,17 +1,2 @@
 export { default as StartScreen } from "./StartScreen";
-export { default as MyPokemon } from "./MyPokemon";
-export { default as Explore } from "./Explore";
-export { default as RegionsExplore } from "./Explore/Regions";
-export { default as TypesExplore } from "./Explore/Types";
-export { default as GenerationsExplore } from "./Explore/Generations";
-export { default as Detail } from "./Detail";
-export { default as WhosThatPokemon } from "./WhosThatPokemon";
-export { default as CombatTeam } from "./CombatTeam";
-export { default as TypeMatchup } from "./TypeMatchup";
-export { default as CatchChallenge } from "./CatchChallenge";
-export { default as Login } from "./Auth/Login";
-export { default as Register } from "./Auth/Register";
-export { default as Forgot } from "./Auth/Forgot";
-export { default as Profile } from "./Profile";
-export { default as Settings } from "./Settings";
 export { default as NotFoundPage } from "./Errors/404";
