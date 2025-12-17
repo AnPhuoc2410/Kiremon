@@ -3,8 +3,7 @@ import {
   CatchPokemonRequest,
   CatchResultDto,
   CollectionStatsDto,
-  LocalPokemonDto,
-  SyncResultDto,
+  PokeSummaryResponseDto,
   UserPokemonDto,
 } from "../../types/userspokemon.types";
 
@@ -28,6 +27,13 @@ class CollectionService extends AuthenticatedApiService {
    */
   async getStats(): Promise<CollectionStatsDto> {
     return this.get<CollectionStatsDto>("/User/pokemon/stats");
+  }
+
+  /**
+   * Get Pokemon summary (optimized for captured status)
+   */
+  async getPokeSummary(): Promise<PokeSummaryResponseDto> {
+    return this.get<PokeSummaryResponseDto>("/User/pokemon/summary");
   }
 
   /**
@@ -65,15 +71,6 @@ class CollectionService extends AuthenticatedApiService {
    */
   async updateNotes(userPokemonId: number, notes: string): Promise<void> {
     return this.put<void>(`/User/pokemon/${userPokemonId}/notes`, { notes });
-  }
-
-  /**
-   * Sync Pokemon from localStorage to server
-   */
-  async syncFromLocalStorage(
-    localPokemon: LocalPokemonDto[]
-  ): Promise<SyncResultDto> {
-    return this.post<SyncResultDto>("/User/pokemon/sync", localPokemon);
   }
 }
 

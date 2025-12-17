@@ -13,11 +13,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useGlobalContext } from "../../contexts";
 import { userService } from "../../services/user/user.service";
-import { IMyPokemon } from "../../types/pokemon";
-import {
-  generatePokeSummary,
-  loadMyPokemonFromLocalStorage,
-} from "../../helpers";
+import { collectionService } from "../../services";
 import * as S from "./index.style";
 import toast from "react-hot-toast";
 import { UserProfile } from "../../types/users.type";
@@ -310,9 +306,9 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("profile");
 
   // My Pokemon state
-  const [pokemons, setPokemons] = useState<IMyPokemon[]>([]);
+  const [pokemons, setPokemons] = useState<Array<{ id?: number; name: string; nickname: string; sprite?: string }>>([]);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
-  const [selectedPokemon, setSelectedPokemon] = useState("");
+  const [selectedPokemon, setSelectedPokemon] = useState<{ id?: number; nickname: string } | null>(null);
 
   // Avatar change modal state
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -335,9 +331,37 @@ const Profile: React.FC = () => {
 
     if (isInitialized && isAuthenticated) {
       fetchProfile();
-      loadMyPokemon();
+      loadMyPokemonFromAPI();
     }
   }, [isInitialized, isAuthenticated, navigate]);
+
+  // Load Pokemon from API
+  const loadMyPokemonFromAPI = async () => {
+    try {
+      const apiPokemon = await collectionService.getCollection();
+      setPokemons(apiPokemon.map((p) => ({
+        id: p.id,
+        name: p.name.toUpperCase(),
+        nickname: p.displayName,
+        sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
+      })));
+    } catch (error) {
+      console.error("Error loading Pokemon:", error);
+    }
+  };
+
+  // Release Pokemon via API
+  const releasePokemon = async (pokemon: { id?: number; nickname: string }) => {
+    if (!pokemon.id) return;
+    try {
+      await collectionService.releasePokemon(pokemon.id);
+      toast.success(`${pokemon.nickname} was released!`);
+      loadMyPokemonFromAPI();
+    } catch (error) {
+      console.error("Error releasing Pokemon:", error);
+      toast.error("Failed to release Pokemon");
+    }
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -384,20 +408,6 @@ const Profile: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadMyPokemon = () => {
-    const parsed = loadMyPokemonFromLocalStorage();
-    setPokemons(parsed);
-  };
-
-  const releasePokemon = (nickname: string) => {
-    const newCollection = pokemons.filter(
-      (pokemon: IMyPokemon) => pokemon.nickname !== nickname,
-    );
-    localStorage.setItem("pokegames@myPokemon", JSON.stringify(newCollection));
-    loadMyPokemon();
-    setState({ pokeSummary: generatePokeSummary(newCollection) });
   };
 
   const handleAvatarChange = async (avatarUrl: string) => {
@@ -514,7 +524,7 @@ const Profile: React.FC = () => {
       <Modal open={deleteConfirmation} overlay="light">
         <S.DeleteConfirmationModal>
           <div style={{ textAlign: "left" }}>
-            <Text>Are you sure you want to release {selectedPokemon}?</Text>
+            <Text>Are you sure you want to release {selectedPokemon?.nickname}?</Text>
             <br />
             <Text>
               You'll have to catch another one and cannot undo this action.
@@ -524,7 +534,9 @@ const Profile: React.FC = () => {
             <Button
               variant="light"
               onClick={() => {
-                releasePokemon(selectedPokemon);
+                if (selectedPokemon) {
+                  releasePokemon(selectedPokemon);
+                }
                 setDeleteConfirmation(false);
               }}
             >
@@ -852,8 +864,8 @@ const Profile: React.FC = () => {
 
                 {pokemons.length > 0 ? (
                   <S.PokemonGrid>
-                    {[...pokemons].reverse().map((pokemon: IMyPokemon) => (
-                      <S.PokemonCardWrapper key={pokemon.nickname}>
+                    {[...pokemons].reverse().map((pokemon) => (
+                      <S.PokemonCardWrapper key={pokemon.id || pokemon.nickname}>
                         <PokeCard
                           name={pokemon.name}
                           nickname={pokemon.nickname}
@@ -861,7 +873,7 @@ const Profile: React.FC = () => {
                         >
                           <DeleteButton
                             onClick={() => {
-                              setSelectedPokemon(pokemon.nickname);
+                              setSelectedPokemon({ id: pokemon.id, nickname: pokemon.nickname });
                               setDeleteConfirmation(true);
                             }}
                           />

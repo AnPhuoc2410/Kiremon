@@ -91,6 +91,45 @@ namespace PokedexReactASP.Application.Services
             };
         }
 
+        /// <summary>
+        /// This endpoint only returns name and capture count
+        /// </summary>
+        public async Task<PokeSummaryResponseDto> GetPokeSummaryAsync(string userId)
+        {
+            var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
+            var pokemonList = allPokemon.ToList();
+
+            // Group by PokemonApiId and count captures
+            var summaryDict = new Dictionary<int, (string Name, int Count)>();
+            
+            foreach (var pokemon in pokemonList)
+            {
+                // Get Pokemon name from PokeAPI (cached)
+                var pokeApiData = await _pokeApiService.GetPokemonAsync(pokemon.PokemonApiId);
+                var pokemonName = pokeApiData?.Name?.ToUpper() ?? $"POKEMON_{pokemon.PokemonApiId}";
+                
+                if (summaryDict.ContainsKey(pokemon.PokemonApiId))
+                {
+                    summaryDict[pokemon.PokemonApiId] = (pokemonName, summaryDict[pokemon.PokemonApiId].Count + 1);
+                }
+                else
+                {
+                    summaryDict[pokemon.PokemonApiId] = (pokemonName, 1);
+                }
+            }
+
+            return new PokeSummaryResponseDto
+            {
+                Summary = summaryDict.Values.Select(v => new PokeSummaryDto
+                {
+                    Name = v.Name,
+                    Captured = v.Count
+                }).ToList(),
+                TotalCaptured = pokemonList.Count,
+                UniqueSpecies = summaryDict.Count
+            };
+        }
+
         private async Task<Dictionary<string, int>> GetTypeDistributionAsync(List<UserPokemon> pokemonList)
         {
             var typeCount = new Dictionary<string, int>();

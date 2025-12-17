@@ -12,8 +12,10 @@ import {
   Modal,
   TypeIcon
 } from "../../components/ui";
-import { ICombatPokemon, ICombatTeam, IMyPokemon } from "../../types/pokemon";
+import { ICombatPokemon, ICombatTeam } from "../../types/pokemon";
 import { getDetailPokemon } from "../../services/pokemon";
+import { collectionService } from "../../services";
+import { useAuth } from "../../contexts";
 import * as S from "./index.style";
 
 // Maximum team size for active team
@@ -23,6 +25,7 @@ const CombatTeam: React.FC = () => {
   const navigate = useNavigate();
   const navRef = createRef<HTMLDivElement>();
   const [navHeight, setNavHeight] = useState<number>(0);
+  const { isAuthenticated } = useAuth();
 
   // State management
   const [activeTab, setActiveTab] = useState<string>("teams");
@@ -38,7 +41,6 @@ const CombatTeam: React.FC = () => {
   const [simulationLog, setSimulationLog] = useState<Array<{ text: string, type?: 'attack' | 'info' | 'critical' | 'heal' }>>([]);
   const [isBattling, setIsBattling] = useState<boolean>(false);
   const [computerTeam, setComputerTeam] = useState<ICombatPokemon[]>([]);
-  const [myCaughtPokemon, setMyCaughtPokemon] = useState<{ name: string, nickname: string, sprite: string }[]>([]);
   const [availablePokemon, setAvailablePokemon] = useState<ICombatPokemon[]>([]);
   const [isLoadingPokemonDetails, setIsLoadingPokemonDetails] = useState<boolean>(false);
   const [showAddPokemonModal, setShowAddPokemonModal] = useState<boolean>(false);
@@ -106,9 +108,16 @@ const CombatTeam: React.FC = () => {
     // Empty dependency array means this effect runs only once on mount
   }, []);
 
-  // New function to load caught Pokemon in the background
+  // New function to load caught Pokemon from API
   const loadCaughtPokemon = async (currentTeamData: ICombatTeam) => {
     try {
+      // Only load from API if authenticated
+      if (!isAuthenticated) {
+        console.log("CombatTeam: User not authenticated, skipping Pokemon load");
+        setIsLoading(false);
+        return;
+      }
+
       // Extract all Pokemon names that are already in teams
       const allTeamPokemonNames = [
         ...(currentTeamData.active || []).map((p: ICombatPokemon) => p.name),
@@ -116,50 +125,42 @@ const CombatTeam: React.FC = () => {
         ...(currentTeamData.storage || []).map((p: ICombatPokemon) => p.name)
       ];
 
-      // Load caught Pokemon
-      const caughtPokemonData = localStorage.getItem("pokegames@myPokemon");
-      if (caughtPokemonData) {
-        try {
-          console.log("CombatTeam: Retrieved caught Pokemon data from localStorage");
-          const parsedCaughtPokemon = JSON.parse(caughtPokemonData) || [];
-          setMyCaughtPokemon(parsedCaughtPokemon);
+      // Load caught Pokemon from API
+      const apiPokemon = await collectionService.getCollection();
 
-          if (parsedCaughtPokemon.length > 0) {
-            // Use simplified loading that doesn't make API calls
-            const simplifiedPokemon = parsedCaughtPokemon
-              .filter((pokemon: { nickname: string; }) => !allTeamPokemonNames.includes(pokemon.nickname))
-              .map((pokemon: { nickname: any; name: string; sprite: any; }) => {
-                return {
-                  id: Math.floor(Math.random() * 1000) + 1000, // Generate random ID
-                  name: pokemon.nickname,
-                  originalName: pokemon.name.toUpperCase(),
-                  sprite: pokemon.sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
-                  types: [],
-                  stats: [
-                    { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
-                    { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
-                    { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
-                    { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
-                    { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
-                    { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
-                  ],
-                  abilities: [],
-                  moves: [],
-                  level: 50,
-                  experience: 100
-                } as ICombatPokemon;
-              });
+      if (apiPokemon && apiPokemon.length > 0) {
+        console.log("CombatTeam: Retrieved caught Pokemon from API");
 
-            // Add simplified Pokemon to storage
-            if (simplifiedPokemon.length > 0) {
-              setTeamData(prevData => ({
-                ...prevData,
-                storage: [...prevData.storage, ...simplifiedPokemon]
-              }));
-            }
-          }
-        } catch (parseError) {
-          console.error("CombatTeam: Error parsing caught Pokemon data:", parseError);
+        const simplifiedPokemon = apiPokemon
+          .filter((pokemon) => !allTeamPokemonNames.includes(pokemon.displayName))
+          .map((pokemon) => {
+            return {
+              id: pokemon.id,
+              name: pokemon.displayName,
+              originalName: pokemon.name.toUpperCase(),
+              sprite: pokemon.spriteUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+              types: [],
+              stats: [
+                { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
+                { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
+                { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
+                { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
+                { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
+                { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
+              ],
+              abilities: [],
+              moves: [],
+              level: pokemon.currentLevel || 50,
+              experience: 100
+            } as ICombatPokemon;
+          });
+
+        // Add simplified Pokemon to storage
+        if (simplifiedPokemon.length > 0) {
+          setTeamData(prevData => ({
+            ...prevData,
+            storage: [...prevData.storage, ...simplifiedPokemon]
+          }));
         }
       }
     } catch (error) {

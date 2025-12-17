@@ -6,12 +6,14 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FormEvent, ChangeEvent, useEffect, useState, createRef, useRef } from "react";
 
 import { useGlobalContext, useAuth } from "../../contexts";
-import { generatePokeSummary, loadMyPokemonFromLocalStorage } from "../../helpers";
 import { collectionService } from "../../services";
 import {
   IPokemonDetailResponse,
   IPokemonSpecies,
-  INameUrlPair
+  EvolutionItem,
+  RelatedPokemonItem,
+  PokemonForm,
+  PokemonSprites
 } from "../../types/pokemon";
 import {
   Button,
@@ -46,83 +48,7 @@ import { skillColor } from "../../components/utils";
 type TypesPokemon = { type: { name: string } };
 type MovesPokemon = { move: { name: string } };
 
-// Interface for evolution chain items
-interface EvolutionItem {
-  from: {
-    id: number;
-    name: string;
-    sprite: string;
-  };
-  to: {
-    id: number;
-    name: string;
-    sprite: string;
-  };
-  trigger?: {
-    text: string;
-  };
-}
 
-// Interface for related Pokemon
-interface RelatedPokemonItem extends INameUrlPair {
-  id?: number;
-  sprite?: string;
-}
-
-// Interface for special forms
-interface PokemonForm extends INameUrlPair {
-  id?: number;
-  sprite?: string;
-  is_default?: boolean;
-}
-
-// Interface for Pokemon sprites
-interface PokemonSprites {
-  front_default: string;
-  front_shiny?: string;
-  front_female?: string | null;
-  front_shiny_female?: string | null;
-  back_default?: string;
-  back_shiny?: string;
-  back_female?: string | null;
-  back_shiny_female?: string | null;
-  other?: {
-    dream_world?: {
-      front_default: string | null;
-      front_female: string | null;
-    };
-    home?: {
-      front_default: string | null;
-      front_female: string | null;
-      front_shiny: string | null;
-      front_shiny_female: string | null;
-    };
-    "official-artwork"?: {
-      front_default: string;
-      front_shiny: string | null;
-    };
-  };
-  versions?: Record<string, Record<string, {
-    front_default?: string | null;
-    front_female?: string | null;
-    front_shiny?: string | null;
-    front_shiny_female?: string | null;
-    back_default?: string | null;
-    back_female?: string | null;
-    back_shiny?: string | null;
-    back_shiny_female?: string | null;
-    animated?: {
-      front_default: string | null;
-      front_female: string | null;
-      front_shiny: string | null;
-      front_shiny_female: string | null;
-      back_default: string | null;
-      back_female: string | null;
-      back_shiny: string | null;
-      back_shiny_female: string | null;
-    };
-  }>>;
-}
 
 const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: pixelated;
@@ -191,7 +117,7 @@ const DetailPokemon = () => {
     experienceGained?: number;
   } | null>(null);
 
-  const { setState } = useGlobalContext();
+  const { refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
 
@@ -413,7 +339,6 @@ const DetailPokemon = () => {
     setIsSaving(true);
 
     try {
-      // If user is authenticated, save to backend
       if (isAuthenticated) {
         const result = await collectionService.catchPokemon({
           pokemonApiId: pokemonId,
@@ -431,8 +356,8 @@ const DetailPokemon = () => {
             experienceGained: result.experienceGained,
           });
 
-          // Also save to localStorage for offline access
-          saveToLocalStorage();
+          // Refresh pokeSummary from API to update captured status
+          await refreshPokeSummary();
 
           toast.success(
             `${result.caughtPokemon?.displayName} was caught! IVs: ${result.ivRating}`,
@@ -453,21 +378,11 @@ const DetailPokemon = () => {
           setNicknameIsValid(false);
         }
       } else {
-        // Fallback to localStorage only for non-authenticated users
-        const parsed = loadMyPokemonFromLocalStorage();
-
-        // Check for duplicate nickname
-        const isDuplicate = parsed.some(p => p.nickname === nickname.trim());
-        if (isDuplicate) {
-          setNicknameIsValid(false);
-          toast.error("You already have a Pokémon with this nickname!");
-          setIsSaving(false);
-          return;
-        }
-
-        saveToLocalStorage();
-        toast.success(`${nickname} was caught!`);
-        setIsSaved(true);
+        // Require authentication to save Pokemon
+        toast.error("Please log in to save your caught Pokémon!");
+        setNicknameIsValid(false);
+        setIsSaving(false);
+        return;
       }
     } catch (error: any) {
       console.error("Error saving Pokemon:", error);
@@ -476,17 +391,6 @@ const DetailPokemon = () => {
     } finally {
       setIsSaving(false);
     }
-  }
-
-  function saveToLocalStorage() {
-    const parsed = loadMyPokemonFromLocalStorage();
-    parsed.push({
-      name: name!.toUpperCase(),
-      nickname: nickname.trim(),
-      sprite,
-    });
-    localStorage.setItem("pokegames@myPokemon", JSON.stringify(parsed));
-    setState({ pokeSummary: generatePokeSummary(parsed) });
   }
 
   // Play Pokemon cry sound
@@ -693,8 +597,8 @@ const DetailPokemon = () => {
                   <br />
                   <Text>Now please give {name?.toUpperCase()} a nickname...</Text>
                   {!isAuthenticated && (
-                    <Text variant="light" size="sm" style={{ marginTop: 8 }}>
-                      💡 Log in to save to your collection and track IVs!
+                    <Text variant="error" size="sm" style={{ marginTop: 8 }}>
+                      ⚠️ You must log in to save your caught Pokémon!
                     </Text>
                   )}
                 </div>

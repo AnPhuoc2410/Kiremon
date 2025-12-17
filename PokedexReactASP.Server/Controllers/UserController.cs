@@ -125,6 +125,22 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         /// <summary>
+        /// Get Pokemon summary
+        /// </summary>
+        [HttpGet("pokemon/summary")]
+        public async Task<ActionResult<PokeSummaryResponseDto>> GetPokeSummary()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var summary = await _userService.GetPokeSummaryAsync(userId);
+            return Ok(summary);
+        }
+
+        /// <summary>
         /// Catch a Pokemon and add it to collection
         /// </summary>
         [HttpPost("pokemon/catch")]
@@ -232,25 +248,6 @@ namespace PokedexReactASP.Server.Controllers
             }
 
             return Ok(new { message = "Notes updated successfully" });
-        }
-
-        /// <summary>
-        /// Sync Pokemon from localStorage (for migration from local to server)
-        /// </summary>
-        [HttpPost("pokemon/sync")]
-        public async Task<ActionResult> SyncFromLocalStorage([FromBody] IEnumerable<LocalPokemonDto> localPokemon)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
-            var syncedCount = await _userService.SyncFromLocalStorageAsync(userId, localPokemon);
-            return Ok(new { 
-                message = $"Successfully synced {syncedCount} Pokemon",
-                syncedCount 
-            });
         }
 
         #endregion

@@ -101,6 +101,18 @@ export interface CollectionStatsDto {
   typeDistribution: Record<string, number>;
 }
 
+// Optimized Pokemon summary for captured status display
+export interface PokeSummaryDto {
+  name: string;
+  captured: number;
+}
+
+export interface PokeSummaryResponseDto {
+  summary: PokeSummaryDto[];
+  totalCaptured: number;
+  uniqueSpecies: number;
+}
+
 // Summary for list view
 export interface UserPokemonSummaryDto {
   id: number;
@@ -115,15 +127,4 @@ export interface UserPokemonSummaryDto {
   isShiny: boolean;
   currentHp: number;
   maxHp: number;
-}
-
-export interface LocalPokemonDto {
-  name: string;
-  nickname: string;
-  sprite?: string;
-}
-
-export interface SyncResultDto {
-  message: string;
-  syncedCount: number;
 }

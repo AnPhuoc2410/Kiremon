@@ -7,8 +7,6 @@ import {
   setCookie,
 } from "../components/utils/cookieUtils";
 import toast from "react-hot-toast";
-import { collectionService } from "../services";
-import { LocalPokemonDto } from "../types/userspokemon.types";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -119,41 +117,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       7,
     );
 
-    // Sync localStorage Pokemon to backend
-    await syncLocalStorageToBackend();
-  };
-
-  const syncLocalStorageToBackend = async () => {
-    try {
-      const localData = localStorage.getItem("pokegames@myPokemon");
-      if (!localData) return;
-
-      const localPokemon = JSON.parse(localData) as Array<{
-        name: string;
-        nickname: string;
-        sprite?: string;
-      }>;
-
-      if (localPokemon.length === 0) return;
-
-      const pokemonToSync: LocalPokemonDto[] = localPokemon.map((p) => ({
-        name: p.name,
-        nickname: p.nickname,
-        sprite: p.sprite,
-      }));
-
-      const result = await collectionService.syncFromLocalStorage(pokemonToSync);
-
-      if (result.syncedCount > 0) {
-        toast.success(
-          `Synced ${result.syncedCount} Pokémon to your collection!`,
-          { duration: 4000 }
-        );
-      }
-    } catch (error) {
-      console.error("Failed to sync local Pokemon:", error);
-      // Don't show error toast - silent fail for sync
-    }
   };
 
   const authLogout = () => {

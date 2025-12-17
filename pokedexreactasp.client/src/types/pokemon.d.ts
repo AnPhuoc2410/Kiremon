@@ -292,6 +292,84 @@ export interface ILocation {
   areas?: INameUrlPair[];
 }
 
+// Interface for evolution chain items
+interface EvolutionItem {
+  from: {
+    id: number;
+    name: string;
+    sprite: string;
+  };
+  to: {
+    id: number;
+    name: string;
+    sprite: string;
+  };
+  trigger?: {
+    text: string;
+  };
+}
+
+// Interface for related Pokemon
+interface RelatedPokemonItem extends INameUrlPair {
+  id?: number;
+  sprite?: string;
+}
+
+// Interface for special forms
+interface PokemonForm extends INameUrlPair {
+  id?: number;
+  sprite?: string;
+  is_default?: boolean;
+}
+
+// Interface for Pokemon sprites
+interface PokemonSprites {
+  front_default: string;
+  front_shiny?: string;
+  front_female?: string | null;
+  front_shiny_female?: string | null;
+  back_default?: string;
+  back_shiny?: string;
+  back_female?: string | null;
+  back_shiny_female?: string | null;
+  other?: {
+    dream_world?: {
+      front_default: string | null;
+      front_female: string | null;
+    };
+    home?: {
+      front_default: string | null;
+      front_female: string | null;
+      front_shiny: string | null;
+      front_shiny_female: string | null;
+    };
+    "official-artwork"?: {
+      front_default: string;
+      front_shiny: string | null;
+    };
+  };
+  versions?: Record<string, Record<string, {
+    front_default?: string | null;
+    front_female?: string | null;
+    front_shiny?: string | null;
+    front_shiny_female?: string | null;
+    back_default?: string | null;
+    back_female?: string | null;
+    back_shiny?: string | null;
+    back_shiny_female?: string | null;
+    animated?: {
+      front_default: string | null;
+      front_female: string | null;
+      front_shiny: string | null;
+      front_shiny_female: string | null;
+      back_default: string | null;
+      back_female: string | null;
+      back_shiny: string | null;
+      back_shiny_female: string | null;
+    };
+  }>>;
+}
+
 // Species and Evolution interfaces
 export interface IPokemonSpecies {
   id: number;
