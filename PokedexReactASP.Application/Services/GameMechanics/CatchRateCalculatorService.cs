@@ -1,4 +1,5 @@
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Services.GameMechanics
@@ -8,43 +9,6 @@ namespace PokedexReactASP.Application.Services.GameMechanics
     /// Uses official Pokemon catch formula with MMO modifications.
     /// Leverages PokeAPI species data: capture_rate, is_legendary, is_mythical
     /// </summary>
-    
-
-    /// <summary>
-    /// Context for catch calculation
-    /// </summary>
-    public record CatchCalculationContext(
-        // From PokeAPI Species
-        int BaseCaptureRate,    // capture_rate: 3-255
-        bool IsLegendary,       // is_legendary
-        bool IsMythical,        // is_mythical
-        bool IsBaby,            // is_baby (easier to catch)
-        
-        // Pokemon state
-        int PokemonLevel,
-        int CurrentHp,          // Current HP
-        int MaxHp,              // Max HP
-        string? StatusCondition, // sleep, freeze, paralysis, etc.
-        
-        // Player factors
-        int TrainerLevel,
-        PokeballType PokeballUsed,
-        bool HasCaughtBefore,   // For Repeat Ball
-        
-        // Environment
-        TimeOfDay TimeOfDay,
-        LocationType LocationType,
-        int TurnCount = 1);      // For Timer Ball
-
-    /// <summary>
-    /// Result of catch calculation
-    /// </summary>
-    public record CatchCalculationResult(
-        CatchAttemptResult Result,
-        int ShakeCount,          // 0-3 (3 = caught)
-        double CatchRateUsed,
-        string FailReason);
-
     public class CatchRateCalculatorService : ICatchRateCalculatorService
     {
         /// <summary>

@@ -1,4 +1,5 @@
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 
 namespace PokedexReactASP.Application.Services.GameMechanics
 {
@@ -6,19 +7,6 @@ namespace PokedexReactASP.Application.Services.GameMechanics
     /// Server-authoritative Shiny determination.
     /// Shiny status is NEVER trusted from client.
     /// </summary>
-    
-
-    /// <summary>
-    /// Context for shiny roll - all factors that affect odds
-    /// </summary>
-    public record ShinyRollContext(
-        int TrainerLevel,
-        bool HasShinyCharm,
-        int CatchStreak,        // Consecutive catches of same species
-        int TotalCaught,        // Total Pokemon caught by trainer
-        bool IsEventPokemon,    // Special event bonus
-        int ChainFishing = 0);  // Chain fishing bonus
-
     public class ShinyRollerService : IShinyRollerService
     {
         // Base shiny rate: 1/4096 (Gen 6+ standard)

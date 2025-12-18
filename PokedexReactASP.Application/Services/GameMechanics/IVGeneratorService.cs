@@ -1,4 +1,5 @@
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Services.GameMechanics
@@ -7,59 +8,6 @@ namespace PokedexReactASP.Application.Services.GameMechanics
     /// Server-authoritative IV generation with MMO-friendly distribution.
     /// IVs are NEVER sent from client - always generated server-side.
     /// </summary>
-    
-
-    /// <summary>
-    /// Complete IV set for a Pokemon (0-31 each)
-    /// </summary>
-    public record IVSet(
-        int Hp,
-        int Attack,
-        int Defense,
-        int SpecialAttack,
-        int SpecialDefense,
-        int Speed)
-    {
-        public int Total => Hp + Attack + Defense + SpecialAttack + SpecialDefense + Speed;
-        public double Percentage => Total / 186.0 * 100;
-
-        public (string Name, int Value) GetBestStat()
-        {
-            var stats = new[] 
-            { 
-                ("HP", Hp), 
-                ("Attack", Attack), 
-                ("Defense", Defense),
-                ("Sp. Attack", SpecialAttack),
-                ("Sp. Defense", SpecialDefense),
-                ("Speed", Speed)
-            };
-            return stats.MaxBy(s => s.Item2);
-        }
-
-        public string GetVerdict() => Total switch
-        {
-            >= 186 => "Perfect!",
-            >= 170 => "Outstanding!",
-            >= 150 => "Amazing",
-            >= 120 => "Great",
-            >= 90 => "Good",
-            >= 60 => "Decent",
-            _ => "Not bad"
-        };
-    }
-
-    /// <summary>
-    /// Context for IV generation - affects distribution
-    /// </summary>
-    public record IVGenerationContext(
-        int TrainerLevel,
-        bool IsLegendary,
-        bool IsMythical,
-        bool IsShiny,
-        bool HasShinyCharm,
-        int CatchStreak);  // Consecutive catches of same species
-
     public class IVGeneratorService : IIVGeneratorService
     {
         /// <summary>
