@@ -1,19 +1,26 @@
 using AutoMapper;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Interfaces.IGameMechanics;
 using PokedexReactASP.Domain.Entities;
+using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Services
 {
-    public class PokemonEnricher : IPokemonEnricher
+    public class PokemonEnricher : IPokemonEnricherService
     {
         private readonly IPokemonCacheService _cacheService;
         private readonly IMapper _mapper;
+        private readonly INatureGeneratorService _natureService;
 
-        public PokemonEnricher(IPokemonCacheService cacheService, IMapper mapper)
+        public PokemonEnricher(
+            IPokemonCacheService cacheService,
+            IMapper mapper,
+            INatureGeneratorService natureService)
         {
             _cacheService = cacheService;
             _mapper = mapper;
+            _natureService = natureService;
         }
 
         public async Task<UserPokemonDto> EnrichAsync(UserPokemon userPokemon)
@@ -30,11 +37,9 @@ namespace PokedexReactASP.Application.Services
                 return Array.Empty<UserPokemonDto>();
             }
 
-            // Batch fetch all unique Pokemon data
             var uniqueApiIds = pokemonList.Select(p => p.PokemonApiId).Distinct();
             var pokeApiDataMap = await _cacheService.GetPokemonBatchAsync(uniqueApiIds);
 
-            // Map using cached data
             var result = new List<UserPokemonDto>(pokemonList.Count);
             foreach (var userPokemon in pokemonList)
             {
@@ -47,19 +52,43 @@ namespace PokedexReactASP.Application.Services
 
         public UserPokemonDto EnrichWithCachedData(UserPokemon userPokemon, PokeApiPokemon? pokeApiData)
         {
-            // Use AutoMapper for basic fields
             var dto = _mapper.Map<UserPokemonDto>(userPokemon);
 
-            // Enrich with PokeAPI data (runtime data, can't be mapped statically)
+            // Enrich with server-determined display values
+            EnrichServerDeterminedFields(dto, userPokemon);
+
             if (pokeApiData != null)
             {
                 EnrichFromPokeApi(dto, userPokemon, pokeApiData);
             }
 
-            // Calculate derived fields
             CalculateDerivedFields(dto);
 
             return dto;
+        }
+
+        private void EnrichServerDeterminedFields(UserPokemonDto dto, UserPokemon userPokemon)
+        {
+            // Nature display
+            dto.Nature = userPokemon.Nature;
+            dto.NatureDisplay = _natureService.GetDisplayName(userPokemon.Nature);
+
+            // Gender display
+            dto.Gender = userPokemon.Gender;
+            dto.GenderDisplay = userPokemon.Gender switch
+            {
+                PokemonGender.Male => "♂",
+                PokemonGender.Female => "♀",
+                _ => "⚲"
+            };
+
+            // Caught ball
+            dto.CaughtBall = userPokemon.CaughtBall;
+
+            // Calculate rank based on IVs
+            int ivTotal = userPokemon.IvTotal;
+            dto.Rank = CalculateRank(ivTotal);
+            dto.RankDisplay = GetRankDisplay(dto.Rank);
         }
 
         private static void EnrichFromPokeApi(UserPokemonDto dto, UserPokemon userPokemon, PokeApiPokemon pokeApiData)
@@ -91,13 +120,13 @@ namespace PokedexReactASP.Application.Services
             dto.BaseStatTotal = pokeApiData.Hp + pokeApiData.Attack + pokeApiData.Defense +
                                pokeApiData.SpecialAttack + pokeApiData.SpecialDefense + pokeApiData.Speed;
 
-            // Calculated stats (Pokemon formula)
-            dto.CalculatedHp = CalculateStat(pokeApiData.Hp, dto.IvHp ?? 0, dto.EvHp, dto.CurrentLevel, isHp: true);
-            dto.CalculatedAttack = CalculateStat(pokeApiData.Attack, dto.IvAttack ?? 0, dto.EvAttack, dto.CurrentLevel, isHp: false);
-            dto.CalculatedDefense = CalculateStat(pokeApiData.Defense, dto.IvDefense ?? 0, dto.EvDefense, dto.CurrentLevel, isHp: false);
-            dto.CalculatedSpecialAttack = CalculateStat(pokeApiData.SpecialAttack, dto.IvSpecialAttack ?? 0, dto.EvSpecialAttack, dto.CurrentLevel, isHp: false);
-            dto.CalculatedSpecialDefense = CalculateStat(pokeApiData.SpecialDefense, dto.IvSpecialDefense ?? 0, dto.EvSpecialDefense, dto.CurrentLevel, isHp: false);
-            dto.CalculatedSpeed = CalculateStat(pokeApiData.Speed, dto.IvSpeed ?? 0, dto.EvSpeed, dto.CurrentLevel, isHp: false);
+            // Calculated stats (Pokemon formula with nature modifier)
+            dto.CalculatedHp = CalculateStat(pokeApiData.Hp, dto.IvHp ?? 0, dto.EvHp, dto.CurrentLevel, isHp: true, 1.0);
+            dto.CalculatedAttack = CalculateStatWithNature(pokeApiData.Attack, dto.IvAttack ?? 0, dto.EvAttack, dto.CurrentLevel, userPokemon.Nature, "Attack");
+            dto.CalculatedDefense = CalculateStatWithNature(pokeApiData.Defense, dto.IvDefense ?? 0, dto.EvDefense, dto.CurrentLevel, userPokemon.Nature, "Defense");
+            dto.CalculatedSpecialAttack = CalculateStatWithNature(pokeApiData.SpecialAttack, dto.IvSpecialAttack ?? 0, dto.EvSpecialAttack, dto.CurrentLevel, userPokemon.Nature, "SpAtk");
+            dto.CalculatedSpecialDefense = CalculateStatWithNature(pokeApiData.SpecialDefense, dto.IvSpecialDefense ?? 0, dto.EvSpecialDefense, dto.CurrentLevel, userPokemon.Nature, "SpDef");
+            dto.CalculatedSpeed = CalculateStatWithNature(pokeApiData.Speed, dto.IvSpeed ?? 0, dto.EvSpeed, dto.CurrentLevel, userPokemon.Nature, "Speed");
             dto.MaxHp = dto.CalculatedHp;
         }
 
@@ -134,26 +163,100 @@ namespace PokedexReactASP.Application.Services
         }
 
         /// <summary>
-        /// Official Pokemon stat calculation formula
+        /// Pokemon stat calculation formula (HP)
         /// </summary>
-        private static int CalculateStat(int baseStat, int iv, int ev, int level, bool isHp)
+        private static int CalculateStat(int baseStat, int iv, int ev, int level, bool isHp, double natureMod)
         {
             if (isHp)
             {
                 return ((2 * baseStat + iv + ev / 4) * level / 100) + level + 10;
             }
-            // Neutral nature (1.0 multiplier)
-            return (int)(((2 * baseStat + iv + ev / 4) * level / 100 + 5) * 1.0);
+            return (int)(((2 * baseStat + iv + ev / 4) * level / 100 + 5) * natureMod);
         }
+
+        /// <summary>
+        /// Calculate stat with nature modifier
+        /// </summary>
+        private static int CalculateStatWithNature(int baseStat, int iv, int ev, int level, Nature nature, string statName)
+        {
+            double natureMod = GetNatureModifier(nature, statName);
+            return CalculateStat(baseStat, iv, ev, level, false, natureMod);
+        }
+
+        private static double GetNatureModifier(Nature nature, string statName)
+        {
+            var (decreased, increased) = GetNatureEffects(nature);
+            if (increased == statName) return 1.1;
+            if (decreased == statName) return 0.9;
+            return 1.0;
+        }
+
+        private static (string? Decreased, string? Increased) GetNatureEffects(Nature nature)
+        {
+            return nature switch
+            {
+                Nature.Lonely => ("Defense", "Attack"),
+                Nature.Brave => ("Speed", "Attack"),
+                Nature.Adamant => ("SpAtk", "Attack"),
+                Nature.Naughty => ("SpDef", "Attack"),
+
+                Nature.Bold => ("Attack", "Defense"),
+                Nature.Relaxed => ("Speed", "Defense"),
+                Nature.Impish => ("SpAtk", "Defense"),
+                Nature.Lax => ("SpDef", "Defense"),
+
+                Nature.Timid => ("Attack", "Speed"),
+                Nature.Hasty => ("Defense", "Speed"),
+                Nature.Jolly => ("SpAtk", "Speed"),
+                Nature.Naive => ("SpDef", "Speed"),
+
+                Nature.Modest => ("Attack", "SpAtk"),
+                Nature.Mild => ("Defense", "SpAtk"),
+                Nature.Quiet => ("Speed", "SpAtk"),
+                Nature.Rash => ("SpDef", "SpAtk"),
+
+                Nature.Calm => ("Attack", "SpDef"),
+                Nature.Gentle => ("Defense", "SpDef"),
+                Nature.Sassy => ("Speed", "SpDef"),
+                Nature.Careful => ("SpAtk", "SpDef"),
+
+                _ => (null, null)
+            };
+        }
+
+        private static PokemonRank CalculateRank(int ivTotal)
+        {
+            double percent = ivTotal / 186.0 * 100;
+            return percent switch
+            {
+                >= 95 => PokemonRank.SS,
+                >= 90 => PokemonRank.S,
+                >= 80 => PokemonRank.A,
+                >= 65 => PokemonRank.B,
+                >= 50 => PokemonRank.C,
+                _ => PokemonRank.D
+            };
+        }
+
+        private static string GetRankDisplay(PokemonRank rank) => rank switch
+        {
+            PokemonRank.SS => "✨ SS Rank! ✨",
+            PokemonRank.S => "⭐ S Rank!",
+            PokemonRank.A => "A Rank",
+            PokemonRank.B => "B Rank",
+            PokemonRank.C => "C Rank",
+            _ => "D Rank"
+        };
 
         private static string GetIvRating(int ivTotal) => ivTotal switch
         {
-            >= 186 => "Perfect",  // 31 * 6 = 186
+            >= 186 => "Perfect!",
+            >= 170 => "Outstanding!",
             >= 150 => "Amazing",
             >= 120 => "Great",
             >= 90 => "Good",
             >= 60 => "Decent",
-            _ => "Not great"
+            _ => "Not bad"
         };
 
         private static int GetExpForNextLevel(int currentLevel) => 1000 + (currentLevel * 100);

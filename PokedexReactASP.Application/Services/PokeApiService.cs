@@ -12,6 +12,8 @@ namespace PokedexReactASP.Application.Services
     {
         Task<PokeApiPokemon?> GetPokemonAsync(int id);
         Task<PokeApiPokemon?> GetPokemonAsync(string name);
+        Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(int id);
+        Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(string name);
         Task<PokeApiMove?> GetMoveAsync(int id);
         Task<PokeApiItem?> GetItemAsync(int id);
         Task<PokeApiType?> GetTypeAsync(string typeName);
@@ -75,6 +77,58 @@ namespace PokedexReactASP.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching Pokemon {PokemonName} from PokeAPI", name);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get Pokemon species data (capture_rate, is_legendary, is_mythical, gender_rate, etc.)
+        /// Endpoint: https://pokeapi.co/api/v2/pokemon-species/{id}
+        /// </summary>
+        public async Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"pokemon-species/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Failed to fetch Pokemon species {SpeciesId} from PokeAPI", id);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Pokemon species {SpeciesId} from PokeAPI", id);
+                return null;
+            }
+        }
+
+        public async Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(string name)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLower()}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Failed to fetch Pokemon species {SpeciesName} from PokeAPI", name);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Pokemon species {SpeciesName} from PokeAPI", name);
                 return null;
             }
         }
@@ -252,6 +306,121 @@ namespace PokedexReactASP.Application.Services
     {
         public string Name { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Detailed Pokemon species data from /pokemon-species/{id}
+    /// Contains catch rate, legendary status, gender ratio, etc.
+    /// </summary>
+    public class PokeApiSpeciesDetail
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Base happiness when caught (0-255)
+        /// </summary>
+        public int Base_Happiness { get; set; }
+        
+        /// <summary>
+        /// Catch rate (3-255). Lower = harder to catch.
+        /// Legendary typically have 3-45.
+        /// </summary>
+        public int Capture_Rate { get; set; }
+        
+        /// <summary>
+        /// Color category (for Pokedex)
+        /// </summary>
+        public PokeApiNamedResource? Color { get; set; }
+        
+        /// <summary>
+        /// Gender rate: -1 = genderless, 0 = always male, 8 = always female
+        /// 1-7 = female probability in eighths (e.g., 1 = 12.5% female)
+        /// </summary>
+        public int Gender_Rate { get; set; }
+        
+        /// <summary>
+        /// Is this a baby Pokemon? (Baby Pokemon have higher friendship)
+        /// </summary>
+        public bool Is_Baby { get; set; }
+        
+        /// <summary>
+        /// Is this a legendary Pokemon?
+        /// </summary>
+        public bool Is_Legendary { get; set; }
+        
+        /// <summary>
+        /// Is this a mythical Pokemon?
+        /// </summary>
+        public bool Is_Mythical { get; set; }
+        
+        /// <summary>
+        /// Egg cycles to hatch (higher = longer)
+        /// </summary>
+        public int Hatch_Counter { get; set; }
+        
+        /// <summary>
+        /// Has different sprites for male/female
+        /// </summary>
+        public bool Has_Gender_Differences { get; set; }
+        
+        /// <summary>
+        /// Growth rate determines EXP curve
+        /// </summary>
+        public PokeApiNamedResource? Growth_Rate { get; set; }
+        
+        /// <summary>
+        /// Generation this Pokemon was introduced
+        /// </summary>
+        public PokeApiNamedResource? Generation { get; set; }
+        
+        /// <summary>
+        /// Pokemon it evolves from (null if base form)
+        /// </summary>
+        public PokeApiNamedResource? Evolves_From_Species { get; set; }
+        
+        /// <summary>
+        /// Evolution chain URL
+        /// </summary>
+        public PokeApiEvolutionChainRef? Evolution_Chain { get; set; }
+        
+        /// <summary>
+        /// Habitat (grassland, cave, sea, etc.)
+        /// </summary>
+        public PokeApiNamedResource? Habitat { get; set; }
+        
+        /// <summary>
+        /// Body shape category
+        /// </summary>
+        public PokeApiNamedResource? Shape { get; set; }
+        
+        /// <summary>
+        /// Flavor text entries (descriptions)
+        /// </summary>
+        public List<PokeApiFlavorText> Flavor_Text_Entries { get; set; } = new();
+        
+        /// <summary>
+        /// Genus (e.g., "Mouse Pokémon" for Pikachu)
+        /// </summary>
+        public List<PokeApiGenus> Genera { get; set; } = new();
+    }
+
+    public class PokeApiEvolutionChainRef
+    {
+        public string Url { get; set; } = string.Empty;
+    }
+
+    public class PokeApiFlavorText
+    {
+        public string Flavor_Text { get; set; } = string.Empty;
+        public PokeApiNamedResource? Language { get; set; }
+        public PokeApiNamedResource? Version { get; set; }
+    }
+
+    public class PokeApiGenus
+    {
+        public string Genus { get; set; } = string.Empty;
+        public PokeApiNamedResource? Language { get; set; }
     }
 
     public class PokeApiNamedResource
