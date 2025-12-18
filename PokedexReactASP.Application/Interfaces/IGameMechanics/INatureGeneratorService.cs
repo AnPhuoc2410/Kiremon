@@ -1,4 +1,4 @@
-﻿using PokedexReactASP.Application.Services.GameMechanics;
+﻿using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Interfaces.IGameMechanics
