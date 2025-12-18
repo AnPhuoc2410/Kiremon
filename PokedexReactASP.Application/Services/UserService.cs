@@ -4,7 +4,7 @@ using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
-using PokedexReactASP.Application.Services.GameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Domain.Enums;
 
