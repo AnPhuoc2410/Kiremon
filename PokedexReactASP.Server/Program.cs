@@ -102,7 +102,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IPokemonService, PokemonService>();
             
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
-            builder.Services.AddScoped<IPokemonEnricher, PokemonEnricher>();
+            builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();

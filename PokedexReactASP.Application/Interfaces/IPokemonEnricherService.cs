@@ -8,7 +8,7 @@ namespace PokedexReactASP.Application.Interfaces
     /// Responsible for enriching UserPokemon entities with PokeAPI data.
     /// Separated from UserService to follow Single Responsibility Principle.
     /// </summary>
-    public interface IPokemonEnricher
+    public interface IPokemonEnricherService
     {
         Task<UserPokemonDto> EnrichAsync(UserPokemon userPokemon);
         Task<IReadOnlyList<UserPokemonDto>> EnrichBatchAsync(IEnumerable<UserPokemon> userPokemonList);
