@@ -1,4 +1,5 @@
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Services.GameMechanics
@@ -7,27 +8,6 @@ namespace PokedexReactASP.Application.Services.GameMechanics
     /// Server-authoritative Nature generation.
     /// Nature is NEVER trusted from client.
     /// </summary>
-    
-
-    /// <summary>
-    /// Context for nature generation (for future features like Synchronize)
-    /// </summary>
-    public record NatureGenerationContext(
-        Nature? SynchronizeNature = null,  // Ability that passes nature
-        bool HasEverstone = false);         // Item that locks nature
-
-    /// <summary>
-    /// Stat modifiers for a nature (+10%/-10%)
-    /// </summary>
-    public record NatureModifiers(
-        string? IncreasedStat,
-        string? DecreasedStat,
-        double AttackMod,
-        double DefenseMod,
-        double SpAttackMod,
-        double SpDefenseMod,
-        double SpeedMod);
-
     public class NatureGeneratorService : INatureGeneratorService
     {
         private static readonly Nature[] AllNatures = Enum.GetValues<Nature>();

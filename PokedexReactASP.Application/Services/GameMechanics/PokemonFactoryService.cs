@@ -1,5 +1,6 @@
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Domain.Enums;
 
@@ -222,40 +223,5 @@ namespace PokedexReactASP.Application.Services.GameMechanics
         private static string CapitalizeFirst(string input) =>
             string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
     }
-
-
-    /// <summary>
-    /// Context for creating a new Pokemon
-    /// </summary>
-    public record PokemonCreationContext(
-        string UserId,
-        int PokemonApiId,
-        string PokemonName,
-        string? Nickname,
-        string? CaughtLocation,
-        PokeballType CaughtBall,
-        int TrainerLevel,
-        int TotalPokemonCaught,
-        int CatchStreak,
-        bool HasShinyCharm,
-        bool IsLegendary,
-        bool IsMythical,
-        bool IsBaby,
-        int BaseCaptureRate,
-        int BaseExperience,
-        string Type1,
-        string? Type2,
-        string SpriteUrl,
-        string? ShinySpriteUrl,
-        int GenderRate);  // -1 = genderless, 0 = always male, 8 = always female
-
-    /// <summary>
-    /// Result of Pokemon creation
-    /// </summary>
-    public record PokemonCreationResult(
-        UserPokemon Pokemon,
-        CaughtPokemonDto DisplayDto,
-        int ExpGained,
-        bool IsNewSpecies);
 }
 
