@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Interfaces.IGameMechanics;
+using PokedexReactASP.Application.Services.GameMechanics;
 using PokedexReactASP.Domain.Entities;
+using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Application.Services
 {
@@ -13,23 +16,28 @@ namespace PokedexReactASP.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPokemonCacheService _pokemonCache;
         private readonly IPokemonEnricherService _pokemonEnricher;
+        private readonly IPokeApiService _pokeApiService;
+        private readonly IPokemonFactoryService _pokemonFactory;
+        private readonly ICatchRateCalculatorService _catchRateCalculator;
         private readonly IMapper _mapper;
-
-        // Thread-safe random for IV generation
-        private static readonly Random SharedRandom = new();
-        private static readonly object RandomLock = new();
 
         public UserService(
             IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
             IPokemonCacheService pokemonCache,
             IPokemonEnricherService pokemonEnricher,
+            IPokeApiService pokeApiService,
+            IPokemonFactoryService pokemonFactory,
+            ICatchRateCalculatorService catchRateCalculator,
             IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _pokemonCache = pokemonCache;
             _pokemonEnricher = pokemonEnricher;
+            _pokeApiService = pokeApiService;
+            _pokemonFactory = pokemonFactory;
+            _catchRateCalculator = catchRateCalculator;
             _mapper = mapper;
         }
 
@@ -61,10 +69,7 @@ namespace PokedexReactASP.Application.Services
         public async Task<IEnumerable<UserPokemonDto>> GetUserPokemonAsync(string userId)
         {
             var userPokemonList = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
-            
-            // Batch enrich - single batch API call instead of N calls
             var enrichedList = await _pokemonEnricher.EnrichBatchAsync(userPokemonList);
-            
             return enrichedList.OrderByDescending(p => p.CaughtDate);
         }
 
@@ -74,7 +79,6 @@ namespace PokedexReactASP.Application.Services
                 up => up.UserId == userId && up.Id == userPokemonId);
 
             if (userPokemon == null) return null;
-
             return await _pokemonEnricher.EnrichAsync(userPokemon);
         }
 
@@ -82,8 +86,6 @@ namespace PokedexReactASP.Application.Services
         {
             var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
             var pokemonList = allPokemon.ToList();
-
-            // Calculate type distribution using batch cache
             var typeDistribution = await GetTypeDistributionBatchAsync(pokemonList);
 
             return new CollectionStatsDto
@@ -100,9 +102,6 @@ namespace PokedexReactASP.Application.Services
             };
         }
 
-        /// <summary>
-        /// Optimized: Batch fetch Pokemon data for type distribution
-        /// </summary>
         private async Task<Dictionary<string, int>> GetTypeDistributionBatchAsync(List<UserPokemon> pokemonList)
         {
             if (pokemonList.Count == 0) return new Dictionary<string, int>();
@@ -111,21 +110,17 @@ namespace PokedexReactASP.Application.Services
             var pokeApiDataMap = await _pokemonCache.GetPokemonBatchAsync(uniqueApiIds);
 
             var typeCount = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            
+
             foreach (var pokemon in pokemonList)
             {
                 if (!pokeApiDataMap.TryGetValue(pokemon.PokemonApiId, out var pokeApiData)) continue;
-                
+
                 if (!string.IsNullOrEmpty(pokeApiData.Type1))
-                {
                     typeCount[pokeApiData.Type1] = typeCount.GetValueOrDefault(pokeApiData.Type1) + 1;
-                }
                 if (!string.IsNullOrEmpty(pokeApiData.Type2))
-                {
                     typeCount[pokeApiData.Type2] = typeCount.GetValueOrDefault(pokeApiData.Type2) + 1;
-                }
             }
-            
+
             return typeCount;
         }
 
@@ -144,11 +139,9 @@ namespace PokedexReactASP.Application.Services
                 };
             }
 
-            // Batch fetch all unique Pokemon names
             var uniqueApiIds = pokemonList.Select(p => p.PokemonApiId).Distinct();
             var pokeApiDataMap = await _pokemonCache.GetPokemonBatchAsync(uniqueApiIds);
 
-            // Group by PokemonApiId and count
             var grouped = pokemonList
                 .GroupBy(p => p.PokemonApiId)
                 .Select(g =>
@@ -170,27 +163,192 @@ namespace PokedexReactASP.Application.Services
 
         #endregion
 
-        #region Pokemon Collection - Write Operations
+        #region Pokemon Catch - Server Authoritative
 
-        public async Task<CatchResultDto> CatchPokemonAsync(string userId, CatchPokemonDto catchPokemonDto)
+        public async Task<CatchAttemptResultDto> AttemptCatchPokemonAsync(string userId, CatchAttemptDto request)
         {
-            var result = new CatchResultDto();
+            var result = new CatchAttemptResultDto { PokeballUsed = request.PokeballType };
 
-            // 1. Validate Pokemon exists in PokeAPI (cached)
-            var pokeApiData = await _pokemonCache.GetPokemonAsync(catchPokemonDto.PokemonApiId);
+            // 1. Get trainer data
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                result.Result = CatchAttemptResult.Escaped;
+                result.Message = "Trainer not found";
+                return result;
+            }
+
+            // 2. Fetch Pokemon data from PokeAPI
+            var pokeApiData = await _pokemonCache.GetPokemonAsync(request.PokemonApiId);
             if (pokeApiData == null)
             {
-                result.Success = false;
+                result.Result = CatchAttemptResult.Escaped;
                 result.Message = "Pokemon not found";
                 return result;
             }
 
-            // 2. Check for duplicate nickname (if provided)
-            if (!string.IsNullOrEmpty(catchPokemonDto.Nickname))
+            // 3. Fetch species data for catch rate, legendary status, gender rate
+            var speciesData = await _pokeApiService.GetPokemonSpeciesAsync(request.PokemonApiId);
+            var captureRate = speciesData?.Capture_Rate ?? 45;
+            var isLegendary = speciesData?.Is_Legendary ?? false;
+            var isMythical = speciesData?.Is_Mythical ?? false;
+            var isBaby = speciesData?.Is_Baby ?? false;
+            var genderRate = speciesData?.Gender_Rate ?? -1;
+
+            // 4. Determine wild Pokemon level
+            var wildPokemonLevel = _pokemonFactory.CalculateWildPokemonLevel(
+                user.TrainerLevel, isLegendary, isMythical);
+
+            // 5. Check for duplicate nickname
+            if (!string.IsNullOrEmpty(request.Nickname))
             {
                 var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    up => up.UserId == userId && up.Nickname == catchPokemonDto.Nickname);
+                    up => up.UserId == userId && up.Nickname == request.Nickname);
+                if (existingWithNickname != null)
+                {
+                    result.Result = CatchAttemptResult.Escaped;
+                    result.Message = "You already have a Pokemon with this nickname";
+                    return result;
+                }
+            }
 
+            // 6. Calculate catch rate and attempt catch
+            var existingCatch = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
+                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId);
+            var hasCaughtBefore = existingCatch != null;
+
+            var catchContext = new CatchCalculationContext(
+                BaseCaptureRate: captureRate,
+                IsLegendary: isLegendary,
+                IsMythical: isMythical,
+                IsBaby: isBaby,
+                PokemonLevel: wildPokemonLevel,
+                CurrentHp: 100,
+                MaxHp: 100,
+                StatusCondition: null,
+                TrainerLevel: user.TrainerLevel,
+                PokeballUsed: request.PokeballType,
+                HasCaughtBefore: hasCaughtBefore,
+                TimeOfDay: GetCurrentTimeOfDay(),
+                LocationType: LocationType.Grassland);
+
+            var catchCalcResult = _catchRateCalculator.CalculateCatch(catchContext);
+            result.CatchRatePercent = catchCalcResult.CatchRateUsed;
+            result.ShakeCount = catchCalcResult.ShakeCount;
+
+            // 7. Award some EXP even on failure (encourages trying)
+            int baseExpGain = Math.Max(20, pokeApiData.Base_Experience / 10);
+
+            // 8. Handle catch failure
+            if (catchCalcResult.Result != CatchAttemptResult.Success)
+            {
+                result.Result = catchCalcResult.Result;
+                result.Message = catchCalcResult.FailReason;
+                result.TrainerExpGained = baseExpGain;
+
+                // Update trainer EXP even on failure
+                await UpdateTrainerExp(user, baseExpGain, result);
+                return result;
+            }
+
+            // 9. CATCH SUCCESS! Create Pokemon using factory (all server-determined)
+            var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
+                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId);
+            var isNewSpecies = existingOfSameSpecies == null;
+
+            var creationContext = new PokemonCreationContext(
+                UserId: userId,
+                PokemonApiId: request.PokemonApiId,
+                PokemonName: pokeApiData.Name,
+                Nickname: request.Nickname,
+                CaughtLocation: request.CaughtLocation,
+                CaughtBall: request.PokeballType,
+                TrainerLevel: user.TrainerLevel,
+                TotalPokemonCaught: user.PokemonCaught,
+                CatchStreak: 0, // TODO: Track catch streak per species
+                HasShinyCharm: false, // TODO: Check inventory
+                IsLegendary: isLegendary,
+                IsMythical: isMythical,
+                IsBaby: isBaby,
+                BaseCaptureRate: captureRate,
+                BaseExperience: pokeApiData.Base_Experience,
+                Type1: pokeApiData.Type1,
+                Type2: pokeApiData.Type2,
+                SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
+                ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
+                GenderRate: genderRate);
+
+            var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
+            var userPokemon = creationResult.Pokemon;
+
+            // 10. Save Pokemon to database
+            await _unitOfWork.UserPokemon.AddAsync(userPokemon);
+
+            // 11. Update trainer stats
+            user.PokemonCaught++;
+            if (isNewSpecies) user.UniquePokemonCaught++;
+            if (userPokemon.IsShiny) user.ShinyPokemonCaught++;
+
+            int totalExpGain = creationResult.ExpGained;
+            result.TrainerExpGained = totalExpGain;
+            result.IsNewSpecies = isNewSpecies;
+
+            await UpdateTrainerExp(user, totalExpGain, result);
+
+            // 12. Save all changes
+            await _unitOfWork.SaveChangesAsync();
+
+            // 13. Build success response
+            result.Result = CatchAttemptResult.Success;
+            result.Message = userPokemon.IsShiny
+                ? $"✨ Wow! A shiny {CapitalizeFirst(pokeApiData.Name)} was caught!"
+                : $"{CapitalizeFirst(pokeApiData.Name)} was caught!";
+
+            // Update ID after save
+            creationResult.DisplayDto.Id = userPokemon.Id;
+            result.CaughtPokemon = creationResult.DisplayDto;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Use AttemptCatchPokemonAsync for battle system with catch rate roll.
+        /// </summary>
+        public async Task<CatchResultDto> CatchPokemonAsync(string userId, CatchPokemonDto dto)
+        {
+            var result = new CatchResultDto();
+
+            // 1. Validate user
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                result.Success = false;
+                result.Message = "Trainer not found";
+                return result;
+            }
+
+            // 2. Fetch Pokemon data from PokeAPI
+            var pokeApiData = await _pokemonCache.GetPokemonAsync(dto.PokemonApiId);
+            if (pokeApiData == null)
+            {
+                result.Success = false;
+                result.Message = "Pokemon not found in PokeAPI";
+                return result;
+            }
+
+            // 3. Fetch species data for legendary status, gender rate, base happiness
+            var speciesData = await _pokeApiService.GetPokemonSpeciesAsync(dto.PokemonApiId);
+            var isLegendary = speciesData?.Is_Legendary ?? false;
+            var isMythical = speciesData?.Is_Mythical ?? false;
+            var isBaby = speciesData?.Is_Baby ?? false;
+            var genderRate = speciesData?.Gender_Rate ?? -1;
+            var captureRate = speciesData?.Capture_Rate ?? 45;
+
+            // 4. Check for duplicate nickname
+            if (!string.IsNullOrEmpty(dto.Nickname))
+            {
+                var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
+                    up => up.UserId == userId && up.Nickname == dto.Nickname);
                 if (existingWithNickname != null)
                 {
                     result.Success = false;
@@ -199,69 +357,116 @@ namespace PokedexReactASP.Application.Services
                 }
             }
 
-            // 3. Check if this is a new species BEFORE adding
+            // 5. Check if this is a new species
             var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.PokemonApiId == catchPokemonDto.PokemonApiId);
+                up => up.UserId == userId && up.PokemonApiId == dto.PokemonApiId);
             var isNewSpecies = existingOfSameSpecies == null;
 
-            // 4. Generate IVs (thread-safe)
-            var ivs = GenerateRandomIVs(catchPokemonDto);
+            // 6. Create Pokemon using factory (ALL VALUES SERVER-DETERMINED)
+            var creationContext = new PokemonCreationContext(
+                UserId: userId,
+                PokemonApiId: dto.PokemonApiId,
+                PokemonName: pokeApiData.Name,
+                Nickname: dto.Nickname,
+                CaughtLocation: dto.CaughtLocation ?? "Wild",
+                CaughtBall: PokeballType.Pokeball,
+                TrainerLevel: user.TrainerLevel,
+                TotalPokemonCaught: user.PokemonCaught,
+                CatchStreak: 0,
+                HasShinyCharm: false, // TODO: Check inventory
+                IsLegendary: isLegendary,
+                IsMythical: isMythical,
+                IsBaby: isBaby,
+                BaseCaptureRate: captureRate,
+                BaseExperience: pokeApiData.Base_Experience,
+                Type1: pokeApiData.Type1,
+                Type2: pokeApiData.Type2,
+                SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
+                ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
+                GenderRate: genderRate);
 
-            // 5. Create UserPokemon entity
-            var userPokemon = _mapper.Map<UserPokemon>(catchPokemonDto);
-            userPokemon.UserId = userId;
-            userPokemon.IvHp = ivs.Hp;
-            userPokemon.IvAttack = ivs.Attack;
-            userPokemon.IvDefense = ivs.Defense;
-            userPokemon.IvSpecialAttack = ivs.SpecialAttack;
-            userPokemon.IvSpecialDefense = ivs.SpecialDefense;
-            userPokemon.IvSpeed = ivs.Speed;
+            var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
+            var userPokemon = creationResult.Pokemon;
 
-            // 6. Calculate experience gain
-            var expGained = CalculateCatchExperience(pokeApiData.Base_Experience);
-
-            // 7. Add Pokemon and update user in single transaction
+            // 7. Save Pokemon to database
             await _unitOfWork.UserPokemon.AddAsync(userPokemon);
-            
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
+
+            // 8. Update trainer stats
+            user.PokemonCaught++;
+            if (isNewSpecies) user.UniquePokemonCaught++;
+            if (userPokemon.IsShiny) user.ShinyPokemonCaught++;
+
+            int expGain = creationResult.ExpGained;
+
+            // 9. Update trainer level
+            user.TotalExperience += expGain;
+            user.CurrentLevelExperience += expGain;
+            var oldLevel = user.TrainerLevel;
+
+            while (user.CurrentLevelExperience >= GetExpForNextLevel(user.TrainerLevel))
             {
-                user.PokemonCaught++;
-                if (isNewSpecies) user.UniquePokemonCaught++;
-                if (catchPokemonDto.IsShiny) user.ShinyPokemonCaught++;
-
-                user.TotalExperience += expGained;
-                user.CurrentLevelExperience += expGained;
-
-                // Level up logic
-                var leveledUp = false;
-                while (user.CurrentLevelExperience >= GetExpForNextLevel(user.TrainerLevel))
-                {
-                    user.CurrentLevelExperience -= GetExpForNextLevel(user.TrainerLevel);
-                    user.TrainerLevel++;
-                    leveledUp = true;
-                }
-
-                result.TrainerLeveledUp = leveledUp;
-                result.NewTrainerLevel = user.TrainerLevel;
-                
-                await _userManager.UpdateAsync(user);
+                user.CurrentLevelExperience -= GetExpForNextLevel(user.TrainerLevel);
+                user.TrainerLevel++;
             }
 
-            // 8. Save all changes in single transaction
+            await _userManager.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
-            // 9. Build result
+            // 10. Build response
             result.Success = true;
-            result.Message = $"{CapitalizeFirst(pokeApiData.Name)} was caught successfully!";
+            result.Message = userPokemon.IsShiny
+                ? $"✨ Wow! A shiny {CapitalizeFirst(pokeApiData.Name)} was caught!"
+                : $"{CapitalizeFirst(pokeApiData.Name)} was caught!";
+
+            // Update ID after save
+            creationResult.DisplayDto.Id = userPokemon.Id;
+            result.CaughtPokemon = await _pokemonEnricher.EnrichAsync(userPokemon);
+            result.IvTotal = creationResult.DisplayDto.IvTotal;
+            result.IvRating = creationResult.DisplayDto.IvVerdict;
+            result.ExperienceGained = expGain;
             result.IsNewSpecies = isNewSpecies;
-            result.ExperienceGained = expGained;
-            result.IvTotal = ivs.Hp + ivs.Attack + ivs.Defense + ivs.SpecialAttack + ivs.SpecialDefense + ivs.Speed;
-            result.IvRating = GetIvRating(result.IvTotal);
-            result.CaughtPokemon = _pokemonEnricher.EnrichWithCachedData(userPokemon, pokeApiData);
+            result.TrainerLeveledUp = user.TrainerLevel > oldLevel;
+            result.NewTrainerLevel = user.TrainerLevel;
 
             return result;
         }
+
+        private async Task UpdateTrainerExp(ApplicationUser user, int expGain, CatchAttemptResultDto result)
+        {
+            user.TotalExperience += expGain;
+            user.CurrentLevelExperience += expGain;
+
+            while (user.CurrentLevelExperience >= GetExpForNextLevel(user.TrainerLevel))
+            {
+                user.CurrentLevelExperience -= GetExpForNextLevel(user.TrainerLevel);
+                user.TrainerLevel++;
+                result.TrainerLeveledUp = true;
+            }
+
+            result.NewTrainerLevel = user.TrainerLevel;
+            await _userManager.UpdateAsync(user);
+        }
+
+        private static TimeOfDay GetCurrentTimeOfDay()
+        {
+            var hour = DateTime.UtcNow.Hour;
+            return hour switch
+            {
+                >= 6 and < 10 => TimeOfDay.Morning,
+                >= 10 and < 17 => TimeOfDay.Day,
+                >= 17 and < 20 => TimeOfDay.Evening,
+                _ => TimeOfDay.Night
+            };
+        }
+
+        private static int GetExpForNextLevel(int currentLevel) => 1000 + (currentLevel * 100);
+
+        private static string CapitalizeFirst(string input) =>
+            string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
+
+        #endregion
+
+        #region Pokemon Management
 
         public async Task<bool> ReleasePokemonAsync(string userId, int userPokemonId)
         {
@@ -270,35 +475,28 @@ namespace PokedexReactASP.Application.Services
 
             if (userPokemon == null) return false;
 
-            // Calculate new unique count BEFORE removing
             var remainingPokemon = await _unitOfWork.UserPokemon
                 .FindAsync(up => up.UserId == userId && up.Id != userPokemonId);
             var newUniqueCount = remainingPokemon.Select(up => up.PokemonApiId).Distinct().Count();
 
-            // Remove Pokemon
             _unitOfWork.UserPokemon.Remove(userPokemon);
 
-            // Update user stats
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
                 user.PokemonCaught = Math.Max(0, user.PokemonCaught - 1);
                 user.UniquePokemonCaught = newUniqueCount;
                 if (userPokemon.IsShiny)
-                {
                     user.ShinyPokemonCaught = Math.Max(0, user.ShinyPokemonCaught - 1);
-                }
                 await _userManager.UpdateAsync(user);
             }
 
-            // Single save
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname)
         {
-            // Check for duplicate nickname
             if (!string.IsNullOrEmpty(nickname))
             {
                 var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
@@ -343,57 +541,24 @@ namespace PokedexReactASP.Application.Services
             return true;
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        private record IVSet(int Hp, int Attack, int Defense, int SpecialAttack, int SpecialDefense, int Speed);
-
         /// <summary>
-        /// Thread-safe IV generation
+        /// Increase friendship through daily interaction
         /// </summary>
-        private static IVSet GenerateRandomIVs(CatchPokemonDto? dto)
+        public async Task<bool> InteractWithPokemonAsync(string userId, int userPokemonId)
         {
-            lock (RandomLock)
-            {
-                return new IVSet(
-                    dto?.IvHp ?? SharedRandom.Next(32),
-                    dto?.IvAttack ?? SharedRandom.Next(32),
-                    dto?.IvDefense ?? SharedRandom.Next(32),
-                    dto?.IvSpecialAttack ?? SharedRandom.Next(32),
-                    dto?.IvSpecialDefense ?? SharedRandom.Next(32),
-                    dto?.IvSpeed ?? SharedRandom.Next(32)
-                );
-            }
-        }
+            var userPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
+                up => up.UserId == userId && up.Id == userPokemonId);
 
-        private static int CalculateCatchExperience(int baseExperience)
-        {
-            return Math.Max(50, baseExperience / 2);
-        }
+            if (userPokemon == null) return false;
 
-        private static int GetExpForNextLevel(int currentLevel)
-        {
-            return 1000 + (currentLevel * 100);
-        }
+            // Only allow once per day
+            if (userPokemon.LastInteractionDate.Date == DateTime.UtcNow.Date)
+                return false;
 
-        private static string GetIvRating(int ivTotal)
-        {
-            return ivTotal switch
-            {
-                >= 186 => "Perfect",
-                >= 150 => "Amazing",
-                >= 120 => "Great",
-                >= 90 => "Good",
-                >= 60 => "Decent",
-                _ => "Not great"
-            };
-        }
-
-        private static string CapitalizeFirst(string input)
-        {
-            if (string.IsNullOrEmpty(input)) return input;
-            return char.ToUpper(input[0]) + input[1..];
+            userPokemon.Friendship = Math.Min(255, userPokemon.Friendship + 1);
+            userPokemon.LastInteractionDate = DateTime.UtcNow;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
         #endregion

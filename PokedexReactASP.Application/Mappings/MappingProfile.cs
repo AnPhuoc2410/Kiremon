@@ -28,13 +28,18 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.LastActiveDate, opt => opt.MapFrom(src => DateTime.UtcNow));
 
-            // UserPokemon → UserPokemonDto (basic fields only, PokeAPI fields are enriched at runtime)
+            // UserPokemon → UserPokemonDto
             CreateMap<UserPokemon, UserPokemonDto>()
                 .ForMember(dest => dest.CustomMoveIds, opt => opt.MapFrom(src =>
                     !string.IsNullOrEmpty(src.CustomMoveIds)
                         ? src.CustomMoveIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()
                         : null))
-                // PokeAPI fields - will be enriched at runtime
+                // Server-determined display fields (enriched at runtime)
+                .ForMember(dest => dest.NatureDisplay, opt => opt.Ignore())
+                .ForMember(dest => dest.GenderDisplay, opt => opt.Ignore())
+                .ForMember(dest => dest.Rank, opt => opt.Ignore())
+                .ForMember(dest => dest.RankDisplay, opt => opt.Ignore())
+                // PokeAPI fields (enriched at runtime)
                 .ForMember(dest => dest.Name, opt => opt.Ignore())
                 .ForMember(dest => dest.DisplayName, opt => opt.Ignore())
                 .ForMember(dest => dest.Type1, opt => opt.Ignore())
@@ -69,14 +74,6 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.ExperienceToNextLevel, opt => opt.Ignore())
                 .ForMember(dest => dest.TimeSinceCaught, opt => opt.Ignore())
                 .ForMember(dest => dest.EvolutionChain, opt => opt.Ignore());
-
-            // CatchPokemonDto → UserPokemon
-            CreateMap<CatchPokemonDto, UserPokemon>()
-                .ForMember(dest => dest.CurrentLevel, opt => opt.MapFrom(src => src.CaughtLevel))
-                .ForMember(dest => dest.CaughtDate, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.LastInteractionDate, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.Friendship, opt => opt.MapFrom(src => 70))
-                .ForMember(dest => dest.CurrentHp, opt => opt.MapFrom(src => 100));
 
             // UserPokemon → UserPokemonSummaryDto
             CreateMap<UserPokemon, UserPokemonSummaryDto>()
