@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Interfaces.IGameMechanics;
 using PokedexReactASP.Application.Mappings;
 using PokedexReactASP.Application.Options;
 using PokedexReactASP.Application.Services;
+using PokedexReactASP.Application.Services.GameMechanics;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
@@ -104,6 +106,14 @@ namespace PokedexReactASP.Server
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            
+            // Game Mechanics Services
+            builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
+            builder.Services.AddSingleton<IShinyRollerService, ShinyRollerService>();
+            builder.Services.AddSingleton<INatureGeneratorService, NatureGeneratorService>();
+            builder.Services.AddSingleton<ICatchRateCalculatorService, CatchRateCalculatorService>();
+            builder.Services.AddScoped<IPokemonFactoryService, PokemonFactoryService>();
+            
             builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
