@@ -94,10 +94,15 @@ namespace PokedexReactASP.Server
                 cfg.AddProfile(new MappingProfile());
             });
 
+            builder.Services.AddMemoryCache();
+
             // Add Application Services
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
+            
+            builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
+            builder.Services.AddScoped<IPokemonEnricher, PokemonEnricher>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
