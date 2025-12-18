@@ -33,6 +33,7 @@ import StatsTab from "./tabs/StatsTab";
 import EvolutionTab from "./tabs/EvolutionTab";
 import MovesTab from "./tabs/MovesTab";
 import SpritesTab from "./tabs/SpritesTab";
+import VarietiesTab from "./tabs/VarietiesTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 import * as T from "./index.style";
@@ -100,6 +101,7 @@ const DetailPokemon = () => {
   const [baseHappiness, setBaseHappiness] = useState<number>(0);
   const [flavorText, setFlavorText] = useState<string>("");
   const [sprites, setSprites] = useState<PokemonSprites>({ front_default: "" });
+  const [varieties, setVarieties] = useState<IPokemonSpecies["varieties"]>([]);
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
@@ -254,6 +256,7 @@ const DetailPokemon = () => {
       setCaptureRate(speciesData?.capture_rate || 0);
       setBaseHappiness(speciesData?.base_happiness || 0);
       setFlavorText(getRandomFlavorText(speciesData));
+      setVarieties(speciesData?.varieties || []);
 
       // Extract generation number from URL and load related Pokémon
       if (speciesData && speciesData.generation && speciesData.generation.url) {
@@ -844,6 +847,12 @@ const DetailPokemon = () => {
             >
               <Text>Sprites</Text>
             </div>
+            <div
+              className={`tab ${activeTab === 'varieties' ? 'active' : ''}`}
+              onClick={() => setActiveTab('varieties')}
+            >
+              <Text>Varieties</Text>
+            </div>
           </T.TabsContainer>
 
           {/* About Tab */}
@@ -880,6 +889,11 @@ const DetailPokemon = () => {
           {/* Sprites Tab */}
           {activeTab === 'sprites' && (
             <SpritesTab sprites={sprites} name={name} />
+          )}
+
+          {/* Varieties Tab */}
+          {activeTab === 'varieties' && (
+            <VarietiesTab varieties={varieties} currentPokemonName={name} />
           )}
         </T.Content>
       </T.Page>
