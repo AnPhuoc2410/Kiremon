@@ -1,3 +1,5 @@
+using PokedexReactASP.Domain.Enums;
+
 namespace PokedexReactASP.Application.DTOs.Pokemon
 {
     /// <summary>
@@ -9,16 +11,25 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public int Id { get; set; }
         public string UserId { get; set; } = string.Empty;
         public int PokemonApiId { get; set; }
-        
+
         // Customization
         public string? Nickname { get; set; }
         public bool IsFavorite { get; set; }
         public bool IsShiny { get; set; }
-        
+
+        // Server-determined characteristics
+        public Nature Nature { get; set; }
+        public string NatureDisplay { get; set; } = string.Empty;  // "Adamant (+Atk, -SpA)"
+        public PokemonGender Gender { get; set; }
+        public string GenderDisplay { get; set; } = string.Empty;  // "♂", "♀", "⚲"
+        public PokemonRank Rank { get; set; }
+        public string RankDisplay { get; set; } = string.Empty;    // "S Rank!", "A Rank"
+
         // Catch information
         public DateTime CaughtDate { get; set; }
         public string? CaughtLocation { get; set; }
         public int CaughtLevel { get; set; }
+        public PokeballType CaughtBall { get; set; }
         
         // Current stats
         public int CurrentLevel { get; set; }
