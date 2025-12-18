@@ -1,7 +1,7 @@
 using AutoMapper;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces;
-using PokedexReactASP.Application.Services.GameMechanics;
+using PokedexReactASP.Application.Interfaces.IGameMechanics;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Domain.Enums;
 
