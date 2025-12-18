@@ -343,12 +343,11 @@ const DetailPokemon = () => {
 
     try {
       if (isAuthenticated) {
+        // Server determines: IVs, Shiny, Level, Nature, Gender
         const result = await collectionService.catchPokemon({
           pokemonApiId: pokemonId,
-          nickname: nickname.trim(),
+          nickname: nickname.trim() || undefined,
           caughtLocation: "Wild",
-          caughtLevel: Math.floor(Math.random() * 20) + 1,
-          isShiny: false, // Could add shiny encounter logic
         });
 
         if (result.success) {
@@ -362,17 +361,29 @@ const DetailPokemon = () => {
           // Refresh pokeSummary from API to update captured status
           await refreshPokeSummary();
 
+          // Main catch notification with rank
+          const pokemon = result.caughtPokemon;
+          const isShiny = pokemon?.isShiny;
+          const rank = pokemon?.rankDisplay || result.ivRating;
+
           toast.success(
-            `${result.caughtPokemon?.displayName} was caught! IVs: ${result.ivRating}`,
+            isShiny
+              ? `✨ Shiny ${pokemon?.displayName} caught! ${rank}`
+              : `${pokemon?.displayName} was caught! ${rank}`,
             { duration: 4000 }
           );
 
+          // Show nature and gender
+          if (pokemon?.natureDisplay || pokemon?.genderDisplay) {
+            toast(`${pokemon.genderDisplay} ${pokemon.natureDisplay}`, { duration: 3000 });
+          }
+
           if (result.isNewSpecies) {
-            toast.success("New species registered in Pokédex!", { duration: 3000 });
+            toast.success("📖 New species registered in Pokédex!", { duration: 3000 });
           }
 
           if (result.trainerLeveledUp) {
-            toast.success(`Trainer leveled up to ${result.newTrainerLevel}!`, { duration: 3000 });
+            toast.success(`🎉 Trainer leveled up to ${result.newTrainerLevel}!`, { duration: 3000 });
           }
 
           setIsSaved(true);

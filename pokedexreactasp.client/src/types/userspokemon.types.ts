@@ -1,3 +1,5 @@
+import { Nature, PokemonGender, PokemonRank, PokeballType } from "./pokemon.enums";
+
 export interface UserPokemonDto {
   id: number;
   userId: string;
@@ -5,15 +7,28 @@ export interface UserPokemonDto {
   nickname: string | null;
   isFavorite: boolean;
   isShiny: boolean;
+
+  nature: Nature;
+  natureDisplay: string;
+  gender: PokemonGender;
+  genderDisplay: string;
+  rank: PokemonRank;
+  rankDisplay: string;
+
+  // Catch info
   caughtDate: string;
   caughtLocation: string | null;
   caughtLevel: number;
+  caughtBall: PokeballType;
+
+  // Current stats
   currentLevel: number;
   currentExperience: number;
   experienceToNextLevel: number;
   currentHp: number;
   maxHp: number;
-  // IVs
+
+  // IVs (server-generated)
   ivHp: number | null;
   ivAttack: number | null;
   ivDefense: number | null;
@@ -22,6 +37,7 @@ export interface UserPokemonDto {
   ivSpeed: number | null;
   ivTotal: number | null;
   ivRating: string | null;
+
   // EVs
   evHp: number;
   evAttack: number;
@@ -30,17 +46,20 @@ export interface UserPokemonDto {
   evSpecialDefense: number;
   evSpeed: number;
   evTotal: number;
+
   // Battle
   battlesWon: number;
   battlesLost: number;
   totalBattles: number;
   winRate: number;
+
   // Gameplay
   friendship: number;
   friendshipLevel: string;
   canEvolve: boolean;
   isTraded: boolean;
   originalTrainerName: string | null;
+
   // From PokeAPI
   name: string;
   displayName: string;
@@ -51,6 +70,7 @@ export interface UserPokemonDto {
   spriteUrl: string;
   officialArtworkUrl: string | null;
   abilities: string[];
+
   // Base stats
   baseHp: number;
   baseAttack: number;
@@ -59,6 +79,7 @@ export interface UserPokemonDto {
   baseSpecialDefense: number;
   baseSpeed: number;
   baseStatTotal: number;
+
   // Calculated stats
   calculatedHp: number;
   calculatedAttack: number;
@@ -69,14 +90,16 @@ export interface UserPokemonDto {
   notes: string | null;
 }
 
+
 export interface CatchPokemonRequest {
   pokemonApiId: number;
   nickname?: string;
   caughtLocation?: string;
-  caughtLevel?: number;
-  isShiny?: boolean;
 }
 
+/**
+ * Result of catching a Pokemon
+ */
 export interface CatchResultDto {
   success: boolean;
   message: string;
