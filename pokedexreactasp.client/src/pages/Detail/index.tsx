@@ -141,25 +141,137 @@ const DetailPokemon = () => {
       for (const evolution of chain.evolves_to) {
         const pokemonDetailsTo = await getDetailPokemon(evolution.species.name);
 
-        // Get evolution trigger (level, item, trade, etc.)
+        // Get evolution trigger details
         let triggerText = '';
+        let triggerData: EvolutionItem['trigger'] = { text: '' };
+
         if (evolution.evolution_details && evolution.evolution_details.length > 0) {
           const detail = evolution.evolution_details[0];
+          const textParts: string[] = [];
 
-          if (detail.min_level) {
-            triggerText = `Level ${detail.min_level}`;
-          } else if (detail.item) {
-            triggerText = `Use ${detail.item.name.replace('-', ' ')}`;
-          } else if (detail.trigger && detail.trigger.name === 'trade') {
-            triggerText = 'Trade';
-            if (detail.held_item) {
-              triggerText += ` holding ${detail.held_item.name.replace('-', ' ')}`;
-            }
-          } else if (detail.min_happiness) {
-            triggerText = `Happiness (${detail.min_happiness}+)`;
-          } else if (detail.trigger) {
-            triggerText = detail.trigger.name.replace('-', ' ');
+          // Basic trigger type
+          if (detail.trigger) {
+            triggerData.type = detail.trigger.name;
           }
+
+          // Level requirement
+          if (detail.min_level) {
+            triggerData.minLevel = detail.min_level;
+            textParts.push(`Level ${detail.min_level}`);
+          }
+
+          // Evolution item (stones, etc.)
+          if (detail.item) {
+            triggerData.item = detail.item.name;
+            textParts.push(`Use ${detail.item.name.replace(/-/g, ' ')}`);
+          }
+
+          // Held item during trade
+          if (detail.held_item) {
+            triggerData.heldItem = detail.held_item.name;
+            if (detail.trigger?.name === 'trade') {
+              textParts.push(`Trade holding ${detail.held_item.name.replace(/-/g, ' ')}`);
+            }
+          }
+
+          // Trade trigger
+          if (detail.trigger?.name === 'trade' && !detail.held_item && !detail.trade_species) {
+            textParts.push('Trade');
+          }
+
+          // Trade for specific Pokemon
+          if (detail.trade_species) {
+            triggerData.tradeSpecies = detail.trade_species.name;
+            textParts.push(`Trade for ${detail.trade_species.name}`);
+          }
+
+          // Happiness requirement
+          if (detail.min_happiness) {
+            triggerData.minHappiness = detail.min_happiness;
+            textParts.push(`Happiness ${detail.min_happiness}+`);
+          }
+
+          // Beauty requirement (Feebas -> Milotic in some games)
+          if (detail.min_beauty) {
+            triggerData.minBeauty = detail.min_beauty;
+            textParts.push(`Beauty ${detail.min_beauty}+`);
+          }
+
+          // Affection requirement (Pokemon Amie/Refresh)
+          if (detail.min_affection) {
+            triggerData.minAffection = detail.min_affection;
+            textParts.push(`Affection ${detail.min_affection}+`);
+          }
+
+          // Time of day
+          if (detail.time_of_day) {
+            triggerData.timeOfDay = detail.time_of_day;
+            textParts.push(detail.time_of_day);
+          }
+
+          // Location requirement
+          if (detail.location) {
+            triggerData.location = detail.location.name;
+            textParts.push(`at ${detail.location.name.replace(/-/g, ' ')}`);
+          }
+
+          // Known move requirement
+          if (detail.known_move) {
+            triggerData.knownMove = detail.known_move.name;
+            textParts.push(`knowing ${detail.known_move.name.replace(/-/g, ' ')}`);
+          }
+
+          // Known move type requirement
+          if (detail.known_move_type) {
+            triggerData.knownMoveType = detail.known_move_type.name;
+            textParts.push(`knowing ${detail.known_move_type.name}-type move`);
+          }
+
+          // Gender requirement
+          if (detail.gender !== null && detail.gender !== undefined) {
+            triggerData.gender = detail.gender;
+            const genderText = detail.gender === 1 ? 'Female' : 'Male';
+            textParts.push(genderText);
+          }
+
+          // Rain requirement (Sliggoo -> Goodra)
+          if (detail.needs_overworld_rain) {
+            triggerData.needsOverworldRain = true;
+            textParts.push('in rain');
+          }
+
+          // Turn upside down (Inkay -> Malamar)
+          if (detail.turn_upside_down) {
+            triggerData.turnUpsideDown = true;
+            textParts.push('upside down');
+          }
+
+          // Physical stats comparison (Tyrogue evolutions)
+          if (detail.relative_physical_stats !== null && detail.relative_physical_stats !== undefined) {
+            triggerData.relativePhysicalStats = detail.relative_physical_stats;
+            if (detail.relative_physical_stats === 1) {
+              textParts.push('Atk > Def');
+            } else if (detail.relative_physical_stats === -1) {
+              textParts.push('Def > Atk');
+            } else {
+              textParts.push('Atk = Def');
+            }
+          }
+
+          // Party species requirement (Mantyke -> Mantine needs Remoraid)
+          if (detail.party_species) {
+            triggerData.partySpecies = detail.party_species.name;
+            textParts.push(`with ${detail.party_species.name} in party`);
+          }
+
+          // Party type requirement (Pancham -> Pangoro needs Dark-type)
+          if (detail.party_type) {
+            triggerData.partyType = detail.party_type.name;
+            textParts.push(`with ${detail.party_type.name}-type in party`);
+          }
+
+          triggerText = textParts.join(', ');
+          triggerData.text = triggerText;
         }
 
         // Add this evolution step to our chain
@@ -174,7 +286,7 @@ const DetailPokemon = () => {
             name: evolution.species.name,
             sprite: pokemonDetailsTo.sprites.front_default
           },
-          trigger: triggerText ? { text: triggerText } : undefined
+          trigger: triggerText ? triggerData : undefined
         });
 
         // Process the next chain (recursive)
