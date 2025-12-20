@@ -823,15 +823,27 @@ const DetailPokemon = () => {
           <div className="img-pokemon" style={{ display: "flex", justifyContent: "center" }}>
             {!isLoading ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <PokemonAvatar
-                  src={sprite}
-                  alt={name}
-                  width={256}
-                  height={256}
-                  effect="blur"
-                  loading="lazy"
-                  className="pokemon-dt"
-                />
+                {/* Classification Badge */}
+                {(isLegendary || isMythical) && (
+                  <T.ClassificationText
+                    isLegendary={isLegendary}
+                    isMythical={isMythical}
+                  >
+                    {isLegendary ? "Legendary" : "Mythical"}
+                  </T.ClassificationText>
+                )}
+                {/* Pokemon Image */}
+                <T.PokemonImageWrapper>
+                  <PokemonAvatar
+                    src={sprite}
+                    alt={name}
+                    width={256}
+                    height={256}
+                    effect="blur"
+                    loading="lazy"
+                    className="pokemon-dt"
+                  />
+                </T.PokemonImageWrapper>
                 {/* Type Icons */}
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                   {types && types.map((type: string, index: number) => (

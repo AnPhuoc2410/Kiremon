@@ -16,6 +16,8 @@ using PokedexReactASP.Server.Hubs;
 using PokedexReactASP.Server.Middleware;
 using PokedexReactASP.Server.Seed;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace PokedexReactASP.Server
 {
@@ -206,17 +208,46 @@ namespace PokedexReactASP.Server
                         options.Cookie.SameSite = SameSiteMode.None;
                         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     }
+                    {
+                        options.Cookie.SameSite = SameSiteMode.None;
+                        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    }
                 });
 
+            // Rate Limiting
+            builder.Services.AddRateLimiter(options =>
+            {
+                // Status 429 Too Many Requests
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+                // Auth Policy: 5 requests per 1 minute per IP
+                options.AddFixedWindowLimiter("AuthPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 5;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 0;
+                });
+
+                // Global Policy: 100 requests per 1 minute per IP
+                options.AddFixedWindowLimiter("GlobalPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 100;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 20;
+                });
+            });
 
             var app = builder.Build();
+
 
             IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger).Wait();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
+            app.UseRateLimiter();
             // Configure the HTTP request pipeline.
             // Enable Swagger with authentication protection
             if (!app.Environment.IsDevelopment())

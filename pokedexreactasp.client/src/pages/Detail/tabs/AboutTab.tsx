@@ -111,22 +111,6 @@ const AboutTab: React.FC<AboutTabProps> = ({
 
   return (
     <>
-      {/* Classification badges */}
-      {(isLegendary || isMythical) && (
-        <S.ClassificationBanner isLegendary={isLegendary} isMythical={isMythical}>
-          {isLegendary && (
-            <S.ClassificationBadge type="legendary">
-              <Text>Legendary Pokémon</Text>
-            </S.ClassificationBadge>
-          )}
-          {isMythical && (
-            <S.ClassificationBadge type="mythical">
-              <Text>Mythical Pokémon</Text>
-            </S.ClassificationBadge>
-          )}
-        </S.ClassificationBanner>
-      )}
-
       {/* Basic Info Section */}
       <S.BasicInfoSection>
         <S.SectionTitle>
