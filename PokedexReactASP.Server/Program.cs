@@ -160,7 +160,7 @@ namespace PokedexReactASP.Server
                     Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "Nhập JWT token của bạn (không cần 'Bearer ' ở đầu)."
+                    Description = "Input JWT."
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
