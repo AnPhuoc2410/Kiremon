@@ -3,6 +3,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link } from 'react-router-dom';
 import { Text } from '..';
 import { POKEMON_IMAGE } from '../../../config/api.config';
+import { getEvolutionIcons } from '../../utils/evolutionIcons';
 import * as S from './index.style';
 
 interface EvolutionPokemon {
@@ -13,6 +14,24 @@ interface EvolutionPokemon {
 
 interface EvolutionTrigger {
   text: string;
+  type?: string;
+  item?: string;
+  heldItem?: string;
+  minLevel?: number;
+  minHappiness?: number;
+  minBeauty?: number;
+  minAffection?: number;
+  timeOfDay?: string;
+  location?: string;
+  knownMove?: string;
+  knownMoveType?: string;
+  gender?: number;
+  needsOverworldRain?: boolean;
+  turnUpsideDown?: boolean;
+  relativePhysicalStats?: number;
+  partySpecies?: string;
+  partyType?: string;
+  tradeSpecies?: string;
 }
 
 interface EvolutionData {
@@ -29,37 +48,6 @@ interface EvolutionChainProps {
 const getItemSprite = (itemName: string): string => {
   const formattedName = itemName.toLowerCase().replace(/\s+/g, '-');
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${formattedName}.png`;
-};
-
-// Parse trigger text to extract item info
-const parseTrigger = (triggerText: string): { type: string; item?: string; value?: string; displayText: string } => {
-  const text = triggerText.toLowerCase();
-
-  if (text.startsWith('level ')) {
-    return { type: 'level', value: text.replace('level ', ''), displayText: triggerText };
-  }
-  if (text.startsWith('use ')) {
-    return { type: 'item', item: text.replace('use ', ''), displayText: triggerText };
-  }
-  if (text.includes('trade holding')) {
-    const item = text.replace('trade holding ', '');
-    return { type: 'trade-item', item, displayText: triggerText };
-  }
-  if (text === 'trade') {
-    return { type: 'trade', displayText: 'Trade' };
-  }
-  if (text.startsWith('happiness')) {
-    const match = text.match(/\((\d+)\+?\)/);
-    return { type: 'happiness', value: match ? match[1] : '220', displayText: triggerText };
-  }
-  if (text.includes('daytime') || text.includes('day')) {
-    return { type: 'time-day', displayText: triggerText };
-  }
-  if (text.includes('nighttime') || text.includes('night')) {
-    return { type: 'time-night', displayText: triggerText };
-  }
-
-  return { type: 'other', value: triggerText, displayText: triggerText };
 };
 
 // Pokemon Card Component
@@ -88,13 +76,11 @@ const PokemonCard: React.FC<{ pokemon: EvolutionPokemon; size?: 'small' | 'mediu
   );
 };
 
-// Evolution Arrow Component with item display
+// Evolution Arrow Component with detailed info display
 const EvolutionArrow: React.FC<{
   trigger?: EvolutionTrigger;
   direction?: 'horizontal' | 'diagonal-up' | 'diagonal-down';
 }> = ({ trigger, direction = 'horizontal' }) => {
-  const parsed = trigger ? parseTrigger(trigger.text) : null;
-
   const getArrowIcon = () => {
     switch (direction) {
       case 'diagonal-up':
@@ -106,22 +92,38 @@ const EvolutionArrow: React.FC<{
     }
   };
 
-  const showItemSprite = parsed && (parsed.type === 'item' || parsed.type === 'trade-item');
+  // Check if we should show item sprite
+  const itemToShow = trigger?.item || trigger?.heldItem;
 
   return (
     <div className={`evolution-arrow evolution-arrow--${direction}`}>
       <div className="arrow-content">
-        {showItemSprite && parsed.item && (
+        {itemToShow && (
           <img
-            src={getItemSprite(parsed.item)}
-            alt={parsed.item}
+            src={getItemSprite(itemToShow)}
+            alt={itemToShow}
             className="item-sprite"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         )}
-        {trigger && <Text className="trigger-text">{trigger.text}</Text>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+          {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
+            <img
+              key={idx}
+              src={icon.src}
+              alt={icon.alt}
+              width={icon.width || 16}
+              height={icon.height || 16}
+              style={{ imageRendering: 'pixelated' }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          ))}
+          {trigger && <Text className="trigger-text">{trigger.text}</Text>}
+        </div>
         <div className="arrow-symbol">{getArrowIcon()}</div>
       </div>
     </div>
@@ -193,15 +195,15 @@ const SvgArrowLine: React.FC<{
   endY: number;
   trigger?: EvolutionTrigger;
 }> = ({ startX, startY, endX, endY, trigger }) => {
-  const parsed = trigger ? parseTrigger(trigger.text) : null;
-  const showItemSprite = parsed && (parsed.type === 'item' || parsed.type === 'trade-item');
+  // Check if we should show item sprite - use the new detailed trigger data
+  const itemToShow = trigger?.item || trigger?.heldItem;
 
   // Calculate angle for arrow head
   const angle = Math.atan2(endY - startY, endX - startX);
 
   // Shorten the line to not overlap with cards
-  const shortenStart = 60; // Distance from center of start card
-  const shortenEnd = 65; // Distance from center of end card
+  const shortenStart = 70; // Distance from center of start card
+  const shortenEnd = 70; // Distance from center of end card
 
   const lineLength = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
   const ratio1 = shortenStart / lineLength;
@@ -212,13 +214,13 @@ const SvgArrowLine: React.FC<{
   const actualEndX = startX + (endX - startX) * ratio2;
   const actualEndY = startY + (endY - startY) * ratio2;
 
-  // Label position - closer to the end (evolution) side
-  const labelRatio = 0.65; // 65% along the line from start
+  // Label position - closer to the middle
+  const labelRatio = 0.5; // 50% along the line from start
   const labelX = actualStartX + (actualEndX - actualStartX) * labelRatio;
   const labelY = actualStartY + (actualEndY - actualStartY) * labelRatio;
 
   // Arrow head points
-  const arrowSize = 8;
+  const arrowSize = 10;
   const arrowAngle = Math.PI / 6; // 30 degrees
 
   const arrowPoint1X = actualEndX - arrowSize * Math.cos(angle - arrowAngle);
@@ -246,21 +248,36 @@ const SvgArrowLine: React.FC<{
 
       {/* Label */}
       <foreignObject
-        x={labelX - 55}
-        y={labelY - 28}
-        width="110"
-        height="56"
+        x={labelX - 60}
+        y={labelY - 32}
+        width="120"
+        height="64"
         style={{ overflow: 'visible' }}
       >
         <div className="arrow-label-wrapper">
-          {showItemSprite && parsed?.item && (
+          {itemToShow && (
             <img
-              src={getItemSprite(parsed.item)}
-              alt={parsed.item}
+              src={getItemSprite(itemToShow)}
+              alt={itemToShow}
               className="item-sprite-svg"
             />
           )}
-          {trigger && <span className="arrow-label-text">{trigger.text}</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
+              <img
+                key={idx}
+                src={icon.src}
+                alt={icon.alt}
+                width={icon.width || 16}
+                height={icon.height || 16}
+                style={{ imageRendering: 'pixelated' }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ))}
+            {trigger && <span className="arrow-label-text">{trigger.text}</span>}
+          </div>
         </div>
       </foreignObject>
     </g>

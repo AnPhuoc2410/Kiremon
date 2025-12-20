@@ -306,6 +306,24 @@ interface EvolutionItem {
   };
   trigger?: {
     text: string;
+    type?: string; // level-up, trade, use-item, shed, etc.
+    item?: string; // Evolution item name
+    heldItem?: string; // Item held during trade
+    minLevel?: number;
+    minHappiness?: number;
+    minBeauty?: number;
+    minAffection?: number;
+    timeOfDay?: string; // day, night, dusk
+    location?: string;
+    knownMove?: string;
+    knownMoveType?: string;
+    gender?: number; // 1=female, 2=male
+    needsOverworldRain?: boolean;
+    turnUpsideDown?: boolean;
+    relativePhysicalStats?: number; // -1=Def>Atk, 0=Def=Atk, 1=Atk>Def
+    partySpecies?: string; // Pokemon needed in party
+    partyType?: string; // Type needed in party
+    tradeSpecies?: string; // Pokemon to trade for
   };
 }
 
