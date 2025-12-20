@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
@@ -102,18 +103,18 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
-            
+
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            
+
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
             builder.Services.AddSingleton<IShinyRollerService, ShinyRollerService>();
             builder.Services.AddSingleton<INatureGeneratorService, NatureGeneratorService>();
             builder.Services.AddSingleton<ICatchRateCalculatorService, CatchRateCalculatorService>();
             builder.Services.AddScoped<IPokemonFactoryService, PokemonFactoryService>();
-            
+
             builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
@@ -134,33 +135,46 @@ namespace PokedexReactASP.Server
             {
                 c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
-                    Title = "Pokedex API",
+                    Title = "Kiremon API",
                     Version = "v1",
-                    Description = "API for Pokedex application"
+                    Description = "API for Kiremon application",
+                    TermsOfService = new Uri("https://kiremon.vercel.app/terms"),
+                    Contact = new Microsoft.OpenApi.Models.OpenApiContact
+                    {
+                        Name = "Kiremon Dev",
+                        Email = "storephuoc@gmail.com",
+                        Url = new Uri("https://kiremon.vercel.app"),
+                    },
+                    License = new Microsoft.OpenApi.Models.OpenApiLicense
+                    {
+                        Name = "MIT License",
+                        Url = new Uri("https://opensource.org/licenses/MIT")
+                    }
                 });
 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
                     Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Description = "Nhập JWT token của bạn (không cần 'Bearer ' ở đầu)."
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            {
                 {
+                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                     {
-                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                         Reference = new Microsoft.OpenApi.Models.OpenApiReference
                         {
-                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                            {
-                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
                     }
                 });
             });
@@ -214,7 +228,12 @@ namespace PokedexReactASP.Server
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pokedex API v1");
-                c.RoutePrefix = "swagger"; // Access via /swagger
+                c.RoutePrefix = "swagger";
+                c.DocumentTitle = "Pokédex API Documentation";
+                c.InjectStylesheet("/swagger-custom.css");
+                c.InjectJavascript("/swagger-custom.js");
+                c.DefaultModelsExpandDepth(-1);
+                c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
             });
 
             app.UseHttpsRedirection();

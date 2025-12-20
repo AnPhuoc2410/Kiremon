@@ -1,0 +1,374 @@
+/* Pokemon-themed Swagger UI - Minimalist Design */
+
+/* Hide Schemas section at the bottom */
+.swagger-ui .models,
+.swagger-ui section.models {
+    display: none !important;
+}
+
+/* Main color scheme inspired by Pokemon */
+:root {
+    --pokemon-red: #FF1C1C;
+    --pokemon-yellow: #FFCB05;
+    --pokemon-blue: #3B4CCA;
+    --pokemon-white: #FFFFFF;
+    --pokemon-black: #2C2C2C;
+    --pokemon-gray: #F5F5F5;
+    --pokemon-border: #E0E0E0;
+}
+
+/* Background */
+.swagger-ui {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--pokemon-gray);
+}
+
+/* Top Bar */
+.swagger-ui .topbar {
+    background: linear-gradient(135deg, var(--pokemon-red) 0%, var(--pokemon-red) 50%, var(--pokemon-white) 50%, var(--pokemon-white) 100%);
+    border-bottom: 4px solid var(--pokemon-black);
+    padding: 15px 0;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+    display: none;
+}
+
+.swagger-ui .topbar a {
+    max-width: 100%;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Hide default Swagger logo */
+.swagger-ui .topbar-wrapper img,
+.swagger-ui .topbar img {
+    display: none !important;
+}
+
+.swagger-ui .topbar-wrapper a img {
+    display: none !important;
+}
+
+/* Custom Pokemon Logo */
+.custom-pokemon-logo {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 20px;
+}
+
+.custom-pokemon-logo svg {
+    animation: pokeball-bounce 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes pokeball-bounce {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(360deg);
+    }
+}
+
+/* Info Section */
+.swagger-ui .info {
+    margin: 30px 0;
+}
+
+.swagger-ui .info .title {
+    color: var(--pokemon-red);
+    font-size: 32px;
+    font-weight: 700;
+    text-shadow: 2px 2px 0px var(--pokemon-yellow);
+}
+
+.swagger-ui .info .title small {
+    background: var(--pokemon-yellow);
+    color: var(--pokemon-black);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Operation blocks */
+.swagger-ui .opblock {
+    border: 2px solid var(--pokemon-border);
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: var(--pokemon-white);
+}
+
+.swagger-ui .opblock.opblock-get {
+    border-color: var(--pokemon-blue);
+    background: rgba(59, 76, 202, 0.05);
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+    background: var(--pokemon-blue);
+}
+
+.swagger-ui .opblock.opblock-post {
+    border-color: #10A54A;
+    background: rgba(16, 165, 74, 0.05);
+}
+
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+    background: #10A54A;
+}
+
+.swagger-ui .opblock.opblock-put {
+    border-color: #FCA130;
+    background: rgba(252, 161, 48, 0.05);
+}
+
+.swagger-ui .opblock.opblock-put .opblock-summary-method {
+    background: #FCA130;
+}
+
+.swagger-ui .opblock.opblock-delete {
+    border-color: var(--pokemon-red);
+    background: rgba(255, 28, 28, 0.05);
+}
+
+.swagger-ui .opblock.opblock-delete .opblock-summary-method {
+    background: var(--pokemon-red);
+}
+
+/* Method labels */
+.swagger-ui .opblock-summary-method {
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Try it out button */
+.swagger-ui .btn.try-out__btn {
+    background: var(--pokemon-yellow);
+    color: var(--pokemon-black);
+    border: 2px solid var(--pokemon-black);
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.swagger-ui .btn.try-out__btn:hover {
+    background: var(--pokemon-red);
+    color: var(--pokemon-white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Execute button */
+.swagger-ui .btn.execute {
+    background: var(--pokemon-red);
+    color: var(--pokemon-white);
+    border: 2px solid var(--pokemon-black);
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.swagger-ui .btn.execute:hover {
+    background: var(--pokemon-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cancel button */
+.swagger-ui .btn.cancel {
+    background: var(--pokemon-gray);
+    color: var(--pokemon-black);
+    border: 2px solid var(--pokemon-border);
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Hide original Authorize button safely (Swagger-compatible) */
+.swagger-ui .scheme-container {
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+}
+
+
+/* Authorize button */
+.swagger-ui .btn.authorize {
+    background: var(--pokemon-yellow) !important;
+    color: var(--pokemon-black) !important;
+    border: 2px solid var(--pokemon-black) !important;
+    border-radius: 999px !important;
+    padding: 6px 16px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 0 var(--pokemon-black) !important;
+    transition: all 0.2s ease !important;
+}
+
+.swagger-ui .btn.authorize:hover {
+    background: var(--pokemon-red) !important;
+    color: var(--pokemon-white) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Lock icon color */
+.swagger-ui .btn.authorize svg {
+    fill: var(--pokemon-black) !important;
+}
+
+/* Authorization modal */
+.swagger-ui .dialog-ux .modal-ux-content {
+    border: 3px solid var(--pokemon-red);
+    border-radius: 8px;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header {
+    background: var(--pokemon-red);
+    color: var(--pokemon-white);
+    border-bottom: 3px solid var(--pokemon-black);
+}
+
+/* Response section */
+.swagger-ui .responses-inner {
+    padding: 20px;
+    background: var(--pokemon-gray);
+    border-radius: 6px;
+}
+
+.swagger-ui .response-col_status {
+    font-weight: 700;
+}
+
+/* Parameters */
+.swagger-ui .parameters-col_description {
+    color: var(--pokemon-black);
+}
+
+.swagger-ui table thead tr th {
+    color: var(--pokemon-black);
+    font-weight: 700;
+    border-bottom: 2px solid var(--pokemon-border);
+}
+
+/* Input fields */
+.swagger-ui input[type=text],
+.swagger-ui input[type=password],
+.swagger-ui textarea,
+.swagger-ui select {
+    border: 2px solid var(--pokemon-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.swagger-ui input[type=text]:focus,
+.swagger-ui input[type=password]:focus,
+.swagger-ui textarea:focus,
+.swagger-ui select:focus {
+    border-color: var(--pokemon-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 76, 202, 0.1);
+}
+
+/* Loading animation - Pokeball style */
+.swagger-ui .loading-container {
+    animation: pokeball-spin 1s linear infinite;
+}
+
+@keyframes pokeball-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Scrollbar styling */
+.swagger-ui ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.swagger-ui ::-webkit-scrollbar-track {
+    background: var(--pokemon-gray);
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb {
+    background: var(--pokemon-red);
+    border-radius: 5px;
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb:hover {
+    background: var(--pokemon-blue);
+}
+
+/* Markdown formatting */
+.swagger-ui .markdown p,
+.swagger-ui .renderedMarkdown p {
+    color: var(--pokemon-black);
+    line-height: 1.6;
+}
+
+/* Clean up unnecessary elements */
+.swagger-ui .information-container {
+    background: var(--pokemon-white);
+    border: 2px solid var(--pokemon-yellow);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+/* Tag sections */
+.swagger-ui .opblock-tag {
+    border-bottom: 3px solid var(--pokemon-yellow);
+    color: var(--pokemon-black);
+    font-size: 20px;
+    font-weight: 700;
+    padding: 15px 0;
+    margin-top: 20px;
+}
+
+/* Links */
+.swagger-ui a {
+    color: var(--pokemon-blue);
+    font-weight: 600;
+}
+
+.swagger-ui a:hover {
+    color: var(--pokemon-red);
+}
+
+/* Model example */
+.swagger-ui .model-box {
+    background: var(--pokemon-white);
+    border: 2px solid var(--pokemon-border);
+    border-radius: 6px;
+}
+
+.swagger-ui .model-title {
+    color: var(--pokemon-black);
+    font-weight: 700;
+}
+
+/* Highlight syntax */
+.swagger-ui .highlight-code {
+    background: var(--pokemon-black);
+    color: var(--pokemon-white);
+    border-radius: 6px;
+}
+
+/* Copy button */
+.swagger-ui .copy-to-clipboard {
+    background: var(--pokemon-yellow);
+    border-radius: 4px;
+}
+
+.swagger-ui .copy-to-clipboard button {
+    color: var(--pokemon-black);
+}
