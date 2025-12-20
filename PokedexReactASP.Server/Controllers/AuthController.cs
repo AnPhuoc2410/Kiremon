@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.Interfaces;
 using System.Security.Claims;
@@ -20,6 +21,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
         {
             try
@@ -50,6 +52,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             try
@@ -73,6 +76,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("resend-confirmation")]
+        [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ResendConfirmation([FromBody] ForgotPasswordDto request)
         {
             try
@@ -135,6 +139,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
         {
             try
@@ -154,6 +159,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("reset-password")]
+        [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             try

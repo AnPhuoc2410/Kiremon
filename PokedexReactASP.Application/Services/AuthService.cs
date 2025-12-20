@@ -49,6 +49,21 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
+            var existingUserByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
+            if (existingUserByEmail != null && !existingUserByEmail.EmailConfirmed)
+            {
+                await _userManager.DeleteAsync(existingUserByEmail);
+            }
+
+            var existingUserByName = await _userManager.FindByNameAsync(registerDto.Username);
+            if (existingUserByName != null && !existingUserByName.EmailConfirmed)
+            {
+                if (existingUserByEmail == null || existingUserByEmail.Id != existingUserByName.Id)
+                {
+                    await _userManager.DeleteAsync(existingUserByName);
+                }
+            }
+
             var user = _mapper.Map<ApplicationUser>(registerDto);
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -82,8 +97,7 @@ namespace PokedexReactASP.Application.Services
 
             if (!user.EmailConfirmed)
             {
-                await SendConfirmationEmail(user);
-                throw new UnauthorizedAccessException("Email is not verified. Please confirm your email before logging in.");
+                throw new UnauthorizedAccessException("Email is not verified. Please check your inbox or request a new confirmation link.");
             }
 
             var result = await _signInManager.PasswordSignInAsync(
