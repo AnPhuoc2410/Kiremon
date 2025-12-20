@@ -34,6 +34,8 @@ import EvolutionTab from "./tabs/EvolutionTab";
 import MovesTab from "./tabs/MovesTab";
 import SpritesTab from "./tabs/SpritesTab";
 import VarietiesTab from "./tabs/VarietiesTab";
+import TrainingTab from "./tabs/TrainingTab";
+import BreedingTab from "./tabs/BreedingTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 import * as T from "./index.style";
@@ -56,14 +58,6 @@ const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 `;
-
-// Function to get color for stats based on stat value
-const getStatColor = (value: number) => {
-  if (value < 50) return "#FB7185"; // Low stat - red
-  if (value < 80) return "#FBBF24"; // Medium stat - yellow/orange
-  if (value < 110) return "#34D399"; // Good stat - green
-  return "#818CF8"; // Excellent stat - purple/blue
-};
 
 const DetailPokemon = () => {
   const { name = "" } = useParams();
@@ -102,6 +96,18 @@ const DetailPokemon = () => {
   const [flavorText, setFlavorText] = useState<string>("");
   const [sprites, setSprites] = useState<PokemonSprites>({ front_default: "" });
   const [varieties, setVarieties] = useState<IPokemonSpecies["varieties"]>([]);
+
+  // Additional Pokemon species information
+  const [eggGroups, setEggGroups] = useState<string[]>([]);
+  const [habitat, setHabitat] = useState<string>("");
+  const [growthRate, setGrowthRate] = useState<string>("");
+  const [generation, setGeneration] = useState<string>("");
+  const [isLegendary, setIsLegendary] = useState<boolean>(false);
+  const [isMythical, setIsMythical] = useState<boolean>(false);
+  const [shape, setShape] = useState<string>("");
+  const [color, setColor] = useState<string>("");
+  const [hatchCounter, setHatchCounter] = useState<number>(0);
+  const [genderRate, setGenderRate] = useState<number>(-1);
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
@@ -257,6 +263,18 @@ const DetailPokemon = () => {
       setBaseHappiness(speciesData?.base_happiness || 0);
       setFlavorText(getRandomFlavorText(speciesData));
       setVarieties(speciesData?.varieties || []);
+
+      // Set additional species data
+      setEggGroups(speciesData?.egg_groups?.map((eg: any) => eg.name) || []);
+      setHabitat(speciesData?.habitat?.name || "");
+      setGrowthRate(speciesData?.growth_rate?.name || "");
+      setGeneration(speciesData?.generation?.name || "");
+      setIsLegendary(speciesData?.is_legendary || false);
+      setIsMythical(speciesData?.is_mythical || false);
+      setShape(speciesData?.shape?.name || "");
+      setColor(speciesData?.color?.name || "");
+      setHatchCounter(speciesData?.hatch_counter || 0);
+      setGenderRate(speciesData?.gender_rate ?? -1);
 
       // Extract generation number from URL and load related Pokémon
       if (speciesData && speciesData.generation && speciesData.generation.url) {
@@ -841,6 +859,18 @@ const DetailPokemon = () => {
               <Text>Stats</Text>
             </div>
             <div
+              className={`tab ${activeTab === 'training' ? 'active' : ''}`}
+              onClick={() => setActiveTab('training')}
+            >
+              <Text>Training</Text>
+            </div>
+            <div
+              className={`tab ${activeTab === 'breeding' ? 'active' : ''}`}
+              onClick={() => setActiveTab('breeding')}
+            >
+              <Text>Breeding</Text>
+            </div>
+            <div
               className={`tab ${activeTab === 'evolution' ? 'active' : ''}`}
               onClick={() => setActiveTab('evolution')}
             >
@@ -876,12 +906,39 @@ const DetailPokemon = () => {
               species={species}
               name={name}
               heldItems={heldItems}
+              habitat={habitat}
+              color={color}
+              shape={shape}
+              generation={generation}
+              isLegendary={isLegendary}
+              isMythical={isMythical}
             />
           )}
 
           {/* Stats Tab */}
           {activeTab === 'stats' && (
             <StatsTab stats={stats} />
+          )}
+
+          {/* Training Tab */}
+          {activeTab === 'training' && (
+            <TrainingTab
+              stats={stats}
+              baseExperience={baseExperience}
+              captureRate={captureRate}
+              baseHappiness={baseHappiness}
+              growthRate={growthRate}
+            />
+          )}
+
+          {/* Breeding Tab */}
+          {activeTab === 'breeding' && (
+            <BreedingTab
+              eggGroups={eggGroups}
+              genderRate={genderRate}
+              hatchCounter={hatchCounter}
+              baseHappiness={baseHappiness}
+            />
           )}
 
           {/* Evolution Tab */}
