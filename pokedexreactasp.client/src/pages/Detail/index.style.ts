@@ -417,6 +417,73 @@ const SoundBar = styled("div")({
   }
 });
 
+const badgeGlowLegendary = keyframes`
+  0%, 100% {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(245, 158, 11, 0.7), 0 0 45px rgba(245, 158, 11, 0.4), 0 0 65px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 35px rgba(245, 158, 11, 0.9), 0 0 55px rgba(245, 158, 11, 0.6), 0 0 80px rgba(245, 158, 11, 0.3);
+  }
+`;
+
+const badgeGlowMythical = keyframes`
+  0%, 100% {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(139, 92, 246, 0.7), 0 0 45px rgba(139, 92, 246, 0.4), 0 0 65px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 35px rgba(139, 92, 246, 0.9), 0 0 55px rgba(139, 92, 246, 0.6), 0 0 80px rgba(139, 92, 246, 0.3);
+  }
+`;
+
+const ClassificationText = styled("div")<{ isLegendary?: boolean; isMythical?: boolean }>`
+  background-color: ${props => props.isLegendary ? '#F59E0B' : '#8B5CF6'};
+  color: white;
+  text-transform: capitalize;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 4px 12px;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+
+  box-shadow: ${props => props.isLegendary
+    ? '0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(245, 158, 11, 0.7)'
+    : '0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(139, 92, 246, 0.7)'};
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+  animation: ${props => props.isLegendary ? badgeGlowLegendary : badgeGlowMythical} 2s ease-in-out infinite;
+
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+    border-radius: 6px 6px 0 0;
+  }
+
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+  }
+`;
+
+// Pokemon Image Wrapper - simple wrapper
+const PokemonImageWrapper = styled("div")`
+  position: relative;
+  display: inline-block;
+`;
+
 export {
   Content,
   Page,
@@ -439,5 +506,7 @@ export {
   SpriteGallery,
   FlavorTextBox,
   TabsContainer,
-  SoundBar
+  SoundBar,
+  ClassificationText,
+  PokemonImageWrapper
 };
