@@ -6,6 +6,7 @@ import { RelatedPokemon } from '../../../components/ui';
 import { POKEMON_IMAGE } from '../../../config/api.config';
 import * as S from './AboutTab.style';
 import { pokemonService } from '../../../services';
+import { pokeItemService } from '../../../services/pokeitem/pokeitem.service';
 
 interface AboutTabProps {
   abilities: Array<{
@@ -24,6 +25,13 @@ interface AboutTabProps {
       version: { name: string; url: string };
     }>;
   }>;
+  // New props for additional info
+  habitat?: string;
+  color?: string;
+  shape?: string;
+  generation?: string;
+  isLegendary?: boolean;
+  isMythical?: boolean;
 }
 
 interface FormSprite {
@@ -34,6 +42,11 @@ interface FormSprite {
   };
 }
 
+interface HeldItemWithSprite {
+  name: string;
+  sprite: string;
+}
+
 const AboutTab: React.FC<AboutTabProps> = ({
   abilities,
   relatedPokemon,
@@ -41,10 +54,18 @@ const AboutTab: React.FC<AboutTabProps> = ({
   isLoadingRelated,
   species,
   name,
-  heldItems
+  heldItems,
+  habitat,
+  color,
+  shape,
+  generation,
+  isLegendary,
+  isMythical
 }) => {
   const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>({});
   const [isLoadingSprites, setIsLoadingSprites] = useState<boolean>(false);
+  const [heldItemSprites, setHeldItemSprites] = useState<HeldItemWithSprite[]>([]);
+  const [isLoadingHeldItems, setIsLoadingHeldItems] = useState<boolean>(false);
 
   useEffect(() => {
     const loadFormSprites = async () => {
@@ -73,11 +94,85 @@ const AboutTab: React.FC<AboutTabProps> = ({
     loadFormSprites();
   }, [specialForms]);
 
+  // Load held item sprites using GraphQL
+  useEffect(() => {
+    const loadHeldItemSprites = async () => {
+      if (heldItems && heldItems.length > 0) {
+        setIsLoadingHeldItems(true);
+        const itemNames = heldItems.map(item => item.item.name);
+        const sprites = await pokeItemService.getHeldItemSprites(itemNames);
+        setHeldItemSprites(sprites);
+        setIsLoadingHeldItems(false);
+      }
+    };
+
+    loadHeldItemSprites();
+  }, [heldItems]);
+
   return (
     <>
+      {/* Classification badges */}
+      {(isLegendary || isMythical) && (
+        <S.ClassificationBanner isLegendary={isLegendary} isMythical={isMythical}>
+          {isLegendary && (
+            <S.ClassificationBadge type="legendary">
+              <Text>Legendary Pokémon</Text>
+            </S.ClassificationBadge>
+          )}
+          {isMythical && (
+            <S.ClassificationBadge type="mythical">
+              <Text>Mythical Pokémon</Text>
+            </S.ClassificationBadge>
+          )}
+        </S.ClassificationBanner>
+      )}
+
+      {/* Basic Info Section */}
+      <S.BasicInfoSection>
+        <S.SectionTitle>
+          <Text as="h3">Basic Information</Text>
+        </S.SectionTitle>
+        <S.InfoGrid>
+          {generation && (
+            <S.InfoItem>
+              <S.InfoContent>
+                <S.InfoLabel>Generation</S.InfoLabel>
+                <S.InfoValue>{generation.replace('generation-', 'Gen ')}</S.InfoValue>
+              </S.InfoContent>
+            </S.InfoItem>
+          )}
+          {color && (
+            <S.InfoItem>
+              <S.InfoContent>
+                <S.InfoLabel>Color</S.InfoLabel>
+                <S.InfoValue>{color}</S.InfoValue>
+              </S.InfoContent>
+            </S.InfoItem>
+          )}
+          {shape && (
+            <S.InfoItem>
+              <S.InfoContent>
+                <S.InfoLabel>Shape</S.InfoLabel>
+                <S.InfoValue>{shape.replace('-', ' ')}</S.InfoValue>
+              </S.InfoContent>
+            </S.InfoItem>
+          )}
+          {habitat && (
+            <S.InfoItem>
+              <S.InfoContent>
+                <S.InfoLabel>Habitat</S.InfoLabel>
+                <S.InfoValue>{habitat.replace('-', ' ')}</S.InfoValue>
+              </S.InfoContent>
+            </S.InfoItem>
+          )}
+        </S.InfoGrid>
+      </S.BasicInfoSection>
+
       {/* Abilities section */}
       <S.AbilitiesContainer>
-        <Text as="h3">Abilities</Text>
+        <S.SectionTitle>
+          <Text as="h3">Abilities</Text>
+        </S.SectionTitle>
         <S.AbilitiesGrid>
           {abilities && abilities.map((ability, index) => (
             <S.AbilityCard
@@ -146,18 +241,22 @@ const AboutTab: React.FC<AboutTabProps> = ({
         <S.HeldItemsContainer>
           <Text as="h3">Held Items</Text>
           <S.ItemsGrid>
-            {heldItems.map((heldItem, index) => (
-              <S.ItemCard key={index}>
-                <S.ItemName>{heldItem.item.name.replace('-', ' ')}</S.ItemName>
-                <S.ItemDetails>
-                  {heldItem.version_details.map((detail, idx) => (
-                    <S.ItemDetail key={idx}>
-                      {detail.version.name}: {detail.rarity}%
-                    </S.ItemDetail>
-                  ))}
-                </S.ItemDetails>
-              </S.ItemCard>
-            ))}
+            {isLoadingHeldItems ? (
+              <Loading />
+            ) : (
+              heldItemSprites.map((item, index) => (
+                <S.HeldItemWrapper key={index}>
+                  <S.HeldItemImage
+                    src={item.sprite}
+                    alt={item.name}
+                    title={item.name.replace(/-/g, ' ')}
+                  />
+                  <S.HeldItemTooltip>
+                    {item.name.replace(/-/g, ' ')}
+                  </S.HeldItemTooltip>
+                </S.HeldItemWrapper>
+              ))
+            )}
           </S.ItemsGrid>
         </S.HeldItemsContainer>
       )}
