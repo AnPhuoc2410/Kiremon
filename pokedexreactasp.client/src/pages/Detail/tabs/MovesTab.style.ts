@@ -102,6 +102,7 @@ export const MoveItem = styled.div`
   .move-name {
     text-transform: capitalize;
     font-weight: 500;
+    font-size: 1rem;
   }
 
   .move-details {
