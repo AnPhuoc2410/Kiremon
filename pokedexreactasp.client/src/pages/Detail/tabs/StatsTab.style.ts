@@ -48,6 +48,7 @@ export const TotalStats = styled.div`
   padding-top: 12px;
   border-top: 1px solid #E5E7EB;
   font-weight: 600;
+  font-size: 1rem;
 `;
 
 export const StatLabel = styled.span`
