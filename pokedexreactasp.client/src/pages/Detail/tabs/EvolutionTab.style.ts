@@ -17,4 +17,5 @@ export const NoEvolutionMessage = styled.div`
   padding: 32px 0;
   color: #6B7280;
   font-style: italic;
+  font-size: 1rem;
 `;

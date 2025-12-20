@@ -275,6 +275,8 @@ const InfoSection = styled("div")({
   borderRadius: "8px",
   backgroundColor: "#FAFAFA",
   margin: "16px 0",
+  boxShadow: "4px 4px 0 #E5E7EB",
+
 
   ".info-item": {
     flex: "1 1 150px",
@@ -286,10 +288,13 @@ const InfoSection = styled("div")({
   ".info-label": {
     fontSize: "1.5rem",
     color: "#6B7280",
+    textTransform: "uppercase",
   },
 
   ".info-value": {
-    fontWeight: "600",
+    fontSize: "1.25rem",
+    fontWeight: "700",
+    color: "#1F2937",
   }
 });
 
@@ -316,39 +321,53 @@ const SpriteGallery = styled("div")({
 
 const FlavorTextBox = styled("div")({
   padding: "16px",
-  borderRadius: "8px",
   backgroundColor: "transparent",
   fontStyle: "italic",
   position: "relative",
+  margin: "12px 0",
   "p": {
-    padding: "0 16px",
+    padding: "0 12px",
     lineHeight: "1.6",
     fontSize: "1.3rem",
-    fontWeight: "600",
+    fontWeight: "800",
+    color: "#374151",
+    textAlign: "center",
   }
 });
 
 const TabsContainer = styled("div")({
   display: "flex",
-  borderBottom: "1px solid #E5E7EB",
-  marginBottom: "16px",
+  borderBottom: "2px solid #E5E7EB",
+  marginBottom: "20px",
   overflowX: "auto",
+  gap: "2px",
 
   ".tab": {
     padding: "12px 16px",
     cursor: "pointer",
     whiteSpace: "nowrap",
-    borderBottom: "2px solid transparent",
-    transition: "all 0.2s",
+    borderBottom: "3px solid transparent",
+    transition: "all 0.3s ease",
+
+    "p": {
+      fontSize: "1rem",
+      fontWeight: "600",
+      color: "#6B7280",
+    },
 
     "&.active": {
-      borderBottomColor: "#4F46E5",
-      color: "#4F46E5",
-      fontWeight: "600",
+      borderBottomColor: "#3B82F6",
+
+      "p": {
+        color: "#1E40AF",
+        fontWeight: "700",
+      }
     },
 
     "&:hover:not(.active)": {
-      borderBottomColor: "#E5E7EB",
+      "p": {
+        color: "#374151",
+      }
     }
   }
 });

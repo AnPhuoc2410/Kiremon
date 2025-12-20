@@ -6,6 +6,9 @@ interface PokeballSprite {
 
 interface ItemSpriteData {
   sprites: PokeballSprite;
+  item?: {
+    name: string;
+  };
 }
 
 interface PokeballResponse {
@@ -14,7 +17,63 @@ interface PokeballResponse {
   };
 }
 
+interface HeldItemSprite {
+  name: string;
+  sprite: string;
+}
+
 export const pokeItemService = {
+  async getHeldItemSprites(itemNames: string[]): Promise<HeldItemSprite[]> {
+    if (!itemNames || itemNames.length === 0) return [];
+
+    const query = `
+      query getHeldItemSprites($names: [String!]) {
+        itemsprites(
+          where: {
+            item: {
+              name: { _in: $names }
+            }
+          }
+          order_by: { id: asc }
+        ) {
+          item {
+            name
+          }
+          sprites
+        }
+      }
+    `;
+
+    try {
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "*/*",
+        },
+        body: JSON.stringify({
+          query,
+          variables: { names: itemNames },
+          operationName: "getHeldItemSprites",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch held item sprites");
+      }
+
+      const result: PokeballResponse = await response.json();
+
+      return result.data?.itemsprites?.map(item => ({
+        name: item.item?.name || '',
+        sprite: item.sprites?.default || ''
+      })).filter(item => item.name && item.sprite) || [];
+    } catch (error) {
+      console.error("Error fetching held item sprites:", error);
+      return [];
+    }
+  },
+
   async getPokeballSprite(): Promise<string | null> {
     const query = `
       query getPokeballSprite {
