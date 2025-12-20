@@ -108,17 +108,16 @@ const EvolutionArrow: React.FC<{
             }}
           />
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
-            <img
+            <i
               key={idx}
-              src={icon.src}
-              alt={icon.alt}
-              width={icon.width || 16}
-              height={icon.height || 16}
-              style={{ imageRendering: 'pixelated' }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
+              className={icon.className}
+              title={icon.alt}
+              style={{
+                color: icon.color,
+                fontSize: '16px',
+                lineHeight: 1
               }}
             />
           ))}
@@ -262,17 +261,16 @@ const SvgArrowLine: React.FC<{
               className="item-sprite-svg"
             />
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
-              <img
+              <i
                 key={idx}
-                src={icon.src}
-                alt={icon.alt}
-                width={icon.width || 16}
-                height={icon.height || 16}
-                style={{ imageRendering: 'pixelated' }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
+                className={icon.className}
+                title={icon.alt}
+                style={{
+                  color: icon.color,
+                  fontSize: '16px',
+                  lineHeight: 1
                 }}
               />
             ))}

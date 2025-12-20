@@ -1,129 +1,105 @@
-// Helper functions for evolution condition icons
-// Replace the placeholder paths with your actual pixel art PNG images
-
-export interface EvolutionIcon {
-  src: string;
+export interface EvolutionIconFont {
+  className: string;
   alt: string;
-  width?: number;
-  height?: number;
+  color?: string;
 }
 
-/**
- * Get icon for evolution conditions
- * You can place your pixel art PNG images in public/static/evolution-icons/
- * or any other folder you prefer
- */
-export const getEvolutionIcon = (condition: string, value?: any): EvolutionIcon | null => {
-  const iconBase = '/static/evolution-icons';
-
+export const getEvolutionIcon = (condition: string, value?: any): EvolutionIconFont | null => {
   switch (condition) {
     case 'timeOfDay':
       if (value === 'day') {
         return {
-          src: `${iconBase}/day.png`,
+          className: 'ra ra-sun',
           alt: 'Day',
-          width: 16,
-          height: 16
+          color: '#FDB813' // Golden yellow for sun
         };
       } else if (value === 'night') {
         return {
-          src: `${iconBase}/night.png`,
+          className: 'ra ra-moon-sun',
           alt: 'Night',
-          width: 16,
-          height: 16
+          color: '#A78BFA' // Purple for night
         };
       } else if (value === 'dusk') {
         return {
-          src: `${iconBase}/dusk.png`,
+          className: 'ra ra-eclipse',
           alt: 'Dusk',
-          width: 16,
-          height: 16
+          color: '#F59E0B' // Orange for dusk
         };
       }
       break;
 
     case 'needsOverworldRain':
       return {
-        src: `${iconBase}/rain.png`,
+        className: 'ra ra-droplet',
         alt: 'Rain',
-        width: 16,
-        height: 16
+        color: '#3B82F6' // Blue for rain
       };
 
     case 'turnUpsideDown':
       return {
-        src: `${iconBase}/upside-down.png`,
+        className: 'ra ra-reverse',
         alt: 'Upside Down',
-        width: 16,
-        height: 16
+        color: '#8B5CF6'
       };
 
     case 'gender':
       if (value === 1) {
         return {
-          src: `${iconBase}/female.png`,
+          className: 'ra ra-hearts',
           alt: 'Female',
-          width: 16,
-          height: 16
+          color: '#EC4899' // Pink for female
         };
       } else if (value === 2) {
         return {
-          src: `${iconBase}/male.png`,
+          className: 'ra ra-muscle-up',
           alt: 'Male',
-          width: 16,
-          height: 16
+          color: '#3B82F6' // Blue for male
         };
       }
       break;
 
     case 'minHappiness':
       return {
-        src: `${iconBase}/happiness.png`,
+        className: 'ra ra-heart',
         alt: 'Happiness',
-        width: 16,
-        height: 16
+        color: '#EF4444' // Red heart
       };
 
     case 'minBeauty':
       return {
-        src: `${iconBase}/beauty.png`,
+        className: 'ra ra-flower',
         alt: 'Beauty',
-        width: 16,
-        height: 16
+        color: '#EC4899' // Pink for beauty
       };
 
     case 'minAffection':
       return {
-        src: `${iconBase}/affection.png`,
+        className: 'ra ra-double-team',
         alt: 'Affection',
-        width: 16,
-        height: 16
+        color: '#F59E0B' // Orange for affection
       };
 
     case 'location':
       return {
-        src: `${iconBase}/location.png`,
+        className: 'ra ra-map-marker',
         alt: 'Location',
-        width: 16,
-        height: 16
+        color: '#10B981' // Green for location
       };
 
     case 'knownMove':
     case 'knownMoveType':
       return {
-        src: `${iconBase}/move.png`,
+        className: 'ra ra-sword',
         alt: 'Move',
-        width: 16,
-        height: 16
+        color: '#6366F1' // Indigo for moves
       };
 
     case 'partySpecies':
     case 'partyType':
       return {
-        src: `${iconBase}/party.png`,
+        className: 'ra ra-player',
         alt: 'Party',
-        width: 16,
-        height: 16
+        color: '#8B5CF6' // Purple for party
       };
 
     default:
@@ -133,11 +109,9 @@ export const getEvolutionIcon = (condition: string, value?: any): EvolutionIcon 
   return null;
 };
 
-/**
- * Generate a list of all icons needed for a complete evolution trigger
- */
-export const getEvolutionIcons = (trigger: any): EvolutionIcon[] => {
-  const icons: EvolutionIcon[] = [];
+
+export const getEvolutionIcons = (trigger: any): EvolutionIconFont[] => {
+  const icons: EvolutionIconFont[] = [];
 
   if (!trigger) return icons;
 
