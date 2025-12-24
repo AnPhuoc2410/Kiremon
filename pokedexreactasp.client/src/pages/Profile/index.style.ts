@@ -9,37 +9,16 @@ const float = keyframes`
 
 // ============ LAYOUT ============
 export const Page = styled.div`
-  min-height: calc(100vh - 120px);
-  background: linear-gradient(
-    180deg,
-    ${colors["gray-100"]} 0%,
-    ${colors["gray-200"]} 100%
-  );
+  min-height: calc(100vh - 80px);
+  background: white;
   position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: "";
-    position: fixed;
-    right: -150px;
-    top: -50px;
-    width: 400px;
-    height: 400px;
-    background: url("/static/pokeball-transparent.png") no-repeat center;
-    background-size: contain;
-    opacity: 0.05;
-    z-index: 0;
-    pointer-events: none;
-  }
 `;
 
 export const LayoutContainer = styled.div`
   display: flex;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: calc(100vh - 120px);
+  width: 100%;
+  min-height: calc(100vh - 80px);
   position: relative;
-  z-index: 1;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -49,29 +28,35 @@ export const LayoutContainer = styled.div`
 // ============ SIDEBAR ============
 export const Sidebar = styled.aside`
   width: 280px;
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  background: white;
   border-right: 1px solid ${colors["gray-200"]};
-  padding: 24px 0;
+  padding: 0;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
 
   @media (max-width: 768px) {
     width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
     border-right: none;
     border-bottom: 1px solid ${colors["gray-200"]};
-    padding: 16px;
   }
 `;
 
 export const SidebarHeader = styled.div`
-  padding: 0 20px 20px;
-  border-bottom: 1px solid ${colors["gray-200"]};
-  margin-bottom: 16px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 
   @media (max-width: 768px) {
-    padding: 0 0 16px;
+    padding: 16px;
     flex-direction: row;
     gap: 16px;
   }
@@ -206,11 +191,13 @@ export const SidebarTitle = styled.p`
 `;
 
 export const SidebarNav = styled.nav`
+  padding: 8px 0;
+
   @media (max-width: 768px) {
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding: 8px 16px;
   }
 `;
 
@@ -219,14 +206,14 @@ export const SidebarNavItem = styled.button<{ active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 12px 24px;
   border: none;
   background: ${({ active }) =>
     active
       ? `linear-gradient(90deg, ${colors["red-100"]} 0%, transparent 100%)`
       : "transparent"};
   color: ${({ active }) => (active ? colors["red-600"] : colors["gray-600"])};
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: ${({ active }) => (active ? "600" : "500")};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -243,8 +230,8 @@ export const SidebarNavItem = styled.button<{ active?: boolean }>`
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
   }
 
@@ -269,7 +256,7 @@ export const SidebarNavItem = styled.button<{ active?: boolean }>`
 export const SidebarDivider = styled.div`
   height: 1px;
   background: ${colors["gray-200"]};
-  margin: 12px 20px;
+  margin: 8px 20px;
 
   @media (max-width: 768px) {
     display: none;
@@ -277,8 +264,9 @@ export const SidebarDivider = styled.div`
 `;
 
 export const SidebarStats = styled.div`
-  padding: 0 20px;
-  margin-top: 16px;
+  padding: 16px 20px;
+  margin-top: auto;
+  background: ${colors["gray-100"]};
 
   @media (max-width: 768px) {
     display: none;
@@ -311,11 +299,13 @@ export const SidebarStatValue = styled.span`
 // ============ MAIN CONTENT ============
 export const MainContent = styled.main`
   flex: 1;
-  padding: 24px 32px;
-  overflow-y: auto;
+  padding: 0;
+  background: white;
+  min-height: calc(100vh - 80px);
 
   @media (max-width: 768px) {
-    padding: 20px 16px;
+    padding: 0;
+    min-height: auto;
   }
 `;
 
@@ -323,7 +313,16 @@ export const ContentHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  padding: 24px 32px;
+  border-bottom: 1px solid ${colors["gray-200"]};
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 16px 20px;
+  }
 `;
 
 export const ContentTitle = styled.h1`
@@ -336,34 +335,16 @@ export const ContentTitle = styled.h1`
 // ============ PROFILE TAB ============
 export const ProfileCard = styled.div`
   background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-  margin-bottom: 20px;
+  padding: 24px 32px;
   position: relative;
-  overflow: hidden;
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(
-      90deg,
-      ${colors["red-500"]},
-      ${colors["yellow-500"]}
-    );
+  @media (max-width: 768px) {
+    padding: 20px;
   }
 `;
 
 export const ProfileSection = styled.div`
-  margin-bottom: 24px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  margin-bottom: 0;
 `;
 
 export const SectionTitle = styled.h3`
@@ -452,11 +433,36 @@ export const ExperienceFill = styled.div<{ percentage: number }>`
   height: 100%;
   background: linear-gradient(
     90deg,
-    ${colors["green-400"]} 0%,
-    ${colors["green-500"]} 100%
+    #4dd0e1,
+    #26c6da
   );
-  border-radius: 8px;
-  transition: width 0.5s ease;
+  border-radius: 6px;
+  transition: width 0.5s ease-out;
+  position: relative;
+`;
+
+export const ExperienceStats = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+`;
+
+export const ExpStat = styled.div`
+  text-align: center;
+`;
+
+export const ExpStatValue = styled.div`
+  font-size: 1rem;
+  font-weight: 700;
+  color: ${colors["gray-800"]};
+`;
+
+export const ExpStatLabel = styled.div`
+  font-size: 0.7rem;
+  color: ${colors["gray-500"]};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 `;
 
 export const InfoGrid = styled.div`
@@ -620,7 +626,9 @@ export const Badge = styled.div<{ bgColor?: string; textColor?: string }>`
 export const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid ${colors["gray-200"]};
 
   @media (max-width: 640px) {
     flex-direction: column;
@@ -677,6 +685,10 @@ export const PokemonGrid = styled.div`
   @media (min-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
 `;
 
 export const PokemonCardWrapper = styled.div`
@@ -688,11 +700,8 @@ export const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 16px;
+  padding: 80px 20px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
 `;
 
 export const EmptyIcon = styled.div`
@@ -720,8 +729,9 @@ export const LoadingContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 400px;
   gap: 16px;
+  padding: 32px;
 `;
 
 export const LoadingText = styled.p`
@@ -733,8 +743,9 @@ export const ErrorContainer = styled.div`
   background: ${colors["red-100"]};
   border: 1px solid ${colors["red-200"]};
   border-radius: 12px;
-  padding: 24px;
+  padding: 32px;
   text-align: center;
+  margin: 24px 32px;
 `;
 
 export const ErrorText = styled.p`

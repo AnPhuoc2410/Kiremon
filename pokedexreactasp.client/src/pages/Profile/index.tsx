@@ -10,6 +10,7 @@ import {
   Text,
   AvatarChangeModal,
 } from "../../components/ui";
+import { Divider } from "../../components/ui/Divider";
 import { useAuth } from "../../contexts/AuthContext";
 import { useGlobalContext } from "../../contexts";
 import { userService } from "../../services/user/user.service";
@@ -259,12 +260,42 @@ const CameraIcon = () => (
 );
 
 // Helper functions
+const getExpForLevel = (level: number): number => {
+  // XP needed for each level (can be customized)
+  return level * 100;
+};
+
 const calculateLevelProgress = (experience: number, level: number): number => {
-  const xpForCurrentLevel = level * 100;
-  const xpForNextLevel = (level + 1) * 100;
-  const xpInCurrentLevel = experience - level * (level - 1) * 50;
-  const xpNeeded = xpForNextLevel - xpForCurrentLevel;
-  return Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeeded) * 100));
+  const xpForCurrentLevel = getExpForLevel(level);
+  const xpForNextLevel = getExpForLevel(level + 1);
+
+  // Calculate cumulative XP needed to reach current level
+  let cumulativeXp = 0;
+  for (let i = 1; i < level; i++) {
+    cumulativeXp += getExpForLevel(i);
+  }
+
+  const xpInCurrentLevel = experience - cumulativeXp;
+  const xpNeeded = xpForNextLevel;
+  const progress = (xpInCurrentLevel / xpNeeded) * 100;
+
+  return Math.min(100, Math.max(0, progress));
+};
+
+const getXpToNextLevel = (experience: number, level: number): number => {
+  let cumulativeXp = 0;
+  for (let i = 1; i <= level; i++) {
+    cumulativeXp += getExpForLevel(i);
+  }
+  return Math.max(0, cumulativeXp - experience);
+};
+
+const getCurrentLevelXp = (experience: number, level: number): number => {
+  let cumulativeXp = 0;
+  for (let i = 1; i < level; i++) {
+    cumulativeXp += getExpForLevel(i);
+  }
+  return Math.max(0, experience - cumulativeXp);
 };
 
 const getTrainerTitle = (level: number): string => {
@@ -394,6 +425,7 @@ const Profile: React.FC = () => {
       setLoading(true);
       setError(null);
       const data = await userService.getProfile();
+      console.log("Profile API Response:", data);
       setProfile(data);
       // Initialize edit form data
       setEditFormData({
@@ -627,15 +659,13 @@ const Profile: React.FC = () => {
                     <S.LoadingText>Loading profile...</S.LoadingText>
                   </S.LoadingContainer>
                 ) : error ? (
-                  <S.ProfileCard>
-                    <S.ErrorContainer>
-                      <S.ErrorText>{error}</S.ErrorText>
-                      <S.Button onClick={fetchProfile}>Try Again</S.Button>
-                    </S.ErrorContainer>
-                  </S.ProfileCard>
+                  <S.ErrorContainer>
+                    <S.ErrorText>{error}</S.ErrorText>
+                    <S.Button onClick={fetchProfile}>Try Again</S.Button>
+                  </S.ErrorContainer>
                 ) : (
                   <>
-                    {/* Stats Card */}
+                    {/* Stats Section */}
                     <S.ProfileCard>
                       <S.ProfileSection>
                         <S.SectionTitle>Trainer Stats</S.SectionTitle>
@@ -688,7 +718,9 @@ const Profile: React.FC = () => {
                       </S.ProfileSection>
                     </S.ProfileCard>
 
-                    {/* Achievements Card */}
+                    <Divider variant="pokeball" size="sm" />
+
+                    {/* Achievements Section */}
                     <S.ProfileCard>
                       <S.ProfileSection>
                         <S.SectionTitle>Achievements</S.SectionTitle>
@@ -730,7 +762,9 @@ const Profile: React.FC = () => {
                       </S.ProfileSection>
                     </S.ProfileCard>
 
-                    {/* Account Info Card */}
+                    <Divider variant="pokeball" size="sm" />
+
+                    {/* Account Info Section */}
                     <S.ProfileCard>
                       <S.ProfileSection>
                         <S.SectionTitleRow>
@@ -811,44 +845,44 @@ const Profile: React.FC = () => {
                             </S.InfoValue>
                           </S.InfoItem>
                         </S.InfoGrid>
-                      </S.ProfileSection>
 
-                      <S.ActionButtons>
-                        {isEditMode ? (
-                          <>
-                            <S.Button
-                              variant="secondary"
-                              onClick={handleCancelEdit}
-                              disabled={isUpdatingProfile}
-                            >
-                              Cancel
-                            </S.Button>
-                            <S.Button
-                              onClick={handleEditProfile}
-                              disabled={isUpdatingProfile}
-                            >
-                              {isUpdatingProfile ? "Saving..." : "Save Changes"}
-                            </S.Button>
-                          </>
-                        ) : (
-                          <>
-                            <S.Button onClick={() => setIsEditMode(true)}>
-                              <EditIcon />
-                              Edit Profile
-                            </S.Button>
-                            <S.Button
-                              variant="secondary"
-                              onClick={() => setIsAvatarModalOpen(true)}
-                              disabled={isUpdatingAvatar}
-                            >
-                              <CameraIcon />
-                              {isUpdatingAvatar
-                                ? "Updating..."
-                                : "Change Avatar"}
-                            </S.Button>
-                          </>
-                        )}
-                      </S.ActionButtons>
+                        <S.ActionButtons>
+                          {isEditMode ? (
+                            <>
+                              <S.Button
+                                variant="secondary"
+                                onClick={handleCancelEdit}
+                                disabled={isUpdatingProfile}
+                              >
+                                Cancel
+                              </S.Button>
+                              <S.Button
+                                onClick={handleEditProfile}
+                                disabled={isUpdatingProfile}
+                              >
+                                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                              </S.Button>
+                            </>
+                          ) : (
+                            <>
+                              <S.Button onClick={() => setIsEditMode(true)}>
+                                <EditIcon />
+                                Edit Profile
+                              </S.Button>
+                              <S.Button
+                                variant="secondary"
+                                onClick={() => setIsAvatarModalOpen(true)}
+                                disabled={isUpdatingAvatar}
+                              >
+                                <CameraIcon />
+                                {isUpdatingAvatar
+                                  ? "Updating..."
+                                  : "Change Avatar"}
+                              </S.Button>
+                            </>
+                          )}
+                        </S.ActionButtons>
+                      </S.ProfileSection>
                     </S.ProfileCard>
                   </>
                 )}
@@ -862,38 +896,40 @@ const Profile: React.FC = () => {
                   <S.PokemonCount>Total: {pokemons.length}</S.PokemonCount>
                 </S.ContentHeader>
 
-                {pokemons.length > 0 ? (
-                  <S.PokemonGrid>
-                    {[...pokemons].reverse().map((pokemon) => (
-                      <S.PokemonCardWrapper key={pokemon.id || pokemon.nickname}>
-                        <PokeCard
-                          name={pokemon.name}
-                          nickname={pokemon.nickname}
-                          sprite={pokemon.sprite}
-                        >
-                          <DeleteButton
-                            onClick={() => {
-                              setSelectedPokemon({ id: pokemon.id, nickname: pokemon.nickname });
-                              setDeleteConfirmation(true);
-                            }}
-                          />
-                        </PokeCard>
-                      </S.PokemonCardWrapper>
-                    ))}
-                  </S.PokemonGrid>
-                ) : (
-                  <S.EmptyState>
-                    <S.EmptyIcon>
-                      <img src="/static/pokeball.png" alt="Pokeball" />
-                    </S.EmptyIcon>
-                    <S.EmptyText>
-                      You haven't caught any Pokémon yet!
-                    </S.EmptyText>
-                    <Link to="/pokemons">
-                      <S.Button>Start Exploring</S.Button>
-                    </Link>
-                  </S.EmptyState>
-                )}
+                <S.ProfileCard>
+                  {pokemons.length > 0 ? (
+                    <S.PokemonGrid>
+                      {[...pokemons].reverse().map((pokemon) => (
+                        <S.PokemonCardWrapper key={pokemon.id || pokemon.nickname}>
+                          <PokeCard
+                            name={pokemon.name}
+                            nickname={pokemon.nickname}
+                            sprite={pokemon.sprite}
+                          >
+                            <DeleteButton
+                              onClick={() => {
+                                setSelectedPokemon({ id: pokemon.id, nickname: pokemon.nickname });
+                                setDeleteConfirmation(true);
+                              }}
+                            />
+                          </PokeCard>
+                        </S.PokemonCardWrapper>
+                      ))}
+                    </S.PokemonGrid>
+                  ) : (
+                    <S.EmptyState>
+                      <S.EmptyIcon>
+                        <img src="/static/pokeball.png" alt="Pokeball" />
+                      </S.EmptyIcon>
+                      <S.EmptyText>
+                        You haven't caught any Pokémon yet!
+                      </S.EmptyText>
+                      <Link to="/pokemons">
+                        <S.Button>Start Exploring</S.Button>
+                      </Link>
+                    </S.EmptyState>
+                  )}
+                </S.ProfileCard>
               </>
             )}
           </S.MainContent>
