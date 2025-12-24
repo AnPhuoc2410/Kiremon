@@ -22,7 +22,10 @@ namespace PokedexReactASP.Application.Mappings
 
             CreateMap<ApplicationUser, UserProfileDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.TrainerLevel))
+                .ForMember(dest => dest.Experience, opt => opt.MapFrom(src => src.TotalExperience))
+                .ForMember(dest => dest.PokemonCaught, opt => opt.MapFrom(src => src.PokemonCaught));
 
             CreateMap<SocialUserDto, ApplicationUser>()
                 .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
