@@ -261,41 +261,42 @@ const CameraIcon = () => (
 
 // Helper functions
 const getExpForLevel = (level: number): number => {
-  // XP needed for each level (can be customized)
-  return level * 100;
+
+  return 1000 + (level * 100);
+};
+
+const getCumulativeXpForLevel = (level: number): number => {
+
+  let total = 0;
+  for (let i = 1; i < level; i++) {
+    total += getExpForLevel(i);
+  }
+  return total;
 };
 
 const calculateLevelProgress = (experience: number, level: number): number => {
-  const xpForCurrentLevel = getExpForLevel(level);
-  const xpForNextLevel = getExpForLevel(level + 1);
+  const xpForCurrentLevelStart = getCumulativeXpForLevel(level);
+  const xpForNextLevel = getCumulativeXpForLevel(level + 1);
 
-  // Calculate cumulative XP needed to reach current level
-  let cumulativeXp = 0;
-  for (let i = 1; i < level; i++) {
-    cumulativeXp += getExpForLevel(i);
-  }
+  const xpInCurrentLevel = experience - xpForCurrentLevelStart;
+  const xpNeededForLevel = xpForNextLevel - xpForCurrentLevelStart;
 
-  const xpInCurrentLevel = experience - cumulativeXp;
-  const xpNeeded = xpForNextLevel;
-  const progress = (xpInCurrentLevel / xpNeeded) * 100;
-
+  const progress = (xpInCurrentLevel / xpNeededForLevel) * 100;
   return Math.min(100, Math.max(0, progress));
 };
 
 const getXpToNextLevel = (experience: number, level: number): number => {
-  let cumulativeXp = 0;
-  for (let i = 1; i <= level; i++) {
-    cumulativeXp += getExpForLevel(i);
-  }
-  return Math.max(0, cumulativeXp - experience);
+  const xpForNextLevel = getCumulativeXpForLevel(level + 1);
+  return Math.max(0, xpForNextLevel - experience);
 };
 
 const getCurrentLevelXp = (experience: number, level: number): number => {
-  let cumulativeXp = 0;
-  for (let i = 1; i < level; i++) {
-    cumulativeXp += getExpForLevel(i);
-  }
-  return Math.max(0, experience - cumulativeXp);
+  const xpForCurrentLevelStart = getCumulativeXpForLevel(level);
+  return Math.max(0, experience - xpForCurrentLevelStart);
+};
+
+const getXpNeededForNextLevel = (level: number): number => {
+  return getExpForLevel(level);
 };
 
 const getTrainerTitle = (level: number): string => {
@@ -700,10 +701,7 @@ const Profile: React.FC = () => {
                               Experience Progress
                             </S.ExperienceLabel>
                             <S.ExperienceValue>
-                              {Math.round(
-                                calculateLevelProgress(experience, level),
-                              )}
-                              % to Level {level + 1}
+                              {getCurrentLevelXp(experience, level).toLocaleString()} / {getXpNeededForNextLevel(level).toLocaleString()} XP
                             </S.ExperienceValue>
                           </S.ExperienceHeader>
                           <S.ExperienceBar>
@@ -714,6 +712,14 @@ const Profile: React.FC = () => {
                               )}
                             />
                           </S.ExperienceBar>
+                          <S.ExperienceInfo>
+                            <S.ExperienceText>
+                              {calculateLevelProgress(experience, level).toFixed(1)}% to Level {level + 1}
+                            </S.ExperienceText>
+                            <S.ExperienceText>
+                              {getXpToNextLevel(experience, level).toLocaleString()} XP remaining
+                            </S.ExperienceText>
+                          </S.ExperienceInfo>
                         </S.ExperienceSection>
                       </S.ProfileSection>
                     </S.ProfileCard>
