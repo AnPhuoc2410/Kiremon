@@ -160,3 +160,72 @@ export const ShieldCheckIcon = () => (
     />
   </svg>
 );
+
+// New Icons for additional features
+export const EyeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path
+      d="M10 5C13.5 5 16.5 7.5 17.5 10C16.5 12.5 13.5 15 10 15C6.5 15 3.5 12.5 2.5 10C3.5 7.5 6.5 5 10 5Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+    />
+    <circle cx="10" cy="10" r="2.5" fill="currentColor" />
+  </svg>
+);
+
+export const PaletteIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path
+      d="M10 2C5.58333 2 2 5.58333 2 10C2 12.9167 3.58333 15.4167 5.91667 16.6667C6.16667 16.8333 6.5 16.75 6.66667 16.5L7.41667 15.4167C7.58333 15.1667 7.5 14.8333 7.25 14.6667C5.58333 13.75 4.5 12 4.5 10C4.5 6.91667 6.91667 4.5 10 4.5C13.0833 4.5 15.5 6.91667 15.5 10C15.5 11.1667 15 12.25 14.25 13.0833C13.9167 13.4167 13.8333 13.9167 14.0833 14.3333C14.3333 14.75 14.8333 14.9167 15.25 14.6667C16.4167 13.5 17.1667 11.8333 17.1667 10C17.1667 5.58333 13.5833 2 10 2Z"
+      fill="currentColor"
+    />
+    <circle cx="7" cy="8" r="1.5" fill="currentColor" />
+    <circle cx="10" cy="6.5" r="1.5" fill="currentColor" />
+    <circle cx="13" cy="8" r="1.5" fill="currentColor" />
+    <circle cx="12" cy="11" r="1.5" fill="currentColor" />
+  </svg>
+);
+
+export const GlobeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <path
+      d="M2 10H18M10 2C12 5 12 15 10 18M10 2C8 5 8 15 10 18"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+    />
+  </svg>
+);
+
+export const DownloadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path
+      d="M10 2V12M10 12L6 8M10 12L14 8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3 14V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H15C15.5304 18 16.0391 17.7893 16.4142 17.4142C16.7893 17.0391 17 16.5304 17 16V14"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const TrashIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path
+      d="M3 5H17M8 9V15M12 9V15M4 5L5 17C5 17.5304 5.21071 18.0391 5.58579 18.4142C5.96086 18.7893 6.46957 19 7 19H13C13.5304 19 14.0391 18.7893 14.4142 18.4142C14.7893 18.0391 15 17.5304 15 17L16 5M7 5V3C7 2.73478 7.10536 2.48043 7.29289 2.29289C7.48043 2.10536 7.73478 2 8 2H12C12.2652 2 12.5196 2.10536 12.7071 2.29289C12.8946 2.48043 13 2.73478 13 3V5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

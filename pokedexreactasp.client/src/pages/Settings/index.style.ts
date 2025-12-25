@@ -789,3 +789,52 @@ export const StatusBadge = styled.span<{ active?: boolean }>`
     color: ${colors["gray-600"]};
   `}
 `;
+
+// ============ THEME SELECTOR ============
+export const ThemeSelector = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+export const ThemeOption = styled.button<{ active?: boolean }>`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
+  background: ${({ active }) => (active ? colors["red-50"] : "white")};
+  color: ${({ active }) => (active ? colors["red-700"] : colors["gray-700"])};
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${colors["red-400"]};
+    background: ${colors["red-50"]};
+  }
+`;
+
+// ============ LANGUAGE SELECTOR ============
+export const LanguageSelector = styled.select`
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 12px;
+  border: 2px solid ${colors["gray-300"]};
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors["red-500"]};
+    box-shadow: 0 0 0 3px ${colors["red-100"]};
+  }
+
+  &:hover {
+    border-color: ${colors["gray-400"]};
+  }
+`;
