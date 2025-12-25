@@ -90,10 +90,10 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <S.Page>
+    <>
       <Header title="Settings" subtitle="Manage your account preferences" />
-
-      <S.Container>
+      <S.Page>
+        <S.Container>
         {/* Sidebar Navigation */}
         <S.Sidebar>
           <S.SidebarTitle>
@@ -191,6 +191,7 @@ const Settings: React.FC = () => {
             </S.SettingItem>
           </S.Section>
 
+
           {/* Notifications Section */}
           <S.Section id="notifications">
             <S.SectionHeader>
@@ -251,6 +252,7 @@ const Settings: React.FC = () => {
             </S.SettingItem>
           </S.Section>
 
+
           {/* Security Section */}
           <S.Section id="security">
             <S.SectionHeader>
@@ -308,6 +310,7 @@ const Settings: React.FC = () => {
           </S.Section>
         </S.ContentArea>
       </S.Container>
+      </S.Page>
 
       {/* 2FA Modals */}
       <Enable2FAModal
@@ -330,7 +333,7 @@ const Settings: React.FC = () => {
         onDisable={handleDisable2FA}
         onClose={twoFA.handleCloseDisableModal}
       />
-    </S.Page>
+    </>
   );
 };
 

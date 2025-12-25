@@ -3,62 +3,19 @@ import { colors } from "../../components/utils";
 
 // ============ LAYOUT ============
 export const Page = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    ${colors["gray-100"]} 0%,
-    ${colors["gray-200"]} 100%
-  );
+  min-height: calc(100vh - 80px);
+  background: white;
   position: relative;
-
-  &::before {
-    content: "";
-    position: fixed;
-    right: -150px;
-    top: -50px;
-    width: 400px;
-    height: 400px;
-    background: url("/static/pokeball-transparent.png") no-repeat center;
-    background-size: contain;
-    opacity: 0.05;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  &::after {
-    content: "";
-    position: fixed;
-    left: -100px;
-    bottom: -100px;
-    width: 300px;
-    height: 300px;
-    background: url("/static/pokeball-transparent.png") no-repeat center;
-    background-size: contain;
-    opacity: 0.03;
-    z-index: 0;
-    pointer-events: none;
-    transform: rotate(45deg);
-  }
 `;
 
 export const Container = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 24px 24px 80px;
-  position: relative;
-  z-index: 1;
   display: flex;
-  gap: 32px;
-  align-items: stretch;
-  min-height: calc(100vh - 120px);
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    gap: 20px;
-  }
+  width: 100%;
+  min-height: calc(100vh - 80px);
+  position: relative;
 
   @media (max-width: 768px) {
-    padding: 16px 16px 60px;
+    flex-direction: column;
   }
 `;
 
@@ -67,31 +24,22 @@ export const Sidebar = styled.nav`
   width: 280px;
   background: white;
   border-right: 1px solid ${colors["gray-200"]};
+  padding: 0;
   flex-shrink: 0;
-  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 768px) {
     width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
     border-right: none;
     border-bottom: 1px solid ${colors["gray-200"]};
-    padding: 16px;
-    display: flex;
-    overflow-x: auto;
-    gap: 8px;
-
-    &::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: ${colors["gray-100"]};
-      border-radius: 2px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: ${colors["red-400"]};
-      border-radius: 2px;
-    }
   }
 `;
 
@@ -189,20 +137,28 @@ export const ContentArea = styled.div`
   flex: 1;
   min-width: 0;
   background: white;
-  border-radius: 12px;
-  border: 1px solid ${colors["gray-200"]};
-  overflow: hidden;
-`;
+  min-height: calc(100vh - 80px);\n\n  @media (max-width: 768px) {\n    min-height: auto;\n  }\n`;
 
 export const ContentHeader = styled.div`
-  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid ${colors["gray-200"]};\n  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    padding: 16px 20px;
+  }
 `;
 
 export const ContentTitle = styled.h1`
-  font-size: 28px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: ${colors["gray-900"]};
-  margin: 0 0 8px 0;
+  margin: 0;
 `;
 
 export const ContentDescription = styled.p`
@@ -214,36 +170,37 @@ export const ContentDescription = styled.p`
 
 export const Section = styled.section`
   scroll-margin-top: 140px;
-  border-top: 1px solid ${colors["gray-200"]};
+  background: white;
+  padding: 24px 32px;
+  position: relative;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid ${colors["gray-200"]};
+  }
 
   @media (max-width: 768px) {
     scroll-margin-top: 120px;
+    padding: 20px;
   }
 `;
 
 export const SectionHeader = styled.div`
-  padding: 24px 32px;
-  background: ${colors["gray-100"]};
-  border-bottom: 1px solid ${colors["gray-200"]};
-
-  &:not(:first-of-type) {
-    border-top: 1px solid ${colors["gray-200"]};
-  }
+  margin-bottom: 16px;
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 16px;
-  font-weight: 700;
-  color: ${colors["gray-900"]};
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${colors["gray-800"]};
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 
   svg {
     width: 18px;
     height: 18px;
-    color: ${colors["red-500"]};
+    color: ${colors["gray-500"]};
   }
 `;
 
@@ -322,24 +279,20 @@ export const SettingItem = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 24px 32px;
-  border-bottom: 1px solid ${colors["gray-200"]};
+  padding: 16px 0;
+  border-bottom: 1px solid ${colors["gray-100"]};
   gap: 24px;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 
   &:last-child {
     border-bottom: none;
-  }
-
-  &:hover {
-    background: ${colors["gray-100"]};
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
-    padding: 20px 24px;
+    padding: 16px 0;
   }
 `;
 
