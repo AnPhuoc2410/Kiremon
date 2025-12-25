@@ -801,7 +801,7 @@ export const ThemeOption = styled.button<{ active?: boolean }>`
   flex: 1;
   padding: 12px 16px;
   border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
-  background: ${({ active }) => (active ? colors["red-50"] : "white")};
+  background: ${({ active }) => (active ? colors["red-500"] : "white")};
   color: ${({ active }) => (active ? colors["red-700"] : colors["gray-700"])};
   border-radius: 8px;
   font-size: 14px;
@@ -811,7 +811,7 @@ export const ThemeOption = styled.button<{ active?: boolean }>`
 
   &:hover {
     border-color: ${colors["red-400"]};
-    background: ${colors["red-50"]};
+    background: ${colors["red-500"]};
   }
 `;
 
