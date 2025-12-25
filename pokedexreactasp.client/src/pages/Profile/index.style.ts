@@ -441,6 +441,20 @@ export const ExperienceFill = styled.div<{ percentage: number }>`
   position: relative;
 `;
 
+export const ExperienceInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 4px;
+`;
+
+export const ExperienceText = styled.span`
+  font-size: 0.8rem;
+  color: ${colors["gray-600"]};
+  font-weight: 500;
+`;
+
 export const ExperienceStats = styled.div`
   display: flex;
   justify-content: space-between;
