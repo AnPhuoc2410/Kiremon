@@ -1025,3 +1025,368 @@ export const AvatarSkeletonId = styled.div`
   background-size: 200px 100%;
   animation: ${shimmer} 1.2s ease-in-out infinite;
 `;
+
+// ============ FRIENDS TAB ============
+export const NotificationBadge = styled.span`
+  background: ${colors["red-500"]};
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+  min-width: 18px;
+  text-align: center;
+`;
+
+export const FriendsSubTabContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  padding: 16px 32px;
+  border-bottom: 1px solid ${colors["gray-200"]};
+  overflow-x: auto;
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
+`;
+
+export const FriendsSubTab = styled.button<{ $active?: boolean }>`
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: ${({ $active }) =>
+    $active ? colors["red-500"] : colors["gray-100"]};
+  color: ${({ $active }) => ($active ? "white" : colors["gray-600"])};
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${({ $active }) =>
+      $active ? colors["red-600"] : colors["gray-200"]};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+export const FriendsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const FriendCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: ${colors["gray-100"]};
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["gray-200"]};
+  }
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+`;
+
+export const FriendAvatar = styled.div<{ $online?: boolean }>`
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    ${colors["yellow-200"]} 0%,
+    ${colors["yellow-400"]} 100%
+  );
+  border: 3px solid ${({ $online }) =>
+    $online ? colors["green-500"] : colors["gray-300"]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: ${colors["gray-700"]};
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  ${({ $online }) =>
+    $online &&
+    `
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background: ${colors["green-500"]};
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+  `}
+`;
+
+export const FriendInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const FriendName = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${colors["gray-800"]};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const LevelBadge = styled.span`
+  background: ${colors["blue-100"]};
+  color: ${colors["blue-700"]};
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+`;
+
+export const FriendDetails = styled.div`
+  font-size: 0.8rem;
+  color: ${colors["gray-500"]};
+  margin-top: 2px;
+`;
+
+export const OnlineStatus = styled.div<{ $online?: boolean }>`
+  font-size: 0.75rem;
+  color: ${({ $online }) =>
+    $online ? colors["green-600"] : colors["gray-400"]};
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+export const FriendshipStats = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+`;
+
+export const FriendshipStat = styled.div`
+  font-size: 0.75rem;
+  color: ${colors["gray-500"]};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: ${colors["gray-400"]};
+  }
+`;
+
+export const FriendActions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: flex-end;
+  }
+`;
+
+export const IconButton = styled.button<{ $variant?: "primary" | "danger" }>`
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  background: ${({ $variant }) =>
+    $variant === "primary"
+      ? colors["blue-100"]
+      : $variant === "danger"
+      ? colors["red-100"]
+      : colors["gray-200"]};
+  color: ${({ $variant }) =>
+    $variant === "primary"
+      ? colors["blue-600"]
+      : $variant === "danger"
+      ? colors["red-600"]
+      : colors["gray-600"]};
+
+  &:hover {
+    background: ${({ $variant }) =>
+      $variant === "primary"
+        ? colors["blue-200"]
+        : $variant === "danger"
+        ? colors["red-200"]
+        : colors["gray-300"]};
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+export const SmallButton = styled.button<{ $variant?: "primary" | "danger" }>`
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+
+  background: ${({ $variant }) =>
+    $variant === "primary"
+      ? colors["green-500"]
+      : $variant === "danger"
+      ? colors["red-500"]
+      : colors["gray-200"]};
+  color: ${({ $variant }) =>
+    $variant === "primary" || $variant === "danger" ? "white" : colors["gray-700"]};
+
+  &:hover {
+    background: ${({ $variant }) =>
+      $variant === "primary"
+        ? colors["green-600"]
+        : $variant === "danger"
+        ? colors["red-600"]
+        : colors["gray-300"]};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+export const RequestMessage = styled.div`
+  font-size: 0.8rem;
+  color: ${colors["gray-600"]};
+  font-style: italic;
+  margin-top: 4px;
+`;
+
+export const FriendCodeSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const FriendCodeDisplay = styled.div`
+  background: linear-gradient(135deg, ${colors["gray-900"]} 0%, ${colors["gray-800"]} 100%);
+  border-radius: 16px;
+  padding: 24px 32px;
+  text-align: center;
+  border: 2px solid ${colors["yellow-400"]};
+`;
+
+export const FriendCodeLabel = styled.p`
+  color: ${colors["gray-400"]};
+  font-size: 0.85rem;
+  margin: 0 0 8px 0;
+`;
+
+export const FriendCodeValue = styled.h2`
+  color: ${colors["yellow-400"]};
+  font-size: 1.75rem;
+  font-family: "Courier New", monospace;
+  letter-spacing: 4px;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+
+  @media (max-width: 640px) {
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+  }
+`;
+
+export const QRCodeWrapper = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  img {
+    width: 180px;
+    height: 180px;
+    display: block;
+  }
+`;
+
+export const FriendCodeActions = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+
+export const AddFriendSection = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const AddFriendInput = styled.input`
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-family: "Courier New", monospace;
+  letter-spacing: 2px;
+  border: 2px solid ${colors["gray-300"]};
+  border-radius: 12px;
+  text-transform: uppercase;
+  text-align: center;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${colors["red-500"]};
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  &::placeholder {
+    color: ${colors["gray-400"]};
+    text-transform: none;
+    letter-spacing: normal;
+  }
+`;

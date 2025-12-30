@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import QRCode from "qrcode";
 import {
   Header,
   Loading,
@@ -14,13 +15,19 @@ import { Divider } from "../../components/ui/Divider";
 import { useAuth } from "../../contexts/AuthContext";
 import { useGlobalContext } from "../../contexts";
 import { userService } from "../../services/user/user.service";
-import { collectionService } from "../../services";
+import { collectionService, friendService } from "../../services";
 import * as S from "./index.style";
 import toast from "react-hot-toast";
 import { UserProfile } from "../../types/users.type";
+import {
+  FriendDto,
+  FriendRequestDto,
+  FriendsSummaryDto,
+  FriendCodeDto,
+} from "../../types/friend.types";
 
 // Tab types
-type TabType = "profile" | "my-pokemon";
+type TabType = "profile" | "my-pokemon" | "friends";
 
 // Icons
 const ProfileIcon = () => (
@@ -259,6 +266,83 @@ const CameraIcon = () => (
   </svg>
 );
 
+// Friends Icons
+const FriendsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const QRIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
+    <rect x="14" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
+    <rect x="3" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
+    <rect x="14" y="14" width="3" height="3" fill="currentColor"/>
+    <rect x="18" y="14" width="3" height="3" fill="currentColor"/>
+    <rect x="14" y="18" width="3" height="3" fill="currentColor"/>
+    <rect x="18" y="18" width="3" height="3" fill="currentColor"/>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23 4v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M1 20v-6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const TradeIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 16V4M7 4L3 8M7 4L11 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17 8V20M17 20L21 16M17 20L13 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const BattleIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.5 17.5L3 6V3h3l11.5 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M13 19l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M16 16l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M19 21l2-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const AddIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 // Helper functions
 const getExpForLevel = (level: number): number => {
 
@@ -354,6 +438,72 @@ const Profile: React.FC = () => {
     lastName: "",
   });
 
+  // Friends state
+  const [friends, setFriends] = useState<FriendDto[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<FriendRequestDto[]>([]);
+  const [sentRequests, setSentRequests] = useState<FriendRequestDto[]>([]);
+  const [friendsSummary, setFriendsSummary] = useState<FriendsSummaryDto | null>(null);
+  const [friendCode, setFriendCode] = useState<FriendCodeDto | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [inputFriendCode, setInputFriendCode] = useState("");
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [confirmRemoveFriend, setConfirmRemoveFriend] = useState<FriendDto | null>(null);
+  type FriendsSubTab = "list" | "requests" | "add";
+  const [friendsSubTab, setFriendsSubTab] = useState<FriendsSubTab>("list");
+
+  // Generate QR code data URL
+  useEffect(() => {
+    if (friendCode?.qrCodeData) {
+      QRCode.toDataURL(friendCode.qrCodeData, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff",
+        },
+      }).then(setQrCodeDataUrl);
+    }
+  }, [friendCode?.qrCodeData]);
+
+  // Format friend code input
+  const formatFriendCode = (value: string) => {
+    const cleaned = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    const parts = [];
+    for (let i = 0; i < cleaned.length && i < 12; i += 4) {
+      parts.push(cleaned.slice(i, i + 4));
+    }
+    return parts.join("-");
+  };
+
+  const handleFriendCodeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputFriendCode(formatFriendCode(e.target.value));
+  };
+
+  // Load friends data
+  const loadFriendsData = useCallback(async () => {
+    try {
+      setFriendsLoading(true);
+      const [friendsData, summaryData, codeData, receivedData, sentData] =
+        await Promise.all([
+          friendService.getFriends(),
+          friendService.getFriendsSummary(),
+          friendService.getMyFriendCode(),
+          friendService.getReceivedRequests(),
+          friendService.getSentRequests(),
+        ]);
+      setFriends(friendsData);
+      setFriendsSummary(summaryData);
+      setFriendCode(codeData);
+      setReceivedRequests(receivedData);
+      setSentRequests(sentData);
+    } catch (error) {
+      console.error("Failed to load friends data:", error);
+      toast.error("Failed to load friends data");
+    } finally {
+      setFriendsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
       toast.error("Please login to view your profile");
@@ -364,8 +514,9 @@ const Profile: React.FC = () => {
     if (isInitialized && isAuthenticated) {
       fetchProfile();
       loadMyPokemonFromAPI();
+      loadFriendsData();
     }
-  }, [isInitialized, isAuthenticated, navigate]);
+  }, [isInitialized, isAuthenticated, navigate, loadFriendsData]);
 
   // Load Pokemon from API
   const loadMyPokemonFromAPI = async () => {
@@ -516,6 +667,112 @@ const Profile: React.FC = () => {
     setIsEditMode(false);
   };
 
+  // Friends Actions
+  const copyFriendCode = () => {
+    if (friendCode) {
+      navigator.clipboard.writeText(friendCode.friendCode);
+      toast.success("Friend code copied!");
+    }
+  };
+
+  const regenerateFriendCode = async () => {
+    try {
+      const newCode = await friendService.regenerateFriendCode();
+      setFriendCode(newCode);
+      toast.success("New friend code generated!");
+    } catch (error) {
+      toast.error("Failed to regenerate code");
+    }
+  };
+
+  const sendFriendRequest = async () => {
+    if (inputFriendCode.length !== 14) {
+      toast.error("Please enter a valid friend code (XXXX-XXXX-XXXX)");
+      return;
+    }
+
+    try {
+      const result = await friendService.sendFriendRequest({
+        friendCode: inputFriendCode,
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setInputFriendCode("");
+        loadFriendsData();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to send request");
+    }
+  };
+
+  const acceptFriendRequest = async (requestId: number) => {
+    try {
+      const result = await friendService.acceptRequest(requestId);
+      if (result.success) {
+        toast.success(result.message);
+        loadFriendsData();
+      }
+    } catch (error) {
+      toast.error("Failed to accept request");
+    }
+  };
+
+  const declineFriendRequest = async (requestId: number) => {
+    try {
+      const result = await friendService.declineRequest(requestId);
+      if (result.success) {
+        toast.success(result.message);
+        loadFriendsData();
+      }
+    } catch (error) {
+      toast.error("Failed to decline request");
+    }
+  };
+
+  const cancelFriendRequest = async (requestId: number) => {
+    try {
+      const result = await friendService.cancelRequest(requestId);
+      if (result.success) {
+        toast.success(result.message);
+        loadFriendsData();
+      }
+    } catch (error) {
+      toast.error("Failed to cancel request");
+    }
+  };
+
+  const removeFriend = async () => {
+    if (!confirmRemoveFriend) return;
+    try {
+      const result = await friendService.removeFriend(confirmRemoveFriend.userId);
+      if (result.success) {
+        toast.success(result.message);
+        setConfirmRemoveFriend(null);
+        loadFriendsData();
+      }
+    } catch (error) {
+      toast.error("Failed to remove friend");
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  const totalPendingRequests = receivedRequests.length + sentRequests.length;
+
   // Get display data
   const displayName =
     profile?.firstName && profile?.lastName
@@ -615,6 +872,16 @@ const Profile: React.FC = () => {
                 <PokeballIcon />
                 My Pokémon
               </S.SidebarNavItem>
+              <S.SidebarNavItem
+                active={activeTab === "friends"}
+                onClick={() => setActiveTab("friends")}
+              >
+                <FriendsIcon />
+                Friends
+                {totalPendingRequests > 0 && (
+                  <S.NotificationBadge>{totalPendingRequests}</S.NotificationBadge>
+                )}
+              </S.SidebarNavItem>
             </S.SidebarNav>
 
             <S.SidebarDivider />
@@ -640,8 +907,8 @@ const Profile: React.FC = () => {
                 <S.SidebarStatValue>{pokemonCaught}</S.SidebarStatValue>
               </S.SidebarStatItem>
               <S.SidebarStatItem>
-                <S.SidebarStatLabel>XP</S.SidebarStatLabel>
-                <S.SidebarStatValue>{experience}</S.SidebarStatValue>
+                <S.SidebarStatLabel>Friends</S.SidebarStatLabel>
+                <S.SidebarStatValue>{friendsSummary?.totalFriends || 0}</S.SidebarStatValue>
               </S.SidebarStatItem>
             </S.SidebarStats>
           </S.Sidebar>
@@ -938,9 +1205,297 @@ const Profile: React.FC = () => {
                 </S.ProfileCard>
               </>
             )}
+
+            {/* Friends Tab */}
+            {activeTab === "friends" && (
+              <>
+                <S.ContentHeader>
+                  <S.ContentTitle>Friends</S.ContentTitle>
+                  <S.PokemonCount>
+                    {friendsSummary?.totalFriends || 0} friends • {friendsSummary?.onlineFriends || 0} online
+                  </S.PokemonCount>
+                </S.ContentHeader>
+
+                {friendsLoading ? (
+                  <S.LoadingContainer>
+                    <Loading />
+                    <S.LoadingText>Loading friends...</S.LoadingText>
+                  </S.LoadingContainer>
+                ) : (
+                  <>
+                    {/* Friends Sub-tabs */}
+                    <S.FriendsSubTabContainer>
+                      <S.FriendsSubTab
+                        $active={friendsSubTab === "list"}
+                        onClick={() => setFriendsSubTab("list")}
+                      >
+                        <FriendsIcon />
+                        My Friends ({friends.length})
+                      </S.FriendsSubTab>
+                      <S.FriendsSubTab
+                        $active={friendsSubTab === "requests"}
+                        onClick={() => setFriendsSubTab("requests")}
+                      >
+                        Requests
+                        {totalPendingRequests > 0 && (
+                          <S.NotificationBadge>{totalPendingRequests}</S.NotificationBadge>
+                        )}
+                      </S.FriendsSubTab>
+                      <S.FriendsSubTab
+                        $active={friendsSubTab === "add"}
+                        onClick={() => setFriendsSubTab("add")}
+                      >
+                        <AddIcon />
+                        Add Friend
+                      </S.FriendsSubTab>
+                    </S.FriendsSubTabContainer>
+
+                    {/* Friends List Sub-tab */}
+                    {friendsSubTab === "list" && (
+                      <S.ProfileCard>
+                        {friends.length === 0 ? (
+                          <S.EmptyState>
+                            <S.EmptyIcon>
+                              <FriendsIcon />
+                            </S.EmptyIcon>
+                            <S.EmptyText>No friends yet</S.EmptyText>
+                            <S.Button onClick={() => setFriendsSubTab("add")}>
+                              <AddIcon />
+                              Add Friends
+                            </S.Button>
+                          </S.EmptyState>
+                        ) : (
+                          <S.FriendsList>
+                            {friends.map((friend) => (
+                              <S.FriendCard key={friend.userId}>
+                                <S.FriendAvatar $online={friend.isOnline}>
+                                  {friend.avatarUrl ? (
+                                    <img src={friend.avatarUrl} alt={friend.username} />
+                                  ) : (
+                                    friend.username.charAt(0).toUpperCase()
+                                  )}
+                                </S.FriendAvatar>
+                                <S.FriendInfo>
+                                  <S.FriendName>
+                                    {friend.nickname || friend.username}
+                                    <S.LevelBadge>Lv.{friend.trainerLevel}</S.LevelBadge>
+                                  </S.FriendName>
+                                  <S.FriendDetails>
+                                    Friends since {formatDate(friend.friendsSince)}
+                                  </S.FriendDetails>
+                                  <S.OnlineStatus $online={friend.isOnline}>
+                                    {friend.isOnline ? "● Online" : `Last seen ${getTimeAgo(friend.lastActiveDate)}`}
+                                  </S.OnlineStatus>
+                                  <S.FriendshipStats>
+                                    <S.FriendshipStat>
+                                      <TradeIcon /> {friend.tradesWithFriend} trades
+                                    </S.FriendshipStat>
+                                    <S.FriendshipStat>
+                                      <BattleIcon /> {friend.battlesWithFriend} battles
+                                    </S.FriendshipStat>
+                                  </S.FriendshipStats>
+                                </S.FriendInfo>
+                                <S.FriendActions>
+                                  <S.IconButton
+                                    $variant="danger"
+                                    onClick={() => setConfirmRemoveFriend(friend)}
+                                    title="Remove friend"
+                                  >
+                                    <DeleteIcon />
+                                  </S.IconButton>
+                                </S.FriendActions>
+                              </S.FriendCard>
+                            ))}
+                          </S.FriendsList>
+                        )}
+                      </S.ProfileCard>
+                    )}
+
+                    {/* Requests Sub-tab */}
+                    {friendsSubTab === "requests" && (
+                      <>
+                        {/* Received Requests */}
+                        <S.ProfileCard>
+                          <S.SectionTitle>
+                            Received Requests ({receivedRequests.length})
+                          </S.SectionTitle>
+                          {receivedRequests.length === 0 ? (
+                            <S.EmptyState>
+                              <S.EmptyText>No pending requests</S.EmptyText>
+                            </S.EmptyState>
+                          ) : (
+                            <S.FriendsList>
+                              {receivedRequests.map((request) => (
+                                <S.FriendCard key={request.requestId}>
+                                  <S.FriendAvatar>
+                                    {request.avatarUrl ? (
+                                      <img src={request.avatarUrl} alt={request.username} />
+                                    ) : (
+                                      request.username.charAt(0).toUpperCase()
+                                    )}
+                                  </S.FriendAvatar>
+                                  <S.FriendInfo>
+                                    <S.FriendName>
+                                      {request.username}
+                                      <S.LevelBadge>Lv.{request.trainerLevel}</S.LevelBadge>
+                                    </S.FriendName>
+                                    <S.FriendDetails>
+                                      Sent {getTimeAgo(request.sentAt)}
+                                    </S.FriendDetails>
+                                    {request.message && (
+                                      <S.RequestMessage>"{request.message}"</S.RequestMessage>
+                                    )}
+                                  </S.FriendInfo>
+                                  <S.FriendActions>
+                                    <S.SmallButton
+                                      $variant="primary"
+                                      onClick={() => acceptFriendRequest(request.requestId)}
+                                    >
+                                      <CheckIcon /> Accept
+                                    </S.SmallButton>
+                                    <S.SmallButton
+                                      onClick={() => declineFriendRequest(request.requestId)}
+                                    >
+                                      <XIcon /> Decline
+                                    </S.SmallButton>
+                                  </S.FriendActions>
+                                </S.FriendCard>
+                              ))}
+                            </S.FriendsList>
+                          )}
+                        </S.ProfileCard>
+
+                        <Divider variant="pokeball" size="sm" />
+
+                        {/* Sent Requests */}
+                        <S.ProfileCard>
+                          <S.SectionTitle>
+                            Sent Requests ({sentRequests.length})
+                          </S.SectionTitle>
+                          {sentRequests.length === 0 ? (
+                            <S.EmptyState>
+                              <S.EmptyText>No sent requests</S.EmptyText>
+                            </S.EmptyState>
+                          ) : (
+                            <S.FriendsList>
+                              {sentRequests.map((request) => (
+                                <S.FriendCard key={request.requestId}>
+                                  <S.FriendAvatar>
+                                    {request.avatarUrl ? (
+                                      <img src={request.avatarUrl} alt={request.username} />
+                                    ) : (
+                                      request.username.charAt(0).toUpperCase()
+                                    )}
+                                  </S.FriendAvatar>
+                                  <S.FriendInfo>
+                                    <S.FriendName>
+                                      {request.username}
+                                      <S.LevelBadge>Lv.{request.trainerLevel}</S.LevelBadge>
+                                    </S.FriendName>
+                                    <S.FriendDetails>
+                                      Sent {getTimeAgo(request.sentAt)} • Pending
+                                    </S.FriendDetails>
+                                  </S.FriendInfo>
+                                  <S.FriendActions>
+                                    <S.SmallButton
+                                      onClick={() => cancelFriendRequest(request.requestId)}
+                                    >
+                                      <XIcon /> Cancel
+                                    </S.SmallButton>
+                                  </S.FriendActions>
+                                </S.FriendCard>
+                              ))}
+                            </S.FriendsList>
+                          )}
+                        </S.ProfileCard>
+                      </>
+                    )}
+
+                    {/* Add Friend Sub-tab */}
+                    {friendsSubTab === "add" && (
+                      <>
+                        {/* My Friend Code */}
+                        <S.ProfileCard>
+                          <S.SectionTitle>
+                            <QRIcon />
+                            My Friend Code
+                          </S.SectionTitle>
+                          <S.FriendCodeSection>
+                            <S.FriendCodeDisplay>
+                              <S.FriendCodeLabel>Share this code with friends</S.FriendCodeLabel>
+                              <S.FriendCodeValue>
+                                {friendCode?.friendCode || "--------------"}
+                              </S.FriendCodeValue>
+                            </S.FriendCodeDisplay>
+
+                            {qrCodeDataUrl && (
+                              <S.QRCodeWrapper>
+                                <img src={qrCodeDataUrl} alt="Friend Code QR" />
+                              </S.QRCodeWrapper>
+                            )}
+
+                            <S.FriendCodeActions>
+                              <S.Button variant="secondary" onClick={copyFriendCode}>
+                                <CopyIcon />
+                                Copy Code
+                              </S.Button>
+                              <S.Button variant="secondary" onClick={regenerateFriendCode}>
+                                <RefreshIcon />
+                                New Code
+                              </S.Button>
+                            </S.FriendCodeActions>
+                          </S.FriendCodeSection>
+                        </S.ProfileCard>
+
+                        <Divider variant="pokeball" size="sm" />
+
+                        {/* Add by Code */}
+                        <S.ProfileCard>
+                          <S.SectionTitle>Add Friend by Code</S.SectionTitle>
+                          <S.AddFriendSection>
+                            <S.AddFriendInput
+                              type="text"
+                              placeholder="Enter friend code (XXXX-XXXX-XXXX)"
+                              value={inputFriendCode}
+                              onChange={handleFriendCodeInput}
+                              maxLength={14}
+                            />
+                            <S.Button
+                              onClick={sendFriendRequest}
+                              disabled={inputFriendCode.length !== 14}
+                            >
+                              <AddIcon />
+                              Send Request
+                            </S.Button>
+                          </S.AddFriendSection>
+                        </S.ProfileCard>
+                      </>
+                    )}
+                  </>
+                )}
+              </>
+            )}
           </S.MainContent>
         </S.LayoutContainer>
       </S.Page>
+
+      {/* Remove Friend Confirmation Modal */}
+      <Modal open={!!confirmRemoveFriend} overlay="light">
+        <S.DeleteConfirmationModal>
+          <div style={{ textAlign: "left" }}>
+            <Text>
+              Are you sure you want to remove{" "}
+              <strong>{confirmRemoveFriend?.username}</strong> from your friends list?
+            </Text>
+          </div>
+          <div className="modal-buttons">
+            <Button variant="light" onClick={removeFriend}>
+              Remove
+            </Button>
+            <Button onClick={() => setConfirmRemoveFriend(null)}>Cancel</Button>
+          </div>
+        </S.DeleteConfirmationModal>
+      </Modal>
 
       {/* Avatar Change Modal */}
       <AvatarChangeModal

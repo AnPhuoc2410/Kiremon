@@ -8,5 +8,6 @@ export { generationsService } from "./pokemon/generations.service";
 export { pokeItemService } from "./pokeitem/pokeitem.service";
 export { userService } from "./user/user.service";
 export { collectionService } from "./collection/collection.service";
+export { friendService } from "./friend/friend.service";
 // Export cache utility
 export { cacheUtils as pokeApiCache } from "./cache/cache";
