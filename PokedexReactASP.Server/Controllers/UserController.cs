@@ -141,7 +141,28 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         /// <summary>
-        /// Catch a Pokemon and add it to collection
+        /// Attempt to catch a Pokemon using Game Mechanics (catch rate calculation, shake count, etc.)
+        /// </summary>
+        [HttpPost("pokemon/attempt-catch")]
+        public async Task<ActionResult<CatchAttemptResultDto>> AttemptCatchPokemon([FromBody] CatchAttemptDto catchAttemptDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userService.AttemptCatchPokemonAsync(userId, catchAttemptDto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Catch a Pokemon and add it to collection (legacy - always succeeds)
         /// </summary>
         [HttpPost("pokemon/catch")]
         public async Task<ActionResult<CatchResultDto>> CatchPokemon([FromBody] CatchPokemonDto catchPokemonDto)

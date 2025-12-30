@@ -1,5 +1,7 @@
 import { AuthenticatedApiService } from "../api/api-client.auth";
 import {
+  CatchAttemptRequest,
+  CatchAttemptResultDto,
   CatchPokemonRequest,
   CatchResultDto,
   CollectionStatsDto,
@@ -37,7 +39,15 @@ class CollectionService extends AuthenticatedApiService {
   }
 
   /**
-   * Catch a Pokemon
+   * Attempt to catch a Pokemon using Game Mechanics
+   * Server calculates: catch rate, shake count, IVs, shiny, level, nature, gender
+   */
+  async attemptCatch(request: CatchAttemptRequest): Promise<CatchAttemptResultDto> {
+    return this.post<CatchAttemptResultDto>("/User/pokemon/attempt-catch", request);
+  }
+
+  /**
+   * Catch a Pokemon (legacy - always succeeds after FE animation)
    */
   async catchPokemon(request: CatchPokemonRequest): Promise<CatchResultDto> {
     return this.post<CatchResultDto>("/User/pokemon/catch", request);
