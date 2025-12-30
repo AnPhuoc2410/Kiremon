@@ -9,6 +9,8 @@ namespace PokedexReactASP.Infrastructure.Repositories
         private readonly PokemonDbContext _context;
 
         private IRepository<UserPokemon>? _userPokemonRepository;
+        private IRepository<Friendship>? _friendshipRepository;
+        private IRepository<FriendRequest>? _friendRequestRepository;
 
         public UnitOfWork(PokemonDbContext context)
         {
@@ -20,6 +22,22 @@ namespace PokedexReactASP.Infrastructure.Repositories
             get
             {
                 return _userPokemonRepository ??= new Repository<UserPokemon>(_context);
+            }
+        }
+
+        public IRepository<Friendship> Friendship
+        {
+            get
+            {
+                return _friendshipRepository ??= new Repository<Friendship>(_context);
+            }
+        }
+
+        public IRepository<FriendRequest> FriendRequest
+        {
+            get
+            {
+                return _friendRequestRepository ??= new Repository<FriendRequest>(_context);
             }
         }
 
