@@ -50,7 +50,6 @@ const Navbar = React.forwardRef<HTMLDivElement, INavbar>(({ fadeHeight = 124, ch
         {children}
         <InnerNav>
           <NavItem href="/pokemons" label="Explore" />
-          <NavItem href="/profile" label="Profile" variant="light" />
           <NavItem href="/my-pokemon" label="My Pokemon" variant="light" />
         </InnerNav>
       </OuterNav>
