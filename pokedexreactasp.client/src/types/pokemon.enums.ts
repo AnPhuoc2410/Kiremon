@@ -139,6 +139,15 @@ export function getRankDisplay(rank: PokemonRank): string {
 }
 
 /**
+ * Catch attempt result - matches backend CatchAttemptResult enum
+ */
+export enum CatchAttemptResult {
+  Success = 0,
+  Escaped = 1,
+  Fled = 2,
+}
+
+/**
  * Get pokeball name
  */
 export function getPokeballName(ball: PokeballType): string {

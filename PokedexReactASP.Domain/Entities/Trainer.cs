@@ -14,6 +14,17 @@ namespace PokedexReactASP.Domain.Entities
         public string? AvatarUrl { get; set; }
         public string? Bio { get; set; }
         public string? FavoriteType { get; set; }
+
+        /// <summary>
+        /// Unique friend code for adding friends (like Pokemon GO)
+        /// Format: XXXX-XXXX-XXXX (12 alphanumeric characters)
+        /// </summary>
+        public string FriendCode { get; set; } = GenerateFriendCode();
+
+        /// <summary>
+        /// Whether to allow friend requests
+        /// </summary>
+        public bool AllowFriendRequests { get; set; } = true;
         
         // Trainer progression
         public int TrainerLevel { get; set; } = 1;
@@ -61,7 +72,38 @@ namespace PokedexReactASP.Domain.Entities
         public bool AllowTradeRequests { get; set; } = true;
         public bool AllowBattleRequests { get; set; } = true;
 
-        // Navigation property
+        // Navigation properties
         public ICollection<UserPokemon> UserPokemons { get; set; } = new List<UserPokemon>();
+        
+        // Friendships where this user is User1
+        public ICollection<Friendship> FriendshipsAsUser1 { get; set; } = new List<Friendship>();
+        
+        // Friendships where this user is User2
+        public ICollection<Friendship> FriendshipsAsUser2 { get; set; } = new List<Friendship>();
+        
+        // Friend requests sent by this user
+        public ICollection<FriendRequest> SentFriendRequests { get; set; } = new List<FriendRequest>();
+        
+        // Friend requests received by this user
+        public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
+
+        private static readonly Random _friendCodeRandom = new Random();
+        private static readonly object _friendCodeRandomLock = new object();
+        /// <summary>
+        /// Generate a unique friend code
+        /// </summary>
+        private static string GenerateFriendCode()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded confusing chars: I, O, 0, 1
+            var code = new char[12];
+            lock (_friendCodeRandomLock)
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    code[i] = chars[_friendCodeRandom.Next(chars.Length)];
+                }
+            }
+            return $"{new string(code, 0, 4)}-{new string(code, 4, 4)}-{new string(code, 8, 4)}";
+        }
     }
 }

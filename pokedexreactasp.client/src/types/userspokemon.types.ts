@@ -1,4 +1,4 @@
-import { Nature, PokemonGender, PokemonRank, PokeballType } from "./pokemon.enums";
+import { CatchAttemptResult, Nature, PokemonGender, PokemonRank, PokeballType } from "./pokemon.enums";
 
 export interface UserPokemonDto {
   id: number;
@@ -98,7 +98,64 @@ export interface CatchPokemonRequest {
 }
 
 /**
- * Result of catching a Pokemon
+ * Request for catch attempt with Game Mechanics
+ */
+export interface CatchAttemptRequest {
+  pokemonApiId: number;
+  caughtLocation?: string;
+  pokeballType?: PokeballType;
+  nickname?: string;
+}
+
+/**
+ * Caught Pokemon details from server
+ */
+export interface CaughtPokemonDto {
+  id: number;
+  pokemonApiId: number;
+  name: string;
+  displayName: string;
+  nickname: string | null;
+  spriteUrl: string;
+  type1: string;
+  type2: string | null;
+  isShiny: boolean;
+  level: number;
+  nature: Nature;
+  gender: PokemonGender;
+  rank: PokemonRank;
+  rankDisplay: string;
+  ivTotal: number;
+  ivPercent: number;
+  ivVerdict: string;
+  bestStatName: string;
+  bestStatIv: number;
+  caughtDate: string;
+  caughtLocation: string | null;
+  caughtBall: PokeballType;
+  isLegendary: boolean;
+  isMythical: boolean;
+  isUltraBeast: boolean;
+}
+
+/**
+ * Result of catch attempt with Game Mechanics
+ */
+export interface CatchAttemptResultDto {
+  result: CatchAttemptResult;
+  message: string;
+  shakeCount: number; // 0-3, 3 = caught
+  caughtPokemon: CaughtPokemonDto | null;
+  trainerExpGained: number;
+  trainerLeveledUp: boolean;
+  newTrainerLevel: number;
+  isNewSpecies: boolean;
+  catchRatePercent: number;
+  pokeballUsed: PokeballType;
+}
+
+/**
+ * Result of catching a Pokemon (legacy)
  */
 export interface CatchResultDto {
   success: boolean;

@@ -33,6 +33,7 @@ namespace PokedexReactASP.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IFriendService, FriendService>();
 
             return services;
         }

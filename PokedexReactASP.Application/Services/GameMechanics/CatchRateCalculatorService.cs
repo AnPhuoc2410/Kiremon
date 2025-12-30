@@ -64,9 +64,12 @@ namespace PokedexReactASP.Application.Services.GameMechanics
             // Base catch rate (0-255 from PokeAPI)
             double rate = ctx.BaseCaptureRate;
 
-            // HP modifier: lower HP = easier catch
+            // HP modifier: lower HP = easier catch (but we're at full HP in wild encounters)
+            // At full HP: modifier = 1/3, which is harsh. Let's be more generous for casual play.
             double hpModifier = (3.0 * ctx.MaxHp - 2.0 * ctx.CurrentHp) / (3.0 * ctx.MaxHp);
-            rate *= Math.Max(0.5, hpModifier);
+            // Boost the HP modifier to make full HP catches more viable
+            hpModifier = Math.Max(0.6, hpModifier * 1.5); 
+            rate *= hpModifier;
 
             // Ball modifier
             rate *= GetBallModifier(ctx);
@@ -75,21 +78,26 @@ namespace PokedexReactASP.Application.Services.GameMechanics
             rate *= GetStatusModifier(ctx.StatusCondition);
 
             // Trainer level scaling (MMO feature)
-            // Higher level trainers have slightly better catch rates
-            double levelBonus = 1.0 + (ctx.TrainerLevel / 200.0); // Max +50% at level 100
+            // Higher level trainers have better catch rates
+            double levelBonus = 1.0 + (ctx.TrainerLevel / 100.0); // Max +100% at level 100
             rate *= levelBonus;
 
             // Level difference penalty (can't easily catch higher level Pokemon)
             int levelDiff = ctx.PokemonLevel - ctx.TrainerLevel;
             if (levelDiff > 0)
             {
-                rate *= Math.Max(0.3, 1.0 - (levelDiff * 0.05)); // -5% per level above trainer
+                rate *= Math.Max(0.5, 1.0 - (levelDiff * 0.03)); // -3% per level above trainer
+            }
+            else if (levelDiff < -10)
+            {
+                // Bonus for catching much lower level Pokemon
+                rate *= 1.2;
             }
 
-            // Legendary/Mythical are harder in MMO context
+            // Legendary/Mythical are harder
             if (ctx.IsLegendary || ctx.IsMythical)
             {
-                rate *= 0.5; // Half the calculated rate
+                rate *= 0.6; // 40% reduction
             }
 
             // Baby Pokemon are easier
@@ -98,8 +106,12 @@ namespace PokedexReactASP.Application.Services.GameMechanics
                 rate *= 1.5;
             }
 
-            // Convert to percentage (cap at 95% for non-Master Ball)
-            return Math.Min(95, (rate / 255.0) * 100);
+            // Convert to percentage
+            // Base formula: (rate / 255) * 100, but boost it for better UX
+            double catchPercent = (rate / 255.0) * 100 * 1.3; // 30% boost for casual play
+            
+            // Cap at 95% for non-Master Ball, minimum 5%
+            return Math.Clamp(catchPercent, 5, 95);
         }
 
         private double GetBallModifier(CatchCalculationContext ctx)
@@ -140,36 +152,40 @@ namespace PokedexReactASP.Application.Services.GameMechanics
 
         private static (CatchAttemptResult Result, int Shakes) PerformCatchRoll(double catchRate)
         {
-            // Each shake has independent probability
-            // Need all 3 shakes to succeed = caught
-            double shakeProb = catchRate / 100.0;
+            // Simplified catch formula for better UX
+            // catchRate is already a percentage (0-95%)
             
-            int shakes = 0;
-            for (int i = 0; i < 3; i++)
+            // Single roll to determine if caught
+            double roll = Random.Shared.NextDouble() * 100;
+            bool isCaught = roll < catchRate;
+            
+            if (isCaught)
             {
-                if (Random.Shared.NextDouble() < shakeProb)
-                {
-                    shakes++;
-                }
-                else
-                {
-                    break; // Failed this shake
-                }
-            }
-
-            // Final shake (critical catch) - slightly higher threshold
-            if (shakes == 3 && Random.Shared.NextDouble() < shakeProb)
-            {
+                // Caught! Show 3 shakes
                 return (CatchAttemptResult.Success, 3);
             }
-            else if (shakes == 3)
+            
+            // Failed - determine how many shakes based on how close we were
+            // The closer the roll to catch rate, the more shakes
+            double closeness = roll / Math.Max(1, catchRate); // How close was the roll?
+            
+            int shakes;
+            if (closeness < 1.2) // Very close (within 20% of catch rate)
             {
-                // So close!
-                return (CatchAttemptResult.Escaped, 2);
+                shakes = 2; // Almost had it!
             }
-
-            // Small chance Pokemon flees (5% on fail, higher for legendary)
-            if (shakes == 0 && Random.Shared.NextDouble() < 0.05)
+            else if (closeness < 1.8) // Somewhat close
+            {
+                shakes = 1; // Appeared to be caught
+            }
+            else
+            {
+                shakes = 0; // Broke free immediately
+            }
+            
+            // Small chance Pokemon flees (3% base, higher for legendary at low catch rates)
+            double fleeChance = catchRate < 20 ? 0.08 : 0.03;
+            if (shakes == 0 && Random.Shared.NextDouble() < fleeChance)
             {
                 return (CatchAttemptResult.Fled, 0);
             }
