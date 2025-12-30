@@ -504,6 +504,43 @@ const Profile: React.FC = () => {
     }
   }, []);
 
+  // Load Pokemon from API
+  const loadMyPokemonFromAPI = useCallback(async () => {
+    try {
+      const apiPokemon = await collectionService.getCollection();
+      setPokemons(apiPokemon.map((p) => ({
+        id: p.id,
+        name: p.name.toUpperCase(),
+        nickname: p.displayName,
+        sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
+      })));
+    } catch (error) {
+      console.error("Error loading Pokemon:", error);
+    }
+  }, []);
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await userService.getProfile();
+      console.log("Profile API Response:", data);
+      setProfile(data);
+      // Initialize edit form data
+      setEditFormData({
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+      });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      console.error("Failed to fetch profile:", err);
+      setError(error.response?.data?.message || "Failed to load profile data");
+      toast.error("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
       toast.error("Please login to view your profile");
@@ -516,22 +553,7 @@ const Profile: React.FC = () => {
       loadMyPokemonFromAPI();
       loadFriendsData();
     }
-  }, [isInitialized, isAuthenticated, navigate, loadFriendsData]);
-
-  // Load Pokemon from API
-  const loadMyPokemonFromAPI = async () => {
-    try {
-      const apiPokemon = await collectionService.getCollection();
-      setPokemons(apiPokemon.map((p) => ({
-        id: p.id,
-        name: p.name.toUpperCase(),
-        nickname: p.displayName,
-        sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
-      })));
-    } catch (error) {
-      console.error("Error loading Pokemon:", error);
-    }
-  };
+  }, [isInitialized, isAuthenticated, navigate, loadFriendsData, fetchProfile, loadMyPokemonFromAPI]);
 
   // Release Pokemon via API
   const releasePokemon = async (pokemon: { id?: number; nickname: string }) => {
@@ -571,28 +593,6 @@ const Profile: React.FC = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isEditMode, isUpdatingProfile, editFormData]);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await userService.getProfile();
-      console.log("Profile API Response:", data);
-      setProfile(data);
-      // Initialize edit form data
-      setEditFormData({
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-      });
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      console.error("Failed to fetch profile:", err);
-      setError(error.response?.data?.message || "Failed to load profile data");
-      toast.error("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAvatarChange = async (avatarUrl: string) => {
     try {
@@ -686,9 +686,9 @@ const Profile: React.FC = () => {
   };
 
   const sendFriendRequest = async () => {
-    if (inputFriendCode.length !== 14) {
-      toast.error("Please enter a valid friend code (XXXX-XXXX-XXXX)");
-      return;
+     const cleanedFriendCode = inputFriendCode.replace(/\D/g, "");
+    if (cleanedFriendCode.length !== 12) {
+      toast.error("Please enter a valid friend code.");
     }
 
     try {

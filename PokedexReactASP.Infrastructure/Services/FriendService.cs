@@ -5,6 +5,7 @@ using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Domain.Enums;
 using PokedexReactASP.Infrastructure.Persistence;
+using System.Security.Cryptography;
 
 namespace PokedexReactASP.Infrastructure.Services
 {
@@ -76,11 +77,10 @@ namespace PokedexReactASP.Infrastructure.Services
         private static string GenerateFriendCode()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-            var random = new Random();
             var code = new char[12];
             for (int i = 0; i < 12; i++)
             {
-                code[i] = chars[random.Next(chars.Length)];
+                code[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
             }
             return $"{new string(code, 0, 4)}-{new string(code, 4, 4)}-{new string(code, 8, 4)}";
         }
@@ -99,7 +99,7 @@ namespace PokedexReactASP.Infrastructure.Services
         {
             // Normalize friend code
             var normalizedCode = request.FriendCode.ToUpper().Replace(" ", "");
-            
+
             // Find user by friend code
             var targetUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.FriendCode == normalizedCode);
@@ -159,11 +159,8 @@ namespace PokedexReactASP.Infrastructure.Services
                         Message = "You already have a pending request to this trainer."
                     };
                 }
-                else
-                {
-                    // Auto-accept if there's a pending request from the other user
-                    return await AcceptFriendRequestAsync(userId, existingRequest.Id);
-                }
+                // Auto-accept if there's a pending request from the other user
+                return await AcceptFriendRequestAsync(userId, existingRequest.Id);
             }
 
             // Create new friend request
@@ -283,7 +280,7 @@ namespace PokedexReactASP.Infrastructure.Services
             // Update friends count for both users
             var currentUser = await _userManager.FindByIdAsync(userId);
             var otherUser = await _userManager.FindByIdAsync(request.SenderId);
-            
+
             if (currentUser != null) currentUser.FriendsCount++;
             if (otherUser != null) otherUser.FriendsCount++;
 
@@ -466,7 +463,7 @@ namespace PokedexReactASP.Infrastructure.Services
             // Update friends count
             var currentUser = await _userManager.FindByIdAsync(userId);
             var otherUser = await _userManager.FindByIdAsync(friendUserId);
-            
+
             if (currentUser != null && currentUser.FriendsCount > 0) currentUser.FriendsCount--;
             if (otherUser != null && otherUser.FriendsCount > 0) otherUser.FriendsCount--;
 
@@ -514,47 +511,50 @@ namespace PokedexReactASP.Infrastructure.Services
 
             var normalizedSearch = searchTerm.ToUpper().Replace("-", "").Replace(" ", "");
 
-            // First get users matching username
+            // Single query to search both username and friend code
             var users = await _context.Users
                 .Where(u => u.Id != userId &&
-                    u.UserName!.ToUpper().Contains(normalizedSearch))
+                    (u.UserName!.ToUpper().Contains(normalizedSearch) ||
+                     u.FriendCode.Replace("-", "").Contains(normalizedSearch)))
                 .Take(20)
                 .ToListAsync();
 
-            // If not enough results, also search by friend code (client-side)
-            if (users.Count < 20)
+            if (!users.Any())
             {
-                var allUsers = await _context.Users
-                    .Where(u => u.Id != userId)
-                    .Take(100)
-                    .ToListAsync();
-
-                var additionalUsers = allUsers
-                    .Where(u => u.FriendCode.Replace("-", "").Contains(normalizedSearch) &&
-                                !users.Any(existing => existing.Id == u.Id))
-                    .Take(20 - users.Count)
-                    .ToList();
-
-                users.AddRange(additionalUsers);
+                return Enumerable.Empty<UserSearchResultDto>();
             }
 
-            var results = new List<UserSearchResultDto>();
+            var userIds = users.Select(u => u.Id).ToList();
 
-            foreach (var user in users)
+            // Bulk load friendships for all found users
+            var friendUserIds = await _context.Friendships
+                .Where(f => (f.User1Id == userId && userIds.Contains(f.User2Id)) ||
+                            (f.User2Id == userId && userIds.Contains(f.User1Id)))
+                .Select(f => f.User1Id == userId ? f.User2Id : f.User1Id)
+                .ToListAsync();
+
+            var friendUserIdSet = new HashSet<string>(friendUserIds);
+
+            // Bulk load pending requests for all found users
+            var pendingRequestUserIds = await _context.FriendRequests
+                .Where(fr => fr.Status == FriendRequestStatus.Pending &&
+                    ((fr.SenderId == userId && userIds.Contains(fr.ReceiverId)) ||
+                     (fr.ReceiverId == userId && userIds.Contains(fr.SenderId))))
+                .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
+                .ToListAsync();
+
+            var pendingRequestUserIdSet = new HashSet<string>(pendingRequestUserIds);
+
+            return users.Select(user => new UserSearchResultDto
             {
-                results.Add(new UserSearchResultDto
-                {
-                    UserId = user.Id,
-                    Username = user.UserName ?? string.Empty,
-                    AvatarUrl = user.AvatarUrl,
-                    TrainerLevel = user.TrainerLevel,
-                    FriendCode = user.FriendCode,
-                    IsFriend = await AreFriendsAsync(userId, user.Id),
-                    HasPendingRequest = await HasPendingRequestAsync(userId, user.Id)
-                });
-            }
-
-            return results;
+                UserId = user.Id,
+                Username = user.UserName ?? string.Empty,
+                AvatarUrl = user.AvatarUrl,
+                TrainerLevel = user.TrainerLevel,
+                FriendCode = user.FriendCode,
+                IsFriend = friendUserIdSet.Contains(user.Id),
+                HasPendingRequest = pendingRequestUserIdSet.Contains(user.Id)
+            }).ToList();
         }
 
         public async Task<UserSearchResultDto?> FindUserByFriendCodeAsync(string userId, string friendCode)

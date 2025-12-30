@@ -87,18 +87,21 @@ namespace PokedexReactASP.Domain.Entities
         // Friend requests received by this user
         public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
 
-
+        private static readonly Random _friendCodeRandom = new Random();
+        private static readonly object _friendCodeRandomLock = new object();
         /// <summary>
         /// Generate a unique friend code
         /// </summary>
         private static string GenerateFriendCode()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded confusing chars: I, O, 0, 1
-            var random = new Random();
             var code = new char[12];
-            for (int i = 0; i < 12; i++)
+            lock (_friendCodeRandomLock)
             {
-                code[i] = chars[random.Next(chars.Length)];
+                for (int i = 0; i < 12; i++)
+                {
+                    code[i] = chars[_friendCodeRandom.Next(chars.Length)];
+                }
             }
             return $"{new string(code, 0, 4)}-{new string(code, 4, 4)}-{new string(code, 8, 4)}";
         }
