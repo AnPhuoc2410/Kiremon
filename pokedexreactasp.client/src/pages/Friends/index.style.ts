@@ -1,73 +1,312 @@
 import styled from "@emotion/styled";
 import { css, keyframes } from "@emotion/react";
+import { colors } from "../../components/utils";
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+`;
 
 const pulse = keyframes`
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
 `;
 
-const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); }
+// ============ LAYOUT ============
+export const PageContainer = styled.div`
+  min-height: calc(100vh - 80px);
+  background: white;
+  padding: 24px;
+  padding-bottom: 100px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    padding-bottom: 100px;
+  }
 `;
 
-export const Container = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  padding-bottom: 80px;
-`;
-
-export const ContentWrapper = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-export const TabContainer = styled.div`
+// ============ STATS HEADER ============
+export const StatsHeader = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 24px;
-  overflow-x: auto;
-  padding-bottom: 8px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
+  @media (max-width: 600px) {
+    gap: 12px;
   }
 `;
 
-export const Tab = styled.button<{ $active?: boolean }>`
-  padding: 12px 20px;
-  border: none;
-  border-radius: 12px;
+export const StatCard = styled.div`
+  flex: 1;
+  min-width: 160px;
+  background: ${colors["gray-100"]};
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid ${colors["gray-200"]};
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+`;
+
+export const StatIcon = styled.div<{ $color?: "blue" | "green" }>`
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #ee1515 0%, #ff6b6b 100%)"
-      : "rgba(255, 255, 255, 0.1)"};
+    props.$color === "green"
+      ? `linear-gradient(135deg, ${colors["green-400"]} 0%, ${colors["green-500"]} 100%)`
+      : `linear-gradient(135deg, ${colors["blue-400"]} 0%, ${colors["blue-500"]} 100%)`};
   color: white;
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+`;
+
+export const StatInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const StatValue = styled.span`
+  font-size: 32px;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+`;
+
+export const StatLabel = styled.span`
+  font-size: 14px;
+  color: ${colors["gray-500"]};
+  font-weight: 500;
+`;
+
+export const AddFriendButton = styled.button`
+  background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 20px 28px;
   font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+// ============ SEARCH ============
+export const SearchContainer = styled.div`
+  background: ${colors["gray-100"]};
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  border: 2px solid ${colors["gray-200"]};
+  transition: all 0.2s ease;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+
+  &:focus-within {
+    border-color: ${colors["red-400"]};
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  svg {
+    color: ${colors["gray-400"]};
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: ${colors["gray-900"]};
+    font-size: 16px;
+    outline: none;
+
+    &::placeholder {
+      color: ${colors["gray-400"]};
+    }
+  }
+`;
+
+// ============ FRIENDS LIST ============
+export const FriendsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+export const FriendSection = styled.div``;
+
+export const SectionTitle = styled.h3`
+  color: ${colors["gray-700"]};
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-  white-space: nowrap;
+
+  .online-dot {
+    color: ${colors["green-500"]};
+    font-size: 14px;
+  }
+`;
+
+export const FriendsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 500px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+`;
+
+export const FriendCard = styled.div<{ $online?: boolean }>`
+  background: white;
+  border-radius: 20px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid ${(props) => (props.$online ? colors["green-200"] : colors["gray-200"])};
+  position: relative;
+  overflow: hidden;
+
+  ${(props) =>
+    props.$online &&
+    css`
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, ${colors["green-400"]}, ${colors["green-500"]});
+      }
+    `}
 
   &:hover {
-    background: ${(props) =>
-      props.$active
-        ? "linear-gradient(135deg, #ee1515 0%, #ff6b6b 100%)"
-        : "rgba(255, 255, 255, 0.2)"};
-    transform: translateY(-2px);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: ${(props) => (props.$online ? colors["green-400"] : colors["red-400"])};
+  }
+`;
+
+export const FriendAvatar = styled.div<{ $online?: boolean }>`
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, ${colors["yellow-200"]} 0%, ${colors["yellow-400"]} 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: ${colors["gray-700"]};
+  position: relative;
+  border: 4px solid ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
+  transition: all 0.3s ease;
+  animation: ${float} 3s ease-in-out infinite;
+
+  ${(props) =>
+    props.$online &&
+    css`
+      animation: ${float} 3s ease-in-out infinite, ${pulse} 2s infinite;
+    `}
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+`;
+
+export const FriendName = styled.span`
+  color: ${colors["gray-800"]};
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+`;
+
+export const FriendLevel = styled.span`
+  color: ${colors["yellow-600"]};
+  font-size: 13px;
+  font-weight: 700;
+  background: ${colors["yellow-100"]};
+  padding: 2px 10px;
+  border-radius: 12px;
+`;
+
+export const FriendStatus = styled.span<{ $online?: boolean }>`
+  color: ${(props) => (props.$online ? colors["green-600"] : colors["gray-400"])};
+  font-size: 12px;
+  font-weight: 500;
+`;
+
+export const QuickActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+export const QuickActionBtn = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 2px solid ${colors["gray-200"]};
+  background: white;
+  color: ${colors["gray-600"]};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
+    border-color: ${colors["red-500"]};
+    color: white;
+    transform: scale(1.08);
   }
 
   svg {
@@ -76,130 +315,241 @@ export const Tab = styled.button<{ $active?: boolean }>`
   }
 `;
 
-export const Badge = styled.span`
-  background: #ff4444;
-  color: white;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 4px;
-`;
-
-export const Section = styled.section`
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-`;
-
-export const SectionTitle = styled.h2`
-  color: white;
-  font-size: 18px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+// ============ EMPTY STATE ============
+export const EmptyState = styled.div`
+  text-align: center;
+  padding: 80px 20px;
+  color: ${colors["gray-500"]};
 
   svg {
-    width: 24px;
-    height: 24px;
-    color: #ffd700;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+    color: ${colors["gray-300"]};
+  }
+
+  h3 {
+    color: ${colors["gray-700"]};
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 24px;
+    color: ${colors["gray-500"]};
   }
 `;
 
-export const FriendCodeSection = styled(Section)`
+// ============ MODAL STYLES ============
+export const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+export const FriendDetailModal = styled.div`
+  background: white;
+  border-radius: 24px;
+  padding: 32px 24px;
+  max-width: 420px;
+  width: 100%;
   text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
 `;
 
-export const FriendCodeDisplay = styled.div`
-  background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 16px 0;
-  border: 2px solid #ffd700;
+export const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h3 {
+    color: ${colors["gray-800"]};
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+  }
 `;
 
-export const FriendCodeLabel = styled.p`
-  color: #888;
-  font-size: 14px;
+export const ModalClose = styled.button`
+  background: ${colors["gray-100"]};
+  border: none;
+  color: ${colors["gray-500"]};
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+
+  &:hover {
+    background: ${colors["gray-200"]};
+    color: ${colors["gray-700"]};
+  }
+`;
+
+export const FriendDetailAvatar = styled.div<{ $online?: boolean }>`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, ${colors["yellow-200"]} 0%, ${colors["yellow-400"]} 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: ${colors["gray-700"]};
+  margin: 0 auto 20px;
+  border: 5px solid ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
+  animation: ${float} 3s ease-in-out infinite;
+
+  ${(props) =>
+    props.$online &&
+    css`
+      animation: ${float} 3s ease-in-out infinite, ${pulse} 2s infinite;
+    `}
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+`;
+
+export const FriendDetailName = styled.h2`
+  color: ${colors["gray-800"]};
+  margin: 0 0 4px 0;
+  font-size: 26px;
+
+  .username {
+    display: block;
+    color: ${colors["gray-400"]};
+    font-size: 14px;
+    font-weight: 400;
+    margin-top: 4px;
+  }
+`;
+
+export const FriendDetailLevel = styled.div`
+  color: ${colors["yellow-600"]};
+  font-size: 16px;
+  font-weight: 700;
+  background: ${colors["yellow-100"]};
+  padding: 6px 16px;
+  border-radius: 20px;
+  display: inline-block;
   margin-bottom: 8px;
 `;
 
-export const FriendCode = styled.h1`
-  color: #ffd700;
-  font-size: 32px;
-  font-family: "Courier New", monospace;
-  letter-spacing: 4px;
-  margin: 0;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+export const FriendDetailStatus = styled.div<{ $online?: boolean }>`
+  color: ${(props) => (props.$online ? colors["green-600"] : colors["gray-400"])};
+  font-size: 14px;
+  margin-bottom: 24px;
+  font-weight: 500;
 `;
 
-export const QRCodeWrapper = styled.div`
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-  display: inline-block;
-  margin: 16px 0;
-`;
-
-export const ButtonGroup = styled.div`
+export const FriendDetailStats = styled.div`
   display: flex;
-  gap: 12px;
   justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: ${colors["gray-100"]};
+  border-radius: 16px;
 `;
 
-export const ActionButton = styled.button<{ $variant?: "primary" | "secondary" | "danger" }>`
-  padding: 12px 24px;
+export const DetailStat = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: ${colors["gray-800"]};
+  }
+
+  .label {
+    font-size: 12px;
+    color: ${colors["gray-500"]};
+    font-weight: 500;
+  }
+`;
+
+export const FriendDetailInfo = styled.div`
+  color: ${colors["gray-500"]};
+  font-size: 14px;
+  margin-bottom: 24px;
+`;
+
+export const FriendDetailActions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+`;
+
+export const ActionButton = styled.button<{ $variant?: "primary" | "danger" }>`
+  padding: 14px 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  font-size: 14px;
 
   ${(props) => {
     switch (props.$variant) {
       case "primary":
         return css`
-          background: linear-gradient(135deg, #ee1515 0%, #ff6b6b 100%);
+          background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
           color: white;
+          box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(238, 21, 21, 0.4);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
           }
         `;
       case "danger":
         return css`
-          background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
-          color: white;
+          background: ${colors["red-100"]};
+          color: ${colors["red-600"]};
+          border: 2px solid ${colors["red-200"]};
           &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            background: ${colors["red-100"]};
+            border-color: ${colors["red-300"]};
           }
         `;
       default:
         return css`
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: ${colors["gray-100"]};
+          color: ${colors["gray-700"]};
+          border: 2px solid ${colors["gray-200"]};
           &:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: ${colors["gray-200"]};
+            border-color: ${colors["gray-300"]};
           }
         `;
     }
   }}
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-  }
 
   svg {
     width: 18px;
@@ -207,314 +557,155 @@ export const ActionButton = styled.button<{ $variant?: "primary" | "secondary" |
   }
 `;
 
-export const AddFriendInput = styled.div`
-  display: flex;
+// ============ GIFT MODAL ============
+export const GiftModal = styled.div`
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  position: relative;
+`;
+
+export const GiftGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-top: 16px;
-
-  input {
-    flex: 1;
-    padding: 14px 16px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-    font-size: 16px;
-    font-family: "Courier New", monospace;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    text-align: center;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-      letter-spacing: 1px;
-      text-transform: none;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: #ffd700;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-  }
 `;
 
-export const FriendsList = styled.div`
+export const GiftItem = styled.div`
+  background: ${colors["gray-100"]};
+  border-radius: 16px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-`;
-
-export const FriendCard = styled.div<{ $online?: boolean }>`
-  display: flex;
   align-items: center;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  gap: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid ${colors["gray-200"]};
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    border-color: ${colors["yellow-400"]};
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: ${colors["yellow-100"]};
   }
-
-  ${(props) =>
-    props.$online &&
-    css`
-      border-left: 3px solid #4caf50;
-    `}
-`;
-
-export const FriendAvatar = styled.div<{ $online?: boolean }>`
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  position: relative;
-  overflow: hidden;
 
   img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
   }
 
-  ${(props) =>
-    props.$online &&
-    css`
-      &::after {
-        content: "";
-        position: absolute;
-        bottom: 2px;
-        right: 2px;
-        width: 14px;
-        height: 14px;
-        background: #4caf50;
-        border-radius: 50%;
-        border: 2px solid #1a1a2e;
-        animation: ${glow} 2s ease-in-out infinite;
-      }
-    `}
+  span {
+    color: ${colors["gray-700"]};
+    font-size: 12px;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .quantity {
+    color: ${colors["green-600"]};
+    font-weight: 700;
+  }
 `;
 
-export const FriendInfo = styled.div`
-  flex: 1;
+// ============ POKEMON MODAL ============
+export const PokemonModal = styled.div`
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
 `;
 
-export const FriendName = styled.h3`
-  color: white;
-  font-size: 16px;
-  margin: 0 0 4px 0;
+export const PokemonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+`;
+
+export const PokemonCard = styled.div`
+  background: ${colors["gray-100"]};
+  border-radius: 16px;
+  padding: 16px 12px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-export const FriendDetails = styled.p`
-  color: #888;
-  font-size: 13px;
-  margin: 0;
-`;
-
-export const LevelBadge = styled.span`
-  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
-  color: #000;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-weight: 700;
-`;
-
-export const OnlineStatus = styled.span<{ $online?: boolean }>`
-  font-size: 12px;
-  color: ${(props) => (props.$online ? "#4caf50" : "#888")};
-  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 4px;
-`;
+  transition: all 0.3s ease;
+  border: 2px solid ${colors["gray-200"]};
 
-export const RequestCard = styled(FriendCard)`
-  flex-wrap: wrap;
-`;
-
-export const RequestActions = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  width: 100%;
-  padding-left: 72px;
-`;
-
-export const RequestMessage = styled.p`
-  color: #aaa;
-  font-size: 13px;
-  font-style: italic;
-  margin: 8px 0 0 72px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  width: calc(100% - 72px);
-`;
-
-export const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  color: #888;
-
-  svg {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+  &:hover {
+    transform: translateY(-4px);
+    border-color: ${colors["red-400"]};
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);
   }
 
-  h3 {
-    color: white;
-    margin-bottom: 8px;
+  img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    image-rendering: pixelated;
   }
 
-  p {
+  .name {
+    color: ${colors["gray-800"]};
+    font-weight: 600;
     font-size: 14px;
-  }
-`;
-
-export const StatGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-`;
-
-export const StatCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-
-  h4 {
-    color: #ffd700;
-    font-size: 24px;
-    margin: 0 0 4px 0;
+    text-transform: capitalize;
   }
 
-  p {
-    color: #888;
+  .species {
+    color: ${colors["gray-400"]};
     font-size: 12px;
-    margin: 0;
+    text-transform: capitalize;
   }
 `;
 
-export const ScannerOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
-  z-index: 1000;
+export const LoadingPokemon = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 60px;
+  color: ${colors["gray-500"]};
 `;
 
-export const ScannerFrame = styled.div`
-  width: 280px;
-  height: 280px;
-  border: 3px solid #ffd700;
-  border-radius: 20px;
-  position: relative;
-  margin-bottom: 24px;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    border-color: #ff4444;
-    border-style: solid;
-  }
-
-  &::before {
-    top: -3px;
-    left: -3px;
-    border-width: 3px 0 0 3px;
-    border-radius: 20px 0 0 0;
-  }
-
-  &::after {
-    bottom: -3px;
-    right: -3px;
-    border-width: 0 3px 3px 0;
-    border-radius: 0 0 20px 0;
-  }
-`;
-
-export const ScannerText = styled.p`
-  color: white;
-  font-size: 16px;
+export const EmptyPokemon = styled.div`
   text-align: center;
-  margin-bottom: 24px;
-`;
-
-export const ConfirmModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-export const ConfirmContent = styled.div`
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 20px;
-  padding: 24px;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-`;
-
-export const ConfirmTitle = styled.h3`
-  color: white;
-  margin-bottom: 16px;
-`;
-
-export const ConfirmText = styled.p`
-  color: #888;
-  margin-bottom: 24px;
-`;
-
-export const FriendshipStats = styled.div`
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 8px;
-`;
-
-export const FriendshipStat = styled.span`
-  color: #888;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  padding: 60px;
+  color: ${colors["gray-400"]};
 
   svg {
-    width: 14px;
-    height: 14px;
-    color: #ffd700;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+    color: ${colors["gray-300"]};
   }
+`;
+
+// ============ CONFIRMATION MODAL ============
+export const ConfirmModal = styled.div`
+  text-align: center;
+  padding: 20px;
+
+  strong {
+    color: ${colors["red-500"]};
+  }
+`;
+
+export const ConfirmButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
 `;

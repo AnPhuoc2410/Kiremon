@@ -216,6 +216,9 @@ const Header: React.FC<HeaderProps> = ({
                 <Link to="/profile">
                   <S.DropdownItem>Profile</S.DropdownItem>
                 </Link>
+                <Link to="/friends">
+                  <S.DropdownItem as="span">Friends</S.DropdownItem>
+                </Link>
                 <Link to="/settings">
                   <S.DropdownItem>Settings</S.DropdownItem>
                 </Link>
