@@ -1,23 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import * as S from './Login.style';
-import { resetPassword } from '../../config/auth.apis';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { resetPassword } from "../../config/auth.apis";
+import toast from "react-hot-toast";
+
+// Import shared styles
+import {
+  AuthPage,
+  AuthCard,
+  AuthHeader,
+  AuthLogo,
+  AuthTitle,
+  AuthSubtitle,
+  AuthForm,
+  AuthInput,
+  AuthSubmit,
+  SmallText,
+  FormLabel,
+} from "../../styles";
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTokenInput, setShowTokenInput] = useState(false);
-  const [tokenInput, setTokenInput] = useState('');
+  const [tokenInput, setTokenInput] = useState("");
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
-    const emailParam = searchParams.get('email');
+    const tokenParam = searchParams.get("token");
+    const emailParam = searchParams.get("email");
 
     if (tokenParam && emailParam) {
       setToken(tokenParam);
@@ -31,20 +45,20 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
     const finalToken = token || tokenInput;
-    const finalEmail = email || '';
+    const finalEmail = email || "";
 
     if (!finalToken || !finalEmail) {
-      toast.error('Missing token or email. Please use the link from your email.');
+      toast.error("Missing token or email. Please use the link from your email.");
       return;
     }
 
@@ -56,12 +70,14 @@ const ResetPassword: React.FC = () => {
         newPassword: password,
         confirmPassword: confirmPassword,
       });
-      toast.success('Password reset successfully! Redirecting to login...');
+      toast.success("Password reset successfully! Redirecting to login...");
       setTimeout(() => {
-        navigate('/login');
+        navigate("/login");
       }, 2000);
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Failed to reset password. The link may have expired.';
+      const message =
+        error?.response?.data?.message ||
+        "Failed to reset password. The link may have expired.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -69,35 +85,31 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <S.Page>
-      <S.Card>
-        <S.Header>
-          <S.Logo src="/pokeball-logo.png" alt="Pokéball logo" />
+    <AuthPage>
+      <AuthCard>
+        <AuthHeader>
+          <AuthLogo src="/pokeball-logo.png" alt="Pokéball logo" />
           <div>
-            <S.Title>Reset Password</S.Title>
-            <S.Subtitle>Create a new password for your Trainer account</S.Subtitle>
+            <AuthTitle>Reset Password</AuthTitle>
+            <AuthSubtitle>Create a new password for your Trainer account</AuthSubtitle>
           </div>
-        </S.Header>
+        </AuthHeader>
 
-        <S.Form onSubmit={handleSubmit}>
+        <AuthForm onSubmit={handleSubmit}>
           {showTokenInput && (
             <>
-              <label htmlFor="reset-email" style={{ fontSize: 13, color: '#626876' }}>
-                Email
-              </label>
-              <S.Input
+              <FormLabel htmlFor="reset-email">Email</FormLabel>
+              <AuthInput
                 id="reset-email"
                 type="email"
                 placeholder="Enter your email"
-                value={email || ''}
+                value={email || ""}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
 
-              <label htmlFor="reset-token" style={{ fontSize: 13, color: '#626876' }}>
-                Reset Token (from email)
-              </label>
-              <S.Input
+              <FormLabel htmlFor="reset-token">Reset Token (from email)</FormLabel>
+              <AuthInput
                 id="reset-token"
                 type="text"
                 placeholder="Paste the token from your email"
@@ -108,10 +120,8 @@ const ResetPassword: React.FC = () => {
             </>
           )}
 
-          <label htmlFor="new-password" style={{ fontSize: 13, color: '#626876' }}>
-            New Password
-          </label>
-          <S.Input
+          <FormLabel htmlFor="new-password">New Password</FormLabel>
+          <AuthInput
             id="new-password"
             type="password"
             placeholder="Enter new password"
@@ -121,10 +131,8 @@ const ResetPassword: React.FC = () => {
             minLength={6}
           />
 
-          <label htmlFor="confirm-password" style={{ fontSize: 13, color: '#626876' }}>
-            Confirm Password
-          </label>
-          <S.Input
+          <FormLabel htmlFor="confirm-password">Confirm Password</FormLabel>
+          <AuthInput
             id="confirm-password"
             type="password"
             placeholder="Confirm new password"
@@ -134,18 +142,18 @@ const ResetPassword: React.FC = () => {
             minLength={6}
           />
 
-          <S.Submit type="submit" disabled={loading}>
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </S.Submit>
-        </S.Form>
+          <AuthSubmit type="submit" disabled={loading}>
+            {loading ? "Resetting..." : "Reset Password"}
+          </AuthSubmit>
+        </AuthForm>
 
-        <div style={{ marginTop: 12, textAlign: 'center' }}>
-          <S.SmallText>
+        <div style={{ marginTop: 12, textAlign: "center" }}>
+          <SmallText>
             Remember your password? <Link to="/login">Sign in</Link>
-          </S.SmallText>
+          </SmallText>
         </div>
-      </S.Card>
-    </S.Page>
+      </AuthCard>
+    </AuthPage>
   );
 };
 
