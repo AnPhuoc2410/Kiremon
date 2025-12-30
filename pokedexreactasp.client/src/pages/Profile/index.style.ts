@@ -1,11 +1,6 @@
 import styled from "@emotion/styled";
-import { keyframes } from "@emotion/react";
 import { colors } from "../../components/utils";
-
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-`;
+import { float, shimmer } from "../../styles";
 
 // ============ LAYOUT ============
 export const Page = styled.div`
@@ -960,15 +955,6 @@ export const AvatarLoadingMore = styled.div`
   display: flex;
   justify-content: center;
   padding: 20px;
-`;
-
-const shimmer = keyframes`
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
 `;
 
 export const AvatarSkeleton = styled.div`

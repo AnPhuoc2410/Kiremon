@@ -1,19 +1,27 @@
 import styled from "@emotion/styled";
-import { css, keyframes } from "@emotion/react";
+import { css } from "@emotion/react";
 import { colors } from "../../components/utils";
+import {
+  PageContainer as BasePageContainer,
+  StatsHeader as BaseStatsHeader,
+  StatCard as BaseStatCard,
+  StatIcon as BaseStatIcon,
+  StatInfo,
+  StatValue,
+  StatLabel,
+  SearchContainer as BaseSearchContainer,
+  GridContainer,
+  EmptyState as BaseEmptyState,
+  AddButton,
+  float,
+  pulse,
+} from "../../styles";
 
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-`;
-
-const pulse = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
-`;
+// Re-export shared components for backward compatibility
+export { StatInfo, StatValue, StatLabel };
 
 // ============ LAYOUT ============
-export const PageContainer = styled.div`
+export const PageContainer = styled(BasePageContainer)`
   min-height: calc(100vh - 80px);
   background: white;
   padding: 24px;
@@ -26,133 +34,28 @@ export const PageContainer = styled.div`
 `;
 
 // ============ STATS HEADER ============
-export const StatsHeader = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+export const StatsHeader = BaseStatsHeader;
 
-  @media (max-width: 600px) {
-    gap: 12px;
-  }
-`;
+export const StatCard = BaseStatCard;
 
-export const StatCard = styled.div`
-  flex: 1;
-  min-width: 160px;
-  background: ${colors["gray-100"]};
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  border: 1px solid ${colors["gray-200"]};
-  transition: all 0.2s ease;
+export const StatIcon = styled(BaseStatIcon)``;
 
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-`;
-
-export const StatIcon = styled.div<{ $color?: "blue" | "green" }>`
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${(props) =>
-    props.$color === "green"
-      ? `linear-gradient(135deg, ${colors["green-400"]} 0%, ${colors["green-500"]} 100%)`
-      : `linear-gradient(135deg, ${colors["blue-400"]} 0%, ${colors["blue-500"]} 100%)`};
-  color: white;
-
-  svg {
-    width: 28px;
-    height: 28px;
-  }
-`;
-
-export const StatInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-export const StatValue = styled.span`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${colors["gray-900"]};
-`;
-
-export const StatLabel = styled.span`
-  font-size: 14px;
-  color: ${colors["gray-500"]};
-  font-weight: 500;
-`;
-
-export const AddFriendButton = styled.button`
-  background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
-  color: white;
-  border: none;
-  border-radius: 14px;
+export const AddFriendButton = styled(AddButton)`
   padding: 20px 28px;
-  font-weight: 600;
   font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
 
   &:hover {
-    transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-  }
-
-  &:active {
-    transform: translateY(0);
   }
 `;
 
 // ============ SEARCH ============
-export const SearchContainer = styled.div`
-  background: ${colors["gray-100"]};
-  border-radius: 14px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+export const SearchContainer = styled(BaseSearchContainer)`
   margin-bottom: 24px;
-  border: 2px solid ${colors["gray-200"]};
-  transition: all 0.2s ease;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-
-  &:focus-within {
-    border-color: ${colors["red-400"]};
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-  }
-
-  svg {
-    color: ${colors["gray-400"]};
-    flex-shrink: 0;
-  }
-
-  input {
-    flex: 1;
-    background: none;
-    border: none;
-    color: ${colors["gray-900"]};
-    font-size: 16px;
-    outline: none;
-
-    &::placeholder {
-      color: ${colors["gray-400"]};
-    }
-  }
 `;
 
 // ============ FRIENDS LIST ============
@@ -181,8 +84,7 @@ export const SectionTitle = styled.h3`
   }
 `;
 
-export const FriendsGrid = styled.div`
-  display: grid;
+export const FriendsGrid = styled(GridContainer)`
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
 
@@ -316,10 +218,8 @@ export const QuickActionBtn = styled.button`
 `;
 
 // ============ EMPTY STATE ============
-export const EmptyState = styled.div`
-  text-align: center;
+export const EmptyState = styled(BaseEmptyState)`
   padding: 80px 20px;
-  color: ${colors["gray-500"]};
 
   svg {
     width: 100px;
