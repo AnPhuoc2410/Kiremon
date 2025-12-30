@@ -13,11 +13,14 @@ namespace PokedexReactASP.Application.Interfaces
         void Update(T entity);
         void Remove(T entity);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+        Task<int> CountAsync(Expression<Func<T, bool>> predicate);
     }
 
     public interface IUnitOfWork : IDisposable
     {
         IRepository<UserPokemon> UserPokemon { get; }
+        IRepository<Friendship> Friendship { get; }
+        IRepository<FriendRequest> FriendRequest { get; }
         Task<int> SaveChangesAsync();
     }
 }
