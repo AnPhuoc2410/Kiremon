@@ -1,17 +1,15 @@
 import styled from "@emotion/styled";
 import { colors, units } from "../../components/utils";
+import { CenteredPage, GameCard as BaseGameCard, FlexCenter } from "../../styles";
 
-export const GameContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+// ============ LAYOUT ============
+export const GameContainer = styled(CenteredPage)`
   min-height: 100vh;
   padding: ${units.spacing.xl};
   background-color: ${colors["sky-100"]};
 `;
 
-export const GameCard = styled.div`
+export const GameCard = styled(BaseGameCard)`
   width: 100%;
   max-width: 640px;
   padding: ${units.spacing.lg};
@@ -23,6 +21,7 @@ export const GameCard = styled.div`
   gap: ${units.spacing.base};
 `;
 
+// ============ GAME FIELD ============
 export const Field = styled.div`
   height: 260px;
   background: linear-gradient(180deg, ${colors["green-200"]}, ${colors["green-300"]});
@@ -31,18 +30,17 @@ export const Field = styled.div`
   overflow: hidden;
 `;
 
-export const PokemonSprite = styled.img<{x:number;y:number}>`
+export const PokemonSprite = styled.img<{ x: number; y: number }>`
   position: absolute;
-  left: ${p => p.x}%;
-  top: ${p => p.y}%;
+  left: ${props => props.x}%;
+  top: ${props => props.y}%;
   width: 96px;
   height: 96px;
   transform: translate(-50%, -50%);
   user-select: none;
 `;
 
-export const ThrowArea = styled.div`
-  display: flex;
-  justify-content: center;
+// ============ THROW AREA ============
+export const ThrowArea = styled(FlexCenter)`
   gap: ${units.spacing.sm};
 `;

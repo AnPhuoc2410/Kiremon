@@ -1,11 +1,26 @@
-import React, { useState } from 'react';
-import * as S from './Forgot.style';
-import { Link } from 'react-router-dom';
-import { forgotPassword } from '../../config/auth.apis';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { forgotPassword } from "../../config/auth.apis";
+import toast from "react-hot-toast";
+
+// Import shared styles
+import {
+  AuthPage,
+  AuthCard,
+  AuthHeader,
+  AuthLogo,
+  AuthTitle,
+  AuthSubtitle,
+  AuthForm,
+  AuthInput,
+  AuthSubmit,
+  SmallText,
+  FormLabel,
+  FlexCenter,
+} from "../../styles";
 
 const Forgot: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -15,9 +30,10 @@ const Forgot: React.FC = () => {
     try {
       await forgotPassword({ email });
       setSent(true);
-      toast.success('Password reset email sent! Please check your inbox.');
+      toast.success("Password reset email sent! Please check your inbox.");
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Failed to send reset email';
+      const message =
+        error?.response?.data?.message || "Failed to send reset email";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -25,46 +41,55 @@ const Forgot: React.FC = () => {
   };
 
   return (
-    <S.Page>
-      <S.Card>
-        <S.Header>
-          <S.Logo src="/pokeball-logo.png" alt="pokeball" />
+    <AuthPage>
+      <AuthCard>
+        <AuthHeader>
+          <AuthLogo src="/pokeball-logo.png" alt="pokeball" />
           <div>
-            <S.Title>Forgot your Trainer ID?</S.Title>
-            <S.Subtitle>We'll send a Potion... err, a recovery link to your email.</S.Subtitle>
+            <AuthTitle>Forgot your Trainer ID?</AuthTitle>
+            <AuthSubtitle>
+              We'll send a Potion... err, a recovery link to your email.
+            </AuthSubtitle>
           </div>
-        </S.Header>
+        </AuthHeader>
 
         {!sent ? (
-          <S.Form onSubmit={handleSubmit}>
-            <label htmlFor="forgot-email" style={{ fontSize: 13, color: '#626876' }}>Trainer Email</label>
-            <S.Input id="forgot-email" type="email" placeholder="you@pokemon.world" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <S.Submit type="submit" disabled={loading}>
-              {loading ? 'Sending...' : 'Send reset link'}
-            </S.Submit>
-          </S.Form>
+          <AuthForm onSubmit={handleSubmit}>
+            <FormLabel htmlFor="forgot-email">Trainer Email</FormLabel>
+            <AuthInput
+              id="forgot-email"
+              type="email"
+              placeholder="you@pokemon.world"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <AuthSubmit type="submit" disabled={loading}>
+              {loading ? "Sending..." : "Send reset link"}
+            </AuthSubmit>
+          </AuthForm>
         ) : (
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
-            <S.Title style={{ color: '#10b981', fontWeight: 600, marginBottom: '8px' }}>
+          <FlexCenter style={{ flexDirection: "column", padding: "20px", textAlign: "center" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>📧</div>
+            <AuthTitle style={{ color: "#10b981", marginBottom: "8px" }}>
               Email Sent!
-            </S.Title>
-            <S.Title style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+            </AuthTitle>
+            <AuthSubtitle style={{ marginBottom: "20px" }}>
               Check your inbox for password reset instructions.
-            </S.Title>
-            <S.Submit type="button" onClick={() => setSent(false)} style={{ marginBottom: '12px' }}>
+            </AuthSubtitle>
+            <AuthSubmit type="button" onClick={() => setSent(false)}>
               Send Another Email
-            </S.Submit>
-          </div>
+            </AuthSubmit>
+          </FlexCenter>
         )}
 
         <div style={{ marginTop: 12 }}>
-          <S.SmallText>
+          <SmallText>
             Remembered? <Link to="/login">Sign in</Link>
-          </S.SmallText>
+          </SmallText>
         </div>
-      </S.Card>
-    </S.Page>
+      </AuthCard>
+    </AuthPage>
   );
 };
 
