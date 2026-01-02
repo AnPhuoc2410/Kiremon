@@ -229,3 +229,23 @@ export const TrashIcon = () => (
     />
   </svg>
 );
+
+export const ArrowUpCircleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <circle 
+      cx="10" 
+      cy="10" 
+      r="8" 
+      stroke="currentColor" 
+      strokeWidth="1.5" 
+      fill="none"
+    />
+    <path
+      d="M10 13V7M10 7L7 10M10 7L13 10"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

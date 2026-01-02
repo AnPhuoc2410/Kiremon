@@ -838,3 +838,134 @@ export const LanguageSelector = styled.select`
     border-color: ${colors["gray-400"]};
   }
 `;
+
+// ============ POKEBALL SELECTOR ============
+export const PokeballGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+`;
+
+export const PokeballOption = styled.button<{ active?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
+  background: ${({ active }) => (active ? colors["red-50"] : "white")};
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${colors["red-400"]};
+    background: ${colors["red-50"]};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  }
+`;
+
+export const PokeballImage = styled.img`
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+`;
+
+export const PokeballName = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${colors["gray-700"]};
+  text-align: center;
+  text-transform: capitalize;
+  line-height: 1.2;
+`;
+
+// ============ POKEBALL SELECTOR ============
+export const PokeballSelector = styled.div`
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: ${colors["gray-50"]};
+  border-radius: 12px;
+  border: 1px solid ${colors["gray-200"]};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${colors["gray-300"]};
+    background: ${colors["gray-100"]};
+  }
+`;
+
+export const PokeballPreview = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+`;
+
+export const PokeballPreviewImage = styled.img`
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+`;
+
+export const PokeballPreviewInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const PokeballPreviewLabel = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: ${colors["gray-500"]};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+export const PokeballPreviewName = styled.span`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${colors["gray-900"]};
+  text-transform: capitalize;
+`;
+
+export const ChangeButton = styled.button`
+  padding: 10px 20px;
+  background: ${colors["red-500"]};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${colors["red-600"]};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+`;
