@@ -861,14 +861,14 @@ export const PokeballOption = styled.button<{ active?: boolean }>`
   gap: 8px;
   padding: 12px;
   border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
-  background: ${({ active }) => (active ? colors["red-50"] : "white")};
+  background: ${({ active }) => (active ? colors["red-100"] : "white")};
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: ${colors["red-400"]};
-    background: ${colors["red-50"]};
+    background: ${colors["red-100"]};
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
   }
@@ -896,7 +896,7 @@ export const PokeballSelector = styled.div`
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: ${colors["gray-50"]};
+  background: ${colors["gray-100"]};
   border-radius: 12px;
   border: 1px solid ${colors["gray-200"]};
   transition: all 0.2s ease;
