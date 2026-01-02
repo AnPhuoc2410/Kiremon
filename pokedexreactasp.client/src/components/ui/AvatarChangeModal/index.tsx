@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { POKEMON_API } from "../../../config/api.config";
+import { pokemonService } from "../../../services/pokemon/pokemon.service";
 import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
 import * as S from "./index.style";
 
@@ -40,41 +40,39 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   const [imageUrl, setImageUrl] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchedPokemon, setSearchedPokemon] = useState<Pokemon | null>(null);
+  const [searchedPokemons, setSearchedPokemons] = useState<Pokemon[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
-  // Search pokemon by ID or name
+  // Search pokemon by ID or name using GraphQL
   const searchPokemon = async (query: string) => {
     if (!query.trim()) {
-      setSearchedPokemon(null);
+      setSearchedPokemons([]);
       return;
     }
 
     try {
       setIsSearching(true);
-      const response = await fetch(`${POKEMON_API}/${query.toLowerCase()}`);
-
-      if (!response.ok) {
-        setSearchedPokemon(null);
+      
+      const pokemonList = await pokemonService.searchPokemonGraphQL(query);
+      
+      if (!pokemonList || pokemonList.length === 0) {
+        setSearchedPokemons([]);
         return;
       }
 
-      const data = await response.json();
-      const pokemon: Pokemon = {
-        id: data.id,
-        name: data.name,
-        sprite:
-          data.sprites.front_default ||
-          `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${data.id}.png`,
-      };
+      const pokemons: Pokemon[] = pokemonList.map((p) => ({
+        id: p.id,
+        name: p.name,
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`,
+      }));
 
-      setSearchedPokemon(pokemon);
+      setSearchedPokemons(pokemons);
     } catch (error) {
       console.error("Failed to search Pokemon:", error);
-      setSearchedPokemon(null);
+      setSearchedPokemons([]);
     } finally {
       setIsSearching(false);
     }
@@ -86,49 +84,34 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
       if (searchQuery) {
         searchPokemon(searchQuery);
       } else {
-        setSearchedPokemon(null);
+        setSearchedPokemons([]);
       }
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Filtered pokemons based on search
-  const displayPokemons = searchedPokemon
-    ? [searchedPokemon]
-    : pokemons.filter((pokemon) => {
-        const query = searchQuery.toLowerCase();
-        return (
-          pokemon.name.toLowerCase().includes(query) ||
-          pokemon.id.toString().includes(query)
-        );
-      });
+  // Display pokemons: show search results or all loaded pokemons
+  const displayPokemons = searchedPokemons.length > 0 ? searchedPokemons : pokemons;
 
-  // Load more pokemons
+  // Load more pokemons using GraphQL
   const loadPokemons = useCallback(async () => {
     if (isLoading) return;
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${POKEMON_API}?limit=20&offset=${offset}`);
-      const data = await response.json();
-
-      const pokemonDetails = await Promise.all(
-        data.results.map(async (pokemon: { name: string; url: string }) => {
-          const id = parseInt(
-            pokemon.url.split("/").filter(Boolean).pop() || "0",
-          );
-          return {
-            id,
-            name: pokemon.name,
-            sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
-          };
-        }),
-      );
+      
+      const pokemonList = await pokemonService.loadPokemonGraphQL(20, offset);
+      
+      const pokemonDetails = pokemonList.map((pokemon) => ({
+        id: pokemon.id,
+        name: pokemon.name,
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`,
+      }));
 
       setPokemons((prev) => [...prev, ...pokemonDetails]);
       setOffset((prev) => prev + 20);
-      setHasMore(!!data.next);
+      setHasMore(pokemonDetails.length === 20);
     } catch (error) {
       console.error("Failed to load Pokemon:", error);
       toast.error("Failed to load Pokemon avatars");

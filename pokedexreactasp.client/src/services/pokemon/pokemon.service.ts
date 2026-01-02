@@ -1,11 +1,22 @@
 import { ApiService } from '../api/api-client';
 import { cacheUtils } from '../cache/cache';
-import { API_CONFIG, buildEndpointUrl } from '../../config/api.config';
+import { API_CONFIG, buildEndpointUrl, GRAPHQL_ENDPOINT } from '../../config/api.config';
 import {
   IAllPokemonResponse,
   IPokemonDetailResponse,
   IAPIResponse
 } from '../../types/pokemon';
+
+interface PokemonGraphQLResult {
+  id: number;
+  name: string;
+}
+
+interface SearchPokemonResponse {
+  data: {
+    pokemon: PokemonGraphQLResult[];
+  };
+}
 
 class PokemonService extends ApiService {
   constructor() {
@@ -106,6 +117,126 @@ class PokemonService extends ApiService {
     } catch (error) {
       console.error("Error fetching Pokemon forms:", error);
       return null;
+    }
+  }
+
+  /**
+   * Search Pokemon using GraphQL (by ID or name)
+   * Returns array of matching Pokemon
+   */
+  async searchPokemonGraphQL(query: string): Promise<PokemonGraphQLResult[]> {
+    if (!query.trim()) return [];
+
+    try {
+      // Determine if query is a number (ID) or text (name)
+      const isIdSearch = /^\d+$/.test(query.trim());
+      
+      let graphqlQuery: string;
+      let variables: Record<string, any>;
+      
+      if (isIdSearch) {
+        // Search by ID
+        graphqlQuery = `
+          query searchPokemonById($id: Int!) {
+            pokemon(
+              where: {
+                id: { _eq: $id }
+              }
+            ) {
+              id
+              name
+            }
+          }
+        `;
+        variables = { id: parseInt(query) };
+      } else {
+        // Search by name
+        graphqlQuery = `
+          query searchPokemonByName($name: String!) {
+            pokemon(
+              where: {
+                name: { _like: $name }
+              }
+              order_by: { id: asc }
+            ) {
+              id
+              name
+            }
+          }
+        `;
+        variables = { name: `%${query.toLowerCase()}%` };
+      }
+
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "*/*",
+        },
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: variables,
+          operationName: isIdSearch ? "searchPokemonById" : "searchPokemonByName",
+        }),
+      });
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const result: SearchPokemonResponse = await response.json();
+      
+      if (!result.data?.pokemon || result.data.pokemon.length === 0) {
+        return [];
+      }
+
+      return result.data.pokemon;
+    } catch (error) {
+      console.error("Failed to search Pokemon:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Load Pokemon list using GraphQL with pagination
+   */
+  async loadPokemonGraphQL(limit: number = 20, offset: number = 0): Promise<PokemonGraphQLResult[]> {
+    try {
+      const graphqlQuery = `
+        query loadPokemons($limit: Int!, $offset: Int!) {
+          pokemon(
+            limit: $limit
+            offset: $offset
+          ) {
+            id
+            name
+          }
+        }
+      `;
+
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "*/*",
+        },
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: { limit, offset },
+          operationName: "loadPokemons",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("GraphQL request failed");
+      }
+
+      const result: SearchPokemonResponse = await response.json();
+
+      return result.data?.pokemon || [];
+    } catch (error) {
+      console.error("Failed to load Pokemon:", error);
+      return [];
     }
   }
 }
