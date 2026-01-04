@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header } from "../../components/ui";
+import { Header, PokeballChangeModal } from "../../components/ui";
 import { useAuth } from "../../contexts/AuthContext";
+import { pokeItemService } from "../../services/pokeitem/pokeitem.service";
 import * as S from "./index.style";
 import {
   ShieldIcon,
@@ -16,6 +17,7 @@ import {
   GlobeIcon,
   DownloadIcon,
   TrashIcon,
+  ArrowUpCircleIcon,
 } from "./icons";
 import { Enable2FAModal, Disable2FAModal } from "./components";
 import { use2FA } from "./hooks/use2FA";
@@ -42,6 +44,9 @@ const Settings: React.FC = () => {
 
   // Appearance states
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
+  const [selectedPokeball, setSelectedPokeball] = useState('timer-ball');
+  const [currentPokeballSprite, setCurrentPokeballSprite] = useState<string>('');
+  const [isPokeballModalOpen, setIsPokeballModalOpen] = useState(false);
 
   // Language state
   const [language, setLanguage] = useState('en');
@@ -51,6 +56,36 @@ const Settings: React.FC = () => {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
+
+  // Load pokeball sprite and selection on mount
+  useEffect(() => {
+    const loadPokeballData = async () => {
+      // Load saved pokeball from localStorage
+      const saved = localStorage.getItem('selectedPokeball');
+      if (saved) {
+        setSelectedPokeball(saved);
+      }
+      
+      // Load sprite for current pokeball
+      const sprite = await pokeItemService.getPokeballSpriteByName(saved || 'timer-ball');
+      if (sprite) {
+        setCurrentPokeballSprite(sprite);
+      }
+    };
+    
+    loadPokeballData();
+  }, []);
+
+  // Update sprite when pokeball changes
+  const handlePokeballChange = async (name: string) => {
+    setSelectedPokeball(name);
+    localStorage.setItem('selectedPokeball', name);
+    
+    const sprite = await pokeItemService.getPokeballSpriteByName(name);
+    if (sprite) {
+      setCurrentPokeballSprite(sprite);
+    }
+  };
 
   // Scroll spy effect
   useEffect(() => {
@@ -345,6 +380,39 @@ const Settings: React.FC = () => {
                 </S.SettingItemContent>
               </S.SettingItemMain>
             </S.SettingItem>
+
+            <S.SettingItem>
+              <S.SettingItemMain>
+                <S.SettingItemIcon>
+                  <ArrowUpCircleIcon />
+                </S.SettingItemIcon>
+                <S.SettingItemContent>
+                  <S.SettingItemTitle>Scroll-to-Top Pokéball</S.SettingItemTitle>
+                  <S.SettingItemDescription>
+                    Choose your preferred Pokéball for the scroll-to-top button.
+                  </S.SettingItemDescription>
+                  <S.PokeballSelector>
+                    <S.PokeballPreview>
+                      {currentPokeballSprite && (
+                        <S.PokeballPreviewImage 
+                          src={currentPokeballSprite} 
+                          alt={selectedPokeball}
+                        />
+                      )}
+                      <S.PokeballPreviewInfo>
+                        <S.PokeballPreviewLabel>Current</S.PokeballPreviewLabel>
+                        <S.PokeballPreviewName>
+                          {selectedPokeball.replace('-', ' ')}
+                        </S.PokeballPreviewName>
+                      </S.PokeballPreviewInfo>
+                    </S.PokeballPreview>
+                    <S.ChangeButton onClick={() => setIsPokeballModalOpen(true)}>
+                      Change
+                    </S.ChangeButton>
+                  </S.PokeballSelector>
+                </S.SettingItemContent>
+              </S.SettingItemMain>
+            </S.SettingItem>
           </S.Section>
 
           {/* Language Section */}
@@ -569,6 +637,14 @@ const Settings: React.FC = () => {
         isDisabling={twoFA.isDisabling2FA}
         onDisable={handleDisable2FA}
         onClose={twoFA.handleCloseDisableModal}
+      />
+
+      {/* Pokeball Change Modal */}
+      <PokeballChangeModal
+        isOpen={isPokeballModalOpen}
+        onClose={() => setIsPokeballModalOpen(false)}
+        onSelectPokeball={handlePokeballChange}
+        currentPokeball={selectedPokeball}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import QRCode from "qrcode";
 import {
@@ -541,9 +541,22 @@ const Profile: React.FC = () => {
     }
   }, []);
 
+  // Track if user was ever authenticated in this session
+  const wasAuthenticatedRef = useRef(isAuthenticated);
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      wasAuthenticatedRef.current = true;
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
-      toast.error("Please login to view your profile");
+      // Only show toast if user was never authenticated (direct URL access)
+      // Don't show if user just logged out
+      if (!wasAuthenticatedRef.current) {
+        toast.error("Please login to view your profile");
+      }
       navigate("/login");
       return;
     }
