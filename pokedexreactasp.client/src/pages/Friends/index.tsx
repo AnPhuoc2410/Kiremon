@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Header, Loading, Modal, Button, Text, Navbar } from "../../components/ui";
+import { useDebounce } from "../../components/hooks";
 import { useAuth } from "../../contexts/AuthContext";
 import { friendService } from "../../services";
 import { FriendDto, FriendsSummaryDto } from "../../types/friend.types";
@@ -92,6 +93,7 @@ const FriendsPage: React.FC = () => {
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [summary, setSummary] = useState<FriendsSummaryDto | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [selectedFriend, setSelectedFriend] = useState<FriendDto | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<FriendDto | null>(null);
   const [showGiftModal, setShowGiftModal] = useState<FriendDto | null>(null);
@@ -191,11 +193,11 @@ const FriendsPage: React.FC = () => {
     return `${days}d ago`;
   };
 
-  // Filter friends by search
+  // Filter friends by debounced search
   const filteredFriends = friends.filter(
     (friend) =>
-      friend.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      friend.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
+      friend.username.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      friend.nickname?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   // Separate online and offline friends

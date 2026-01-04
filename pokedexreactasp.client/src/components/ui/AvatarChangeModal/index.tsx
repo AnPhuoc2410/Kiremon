@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { pokemonService } from "../../../services/pokemon/pokemon.service";
 import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
+import { useDebounce } from "../../hooks/useDebounce";
 import * as S from "./index.style";
 
 interface Pokemon {
@@ -31,6 +32,7 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   );
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(
     currentAvatar || null,
   );
@@ -80,16 +82,12 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
 
   // Debounced search
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery) {
-        searchPokemon(searchQuery);
-      } else {
-        setSearchedPokemons([]);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    if (debouncedSearchQuery) {
+      searchPokemon(debouncedSearchQuery);
+    } else {
+      setSearchedPokemons([]);
+    }
+  }, [debouncedSearchQuery]);
 
   // Display pokemons: show search results or all loaded pokemons
   const displayPokemons = searchedPokemons.length > 0 ? searchedPokemons : pokemons;

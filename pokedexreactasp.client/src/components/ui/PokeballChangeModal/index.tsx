@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
+import { useDebounce } from "../../hooks/useDebounce";
 import * as S from "./index.style";
 
 interface Pokeball {
@@ -23,6 +24,7 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
 }) => {
   const [pokeballs, setPokeballs] = useState<Pokeball[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [selectedPokeball, setSelectedPokeball] = useState<string>(
     currentPokeball || "timer-ball",
   );
@@ -56,9 +58,9 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
     }
   };
 
-  // Filter pokeballs based on search
+  // Filter pokeballs based on debounced search
   const displayPokeballs = pokeballs.filter((ball) =>
-    ball.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ball.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   const handleSave = () => {
