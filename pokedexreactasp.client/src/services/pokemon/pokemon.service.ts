@@ -1,10 +1,9 @@
 import { ApiService } from '../api/api-client';
 import { cacheUtils } from '../cache/cache';
-import { API_CONFIG, buildEndpointUrl, GRAPHQL_ENDPOINT } from '../../config/api.config';
+import { buildEndpointUrl, GRAPHQL_ENDPOINT } from '../../config/api.config';
 import {
   IAllPokemonResponse,
   IPokemonDetailResponse,
-  IAPIResponse
 } from '../../types/pokemon';
 
 interface PokemonGraphQLResult {
@@ -16,6 +15,42 @@ interface SearchPokemonResponse {
   data: {
     pokemon: PokemonGraphQLResult[];
   };
+  errors?: Array<{
+    message: string;
+    locations?: Array<{ line: number; column: number }>;
+    path?: Array<string | number>;
+  }>;
+}
+
+async function executeGraphQLQuery(
+  query: string,
+  variables: Record<string, any>,
+  operationName: string
+): Promise<SearchPokemonResponse> {
+  const response = await fetch(GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "*/*",
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+      operationName,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to execute GraphQL query: ${operationName}`);
+  }
+
+  const result: SearchPokemonResponse = await response.json();
+
+  if (result.errors) {
+    throw new Error(`GraphQL error: ${JSON.stringify(result.errors)}`);
+  }
+
+  return result;
 }
 
 class PokemonService extends ApiService {
@@ -167,24 +202,11 @@ class PokemonService extends ApiService {
         variables = { name: `%${query.toLowerCase()}%` };
       }
 
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "*/*",
-        },
-        body: JSON.stringify({
-          query: graphqlQuery,
-          variables: variables,
-          operationName: isIdSearch ? "searchPokemonById" : "searchPokemonByName",
-        }),
-      });
-
-      if (!response.ok) {
-        return [];
-      }
-
-      const result: SearchPokemonResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        graphqlQuery,
+        variables,
+        isIdSearch ? "searchPokemonById" : "searchPokemonByName"
+      );
       
       if (!result.data?.pokemon || result.data.pokemon.length === 0) {
         return [];
@@ -214,24 +236,11 @@ class PokemonService extends ApiService {
         }
       `;
 
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "*/*",
-        },
-        body: JSON.stringify({
-          query: graphqlQuery,
-          variables: { limit, offset },
-          operationName: "loadPokemons",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("GraphQL request failed");
-      }
-
-      const result: SearchPokemonResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        graphqlQuery,
+        { limit, offset },
+        "loadPokemons"
+      );
 
       return result.data?.pokemon || [];
     } catch (error) {

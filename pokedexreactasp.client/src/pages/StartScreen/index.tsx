@@ -14,6 +14,18 @@ const StartScreen: React.FC = () => {
     setCurrentBgIndex(T.getRandomBackgroundIndex());
   }, []);
 
+  const handlePrevBackground = () => {
+    setCurrentBgIndex((prev) => 
+      prev === 0 ? T.backgroundImages.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextBackground = () => {
+    setCurrentBgIndex((prev) => 
+      prev === T.backgroundImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -26,19 +38,7 @@ const StartScreen: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
-
-  const handlePrevBackground = () => {
-    setCurrentBgIndex((prev) => 
-      prev === 0 ? T.backgroundImages.length - 1 : prev - 1
-    );
-  };
-
-  const handleNextBackground = () => {
-    setCurrentBgIndex((prev) => 
-      prev === T.backgroundImages.length - 1 ? 0 : prev + 1
-    );
-  };
+  }, [handlePrevBackground, handleNextBackground]);
 
   return (
     <T.Container backgroundUrl={T.backgroundImages[currentBgIndex]}>

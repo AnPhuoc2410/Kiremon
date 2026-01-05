@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
 import { useDebounce } from "../../hooks/useDebounce";
@@ -30,12 +30,7 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load pokeballs when modal opens
-  useEffect(() => {
-    if (isOpen && pokeballs.length === 0) {
-      loadPokeballs();
-    }
-  }, [isOpen]);
+
 
   // Reset on close
   useEffect(() => {
@@ -45,7 +40,7 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
     }
   }, [isOpen, currentPokeball]);
 
-  const loadPokeballs = async () => {
+  const loadPokeballs = useCallback(async () => {
     setIsLoading(true);
     try {
       const balls = await pokeItemService.getAllPokeballs();
@@ -56,7 +51,14 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+    // Load pokeballs when modal opens
+  useEffect(() => {
+    if (isOpen && pokeballs.length === 0) {
+      loadPokeballs();
+    }
+  }, [isOpen, pokeballs.length, loadPokeballs]);
 
   // Filter pokeballs based on debounced search
   const displayPokeballs = pokeballs.filter((ball) =>

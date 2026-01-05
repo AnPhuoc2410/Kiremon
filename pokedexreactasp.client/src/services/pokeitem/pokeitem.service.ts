@@ -15,11 +15,47 @@ interface PokeballResponse {
   data: {
     itemsprites: ItemSpriteData[];
   };
+  errors?: Array<{
+    message: string;
+    locations?: Array<{ line: number; column: number }>;
+    path?: Array<string | number>;
+  }>;
 }
 
 interface HeldItemSprite {
   name: string;
   sprite: string;
+}
+
+async function executeGraphQLQuery(
+  query: string,
+  variables: Record<string, any> | null,
+  operationName: string
+): Promise<PokeballResponse> {
+  const response = await fetch(GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+      operationName,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to execute GraphQL query: ${operationName}`);
+  }
+
+  const result: PokeballResponse = await response.json();
+
+  if (result.errors) {
+    throw new Error(`GraphQL error: ${JSON.stringify(result.errors)}`);
+  }
+
+  return result;
 }
 
 export const pokeItemService = {
@@ -45,24 +81,11 @@ export const pokeItemService = {
     `;
 
     try {
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          query,
-          variables: { names: itemNames },
-          operationName: "getHeldItemSprites",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch held item sprites");
-      }
-
-      const result: PokeballResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        query,
+        { names: itemNames },
+        "getHeldItemSprites"
+      );
 
       return result.data?.itemsprites?.map(item => ({
         name: item.item?.name || '',
@@ -93,24 +116,11 @@ export const pokeItemService = {
     `;
 
     try {
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          query,
-          variables: { name: selectedPokeball },
-          operationName: "getPokeballSprite",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch pokeball sprite");
-      }
-
-      const result: PokeballResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        query,
+        { name: selectedPokeball },
+        "getPokeballSprite"
+      );
 
       if (result.data?.itemsprites?.[0]?.sprites?.default) {
         return result.data.itemsprites[0].sprites.default;
@@ -145,24 +155,11 @@ export const pokeItemService = {
     `;
 
     try {
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          query,
-          variables: null,
-          operationName: "getAllPokeballs",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch pokeballs");
-      }
-
-      const result: PokeballResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        query,
+        null,
+        "getAllPokeballs"
+      );
 
       return result.data?.itemsprites?.map(item => ({
         name: item.item?.name || '',
@@ -190,24 +187,11 @@ export const pokeItemService = {
     `;
 
     try {
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-        body: JSON.stringify({
-          query,
-          variables: { name },
-          operationName: "getPokeballSpriteByName",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch pokeball sprite");
-      }
-
-      const result: PokeballResponse = await response.json();
+      const result = await executeGraphQLQuery(
+        query,
+        { name },
+        "getPokeballSpriteByName"
+      );
 
       if (result.data?.itemsprites?.[0]?.sprites?.default) {
         return result.data.itemsprites[0].sprites.default;
