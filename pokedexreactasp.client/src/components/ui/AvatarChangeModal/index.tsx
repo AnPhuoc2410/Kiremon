@@ -49,7 +49,7 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
   // Search pokemon by ID or name using GraphQL
-  const searchPokemon = async (query: string) => {
+  const searchPokemon = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchedPokemons([]);
       return;
@@ -78,7 +78,7 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
 
   // Debounced search
   useEffect(() => {
@@ -87,7 +87,7 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
     } else {
       setSearchedPokemons([]);
     }
-  }, [debouncedSearchQuery]);
+  }, [debouncedSearchQuery, searchPokemon]);
 
   // Display pokemons: show search results or all loaded pokemons
   const displayPokemons = searchedPokemons.length > 0 ? searchedPokemons : pokemons;
