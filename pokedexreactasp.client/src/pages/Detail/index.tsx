@@ -979,7 +979,6 @@ const DetailPokemon = () => {
                     }}
                     key={`detail-${pokemonId}-${fallbackLevel}`}
                     style={fallbackLevel === 2 ? {
-                      filter: "-opacity(0.7)",
                       transform: "scale(0.8)"
                     } : undefined}
                   />

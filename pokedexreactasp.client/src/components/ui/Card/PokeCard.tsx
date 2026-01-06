@@ -159,7 +159,7 @@ const PokeCard: React.FC<Props> = ({
   // Determine the actual source to display
   let currentSrc = staticImageUrl;
 
-  // Logic: 
+  // Logic:
   // 1. If hovering and valid animation -> Animated
   // 2. If Level 2 error -> Substitute
   // 3. If Level 1 error -> Showdown
@@ -222,7 +222,6 @@ const PokeCard: React.FC<Props> = ({
           onError={handleError}
           key={`${pokemonId}-${fallbackLevel}`}
           style={fallbackLevel === 2 ? {
-            filter: " -opacity(0.7)",
             transform: "scale(0.6)"
           } : undefined}
         />

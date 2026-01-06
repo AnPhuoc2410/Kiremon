@@ -43,17 +43,22 @@ namespace PokedexReactASP.Application.Services
 
         private async Task<string> GetUniqueNicknameAsync(string userId, string baseName, int? excludePokemonId = null)
         {
-            var userPokemonQuery = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
-            
+            var baseNameLower = baseName.ToLower();
+            var userPokemonQuery = await _unitOfWork.UserPokemon.FindAsync(up =>
+                up.UserId == userId &&
+                (
+                    up.Nickname == null ||
+                    up.Nickname.ToLower() == baseNameLower ||
+                    up.Nickname.ToLower().StartsWith(baseNameLower + "_")
+                ));
+
             var allUserPokemon = userPokemonQuery.ToList();
             var distinctApiIds = allUserPokemon.Where(p => p.Nickname == null).Select(p => p.PokemonApiId).Distinct();
             var apiDataMap = await _pokemonCache.GetPokemonBatchAsync(distinctApiIds);
 
             var occupiedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var p in allUserPokemon)
+            foreach (var p in allUserPokemon.Where(p => excludePokemonId == null || p.Id != excludePokemonId))
             {
-                if (excludePokemonId != null && p.Id == excludePokemonId) continue;
-
                 if (!string.IsNullOrEmpty(p.Nickname))
                 {
                     occupiedNames.Add(p.Nickname);
@@ -67,26 +72,31 @@ namespace PokedexReactASP.Application.Services
             if (!occupiedNames.Contains(baseName)) return baseName;
 
             int maxSuffix = 0;
-            foreach (var name in occupiedNames)
+            foreach (var name in occupiedNames.Where(name => name.StartsWith(baseName + "_", StringComparison.OrdinalIgnoreCase)))
             {
-                if (name.StartsWith(baseName + "_", StringComparison.OrdinalIgnoreCase))
+                var suffixPart = name.Substring(baseName.Length + 1);
+                if (int.TryParse(suffixPart, out int suffix))
                 {
-                    var suffixPart = name.Substring(baseName.Length + 1);
-                    if (int.TryParse(suffixPart, out int suffix))
-                    {
-                        if (suffix > maxSuffix) maxSuffix = suffix;
-                    }
+                    if (suffix > maxSuffix) maxSuffix = suffix;
                 }
             }
 
             // Start checking from maxSuffix + 1
             int counter = maxSuffix + 1;
-            while (true)
+            const int maxIterations = 1000;
+            int iterations = 0;
+
+            while (iterations < maxIterations)
             {
                 var candidate = $"{baseName}_{counter}";
                 if (!occupiedNames.Contains(candidate)) return candidate;
                 counter++;
+                iterations++;
             }
+
+            throw new InvalidOperationException(
+                $"Unable to generate unique nickname for '{baseName}' after {maxIterations} attempts. " +
+                $"This may indicate a data integrity issue.");
         }
 
         #region Profile Methods
@@ -255,10 +265,10 @@ namespace PokedexReactASP.Application.Services
             }
 
             string finalNickname = await GetUniqueNicknameAsync(userId, effectiveNickname);
-            
-            
-            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal) 
-                ? null 
+
+
+            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
+                ? null
                 : finalNickname;
 
 
@@ -570,18 +580,18 @@ namespace PokedexReactASP.Application.Services
             string speciesName = "";
             if (string.IsNullOrEmpty(nickname)) // optimization: we already fetched it if nickname was empty
             {
-                 speciesName = targetName;
-            } 
-            else 
+                speciesName = targetName;
+            }
+            else
             {
-                 var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
-                 speciesName = CapitalizeFirst(apiData.Name);
+                var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
+                speciesName = CapitalizeFirst(apiData.Name);
             }
 
             userPokemon.Nickname = uniqueName.Equals(speciesName, StringComparison.Ordinal) ? null : uniqueName;
             userPokemon.LastInteractionDate = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync();
-            
+
             return (true, uniqueName);
         }
 
