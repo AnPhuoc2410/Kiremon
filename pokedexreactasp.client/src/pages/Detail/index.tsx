@@ -116,6 +116,7 @@ const DetailPokemon = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCatching, setIsCatching] = useState<boolean>(false);
   const [imageError, setImageError] = useState<boolean>(false);
+  const [fallbackLevel, setFallbackLevel] = useState<number>(0);
   const [isEndPhase, setIsEndPhase] = useState<boolean>(false);
 
   const [nicknameModal, setNicknameModal] = useState<boolean>(false);
@@ -349,7 +350,7 @@ const DetailPokemon = () => {
       setSprite(
         animatedGen5 ||
         defaultSprite ||
-        showdownSprite||
+        showdownSprite ||
         `${POKEMON_SHOWDOWN_IMAGE}/${response?.id}.gif`
       );
       setStats(response?.stats);
@@ -650,6 +651,7 @@ const DetailPokemon = () => {
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
     setImageError(false);
+    setFallbackLevel(0);
     loadPokemon();
 
     return () => {
@@ -954,14 +956,32 @@ const DetailPokemon = () => {
                 {/* Pokemon Image */}
                 <T.PokemonImageWrapper>
                   <PokemonAvatar
-                    src={imageError ? `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif` : sprite}
+                    src={
+                      fallbackLevel === 2
+                        ? "/substitute.png"
+                        : (imageError || fallbackLevel === 1) // If explicit error or level 1
+                          ? `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif`
+                          : sprite
+                    }
                     alt={name}
                     width={256}
                     height={256}
                     effect="blur"
                     loading="lazy"
                     className="pokemon-dt"
-                    onError={() => setImageError(true)}
+                    onError={() => {
+                      // Level 0 -> 1 (Showdown)
+                      if (fallbackLevel === 0) setFallbackLevel(1);
+                      // Level 1 -> 2 (Substitute)
+                      else if (fallbackLevel === 1) setFallbackLevel(2);
+
+                      setImageError(true);
+                    }}
+                    key={`detail-${pokemonId}-${fallbackLevel}`}
+                    style={fallbackLevel === 2 ? {
+                      filter: "-opacity(0.7)",
+                      transform: "scale(0.8)"
+                    } : undefined}
                   />
                 </T.PokemonImageWrapper>
                 {/* Type Icons */}
