@@ -472,7 +472,7 @@ const DetailPokemon = () => {
           window.clearInterval(shakeInterval);
           resolve();
         }
-      }, 600); // 600ms per shake
+      }, 600);
     });
   }
 
@@ -560,7 +560,12 @@ const DetailPokemon = () => {
       // If user wants to update nickname after catch
       if (nickname.trim() && nickname.trim() !== caughtPokemonData.nickname) {
         try {
-          await collectionService.updateNickname(caughtPokemonData.id, nickname.trim());
+          const response = await collectionService.updateNickname(caughtPokemonData.id, nickname.trim());
+          if (response && response.nickname) {
+            setNickname(response.nickname);
+            // Verify we update the local data as well so the "Whoosh!" screen shows correct name
+            if (caughtPokemonData) caughtPokemonData.nickname = response.nickname;
+          }
         } catch (error: any) {
           console.error("Error updating nickname:", error);
           // Don't fail the whole process, just show warning

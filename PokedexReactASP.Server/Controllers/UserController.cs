@@ -221,12 +221,12 @@ namespace PokedexReactASP.Server.Controllers
             }
 
             var result = await _userService.UpdatePokemonNicknameAsync(userId, userPokemonId, dto.Nickname);
-            if (!result)
+            if (!result.Success)
             {
                 return NotFound(new { message = "Pokemon not found in your collection" });
             }
 
-            return Ok(new { message = "Nickname updated successfully" });
+            return Ok(new { message = "Nickname updated successfully", nickname = result.ResultName });
         }
 
         /// <summary>

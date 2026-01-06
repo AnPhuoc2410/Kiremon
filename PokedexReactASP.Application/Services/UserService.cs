@@ -41,6 +41,54 @@ namespace PokedexReactASP.Application.Services
             _mapper = mapper;
         }
 
+        private async Task<string> GetUniqueNicknameAsync(string userId, string baseName, int? excludePokemonId = null)
+        {
+            var userPokemonQuery = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
+            
+            var allUserPokemon = userPokemonQuery.ToList();
+            var distinctApiIds = allUserPokemon.Where(p => p.Nickname == null).Select(p => p.PokemonApiId).Distinct();
+            var apiDataMap = await _pokemonCache.GetPokemonBatchAsync(distinctApiIds);
+
+            var occupiedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in allUserPokemon)
+            {
+                if (excludePokemonId != null && p.Id == excludePokemonId) continue;
+
+                if (!string.IsNullOrEmpty(p.Nickname))
+                {
+                    occupiedNames.Add(p.Nickname);
+                }
+                else if (apiDataMap.TryGetValue(p.PokemonApiId, out var data))
+                {
+                    occupiedNames.Add(CapitalizeFirst(data.Name));
+                }
+            }
+
+            if (!occupiedNames.Contains(baseName)) return baseName;
+
+            int maxSuffix = 0;
+            foreach (var name in occupiedNames)
+            {
+                if (name.StartsWith(baseName + "_", StringComparison.OrdinalIgnoreCase))
+                {
+                    var suffixPart = name.Substring(baseName.Length + 1);
+                    if (int.TryParse(suffixPart, out int suffix))
+                    {
+                        if (suffix > maxSuffix) maxSuffix = suffix;
+                    }
+                }
+            }
+
+            // Start checking from maxSuffix + 1
+            int counter = maxSuffix + 1;
+            while (true)
+            {
+                var candidate = $"{baseName}_{counter}";
+                if (!occupiedNames.Contains(candidate)) return candidate;
+                counter++;
+            }
+        }
+
         #region Profile Methods
 
         public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
@@ -199,18 +247,20 @@ namespace PokedexReactASP.Application.Services
             var wildPokemonLevel = _pokemonFactory.CalculateWildPokemonLevel(
                 user.TrainerLevel, isLegendary, isMythical);
 
-            // 5. Check for duplicate nickname
-            if (!string.IsNullOrEmpty(request.Nickname))
+            // 5. Determine effective nickname (handle duplicates)
+            string effectiveNickname = request.Nickname;
+            if (string.IsNullOrEmpty(effectiveNickname))
             {
-                var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    up => up.UserId == userId && up.Nickname == request.Nickname);
-                if (existingWithNickname != null)
-                {
-                    result.Result = CatchAttemptResult.Escaped;
-                    result.Message = "You already have a Pokemon with this nickname";
-                    return result;
-                }
+                effectiveNickname = CapitalizeFirst(pokeApiData.Name);
             }
+
+            string finalNickname = await GetUniqueNicknameAsync(userId, effectiveNickname);
+            
+            
+            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal) 
+                ? null 
+                : finalNickname;
+
 
             // 6. Calculate catch rate and attempt catch
             var existingCatch = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
@@ -260,7 +310,7 @@ namespace PokedexReactASP.Application.Services
                 UserId: userId,
                 PokemonApiId: request.PokemonApiId,
                 PokemonName: pokeApiData.Name,
-                Nickname: request.Nickname,
+                Nickname: nicknameToSave,
                 CaughtLocation: request.CaughtLocation,
                 CaughtBall: request.PokeballType,
                 TrainerLevel: user.TrainerLevel,
@@ -344,18 +394,20 @@ namespace PokedexReactASP.Application.Services
             var genderRate = speciesData?.Gender_Rate ?? -1;
             var captureRate = speciesData?.Capture_Rate ?? 45;
 
-            // 4. Check for duplicate nickname
-            if (!string.IsNullOrEmpty(dto.Nickname))
+            // 4. Determine effective nickname (handle duplicates)
+            string effectiveNickname = dto.Nickname;
+            if (string.IsNullOrEmpty(effectiveNickname))
             {
-                var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    up => up.UserId == userId && up.Nickname == dto.Nickname);
-                if (existingWithNickname != null)
-                {
-                    result.Success = false;
-                    result.Message = "You already have a Pokemon with this nickname";
-                    return result;
-                }
+                effectiveNickname = CapitalizeFirst(pokeApiData.Name);
             }
+
+            // Calculate unique name
+            string finalNickname = await GetUniqueNicknameAsync(userId, effectiveNickname);
+
+            // Store NULL if it matches default, otherwise store the unique variant
+            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
+                ? null
+                : finalNickname;
 
             // 5. Check if this is a new species
             var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
@@ -367,7 +419,7 @@ namespace PokedexReactASP.Application.Services
                 UserId: userId,
                 PokemonApiId: dto.PokemonApiId,
                 PokemonName: pokeApiData.Name,
-                Nickname: dto.Nickname,
+                Nickname: nicknameToSave,
                 CaughtLocation: dto.CaughtLocation ?? "Wild",
                 CaughtBall: PokeballType.Pokeball,
                 TrainerLevel: user.TrainerLevel,
@@ -495,24 +547,42 @@ namespace PokedexReactASP.Application.Services
             return true;
         }
 
-        public async Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname)
+        public async Task<(bool Success, string? ResultName)> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname)
         {
-            if (!string.IsNullOrEmpty(nickname))
-            {
-                var existingWithNickname = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    up => up.UserId == userId && up.Nickname == nickname && up.Id != userPokemonId);
-                if (existingWithNickname != null) return false;
-            }
-
             var userPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
                 up => up.UserId == userId && up.Id == userPokemonId);
 
-            if (userPokemon == null) return false;
+            if (userPokemon == null) return (false, null);
 
-            userPokemon.Nickname = nickname;
+            // If empty nickname, revert to default species name
+            string targetName = nickname;
+            if (string.IsNullOrEmpty(targetName))
+            {
+                // We need the species name
+                var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
+                targetName = CapitalizeFirst(apiData.Name);
+            }
+
+            // Calculate unique version
+            string uniqueName = await GetUniqueNicknameAsync(userId, targetName, userPokemonId);
+
+            // If uniqueName matches species name exactly, store null
+            string speciesName = "";
+            if (string.IsNullOrEmpty(nickname)) // optimization: we already fetched it if nickname was empty
+            {
+                 speciesName = targetName;
+            } 
+            else 
+            {
+                 var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
+                 speciesName = CapitalizeFirst(apiData.Name);
+            }
+
+            userPokemon.Nickname = uniqueName.Equals(speciesName, StringComparison.Ordinal) ? null : uniqueName;
             userPokemon.LastInteractionDate = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            
+            return (true, uniqueName);
         }
 
         public async Task<bool> ToggleFavoritePokemonAsync(string userId, int userPokemonId)
