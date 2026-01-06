@@ -279,6 +279,12 @@ const Header: React.FC<HeaderProps> = ({
               <S.DropdownItem>Generations</S.DropdownItem>
             </Link>
           </NavItemWithDropdown>
+
+          <S.NavItem>
+            <Link to="/poke-mart">
+              <S.NavLink as="span">Poké Mart</S.NavLink>
+            </Link>
+          </S.NavItem>
         </S.NavList>
       </S.NavContainer>
     </S.HeaderContainer>
