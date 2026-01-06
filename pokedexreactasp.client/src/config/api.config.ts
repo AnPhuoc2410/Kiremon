@@ -4,7 +4,7 @@ const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const GOOGLE_CLIENT_ID_KEY = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const FACEBOOK_APP_ID_KEY = import.meta.env.VITE_FACEBOOK_APP_ID;
 const GRAPHQL_ENDPOINT_URL = import.meta.env.VITE_GRAPHQL_ENDPOINT;
-const POKEMON_SHOWDOWN_IMAGE_URL = import.meta.env.VITE_POKEMON_SHOWDOWN_IMAGE || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
+const POKEMON_SHOWDOWN_IMAGE_URL = import.meta.env.VITE_POKEMON_SHOWDOWN_IMAGE;
 const normalizeUrl = (url: string): string => {
   return url.endsWith("/") ? url : `${url}/`;
 };
