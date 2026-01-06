@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 import { Text } from "..";
 import { colors } from "../../utils";
-import { POKEMON_IMAGE } from "../../../config/api.config";
+import { POKEMON_IMAGE, POKEMON_SHOWDOWN_IMAGE } from "../../../config/api.config";
 import TypeIcon from "../Card/TypeIcon";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -135,12 +135,30 @@ const PokeCard: React.FC<Props> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [hasAnimatedImage, setHasAnimatedImage] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const formattedId = pokemonId ? String(pokemonId).padStart(3, "0") : "";
 
+  // Standard static image
   const staticImageUrl = nickname
     ? sprite
     : `${POKEMON_IMAGE}/${pokemonId}.png`;
+
+  // Fallback image (Showdown GIF) - used if static image fails
+  const fallbackImageUrl = `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif`;
+
   const animatedImageUrl = `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${pokemonId}.gif`;
+
+  // Determine the actual source to display
+  let currentSrc = staticImageUrl;
+
+  // If hovering (and valid), show animated
+  if (isHovered && !nickname && hasAnimatedImage) {
+    currentSrc = animatedImageUrl;
+  }
+  // If not hovering, but we had an error on the main static image, use fallback
+  else if (imageError && !nickname) {
+    currentSrc = fallbackImageUrl;
+  }
 
   useEffect(() => {
     if (!nickname && pokemonId) {
@@ -172,11 +190,12 @@ const PokeCard: React.FC<Props> = ({
     >
       <div className="pokemon-image-container">
         <PokemonAvatar
-          src={isHovered && !nickname && hasAnimatedImage ? animatedImageUrl : staticImageUrl}
+          src={currentSrc}
           alt={`pokemon ${name}`}
           width={96}
           height={96}
           loading="eager"
+          onError={() => setImageError(true)}
         />
       </div>
 
