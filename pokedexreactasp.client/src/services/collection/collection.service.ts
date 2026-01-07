@@ -63,8 +63,8 @@ class CollectionService extends AuthenticatedApiService {
   /**
    * Update Pokemon nickname
    */
-  async updateNickname(userPokemonId: number, nickname: string): Promise<void> {
-    return this.put<void>(`/User/pokemon/${userPokemonId}/nickname`, {
+  async updateNickname(userPokemonId: number, nickname: string): Promise<UserPokemonDto> {
+    return this.put<UserPokemonDto>(`/User/pokemon/${userPokemonId}/nickname`, {
       nickname,
     });
   }

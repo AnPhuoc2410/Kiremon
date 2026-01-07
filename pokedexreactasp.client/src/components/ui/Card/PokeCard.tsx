@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 import { Text } from "..";
 import { colors } from "../../utils";
-import { POKEMON_IMAGE } from "../../../config/api.config";
+import { POKEMON_IMAGE, POKEMON_SHOWDOWN_IMAGE } from "../../../config/api.config";
 import TypeIcon from "../Card/TypeIcon";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -135,12 +135,43 @@ const PokeCard: React.FC<Props> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [hasAnimatedImage, setHasAnimatedImage] = useState(false);
+  const [fallbackLevel, setFallbackLevel] = useState<number>(0);
   const formattedId = pokemonId ? String(pokemonId).padStart(3, "0") : "";
 
+  useEffect(() => {
+    setFallbackLevel(0);
+    setHasAnimatedImage(false);
+  }, [pokemonId]);
+
+  // Standard static image
   const staticImageUrl = nickname
     ? sprite
     : `${POKEMON_IMAGE}/${pokemonId}.png`;
+
+  // Fallback image (Showdown GIF) - Level 1
+  const showdownFallbackUrl = `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif`;
+
+  // Final image (Substitute Doll) - Level 2
+  const substituteFallbackUrl = "/substitute.png";
+
   const animatedImageUrl = `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${pokemonId}.gif`;
+
+  // Determine the actual source to display
+  let currentSrc = staticImageUrl;
+
+  // Logic:
+  // 1. If hovering and valid animation -> Animated
+  // 2. If Level 2 error -> Substitute
+  // 3. If Level 1 error -> Showdown
+  // 4. Default -> Static
+
+  if (isHovered && !nickname && hasAnimatedImage) {
+    currentSrc = animatedImageUrl;
+  } else if (fallbackLevel === 2) {
+    currentSrc = substituteFallbackUrl;
+  } else if (fallbackLevel === 1 && !nickname) {
+    currentSrc = showdownFallbackUrl;
+  }
 
   useEffect(() => {
     if (!nickname && pokemonId) {
@@ -163,6 +194,17 @@ const PokeCard: React.FC<Props> = ({
     }
   };
 
+  const handleError = () => {
+    // If we're at level 0, go to 1 (Showdown)
+    if (fallbackLevel === 0) {
+      setFallbackLevel(1);
+    }
+    // If we were at level 1 (Showdown failed), go to 2 (Substitute)
+    else if (fallbackLevel === 1) {
+      setFallbackLevel(2);
+    }
+  };
+
   const cardContent = (
     <PixelatedPokemonCard
       nickname={nickname}
@@ -172,11 +214,16 @@ const PokeCard: React.FC<Props> = ({
     >
       <div className="pokemon-image-container">
         <PokemonAvatar
-          src={isHovered && !nickname && hasAnimatedImage ? animatedImageUrl : staticImageUrl}
+          src={currentSrc}
           alt={`pokemon ${name}`}
           width={96}
           height={96}
           loading="eager"
+          onError={handleError}
+          key={`${pokemonId}-${fallbackLevel}`}
+          style={fallbackLevel === 2 ? {
+            transform: "scale(0.6)"
+          } : undefined}
         />
       </div>
 

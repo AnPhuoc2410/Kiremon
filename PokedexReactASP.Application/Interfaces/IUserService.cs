@@ -20,7 +20,7 @@ namespace PokedexReactASP.Application.Interfaces
 
         // Pokemon Management
         Task<bool> ReleasePokemonAsync(string userId, int userPokemonId);
-        Task<bool> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname);
+        Task<(bool Success, string? ResultName)> UpdatePokemonNicknameAsync(string userId, int userPokemonId, string nickname);
         Task<bool> ToggleFavoritePokemonAsync(string userId, int userPokemonId);
         Task<bool> UpdatePokemonNotesAsync(string userId, int userPokemonId, string notes);
         Task<bool> InteractWithPokemonAsync(string userId, int userPokemonId);

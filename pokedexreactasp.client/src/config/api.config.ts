@@ -4,7 +4,7 @@ const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const GOOGLE_CLIENT_ID_KEY = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const FACEBOOK_APP_ID_KEY = import.meta.env.VITE_FACEBOOK_APP_ID;
 const GRAPHQL_ENDPOINT_URL = import.meta.env.VITE_GRAPHQL_ENDPOINT;
-
+const POKEMON_SHOWDOWN_IMAGE_URL = import.meta.env.VITE_POKEMON_SHOWDOWN_IMAGE;
 const normalizeUrl = (url: string): string => {
   return url.endsWith("/") ? url : `${url}/`;
 };
@@ -41,6 +41,7 @@ export const buildEndpointUrl = (
 // For backwards compatibility
 export const POKEMON_API = buildEndpointUrl("pokemon");
 export const POKEMON_IMAGE = API_CONFIG.imageUrl;
+export const POKEMON_SHOWDOWN_IMAGE = POKEMON_SHOWDOWN_IMAGE_URL;
 export const RECAPTCHA_KEY = RECAPTCHA_SITE_KEY;
 export const GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID_KEY;
 export const FACEBOOK_APP_ID = FACEBOOK_APP_ID_KEY;

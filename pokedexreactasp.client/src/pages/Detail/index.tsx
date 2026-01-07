@@ -48,6 +48,7 @@ import {
   getRelatedPokemonByGen
 } from "../../services/pokemon";
 import { skillColor } from "../../components/utils";
+import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
 
 // Define interfaces for the component's state
 type TypesPokemon = { type: { name: string } };
@@ -114,6 +115,8 @@ const DetailPokemon = () => {
   const [isCaught, setIsCaught] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCatching, setIsCatching] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<boolean>(false);
+  const [fallbackLevel, setFallbackLevel] = useState<number>(0);
   const [isEndPhase, setIsEndPhase] = useState<boolean>(false);
 
   const [nicknameModal, setNicknameModal] = useState<boolean>(false);
@@ -339,9 +342,16 @@ const DetailPokemon = () => {
       setPokemonId(response?.id || 0);
       setTypes(response?.types.map((type: TypesPokemon) => type.type?.name));
       setMoves(response?.moves.map((move: MovesPokemon) => move.move?.name));
+
+      const animatedGen5 = response?.sprites.versions?.["generation-v"]?.["black-white"].animated.front_default;
+      const showdownSprite = response?.sprites.other?.showdown?.front_default;
+      const defaultSprite = response?.sprites.front_default;
+
       setSprite(
-        response?.sprites.versions?.["generation-v"]?.["black-white"].animated.front_default ||
-        response?.sprites.front_default
+        animatedGen5 ||
+        defaultSprite ||
+        showdownSprite ||
+        `${POKEMON_SHOWDOWN_IMAGE}/${response?.id}.gif`
       );
       setStats(response?.stats);
       setAbilities(response?.abilities);
@@ -354,7 +364,8 @@ const DetailPokemon = () => {
       setSprites(response?.sprites || {});
 
       // Load species data, evolution chain, and related Pokemon
-      loadSpeciesData(response.id);
+      const speciesIdentifier = response?.species?.name || response?.id;
+      loadSpeciesData(speciesIdentifier);
 
       // Check for special forms
       if (response.forms && response.forms.length > 1) {
@@ -472,7 +483,7 @@ const DetailPokemon = () => {
           window.clearInterval(shakeInterval);
           resolve();
         }
-      }, 600); // 600ms per shake
+      }, 600);
     });
   }
 
@@ -560,7 +571,12 @@ const DetailPokemon = () => {
       // If user wants to update nickname after catch
       if (nickname.trim() && nickname.trim() !== caughtPokemonData.nickname) {
         try {
-          await collectionService.updateNickname(caughtPokemonData.id, nickname.trim());
+          const response = await collectionService.updateNickname(caughtPokemonData.id, nickname.trim());
+          if (response && response.nickname) {
+            setNickname(response.nickname);
+            // Verify we update the local data as well so the "Whoosh!" screen shows correct name
+            if (caughtPokemonData) caughtPokemonData.nickname = response.nickname;
+          }
         } catch (error: any) {
           console.error("Error updating nickname:", error);
           // Don't fail the whole process, just show warning
@@ -634,6 +650,8 @@ const DetailPokemon = () => {
 
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
+    setImageError(false);
+    setFallbackLevel(0);
     loadPokemon();
 
     return () => {
@@ -938,13 +956,31 @@ const DetailPokemon = () => {
                 {/* Pokemon Image */}
                 <T.PokemonImageWrapper>
                   <PokemonAvatar
-                    src={sprite}
+                    src={
+                      fallbackLevel === 2
+                        ? "/substitute.png"
+                        : (imageError || fallbackLevel === 1) // If explicit error or level 1
+                          ? `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif`
+                          : sprite
+                    }
                     alt={name}
                     width={256}
                     height={256}
                     effect="blur"
                     loading="lazy"
                     className="pokemon-dt"
+                    onError={() => {
+                      // Level 0 -> 1 (Showdown)
+                      if (fallbackLevel === 0) setFallbackLevel(1);
+                      // Level 1 -> 2 (Substitute)
+                      else if (fallbackLevel === 1) setFallbackLevel(2);
+
+                      setImageError(true);
+                    }}
+                    key={`detail-${pokemonId}-${fallbackLevel}`}
+                    style={fallbackLevel === 2 ? {
+                      transform: "scale(0.8)"
+                    } : undefined}
                   />
                 </T.PokemonImageWrapper>
                 {/* Type Icons */}
