@@ -26,16 +26,38 @@ export interface ItemEffectText {
   effect: string;
 }
 
+export interface ItemName {
+  name: string;
+}
+
+export interface PokemonBasic {
+  id: number;
+  name: string;
+}
+
+export interface PokemonItem {
+  pokemon: PokemonBasic;
+}
+
 export interface Item {
   id: number;
   name: string;
   cost?: number;
+  itemnames?: ItemName[];
   itemsprites: ItemSprite[];
   itemeffecttexts: ItemEffectText[];
 }
 
+export interface ItemWithHeldPokemon extends Item {
+  pokemonitems?: PokemonItem[];
+}
+
 export interface ItemsResponse {
   item: Item[];
+}
+
+export interface HeldItemDetailsResponse {
+  item: ItemWithHeldPokemon[];
 }
 
 // ============ Helper Functions ============
@@ -103,4 +125,29 @@ export function formatItemName(name: string): string {
     .split(" ")
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+/**
+ * Get localized display name for an item
+ */
+export function getItemDisplayName(item: Item): string {
+  if (item.itemnames && item.itemnames.length > 0) {
+    return item.itemnames[0].name;
+  }
+  return formatItemName(item.name);
+}
+
+/**
+ * Check if category is a held items category
+ */
+export function isHeldItemCategory(categoryId: number): boolean {
+  // Held items categories
+  // 1: Stat Boosts
+  // 12: Held Items  
+  // 17: In A Pinch
+  // 18: Type Protection
+  // 19: Type Enhancement
+  // 42-46: Other held item categories
+  const heldItemCategories = [1, 12, 17, 18, 19, 42, 43, 44, 45, 46];
+  return heldItemCategories.includes(categoryId);
 }

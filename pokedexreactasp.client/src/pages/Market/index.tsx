@@ -143,6 +143,7 @@ const Market: React.FC = () => {
               <DescriptionPanel>
                 <ItemDescriptionBox 
                   item={selectedItem}
+                  categoryId={selectedCategory}
                   onClose={() => setSelectedItem(null)}
                 />
               </DescriptionPanel>
