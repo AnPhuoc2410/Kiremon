@@ -409,6 +409,14 @@ namespace PokedexReactASP.Infrastructure.Services
                 .ThenBy(f => f.Username);
         }
 
+        public async Task<IEnumerable<string>> GetFriendIdsAsync(string userId)
+        {
+            var friendships = await _context.Friendships
+                .Where(f => f.User1Id == userId || f.User2Id == userId)
+                .ToListAsync();
+            return friendships.Select(f => f.User1Id == userId ? f.User2Id : f.User1Id).ToList();
+        }
+
         public async Task<FriendsSummaryDto> GetFriendsSummaryAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);

@@ -13,6 +13,7 @@ using PokedexReactASP.Infrastructure;
 using PokedexReactASP.Infrastructure.Persistence;
 using PokedexReactASP.Infrastructure.Services;
 using PokedexReactASP.Server.Hubs;
+using PokedexReactASP.Server.Services;
 using PokedexReactASP.Server.Middleware;
 using PokedexReactASP.Server.Seed;
 using System.Text;
@@ -116,6 +117,9 @@ namespace PokedexReactASP.Server
             builder.Services.AddSingleton<INatureGeneratorService, NatureGeneratorService>();
             builder.Services.AddSingleton<ICatchRateCalculatorService, CatchRateCalculatorService>();
             builder.Services.AddScoped<IPokemonFactoryService, PokemonFactoryService>();
+            
+            // Presence Tracker (SignalR)
+            builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();
 
             builder.Services.Configure<OAuth2Settings>(builder.Configuration.GetSection(OAuth2Settings.SectionName));
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
@@ -277,6 +281,7 @@ namespace PokedexReactASP.Server
             app.MapControllers();
 
             app.MapHub<PokemonHub>("/hubs/pokemon");
+            app.MapHub<PresenceHub>("/hubs/presence");
 
             // Health check endpoint for Docker/Load Balancer
             app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
