@@ -6,6 +6,7 @@ export { regionsService } from "./pokemon/regions.service";
 export { pokedexService } from "./pokemon/pokedex.service";
 export { generationsService } from "./pokemon/generations.service";
 export { pokeItemService } from "./pokeitem/pokeitem.service";
+export { marketService } from "./market/market.service";
 export { userService } from "./user/user.service";
 export { collectionService } from "./collection/collection.service";
 export { friendService } from "./friend/friend.service";

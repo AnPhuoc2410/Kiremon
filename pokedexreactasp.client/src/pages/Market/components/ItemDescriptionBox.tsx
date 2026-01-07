@@ -19,8 +19,8 @@ import {
   Item,
   PokemonBasic,
   getItemDisplayName,
-} from "../Market.types";
-import { useHeldItemDetails } from "../useMarket";
+} from "../../../types/market.types";
+import { useHeldItemDetails } from "../../../components/hooks/useMarket";
 
 interface ItemDescriptionBoxProps {
   item: Item | null;

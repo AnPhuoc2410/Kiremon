@@ -18,7 +18,7 @@ import {
   Item,
   getItemSpriteUrl,
   formatItemName,
-} from "../Market.types";
+} from "../../../types/market.types";
 
 interface ItemGridProps {
   items: Item[];
