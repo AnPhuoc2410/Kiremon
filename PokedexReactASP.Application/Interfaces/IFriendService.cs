@@ -61,6 +61,8 @@ namespace PokedexReactASP.Application.Interfaces
         /// Get all friends of a user
         /// </summary>
         Task<IEnumerable<FriendDto>> GetFriendsAsync(string userId);
+
+        Task<IEnumerable<string>> GetFriendIdsAsync(string userId);
         
         /// <summary>
         /// Get friends summary (counts, online status, etc.)
