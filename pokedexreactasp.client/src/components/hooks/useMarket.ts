@@ -1,96 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+import { marketService } from "../../services/market";
 import {
   ItemCategory,
   Item,
-  CategoriesResponse,
-  ItemsResponse,
-  ItemWithHeldPokemon,
-  HeldItemDetailsResponse,
   PokemonBasic,
-} from "./Market.types";
-
-// PokeAPI GraphQL endpoint (beta)
-const POKEAPI_GRAPHQL_URL = "https://beta.pokeapi.co/graphql/v1beta";
-
-// ============ GraphQL Queries ============
-
-const GET_CATEGORIES_QUERY = `
-  query getCategories {
-    itemcategory: pokemon_v2_itemcategory {
-      id
-      name
-      itemcategorynames: pokemon_v2_itemcategorynames(where: {language_id: {_eq: 9}}) {
-        name
-      }
-    }
-  }
-`;
-
-const GET_ITEMS_BY_CATEGORY_QUERY = `
-  query getItemsByCategory($categoryId: Int!) {
-    item: pokemon_v2_item(where: {item_category_id: {_eq: $categoryId}}) {
-      id
-      name
-      cost
-      itemnames: pokemon_v2_itemnames(where: {language_id: {_eq: 9}}) {
-        name
-      }
-      itemsprites: pokemon_v2_itemsprites {
-        sprites
-      }
-    }
-  }
-`;
-
-const GET_HELD_ITEM_DETAILS_QUERY = `
-  query getHeldItemDetails($itemId: Int!) {
-    item: pokemon_v2_item(where: {id: {_eq: $itemId}}) {
-      id
-      itemeffecttexts: pokemon_v2_itemflavortexts(where: {language_id: {_eq: 9}}, limit: 1) {
-        effect: flavor_text
-      }
-      pokemonitems: pokemon_v2_pokemonitems(
-        distinct_on: [pokemon_id]
-        order_by: {pokemon_id: asc}
-      ) {
-        pokemon: pokemon_v2_pokemon {
-          name
-          id
-        }
-      }
-    }
-  }
-`;
-
-// ============ GraphQL Fetch Function ============
-
-async function fetchGraphQL<T>(
-  query: string,
-  variables?: Record<string, unknown>
-): Promise<T> {
-  const response = await fetch(POKEAPI_GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query,
-      variables,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`GraphQL request failed: ${response.status}`);
-  }
-
-  const result = await response.json();
-
-  if (result.errors) {
-    throw new Error(result.errors[0]?.message || "GraphQL Error");
-  }
-
-  return result.data;
-}
+} from "../../types/market.types";
 
 // ============ Cache Configuration ============
 
@@ -129,11 +43,11 @@ export function useCategories(): UseCategoriesResult {
       }
 
       // Fetch from API if no cache or force refresh
-      const data = await fetchGraphQL<CategoriesResponse>(GET_CATEGORIES_QUERY);
-      setCategories(data.itemcategory);
+      const categories = await marketService.getCategories();
+      setCategories(categories);
       
       // Cache the result
-      sessionStorage.setItem(CACHE_KEYS.CATEGORIES, JSON.stringify(data.itemcategory));
+      sessionStorage.setItem(CACHE_KEYS.CATEGORIES, JSON.stringify(categories));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch categories");
     } finally {
@@ -175,11 +89,8 @@ export function useItems(categoryId: number | null): UseItemsResult {
     setError(null);
 
     try {
-      const data = await fetchGraphQL<ItemsResponse>(
-        GET_ITEMS_BY_CATEGORY_QUERY,
-        { categoryId }
-      );
-      setItems(data.item);
+      const items = await marketService.getItemsByCategory(categoryId);
+      setItems(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch items");
     } finally {
@@ -197,7 +108,6 @@ export function useItems(categoryId: number | null): UseItemsResult {
 // ============ Held Item Details Hook ============
 
 interface UseHeldItemDetailsResult {
-  heldItemDetails: ItemWithHeldPokemon | null;
   wildPokemon: PokemonBasic[];
   itemEffect: string;
   loading: boolean;
@@ -207,7 +117,6 @@ interface UseHeldItemDetailsResult {
 }
 
 export function useHeldItemDetails(): UseHeldItemDetailsResult {
-  const [heldItemDetails, setHeldItemDetails] = useState<ItemWithHeldPokemon | null>(null);
   const [wildPokemon, setWildPokemon] = useState<PokemonBasic[]>([]);
   const [itemEffect, setItemEffect] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -218,15 +127,9 @@ export function useHeldItemDetails(): UseHeldItemDetailsResult {
     setError(null);
 
     try {
-      const data = await fetchGraphQL<HeldItemDetailsResponse>(
-        GET_HELD_ITEM_DETAILS_QUERY,
-        { itemId }
-      );
+      const itemData = await marketService.getHeldItemDetails(itemId);
       
-      if (data.item && data.item.length > 0) {
-        const itemData = data.item[0];
-        setHeldItemDetails(itemData);
-        
+      if (itemData) {
         // Extract pokemon list from pokemonitems
         const pokemonList = itemData.pokemonitems?.map(pi => pi.pokemon) || [];
         setWildPokemon(pokemonList);
@@ -243,14 +146,12 @@ export function useHeldItemDetails(): UseHeldItemDetailsResult {
   }, []);
 
   const clearHeldItemDetails = useCallback(() => {
-    setHeldItemDetails(null);
     setWildPokemon([]);
     setItemEffect("");
     setError(null);
   }, []);
 
   return { 
-    heldItemDetails, 
     wildPokemon,
     itemEffect, 
     loading, 

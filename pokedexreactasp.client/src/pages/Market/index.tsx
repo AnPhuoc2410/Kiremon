@@ -18,10 +18,10 @@ import {
   ItemGrid,
   ItemDescriptionBox,
 } from "./components";
-import { usePokeMart } from "./useMarket";
+import { usePokeMart } from "../../components/hooks/useMarket";
 import { Header } from "../../components/ui";
 import { pokeItemService } from "../../services";
-import { Item } from "./Market.types";
+import { Item } from "../../types/market.types";
 
 /**
  * Poké Mart - A retro-styled shop interface for browsing Pokémon items
