@@ -392,6 +392,209 @@ export const DialogDescription = styled.p`
   line-height: 1.6;
 `;
 
+// ============ WILD POKEMON SECTION ============
+export const WildPokemonSection = styled.div`
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px dashed ${colors["gray-300"]};
+`;
+
+export const WildPokemonTitle = styled.h4`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${colors["gray-600"]};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const WildPokemonHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border: 2px solid #15803d;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 6px rgba(34, 197, 94, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  margin-bottom: 16px;
+  
+  span {
+    letter-spacing: 0.3px;
+  }
+`;
+
+export const WildPokemonList = styled.div<{ $isExpanded: boolean }>`
+  display: ${props => props.$isExpanded ? "grid" : "none"};
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 8px;
+  animation: ${props => props.$isExpanded ? "fadeIn 0.3s ease-in" : "none"};
+  
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${colors["gray-100"]};
+    border-radius: 8px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${colors["gray-300"]};
+    border-radius: 8px;
+    
+    &:hover {
+      background: ${colors["gray-400"]};
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+    max-height: 280px;
+  }
+`;
+
+export const WildPokemonItem = styled.a`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0px;
+  background: white;
+  border: 2px solid ${colors["gray-200"]};
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${colors["gray-700"]};
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  
+  &:hover {
+    border-color: ${colors["blue-400"]};
+    color: ${colors["blue-700"]};
+    transform: translateY(-4px);
+    box-shadow: 
+      0 8px 16px rgba(59, 130, 246, 0.15),
+      0 0 0 4px rgba(59, 130, 246, 0.1);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 4px 8px rgba(59, 130, 246, 0.2),
+      0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  
+  img {
+    width: 80px;
+    height: 80px;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+  }
+  
+  &:hover img {
+    transform: scale(1.15) translateY(-2px);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+  
+  span {
+    text-transform: capitalize;
+    line-height: 1.3;
+    word-break: break-word;
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+`;
+
+export const WildPokemonLoading = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  color: ${colors["gray-600"]};
+  font-size: 14px;
+  font-weight: 500;
+  
+  &::before {
+    content: "⚡";
+    display: inline-block;
+    margin-right: 8px;
+    animation: bounce 1s infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+`;
+
+export const WildPokemonEmpty = styled.div`
+  text-align: center;
+  padding: 16px;
+  color: ${colors["gray-500"]};
+  font-size: 13px;
+  font-style: italic;
+`;
+
 export const DialogPlaceholder = styled.div`
   color: ${colors["gray-500"]};
   font-style: italic;
