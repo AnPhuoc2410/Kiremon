@@ -7,26 +7,24 @@ Husky đã được cấu hình để tự động format và kiểm tra code tr
 ## 🔧 Cấu Hình Hiện Tại
 
 ### Pre-commit Hook
+
 **File:** `.husky/pre-commit`
 
 Tự động chạy trước mỗi commit:
+
 ```bash
 npx lint-staged
 ```
 
 ### Lint-staged Configuration
+
 **File:** `package.json`
 
 ```json
 {
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.{json,css,scss,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
+    "*.{json,css,scss,md}": ["prettier --write"]
   }
 }
 ```
@@ -87,18 +85,20 @@ git commit -m "test"
 # Output:
 ✖ Running tasks for staged files...
   error  'unused' is assigned a value but never used
-  
+
 # Commit bị hủy - bạn cần fix lỗi trước
 ```
 
 ## 🛠️ Commands Hữu Ích
 
 ### Chạy lint-staged thủ công:
+
 ```bash
 npx lint-staged
 ```
 
 ### Bỏ qua pre-commit hook (khẩn cấp):
+
 ```bash
 git commit -m "message" --no-verify
 # hoặc
@@ -106,6 +106,7 @@ git commit -m "message" -n
 ```
 
 ### Kiểm tra Husky hoạt động:
+
 ```bash
 # Tạo file test
 echo "const x={a:1}" > test.ts
@@ -122,12 +123,14 @@ cat test.ts
 ## 🎯 Best Practices
 
 ### ✅ Nên Làm:
+
 - Luôn để Husky chạy tự động
 - Commit thường xuyên với các thay đổi nhỏ
 - Fix các lỗi ESLint khi hook báo lỗi
 - Kiểm tra file sau khi commit để đảm bảo format đúng
 
 ### ❌ Không Nên:
+
 - Dùng `--no-verify` thường xuyên
 - Commit quá nhiều file cùng lúc (chậm)
 - Ignore các lỗi ESLint mà không fix
@@ -202,12 +205,8 @@ chmod +x .husky/pre-push
 ```json
 {
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "prettier --write"
-    ],
-    "*.ts": [
-      "eslint --fix"
-    ]
+    "*.{ts,tsx}": ["prettier --write"],
+    "*.ts": ["eslint --fix"]
   }
 }
 ```
