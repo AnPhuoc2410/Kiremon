@@ -1,3 +1,10 @@
 node_modules/
 dist/
 obj/
+build/
+coverage/
+*.min.js
+*.min.css
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
