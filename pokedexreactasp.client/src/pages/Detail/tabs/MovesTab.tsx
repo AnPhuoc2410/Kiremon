@@ -30,8 +30,11 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
   // Priority (speed modifier)
   if (move.priority !== 0) {
     badges.push({
-      icon: <IconBolt size={10} />,
-      label: move.priority > 0 ? `+${move.priority}` : `${move.priority}`,
+      icon: <IconBolt size={14} />,
+      label:
+        move.priority > 0
+          ? `Priority +${move.priority}`
+          : `Priority ${move.priority}`,
       color: move.priority > 0 ? "#16a34a" : "#dc2626",
     });
   }
@@ -39,9 +42,9 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
   // Generation introduced
   if (move.generation && move.generation > 1) {
     badges.push({
-      icon: <IconSparkles size={10} />,
+      icon: <IconSparkles size={14} />,
       label: `Gen ${move.generation}`,
-      color: "#6b7280",
+      color: "#6366f1",
     });
   }
 
@@ -49,35 +52,35 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
   if (move.meta) {
     if (move.meta.critRate > 0) {
       badges.push({
-        icon: <IconTarget size={10} />,
+        icon: <IconTarget size={14} />,
         label: "High Crit",
         color: "#ea580c",
       });
     }
     if (move.meta.flinchChance > 0) {
       badges.push({
-        icon: <IconAlertTriangle size={10} />,
+        icon: <IconAlertTriangle size={14} />,
         label: `${move.meta.flinchChance}% Flinch`,
         color: "#ca8a04",
       });
     }
     if (move.meta.drain > 0) {
       badges.push({
-        icon: <IconDroplet size={10} />,
+        icon: <IconDroplet size={14} />,
         label: `${move.meta.drain}% Drain`,
         color: "#16a34a",
       });
     }
     if (move.meta.drain < 0) {
       badges.push({
-        icon: <IconFlame size={10} />,
+        icon: <IconFlame size={14} />,
         label: `${Math.abs(move.meta.drain)}% Recoil`,
         color: "#dc2626",
       });
     }
     if (move.meta.healing > 0) {
       badges.push({
-        icon: <IconHeart size={10} />,
+        icon: <IconHeart size={14} />,
         label: `${move.meta.healing}% Heal`,
         color: "#ec4899",
       });
@@ -88,7 +91,7 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
           ? `${move.meta.minHits} Hits`
           : `${move.meta.minHits}-${move.meta.maxHits} Hits`;
       badges.push({
-        icon: <IconArrowUp size={10} />,
+        icon: <IconArrowUp size={14} />,
         label: hitsLabel,
         color: "#6366f1",
       });
@@ -564,9 +567,9 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
               </span>
             )}
             <span className={`damage-class ${move.damageClass}`}>
-              {move.damageClass === "physical" && <IconSword size={12} />}
-              {move.damageClass === "special" && <IconWand size={12} />}
-              {move.damageClass === "status" && <IconRefresh size={12} />}
+              {move.damageClass === "physical" && <IconSword size={14} />}
+              {move.damageClass === "special" && <IconWand size={14} />}
+              {move.damageClass === "status" && <IconRefresh size={14} />}
               {move.damageClass}
             </span>
           </div>

@@ -254,28 +254,29 @@ export const MoveCard = styled.div<{ moveType: string }>`
   }
 
   .move-name {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 700;
+    font-size: 1rem;
     color: #1f2937;
     text-transform: capitalize;
     flex: 1;
+    line-height: 1.3;
   }
 
   .move-type-badge {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     background: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
     color: ${({ moveType }) => typeColors[moveType]?.text || "#fff"};
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
 
     img {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       filter: ${({ moveType }) =>
         typeColors[moveType]?.text === "#1f2937"
           ? "none"
@@ -285,22 +286,23 @@ export const MoveCard = styled.div<{ moveType: string }>`
 
   .move-stats {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .stat-chip {
     display: flex;
     align-items: center;
-    gap: 3px;
-    font-size: 0.75rem;
+    gap: 4px;
+    font-size: 0.8rem;
     color: #6b7280;
     background: #f3f4f6;
-    padding: 2px 6px;
-    border-radius: 3px;
+    padding: 4px 8px;
+    border-radius: 4px;
 
     .label {
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .value {
@@ -321,12 +323,17 @@ export const MoveCard = styled.div<{ moveType: string }>`
   .damage-class {
     display: flex;
     align-items: center;
-    gap: 3px;
-    font-size: 0.7rem;
+    gap: 4px;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 3px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
 
     &.physical {
       background: #fecaca;
@@ -349,10 +356,10 @@ export const MoveCard = styled.div<{ moveType: string }>`
 export const TMDiscCard = styled.div<{ moveType: string }>`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: #fafafa;
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 12px 16px;
   transition: transform 0.15s ease;
   box-shadow: 3px 3px 0 #e5e7eb;
 
@@ -363,7 +370,9 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
   .disc-icon {
     flex-shrink: 0;
     color: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
-    filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.15));
+    width: 40px;
+    height: 40px;
   }
 
   .disc-info {
@@ -371,26 +380,27 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
     min-width: 0;
 
     .move-name {
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 1rem;
       color: #1f2937;
       text-transform: capitalize;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      line-height: 1.3;
     }
 
     .move-meta {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
     .meta-item {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       color: #6b7280;
 
       span {
         color: #374151;
-        font-weight: 600;
+        font-weight: 700;
       }
     }
   }
@@ -398,9 +408,9 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
   .type-badge {
     background: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
     color: ${({ moveType }) => typeColors[moveType]?.text || "#fff"};
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     flex-shrink: 0;
@@ -411,10 +421,10 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
 export const EggMoveCard = styled.div<{ moveType: string }>`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: #fffbeb;
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 12px 16px;
   box-shadow: 3px 3px 0 #fde68a;
   transition: transform 0.15s ease;
 
@@ -423,8 +433,8 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
   }
 
   .egg-icon {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     background: #fef3c7;
     border-radius: 50%;
     display: flex;
@@ -434,6 +444,8 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
 
     svg {
       color: #d97706;
+      width: 22px;
+      height: 22px;
     }
   }
 
@@ -442,21 +454,22 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
     min-width: 0;
 
     .move-name {
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 1rem;
       color: #92400e;
       text-transform: capitalize;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      line-height: 1.3;
     }
 
     .move-stats {
       display: flex;
-      gap: 6px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .stat {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       color: #b45309;
 
       span {
@@ -468,9 +481,9 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
   .type-badge {
     background: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
     color: ${({ moveType }) => typeColors[moveType]?.text || "#fff"};
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     flex-shrink: 0;
@@ -481,10 +494,10 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
 export const TutorMoveCard = styled.div<{ moveType: string }>`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: #f0fdf4;
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 12px 16px;
   box-shadow: 3px 3px 0 #bbf7d0;
   transition: transform 0.15s ease;
 
@@ -493,8 +506,8 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
   }
 
   .tutor-icon {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     background: #dcfce7;
     border-radius: 50%;
     display: flex;
@@ -504,6 +517,8 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
 
     svg {
       color: #16a34a;
+      width: 22px;
+      height: 22px;
     }
   }
 
@@ -512,21 +527,22 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
     min-width: 0;
 
     .move-name {
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 1rem;
       color: #166534;
       text-transform: capitalize;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      line-height: 1.3;
     }
 
     .move-stats {
       display: flex;
-      gap: 6px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .stat {
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       color: #15803d;
 
       span {
@@ -538,9 +554,9 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
   .type-badge {
     background: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
     color: ${({ moveType }) => typeColors[moveType]?.text || "#fff"};
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     flex-shrink: 0;
@@ -551,35 +567,39 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
 export const EffectBadgesRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 6px;
 `;
 
 export const EffectBadge = styled.span<{ badgeColor: string }>`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 0.65rem;
+  gap: 4px;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 2px 5px;
-  border-radius: 3px;
-  background: ${({ badgeColor }) => `${badgeColor}20`};
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: ${({ badgeColor }) => `${badgeColor}18`};
   color: ${({ badgeColor }) => badgeColor};
   text-transform: capitalize;
+  border: 1px solid ${({ badgeColor }) => `${badgeColor}30`};
 
   svg {
     flex-shrink: 0;
+    width: 14px;
+    height: 14px;
   }
 `;
 
 export const MoveDescription = styled.div`
-  font-size: 0.75rem;
-  color: #6b7280;
-  line-height: 1.4;
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px dashed #e5e7eb;
-  font-style: italic;
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f9fafb;
+  border-radius: 4px;
+  border-left: 3px solid #d1d5db;
 `;
 
 export const MoveInfoIcon = styled.button`
