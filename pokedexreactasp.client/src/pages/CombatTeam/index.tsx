@@ -10,7 +10,7 @@ import {
   Header,
   Loading,
   Modal,
-  TypeIcon
+  TypeIcon,
 } from "../../components/ui";
 import { ICombatPokemon, ICombatTeam } from "../../types/pokemon";
 import { getDetailPokemon } from "../../services/pokemon";
@@ -32,18 +32,28 @@ const CombatTeam: React.FC = () => {
   const [teamData, setTeamData] = useState<ICombatTeam>({
     active: [],
     dream: [],
-    storage: []
+    storage: [],
   });
-  const [selectedPokemon, setSelectedPokemon] = useState<ICombatPokemon | null>(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<ICombatPokemon | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showMoveModal, setShowMoveModal] = useState<boolean>(false);
-  const [targetTeam, setTargetTeam] = useState<"active" | "dream" | "storage">("active");
-  const [simulationLog, setSimulationLog] = useState<Array<{ text: string, type?: 'attack' | 'info' | 'critical' | 'heal' }>>([]);
+  const [targetTeam, setTargetTeam] = useState<"active" | "dream" | "storage">(
+    "active",
+  );
+  const [simulationLog, setSimulationLog] = useState<
+    Array<{ text: string; type?: "attack" | "info" | "critical" | "heal" }>
+  >([]);
   const [isBattling, setIsBattling] = useState<boolean>(false);
   const [computerTeam, setComputerTeam] = useState<ICombatPokemon[]>([]);
-  const [availablePokemon, setAvailablePokemon] = useState<ICombatPokemon[]>([]);
-  const [isLoadingPokemonDetails, setIsLoadingPokemonDetails] = useState<boolean>(false);
-  const [showAddPokemonModal, setShowAddPokemonModal] = useState<boolean>(false);
+  const [availablePokemon, setAvailablePokemon] = useState<ICombatPokemon[]>(
+    [],
+  );
+  const [isLoadingPokemonDetails, setIsLoadingPokemonDetails] =
+    useState<boolean>(false);
+  const [showAddPokemonModal, setShowAddPokemonModal] =
+    useState<boolean>(false);
 
   // Load team data from localStorage
   useEffect(() => {
@@ -61,12 +71,15 @@ const CombatTeam: React.FC = () => {
 
         // Load team data
         const storedTeamData = localStorage.getItem("pokegames@combatTeam");
-        console.log("CombatTeam: Retrieved team data from localStorage", storedTeamData ? "found" : "not found");
+        console.log(
+          "CombatTeam: Retrieved team data from localStorage",
+          storedTeamData ? "found" : "not found",
+        );
 
         let parsedTeamData: ICombatTeam = {
           active: [],
           dream: [],
-          storage: []
+          storage: [],
         };
 
         if (storedTeamData) {
@@ -75,11 +88,14 @@ const CombatTeam: React.FC = () => {
             parsedTeamData = {
               active: Array.isArray(parsed.active) ? parsed.active : [],
               dream: Array.isArray(parsed.dream) ? parsed.dream : [],
-              storage: Array.isArray(parsed.storage) ? parsed.storage : []
+              storage: Array.isArray(parsed.storage) ? parsed.storage : [],
             };
             console.log("CombatTeam: Successfully parsed team data");
           } catch (parseError) {
-            console.error("CombatTeam: Error parsing team data from localStorage:", parseError);
+            console.error(
+              "CombatTeam: Error parsing team data from localStorage:",
+              parseError,
+            );
             // Continue with empty teams if parsing fails
           }
         }
@@ -89,7 +105,6 @@ const CombatTeam: React.FC = () => {
 
         // Load caught Pokemon in the background
         loadCaughtPokemon(parsedTeamData);
-
       } catch (error) {
         console.error("CombatTeam: Critical error loading data:", error);
         toast.error("Failed to load your teams. Please try again.");
@@ -113,7 +128,9 @@ const CombatTeam: React.FC = () => {
     try {
       // Only load from API if authenticated
       if (!isAuthenticated) {
-        console.log("CombatTeam: User not authenticated, skipping Pokemon load");
+        console.log(
+          "CombatTeam: User not authenticated, skipping Pokemon load",
+        );
         setIsLoading(false);
         return;
       }
@@ -122,7 +139,7 @@ const CombatTeam: React.FC = () => {
       const allTeamPokemonNames = [
         ...(currentTeamData.active || []).map((p: ICombatPokemon) => p.name),
         ...(currentTeamData.dream || []).map((p: ICombatPokemon) => p.name),
-        ...(currentTeamData.storage || []).map((p: ICombatPokemon) => p.name)
+        ...(currentTeamData.storage || []).map((p: ICombatPokemon) => p.name),
       ];
 
       // Load caught Pokemon from API
@@ -132,34 +149,50 @@ const CombatTeam: React.FC = () => {
         console.log("CombatTeam: Retrieved caught Pokemon from API");
 
         const simplifiedPokemon = apiPokemon
-          .filter((pokemon) => !allTeamPokemonNames.includes(pokemon.displayName))
+          .filter(
+            (pokemon) => !allTeamPokemonNames.includes(pokemon.displayName),
+          )
           .map((pokemon) => {
             return {
               id: pokemon.id,
               name: pokemon.displayName,
               originalName: pokemon.name.toUpperCase(),
-              sprite: pokemon.spriteUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+              sprite:
+                pokemon.spriteUrl ||
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png",
               types: [],
               stats: [
                 { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
                 { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
-                { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
-                { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
-                { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
-                { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
+                {
+                  base_stat: 50,
+                  effort: 0,
+                  stat: { name: "defense", url: "" },
+                },
+                {
+                  base_stat: 50,
+                  effort: 0,
+                  stat: { name: "special-attack", url: "" },
+                },
+                {
+                  base_stat: 50,
+                  effort: 0,
+                  stat: { name: "special-defense", url: "" },
+                },
+                { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } },
               ],
               abilities: [],
               moves: [],
               level: pokemon.currentLevel || 50,
-              experience: 100
+              experience: 100,
             } as ICombatPokemon;
           });
 
         // Add simplified Pokemon to storage
         if (simplifiedPokemon.length > 0) {
-          setTeamData(prevData => ({
+          setTeamData((prevData) => ({
             ...prevData,
-            storage: [...prevData.storage, ...simplifiedPokemon]
+            storage: [...prevData.storage, ...simplifiedPokemon],
           }));
         }
       }
@@ -173,13 +206,13 @@ const CombatTeam: React.FC = () => {
 
   // Replace the existing loadCaughtPokemonDetailsForStorage with a simplified version that doesn't make API calls
   const loadCaughtPokemonDetailsForStorage = async (
-    caughtPokemon: { name: string, nickname: string, sprite: string }[],
-    existingTeamPokemonNames: string[]
+    caughtPokemon: { name: string; nickname: string; sprite: string }[],
+    existingTeamPokemonNames: string[],
   ): Promise<ICombatPokemon[]> => {
     try {
       // Get all Pokemon that are caught but not in a team yet
       const uniqueCaughtPokemon = caughtPokemon.filter(
-        p => !existingTeamPokemonNames.includes(p.nickname)
+        (p) => !existingTeamPokemonNames.includes(p.nickname),
       );
 
       if (uniqueCaughtPokemon.length === 0) {
@@ -187,24 +220,34 @@ const CombatTeam: React.FC = () => {
       }
 
       // Create simplified Pokemon objects without API calls
-      return uniqueCaughtPokemon.map(pokemon => ({
+      return uniqueCaughtPokemon.map((pokemon) => ({
         id: Math.floor(Math.random() * 1000) + 1000, // Generate random ID
         name: pokemon.nickname,
         originalName: pokemon.name.toUpperCase(),
-        sprite: pokemon.sprite || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+        sprite:
+          pokemon.sprite ||
+          "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png",
         types: [],
         stats: [
           { base_stat: 50, effort: 0, stat: { name: "hp", url: "" } },
           { base_stat: 50, effort: 0, stat: { name: "attack", url: "" } },
           { base_stat: 50, effort: 0, stat: { name: "defense", url: "" } },
-          { base_stat: 50, effort: 0, stat: { name: "special-attack", url: "" } },
-          { base_stat: 50, effort: 0, stat: { name: "special-defense", url: "" } },
-          { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } }
+          {
+            base_stat: 50,
+            effort: 0,
+            stat: { name: "special-attack", url: "" },
+          },
+          {
+            base_stat: 50,
+            effort: 0,
+            stat: { name: "special-defense", url: "" },
+          },
+          { base_stat: 50, effort: 0, stat: { name: "speed", url: "" } },
         ],
         abilities: [],
         moves: [],
         level: 50,
-        experience: 100
+        experience: 100,
       }));
     } catch (error) {
       console.error("Error loading Pokemon details for storage:", error);
@@ -216,9 +259,9 @@ const CombatTeam: React.FC = () => {
   const getAllTeamPokemonNames = () => {
     // Collect all Pokemon names across all teams
     return [
-      ...teamData.active.map(p => p.name),
-      ...teamData.dream.map(p => p.name),
-      ...teamData.storage.map(p => p.name)
+      ...teamData.active.map((p) => p.name),
+      ...teamData.dream.map((p) => p.name),
+      ...teamData.storage.map((p) => p.name),
     ];
   };
 
@@ -230,69 +273,99 @@ const CombatTeam: React.FC = () => {
   }, [teamData, isLoading]);
 
   // Handle moving a Pokemon between teams
-  const handleMovePokemon = (pokemon: ICombatPokemon, targetTeam: "active" | "dream" | "storage") => {
+  const handleMovePokemon = (
+    pokemon: ICombatPokemon,
+    targetTeam: "active" | "dream" | "storage",
+  ) => {
     // Check if active team is full
     if (targetTeam === "active" && teamData.active.length >= MAX_TEAM_SIZE) {
-      toast.error(`Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`);
+      toast.error(
+        `Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`,
+      );
       return;
     }
 
-    setTeamData(prevTeamData => {
+    setTeamData((prevTeamData) => {
       // First remove from current team
       const updatedTeams = {
-        active: prevTeamData.active.filter(p => p.name !== pokemon.name),
-        dream: prevTeamData.dream.filter(p => p.name !== pokemon.name),
-        storage: prevTeamData.storage.filter(p => p.name !== pokemon.name)
+        active: prevTeamData.active.filter((p) => p.name !== pokemon.name),
+        dream: prevTeamData.dream.filter((p) => p.name !== pokemon.name),
+        storage: prevTeamData.storage.filter((p) => p.name !== pokemon.name),
       };
 
       // Then add to target team
       updatedTeams[targetTeam] = [...updatedTeams[targetTeam], pokemon];
 
-      toast.success(`${pokemon.name} moved to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`);
+      toast.success(
+        `${pokemon.name} moved to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`,
+      );
       return updatedTeams;
     });
   };
 
   // Handle adding a Pokemon to a team
-  const handleAddPokemon = (pokemon: ICombatPokemon, targetTeam: "active" | "dream" | "storage") => {
+  const handleAddPokemon = (
+    pokemon: ICombatPokemon,
+    targetTeam: "active" | "dream" | "storage",
+  ) => {
     // Check if active team is full
     if (targetTeam === "active" && teamData.active.length >= MAX_TEAM_SIZE) {
-      toast.error(`Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`);
+      toast.error(
+        `Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`,
+      );
       return;
     }
 
-    setTeamData(prevTeamData => {
+    setTeamData((prevTeamData) => {
       const updatedTeams = { ...prevTeamData };
       updatedTeams[targetTeam] = [...updatedTeams[targetTeam], pokemon];
 
-      toast.success(`${pokemon.name} added to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`);
+      toast.success(
+        `${pokemon.name} added to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`,
+      );
       return updatedTeams;
     });
 
     setShowAddPokemonModal(false);
   };
 
-  const handleRemovePokemon = (pokemon: ICombatPokemon, sourceTeam: "active" | "dream" | "storage") => {
+  const handleRemovePokemon = (
+    pokemon: ICombatPokemon,
+    sourceTeam: "active" | "dream" | "storage",
+  ) => {
     // Prevent removing Pokémon from storage
     if (sourceTeam === "storage") {
-      toast.error("Pokémon in storage can't be removed directly. Move them to your active or dream team first.");
+      toast.error(
+        "Pokémon in storage can't be removed directly. Move them to your active or dream team first.",
+      );
       return;
     }
 
-    setTeamData(prevTeamData => {
+    setTeamData((prevTeamData) => {
       return {
         // Remove from source team
-        active: sourceTeam === "active" ? prevTeamData.active.filter(p => p.name !== pokemon.name) : prevTeamData.active,
-        dream: sourceTeam === "dream" ? prevTeamData.dream.filter(p => p.name !== pokemon.name) : prevTeamData.dream,
+        active:
+          sourceTeam === "active"
+            ? prevTeamData.active.filter((p) => p.name !== pokemon.name)
+            : prevTeamData.active,
+        dream:
+          sourceTeam === "dream"
+            ? prevTeamData.dream.filter((p) => p.name !== pokemon.name)
+            : prevTeamData.dream,
         // Add to storage if not already there
-        storage: [...prevTeamData.storage, pokemon]
+        storage: [...prevTeamData.storage, pokemon],
       };
     });
 
-    toast.success(`${pokemon.name} was moved to storage from your ${sourceTeam} team.`);
+    toast.success(
+      `${pokemon.name} was moved to storage from your ${sourceTeam} team.`,
+    );
   };
 
-  const openMoveModal = (pokemon: ICombatPokemon, team: "active" | "dream" | "storage") => {
+  const openMoveModal = (
+    pokemon: ICombatPokemon,
+    team: "active" | "dream" | "storage",
+  ) => {
     setSelectedPokemon(pokemon);
     setTargetTeam(team);
     setShowMoveModal(true);
@@ -300,7 +373,16 @@ const CombatTeam: React.FC = () => {
 
   // Calculate total stats for a team
   const calculateTeamStats = (team: ICombatPokemon[]) => {
-    if (!team || !team.length) return { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0, total: 0 };
+    if (!team || !team.length)
+      return {
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        specialAttack: 0,
+        specialDefense: 0,
+        speed: 0,
+        total: 0,
+      };
 
     // Initial object with all stats at 0
     const totalStats = {
@@ -310,36 +392,36 @@ const CombatTeam: React.FC = () => {
       specialAttack: 0,
       specialDefense: 0,
       speed: 0,
-      total: 0
+      total: 0,
     };
 
     // Sum up all stats from team Pokémon
-    team.forEach(pokemon => {
+    team.forEach((pokemon) => {
       if (pokemon && pokemon.stats && Array.isArray(pokemon.stats)) {
-        pokemon.stats.forEach(stat => {
+        pokemon.stats.forEach((stat) => {
           if (stat && stat.stat && stat.stat.name) {
-            const statName = stat.stat.name.replace('-', '');
+            const statName = stat.stat.name.replace("-", "");
             const baseStat = stat.base_stat || 0;
 
             switch (statName) {
-              case 'hp':
+              case "hp":
                 totalStats.hp += baseStat;
                 break;
-              case 'attack':
+              case "attack":
                 totalStats.attack += baseStat;
                 break;
-              case 'defense':
+              case "defense":
                 totalStats.defense += baseStat;
                 break;
-              case 'specialattack':
-              case 'special-attack':
+              case "specialattack":
+              case "special-attack":
                 totalStats.specialAttack += baseStat;
                 break;
-              case 'specialdefense':
-              case 'special-defense':
+              case "specialdefense":
+              case "special-defense":
                 totalStats.specialDefense += baseStat;
                 break;
-              case 'speed':
+              case "speed":
                 totalStats.speed += baseStat;
                 break;
             }
@@ -349,23 +431,22 @@ const CombatTeam: React.FC = () => {
     });
 
     // Calculate total of all stats
-    totalStats.total = (
+    totalStats.total =
       totalStats.hp +
       totalStats.attack +
       totalStats.defense +
       totalStats.specialAttack +
       totalStats.specialDefense +
-      totalStats.speed
-    );
+      totalStats.speed;
 
     return totalStats;
   };
 
   // Get stat value for a Pokemon
   const getStatValue = (pokemon: ICombatPokemon, statName: string) => {
-    const stat = pokemon.stats.find(s =>
-      s.stat.name === statName ||
-      s.stat.name.replace('-', '') === statName
+    const stat = pokemon.stats.find(
+      (s) =>
+        s.stat.name === statName || s.stat.name.replace("-", "") === statName,
     );
     return stat ? stat.base_stat : 0;
   };
@@ -374,8 +455,8 @@ const CombatTeam: React.FC = () => {
   const calculateTypeCoverage = (team: ICombatPokemon[]) => {
     const typeCount: Record<string, number> = {};
 
-    team.forEach(pokemon => {
-      pokemon.types.forEach(type => {
+    team.forEach((pokemon) => {
+      pokemon.types.forEach((type) => {
         typeCount[type] = (typeCount[type] || 0) + 1;
       });
     });
@@ -398,98 +479,124 @@ const CombatTeam: React.FC = () => {
       {
         id: 6,
         name: "CHARIZARD",
-        sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
+        sprite:
+          "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
         types: ["fire", "flying"],
         stats: [
           {
-            base_stat: 78, effort: 0, stat: {
+            base_stat: 78,
+            effort: 0,
+            stat: {
               name: "hp",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 84, effort: 0, stat: {
+            base_stat: 84,
+            effort: 0,
+            stat: {
               name: "attack",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 78, effort: 0, stat: {
+            base_stat: 78,
+            effort: 0,
+            stat: {
               name: "defense",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 109, effort: 2, stat: {
+            base_stat: 109,
+            effort: 2,
+            stat: {
               name: "special-attack",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 85, effort: 0, stat: {
+            base_stat: 85,
+            effort: 0,
+            stat: {
               name: "special-defense",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 100, effort: 0, stat: {
+            base_stat: 100,
+            effort: 0,
+            stat: {
               name: "speed",
-              url: ""
-            }
-          }
+              url: "",
+            },
+          },
         ],
         abilities: ["blaze", "solar-power"],
         moves: ["flamethrower", "dragon-claw", "air-slash", "earthquake"],
         level: 50,
-        experience: 240
+        experience: 240,
       },
       {
         id: 9,
         name: "BLASTOISE",
-        sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
+        sprite:
+          "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
         types: ["water"],
         stats: [
           {
-            base_stat: 79, effort: 0, stat: {
+            base_stat: 79,
+            effort: 0,
+            stat: {
               name: "hp",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 83, effort: 0, stat: {
+            base_stat: 83,
+            effort: 0,
+            stat: {
               name: "attack",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 100, effort: 0, stat: {
+            base_stat: 100,
+            effort: 0,
+            stat: {
               name: "defense",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 85, effort: 0, stat: {
+            base_stat: 85,
+            effort: 0,
+            stat: {
               name: "special-attack",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 105, effort: 3, stat: {
+            base_stat: 105,
+            effort: 3,
+            stat: {
               name: "special-defense",
-              url: ""
-            }
+              url: "",
+            },
           },
           {
-            base_stat: 78, effort: 0, stat: {
+            base_stat: 78,
+            effort: 0,
+            stat: {
               name: "speed",
-              url: ""
-            }
-          }
+              url: "",
+            },
+          },
         ],
         abilities: ["torrent", "rain-dish"],
         moves: ["hydro-pump", "ice-beam", "flash-cannon", "dark-pulse"],
         level: 50,
-        experience: 239
+        experience: 239,
       },
       // Add more computer team members as needed
     ]);
@@ -514,28 +621,41 @@ const CombatTeam: React.FC = () => {
     const battleResult = simulateBattle(teamData.active, computerTeam);
 
     // Display battle results
-    setSimulationLog(prev => [
+    setSimulationLog((prev) => [
       ...prev,
       { text: "Battle finished!", type: "info" },
-      { text: battleResult ? "You won the battle!" : "Computer won the battle!", type: battleResult ? "heal" : "attack" }
+      {
+        text: battleResult ? "You won the battle!" : "Computer won the battle!",
+        type: battleResult ? "heal" : "attack",
+      },
     ]);
 
     setTimeout(() => {
       setIsBattling(false);
-      toast(battleResult ? "Victory! Your team won the battle!" : "Defeat! Better luck next time!");
+      toast(
+        battleResult
+          ? "Victory! Your team won the battle!"
+          : "Defeat! Better luck next time!",
+      );
     }, 1000);
   };
 
   // Simple battle simulation logic
-  const simulateBattle = (userTeam: ICombatPokemon[], cpuTeam: ICombatPokemon[]) => {
+  const simulateBattle = (
+    userTeam: ICombatPokemon[],
+    cpuTeam: ICombatPokemon[],
+  ) => {
     const userTeamCopy = [...userTeam];
     const cpuTeamCopy = [...cpuTeam];
 
     // Super simplified battle system
     let userTurn = true;
 
-    const addLogEntry = (message: string, type?: 'attack' | 'info' | 'critical' | 'heal') => {
-      setSimulationLog(prev => [...prev, { text: message, type }]);
+    const addLogEntry = (
+      message: string,
+      type?: "attack" | "info" | "critical" | "heal",
+    ) => {
+      setSimulationLog((prev) => [...prev, { text: message, type }]);
     };
 
     // Continue battle until one team has no Pokémon left
@@ -556,7 +676,7 @@ const CombatTeam: React.FC = () => {
       const isCritical = Math.random() < criticalChance;
 
       // Calculate damage
-      let damage = (attacker.level * 0.4 + 2) * attackStat / defenseStat;
+      let damage = ((attacker.level * 0.4 + 2) * attackStat) / defenseStat;
       damage = damage / 50 + 2;
 
       // Apply critical hit and randomness
@@ -565,7 +685,7 @@ const CombatTeam: React.FC = () => {
       }
 
       // Add randomness factor (85% to 100% of calculated damage)
-      damage *= (0.85 + Math.random() * 0.15);
+      damage *= 0.85 + Math.random() * 0.15;
 
       // Apply type effectiveness (simplified)
       const typeMultiplier = 1.0; // Would need complete type chart for real calculations
@@ -577,7 +697,7 @@ const CombatTeam: React.FC = () => {
       // Log the attack
       addLogEntry(
         `${attacker.name} attacks ${defender.name} for ${damage} damage${isCritical ? " (CRITICAL HIT!)" : ""}`,
-        isCritical ? "critical" : "attack"
+        isCritical ? "critical" : "attack",
       );
 
       // Simulate KO
@@ -587,7 +707,10 @@ const CombatTeam: React.FC = () => {
         defendingTeam.shift(); // Remove the fainted Pokémon
 
         if (defendingTeam.length > 0) {
-          addLogEntry(`${userTurn ? "Computer" : "You"} sent out ${defendingTeam[0].name}!`, "info");
+          addLogEntry(
+            `${userTurn ? "Computer" : "You"} sent out ${defendingTeam[0].name}!`,
+            "info",
+          );
         }
       }
 
@@ -601,27 +724,37 @@ const CombatTeam: React.FC = () => {
 
   // Define drag types
   enum DragItemTypes {
-    POKEMON_CARD = 'pokemon_card',
+    POKEMON_CARD = "pokemon_card",
   }
 
   // Handle drag start for a Pokemon card
-  const handleDragStart = (event: React.DragEvent<HTMLDivElement>, pokemon: ICombatPokemon, team: "active" | "dream" | "storage") => {
+  const handleDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    pokemon: ICombatPokemon,
+    team: "active" | "dream" | "storage",
+  ) => {
     // Store Pokemon data and source team in dataTransfer
-    event.dataTransfer.setData("application/json", JSON.stringify({
-      pokemon,
-      sourceTeam: team
-    }));
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData(
+      "application/json",
+      JSON.stringify({
+        pokemon,
+        sourceTeam: team,
+      }),
+    );
+    event.dataTransfer.effectAllowed = "move";
   };
 
   // Handle drag over for a team section
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = "move";
   };
 
   // Handle drop for a team section
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>, targetTeam: "active" | "dream" | "storage") => {
+  const handleDrop = (
+    event: React.DragEvent<HTMLDivElement>,
+    targetTeam: "active" | "dream" | "storage",
+  ) => {
     event.preventDefault();
 
     try {
@@ -635,25 +768,31 @@ const CombatTeam: React.FC = () => {
 
       // Check if active team is full
       if (targetTeam === "active" && teamData.active.length >= MAX_TEAM_SIZE) {
-        toast.error(`Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`);
+        toast.error(
+          `Your active team is full! Maximum size is ${MAX_TEAM_SIZE} Pokémon.`,
+        );
         return;
       }
 
       // Move the Pokemon from source team to target team
-      setTeamData(prevTeamData => {
+      setTeamData((prevTeamData) => {
         const updatedTeams = {
           active: [...prevTeamData.active],
           dream: [...prevTeamData.dream],
-          storage: [...prevTeamData.storage]
+          storage: [...prevTeamData.storage],
         };
 
         // Remove from source team
-        updatedTeams[sourceTeam] = updatedTeams[sourceTeam].filter(p => p.name !== pokemon.name);
+        updatedTeams[sourceTeam] = updatedTeams[sourceTeam].filter(
+          (p) => p.name !== pokemon.name,
+        );
 
         // Add to target team
         updatedTeams[targetTeam] = [...updatedTeams[targetTeam], pokemon];
 
-        toast.success(`${pokemon.name} moved to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`);
+        toast.success(
+          `${pokemon.name} moved to ${targetTeam === "active" ? "active team" : targetTeam === "dream" ? "dream team" : "storage"}.`,
+        );
         return updatedTeams;
       });
     } catch (error) {
@@ -664,16 +803,20 @@ const CombatTeam: React.FC = () => {
   // Check if a Pokemon is available in storage (i.e., caught)
   const isInStorage = (pokemon: ICombatPokemon): boolean => {
     // Check if this Pokemon exists in storage by name
-    return teamData.storage.some(p =>
-      p.name === pokemon.name ||
-      (pokemon.originalName && p.originalName === pokemon.originalName) ||
-      (pokemon.originalName && p.name === pokemon.originalName) ||
-      (p.originalName && p.originalName === pokemon.name)
+    return teamData.storage.some(
+      (p) =>
+        p.name === pokemon.name ||
+        (pokemon.originalName && p.originalName === pokemon.originalName) ||
+        (pokemon.originalName && p.name === pokemon.originalName) ||
+        (p.originalName && p.originalName === pokemon.name),
     );
   };
 
   // Render a pokemon card
-  const renderPokemonCard = (pokemon: ICombatPokemon, source: "active" | "dream" | "storage") => {
+  const renderPokemonCard = (
+    pokemon: ICombatPokemon,
+    source: "active" | "dream" | "storage",
+  ) => {
     // Check if this is a Dream Team Pokémon that isn't in storage (wishlist item)
     const isWishlistPokemon = source === "dream" && !isInStorage(pokemon);
 
@@ -682,22 +825,66 @@ const CombatTeam: React.FC = () => {
         key={pokemon.id + pokemon.name}
         draggable
         onDragStart={(e) => handleDragStart(e, pokemon, source)}
-        className={`pokemon-card ${source}-pokemon ${isWishlistPokemon ? 'wishlist-pokemon' : ''}`}
-        style={isWishlistPokemon ? { filter: 'grayscale(1)', opacity: 0.7 } : {}}
+        className={`pokemon-card ${source}-pokemon ${isWishlistPokemon ? "wishlist-pokemon" : ""}`}
+        style={
+          isWishlistPokemon ? { filter: "grayscale(1)", opacity: 0.7 } : {}
+        }
       >
         <S.PokemonActions>
-          <S.ActionButton onClick={() => openMoveModal(pokemon, source)} title="Move to another team">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 10L12 5L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M7 14L12 19L17 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <S.ActionButton
+            onClick={() => openMoveModal(pokemon, source)}
+            title="Move to another team"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7 10L12 5L17 10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M7 14L12 19L17 14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </S.ActionButton>
           {/* Only show remove button for active and dream teams */}
           {source !== "storage" && (
-            <S.ActionButton onClick={() => handleRemovePokemon(pokemon, source)} title="Remove from team">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <S.ActionButton
+              onClick={() => handleRemovePokemon(pokemon, source)}
+              title="Remove from team"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6 6L18 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M6 18L18 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </S.ActionButton>
           )}
@@ -713,24 +900,29 @@ const CombatTeam: React.FC = () => {
 
         <Text>{pokemon.name}</Text>
         {pokemon.originalName && pokemon.name !== pokemon.originalName && (
-          <Text variant="light" style={{ fontSize: '0.75rem' }}>({pokemon.originalName})</Text>
+          <Text variant="light" style={{ fontSize: "0.75rem" }}>
+            ({pokemon.originalName})
+          </Text>
         )}
         <Text variant="light">Lvl. {pokemon.level}</Text>
 
         {isWishlistPokemon && (
-          <Text variant="light" style={{ fontSize: '0.7rem', color: '#f87171', marginTop: '4px' }}>
+          <Text
+            variant="light"
+            style={{ fontSize: "0.7rem", color: "#f87171", marginTop: "4px" }}
+          >
             Not caught yet
           </Text>
         )}
 
-        <div style={{ display: 'flex', marginTop: '8px', gap: '4px' }}>
-          {pokemon.types.map(type => (
+        <div style={{ display: "flex", marginTop: "8px", gap: "4px" }}>
+          {pokemon.types.map((type) => (
             <TypeIcon key={type} type={type} size="sm" />
           ))}
         </div>
 
         {activeTab === "stats" && (
-          <div style={{ marginTop: '8px', width: '100%' }}>
+          <div style={{ marginTop: "8px", width: "100%" }}>
             <S.StatRow>
               <S.StatLabel>HP:</S.StatLabel>
               <S.StatValue>{getStatValue(pokemon, "hp")}</S.StatValue>
@@ -761,7 +953,10 @@ const CombatTeam: React.FC = () => {
   };
 
   // Render empty team slots
-  const renderEmptySlot = (count: number, team: "active" | "dream" | "storage") => {
+  const renderEmptySlot = (
+    count: number,
+    team: "active" | "dream" | "storage",
+  ) => {
     const slots = [];
     for (let i = 0; i < count; i++) {
       slots.push(
@@ -770,12 +965,32 @@ const CombatTeam: React.FC = () => {
           isEmpty
           onClick={() => setShowAddPokemonModal(true)}
         >
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 5V19"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M5 12H19"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
-          <Text variant="light" style={{ marginTop: '8px' }}>Add Pokémon</Text>
-        </S.TeamSlot>
+          <Text variant="light" style={{ marginTop: "8px" }}>
+            Add Pokémon
+          </Text>
+        </S.TeamSlot>,
       );
     }
     return slots;
@@ -787,19 +1002,43 @@ const CombatTeam: React.FC = () => {
       <S.TeamSlot
         isEmpty
         onClick={() => setShowAddPokemonModal(true)}
-        style={{ minHeight: '150px' }}
+        style={{ minHeight: "150px" }}
       >
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5V19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M5 12H19" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 5V19"
+            stroke="#9CA3AF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M5 12H19"
+            stroke="#9CA3AF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
-        <Text variant="light" style={{ marginTop: '8px' }}>Add Pokémon</Text>
+        <Text variant="light" style={{ marginTop: "8px" }}>
+          Add Pokémon
+        </Text>
       </S.TeamSlot>
     );
   };
 
   // Render team section with title and pokemon cards
-  const renderTeamSection = (title: string, team: ICombatPokemon[], teamType: "active" | "dream" | "storage") => {
+  const renderTeamSection = (
+    title: string,
+    team: ICombatPokemon[],
+    teamType: "active" | "dream" | "storage",
+  ) => {
     const isActiveTeam = teamType === "active";
     const isDreamTeam = teamType === "dream";
     const emptySlots = isActiveTeam ? MAX_TEAM_SIZE - team.length : 0;
@@ -808,7 +1047,8 @@ const CombatTeam: React.FC = () => {
       <S.TeamSection>
         <S.TeamHeader>
           <S.TeamTitle>
-            {title} ({team.length}{isActiveTeam ? `/${MAX_TEAM_SIZE}` : ''})
+            {title} ({team.length}
+            {isActiveTeam ? `/${MAX_TEAM_SIZE}` : ""})
           </S.TeamTitle>
 
           {isDreamTeam && team.length > 0 && (
@@ -818,13 +1058,15 @@ const CombatTeam: React.FC = () => {
               onClick={() => {
                 // Replace active team with dream team if dream team is valid
                 if (team.length <= MAX_TEAM_SIZE) {
-                  setTeamData(prev => ({
+                  setTeamData((prev) => ({
                     ...prev,
-                    active: [...team.filter(p => isInStorage(p))] // Only activate Pokémon we have
+                    active: [...team.filter((p) => isInStorage(p))], // Only activate Pokémon we have
                   }));
                   toast.success("Dream team activated!");
                 } else {
-                  toast.error(`Dream team has too many Pokémon! Maximum is ${MAX_TEAM_SIZE}.`);
+                  toast.error(
+                    `Dream team has too many Pokémon! Maximum is ${MAX_TEAM_SIZE}.`,
+                  );
                 }
               }}
             >
@@ -849,7 +1091,7 @@ const CombatTeam: React.FC = () => {
           onDrop={(e) => handleDrop(e, teamType)}
           className={`drop-target ${teamType}-team`}
         >
-          {team.map(pokemon => renderPokemonCard(pokemon, teamType))}
+          {team.map((pokemon) => renderPokemonCard(pokemon, teamType))}
           {emptySlots > 0 && renderEmptySlot(emptySlots, teamType)}
           {teamType === "storage" && renderAddButton()}
         </S.PokemonGrid>
@@ -877,7 +1119,8 @@ const CombatTeam: React.FC = () => {
                 variant="primary"
                 disabled={teamData.active.length >= MAX_TEAM_SIZE}
               >
-                Active Team {teamData.active.length >= MAX_TEAM_SIZE && "(Full)"}
+                Active Team{" "}
+                {teamData.active.length >= MAX_TEAM_SIZE && "(Full)"}
               </Button>
             )}
 
@@ -910,11 +1153,8 @@ const CombatTeam: React.FC = () => {
             )}
           </S.ButtonsContainer>
 
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <Button
-              onClick={() => setShowMoveModal(false)}
-              variant="light"
-            >
+          <div style={{ marginTop: "1rem", textAlign: "center" }}>
+            <Button onClick={() => setShowMoveModal(false)} variant="light">
               Cancel
             </Button>
           </div>
@@ -927,21 +1167,36 @@ const CombatTeam: React.FC = () => {
           <Text as="h3">Add Pokémon to Team</Text>
 
           {isLoadingPokemonDetails ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "2rem",
+              }}
+            >
               <Loading label="Loading your Pokémon..." />
             </div>
           ) : availablePokemon.length > 0 ? (
             <>
               <Text>Select a Pokémon to add:</Text>
 
-              <div style={{ marginTop: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+              <div
+                style={{
+                  marginTop: "1rem",
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                }}
+              >
                 <S.PokemonGrid>
-                  {availablePokemon.map(pokemon => (
+                  {availablePokemon.map((pokemon) => (
                     <S.TeamSlot
                       key={pokemon.id + pokemon.name}
                       onClick={() => {
                         // Default to active team if not full, otherwise storage
-                        const targetTeam = teamData.active.length < MAX_TEAM_SIZE ? "active" : "storage";
+                        const targetTeam =
+                          teamData.active.length < MAX_TEAM_SIZE
+                            ? "active"
+                            : "storage";
                         handleAddPokemon(pokemon, targetTeam);
                       }}
                     >
@@ -955,13 +1210,25 @@ const CombatTeam: React.FC = () => {
 
                       <Text>{pokemon.name}</Text>
 
-                      <div style={{ display: 'flex', marginTop: '4px', gap: '4px' }}>
-                        {pokemon.types.map(type => (
+                      <div
+                        style={{
+                          display: "flex",
+                          marginTop: "4px",
+                          gap: "4px",
+                        }}
+                      >
+                        {pokemon.types.map((type) => (
                           <TypeIcon key={type} type={type} size="sm" />
                         ))}
                       </div>
 
-                      <div style={{ fontSize: '0.75rem', marginTop: '4px', color: '#6B7280' }}>
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          marginTop: "4px",
+                          color: "#6B7280",
+                        }}
+                      >
                         Tap to add
                       </div>
                     </S.TeamSlot>
@@ -970,15 +1237,15 @@ const CombatTeam: React.FC = () => {
               </div>
             </>
           ) : (
-            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+            <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
               <Text>No Pokémon available to add</Text>
-              <Text variant="light" style={{ marginTop: '0.5rem' }}>
+              <Text variant="light" style={{ marginTop: "0.5rem" }}>
                 Catch more Pokémon or remove some from your teams
               </Text>
             </div>
           )}
 
-          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+          <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
             <Button
               onClick={() => setShowAddPokemonModal(false)}
               variant="light"
@@ -997,7 +1264,13 @@ const CombatTeam: React.FC = () => {
         />
 
         {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "2rem",
+            }}
+          >
             <Loading label="Loading your teams..." />
           </div>
         ) : (
@@ -1036,7 +1309,11 @@ const CombatTeam: React.FC = () => {
                     <S.EmptyState>
                       <Text>You haven't caught any Pokémon yet.</Text>
                       <Text>Catch Pokémon to build your battle teams!</Text>
-                      <Button onClick={() => navigate("/pokemons")} variant="primary" style={{ marginTop: '1rem' }}>
+                      <Button
+                        onClick={() => navigate("/pokemons")}
+                        variant="primary"
+                        style={{ marginTop: "1rem" }}
+                      >
                         Explore Pokémon
                       </Button>
                     </S.EmptyState>
@@ -1046,7 +1323,7 @@ const CombatTeam: React.FC = () => {
 
             {activeTab === "stats" && (
               <>
-                {(teamData.active.length > 0 || teamData.dream.length > 0) ? (
+                {teamData.active.length > 0 || teamData.dream.length > 0 ? (
                   <>
                     <S.TeamSection>
                       <S.TeamTitle>Team Stats Analysis</S.TeamTitle>
@@ -1056,33 +1333,57 @@ const CombatTeam: React.FC = () => {
                           <S.StatCard>
                             <Text as="h4">Active Team</Text>
 
-                            <div style={{ marginTop: '1rem' }}>
-                              <Text>Total Base Stats: {calculateTeamStats(teamData.active).total}</Text>
+                            <div style={{ marginTop: "1rem" }}>
+                              <Text>
+                                Total Base Stats:{" "}
+                                {calculateTeamStats(teamData.active).total}
+                              </Text>
 
-                              <div style={{ marginTop: '1rem' }}>
+                              <div style={{ marginTop: "1rem" }}>
                                 <S.StatRow>
                                   <S.StatLabel>HP Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).hp}</S.StatValue>
+                                  <S.StatValue>
+                                    {calculateTeamStats(teamData.active).hp}
+                                  </S.StatValue>
                                 </S.StatRow>
                                 <S.StatRow>
                                   <S.StatLabel>Attack Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).attack}</S.StatValue>
+                                  <S.StatValue>
+                                    {calculateTeamStats(teamData.active).attack}
+                                  </S.StatValue>
                                 </S.StatRow>
                                 <S.StatRow>
                                   <S.StatLabel>Defense Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).defense}</S.StatValue>
+                                  <S.StatValue>
+                                    {
+                                      calculateTeamStats(teamData.active)
+                                        .defense
+                                    }
+                                  </S.StatValue>
                                 </S.StatRow>
                                 <S.StatRow>
                                   <S.StatLabel>Sp. Attack Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).specialAttack}</S.StatValue>
+                                  <S.StatValue>
+                                    {
+                                      calculateTeamStats(teamData.active)
+                                        .specialAttack
+                                    }
+                                  </S.StatValue>
                                 </S.StatRow>
                                 <S.StatRow>
                                   <S.StatLabel>Sp. Defense Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).specialDefense}</S.StatValue>
+                                  <S.StatValue>
+                                    {
+                                      calculateTeamStats(teamData.active)
+                                        .specialDefense
+                                    }
+                                  </S.StatValue>
                                 </S.StatRow>
                                 <S.StatRow>
                                   <S.StatLabel>Speed Total:</S.StatLabel>
-                                  <S.StatValue>{calculateTeamStats(teamData.active).speed}</S.StatValue>
+                                  <S.StatValue>
+                                    {calculateTeamStats(teamData.active).speed}
+                                  </S.StatValue>
                                 </S.StatRow>
                               </div>
                             </div>
@@ -1093,8 +1394,11 @@ const CombatTeam: React.FC = () => {
                           <S.StatCard>
                             <Text as="h4">Dream Team</Text>
 
-                            <div style={{ marginTop: '1rem' }}>
-                              <Text>Total Base Stats: {calculateTeamStats(teamData.dream).total}</Text>
+                            <div style={{ marginTop: "1rem" }}>
+                              <Text>
+                                Total Base Stats:{" "}
+                                {calculateTeamStats(teamData.dream).total}
+                              </Text>
                             </div>
                           </S.StatCard>
                         )}
@@ -1109,9 +1413,25 @@ const CombatTeam: React.FC = () => {
                           <S.StatCard>
                             <Text as="h4">Active Team Types</Text>
 
-                            <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                              {Object.entries(calculateTypeCoverage(teamData.active)).map(([type, count]) => (
-                                <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div
+                              style={{
+                                marginTop: "1rem",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.5rem",
+                              }}
+                            >
+                              {Object.entries(
+                                calculateTypeCoverage(teamData.active),
+                              ).map(([type, count]) => (
+                                <div
+                                  key={type}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
                                   <TypeIcon type={type} size="sm" />
                                   <Text>×{count}</Text>
                                 </div>
@@ -1124,9 +1444,25 @@ const CombatTeam: React.FC = () => {
                           <S.StatCard>
                             <Text as="h4">Dream Team Types</Text>
 
-                            <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                              {Object.entries(calculateTypeCoverage(teamData.dream)).map(([type, count]) => (
-                                <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div
+                              style={{
+                                marginTop: "1rem",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.5rem",
+                              }}
+                            >
+                              {Object.entries(
+                                calculateTypeCoverage(teamData.dream),
+                              ).map(([type, count]) => (
+                                <div
+                                  key={type}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
                                   <TypeIcon type={type} size="sm" />
                                   <Text>×{count}</Text>
                                 </div>
@@ -1139,8 +1475,14 @@ const CombatTeam: React.FC = () => {
                   </>
                 ) : (
                   <S.EmptyState>
-                    <Text>Add Pokémon to your teams to see stats and analysis</Text>
-                    <Button onClick={() => setActiveTab("teams")} variant="primary" style={{ marginTop: '1rem' }}>
+                    <Text>
+                      Add Pokémon to your teams to see stats and analysis
+                    </Text>
+                    <Button
+                      onClick={() => setActiveTab("teams")}
+                      variant="primary"
+                      style={{ marginTop: "1rem" }}
+                    >
                       Go to Teams
                     </Button>
                   </S.EmptyState>
@@ -1158,16 +1500,36 @@ const CombatTeam: React.FC = () => {
                       <S.CombatSimulatorContainer>
                         <S.TeamSide>
                           <Text as="h4">Your Team</Text>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-                            {teamData.active.map(pokemon => (
-                              <div key={pokemon.id} style={{ padding: '0.5rem', textAlign: 'center' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "0.5rem",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {teamData.active.map((pokemon) => (
+                              <div
+                                key={pokemon.id}
+                                style={{
+                                  padding: "0.5rem",
+                                  textAlign: "center",
+                                }}
+                              >
                                 <LazyLoadImage
                                   src={pokemon.sprite}
                                   alt={pokemon.name}
                                   width={60}
                                   height={60}
                                 />
-                                <div style={{ fontSize: '0.75rem', fontWeight: 500 }}>{pokemon.name}</div>
+                                <div
+                                  style={{
+                                    fontSize: "0.75rem",
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  {pokemon.name}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1175,34 +1537,59 @@ const CombatTeam: React.FC = () => {
 
                         <S.TeamSide>
                           <Text as="h4">Computer Team</Text>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "0.5rem",
+                              justifyContent: "center",
+                            }}
+                          >
                             {computerTeam.length > 0 ? (
-                              computerTeam.map(pokemon => (
-                                <div key={pokemon.id} style={{ padding: '0.5rem', textAlign: 'center' }}>
+                              computerTeam.map((pokemon) => (
+                                <div
+                                  key={pokemon.id}
+                                  style={{
+                                    padding: "0.5rem",
+                                    textAlign: "center",
+                                  }}
+                                >
                                   <LazyLoadImage
                                     src={pokemon.sprite}
                                     alt={pokemon.name}
                                     width={60}
                                     height={60}
                                   />
-                                  <div style={{ fontSize: '0.75rem', fontWeight: 500 }}>{pokemon.name}</div>
+                                  <div
+                                    style={{
+                                      fontSize: "0.75rem",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {pokemon.name}
+                                  </div>
                                 </div>
                               ))
                             ) : (
-                              <Text>Computer team will be generated when battle starts</Text>
+                              <Text>
+                                Computer team will be generated when battle
+                                starts
+                              </Text>
                             )}
                           </div>
                         </S.TeamSide>
                       </S.CombatSimulatorContainer>
 
-                      <div style={{ textAlign: 'center', margin: '2rem 0' }}>
+                      <div style={{ textAlign: "center", margin: "2rem 0" }}>
                         <Button
                           onClick={runBattleSimulation}
                           variant="primary"
                           size="lg"
                           disabled={isBattling}
                         >
-                          {isBattling ? "Battle in progress..." : "Start Battle"}
+                          {isBattling
+                            ? "Battle in progress..."
+                            : "Start Battle"}
                         </Button>
                       </div>
 
@@ -1222,8 +1609,15 @@ const CombatTeam: React.FC = () => {
                   </>
                 ) : (
                   <S.EmptyState>
-                    <Text>You need Pokémon in your active team to use the Combat Simulator</Text>
-                    <Button onClick={() => setActiveTab("teams")} variant="primary" style={{ marginTop: '1rem' }}>
+                    <Text>
+                      You need Pokémon in your active team to use the Combat
+                      Simulator
+                    </Text>
+                    <Button
+                      onClick={() => setActiveTab("teams")}
+                      variant="primary"
+                      style={{ marginTop: "1rem" }}
+                    >
                       Go to Teams
                     </Button>
                   </S.EmptyState>

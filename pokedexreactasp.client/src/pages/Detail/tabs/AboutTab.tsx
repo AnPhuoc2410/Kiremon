@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Loading, Text } from '../../../components/ui';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import * as T from '../index.style';
-import { RelatedPokemon } from '../../../components/ui';
-import { POKEMON_IMAGE } from '../../../config/api.config';
-import * as S from './AboutTab.style';
-import { pokemonService } from '../../../services';
-import { pokeItemService } from '../../../services/pokeitem/pokeitem.service';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { Loading, RelatedPokemon, Text } from "../../../components/ui";
+import { POKEMON_IMAGE } from "../../../config/api.config";
+import { pokemonService } from "../../../services";
+import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
+import * as T from "../index.style";
+import * as S from "./AboutTab.style";
 
 interface AboutTabProps {
   abilities: Array<{
@@ -60,12 +60,21 @@ const AboutTab: React.FC<AboutTabProps> = ({
   shape,
   generation,
   isLegendary,
-  isMythical
+  isMythical,
 }) => {
-  const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>({});
+  const navigate = useNavigate();
+  const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>(
+    {},
+  );
   const [isLoadingSprites, setIsLoadingSprites] = useState<boolean>(false);
-  const [heldItemSprites, setHeldItemSprites] = useState<HeldItemWithSprite[]>([]);
+  const [heldItemSprites, setHeldItemSprites] = useState<HeldItemWithSprite[]>(
+    [],
+  );
   const [isLoadingHeldItems, setIsLoadingHeldItems] = useState<boolean>(false);
+
+  const handleHeldItemClick = (itemName: string) => {
+    navigate(`/poke-mart?item=${encodeURIComponent(itemName)}`);
+  };
 
   useEffect(() => {
     const loadFormSprites = async () => {
@@ -76,7 +85,7 @@ const AboutTab: React.FC<AboutTabProps> = ({
         for (const form of specialForms) {
           try {
             // Extract the form ID from the URL
-            const formId = form.url.split('/').filter(Boolean).pop();
+            const formId = form.url.split("/").filter(Boolean).pop();
             if (formId) {
               const formData = await pokemonService.getPokemonForms(formId);
               spriteData[form.name] = formData;
@@ -99,7 +108,7 @@ const AboutTab: React.FC<AboutTabProps> = ({
     const loadHeldItemSprites = async () => {
       if (heldItems && heldItems.length > 0) {
         setIsLoadingHeldItems(true);
-        const itemNames = heldItems.map(item => item.item.name);
+        const itemNames = heldItems.map((item) => item.item.name);
         const sprites = await pokeItemService.getHeldItemSprites(itemNames);
         setHeldItemSprites(sprites);
         setIsLoadingHeldItems(false);
@@ -121,7 +130,9 @@ const AboutTab: React.FC<AboutTabProps> = ({
             <S.InfoItem>
               <S.InfoContent>
                 <S.InfoLabel>Generation</S.InfoLabel>
-                <S.InfoValue>{generation.replace('generation-', 'Gen ')}</S.InfoValue>
+                <S.InfoValue>
+                  {generation.replace("generation-", "Gen ")}
+                </S.InfoValue>
               </S.InfoContent>
             </S.InfoItem>
           )}
@@ -137,7 +148,7 @@ const AboutTab: React.FC<AboutTabProps> = ({
             <S.InfoItem>
               <S.InfoContent>
                 <S.InfoLabel>Shape</S.InfoLabel>
-                <S.InfoValue>{shape.replace('-', ' ')}</S.InfoValue>
+                <S.InfoValue>{shape.replace("-", " ")}</S.InfoValue>
               </S.InfoContent>
             </S.InfoItem>
           )}
@@ -145,7 +156,7 @@ const AboutTab: React.FC<AboutTabProps> = ({
             <S.InfoItem>
               <S.InfoContent>
                 <S.InfoLabel>Habitat</S.InfoLabel>
-                <S.InfoValue>{habitat.replace('-', ' ')}</S.InfoValue>
+                <S.InfoValue>{habitat.replace("-", " ")}</S.InfoValue>
               </S.InfoContent>
             </S.InfoItem>
           )}
@@ -158,17 +169,17 @@ const AboutTab: React.FC<AboutTabProps> = ({
           <Text as="h3">Abilities</Text>
         </S.SectionTitle>
         <S.AbilitiesGrid>
-          {abilities && abilities.map((ability, index) => (
-            <S.AbilityCard
-              key={index}
-              isHidden={ability.is_hidden}
-            >
-              <S.AbilityName>{ability.ability?.name.replace('-', ' ')}</S.AbilityName>
-              {ability.is_hidden && (
-                <S.AbilityHiddenLabel>(Hidden)</S.AbilityHiddenLabel>
-              )}
-            </S.AbilityCard>
-          ))}
+          {abilities &&
+            abilities.map((ability, index) => (
+              <S.AbilityCard key={index} isHidden={ability.is_hidden}>
+                <S.AbilityName>
+                  {ability.ability?.name.replace("-", " ")}
+                </S.AbilityName>
+                {ability.is_hidden && (
+                  <S.AbilityHiddenLabel>(Hidden)</S.AbilityHiddenLabel>
+                )}
+              </S.AbilityCard>
+            ))}
         </S.AbilitiesGrid>
       </S.AbilitiesContainer>
 
@@ -177,14 +188,16 @@ const AboutTab: React.FC<AboutTabProps> = ({
         <S.RelatedPokemonSection>
           {isLoadingRelated ? (
             <T.LoadingWrapper>
-            <Loading label="Loading related Pokemon data..." />
-          </T.LoadingWrapper>
+              <Loading label="Loading related Pokemon data..." />
+            </T.LoadingWrapper>
           ) : (
             <RelatedPokemon
               pokemonList={relatedPokemon}
-              title={species && species.generation ?
-                `Generation ${species.generation.url.split('/').filter(Boolean).pop()} Pokémon` :
-                'Related Pokémon'}
+              title={
+                species && species.generation
+                  ? `Generation ${species.generation.url.split("/").filter(Boolean).pop()} Pokémon`
+                  : "Related Pokémon"
+              }
             />
           )}
         </S.RelatedPokemonSection>
@@ -197,21 +210,25 @@ const AboutTab: React.FC<AboutTabProps> = ({
           <S.FormsGrid>
             {isLoadingSprites ? (
               <T.LoadingWrapper>
-              <Loading label="Loading form sprites..." />
-            </T.LoadingWrapper>
+                <Loading label="Loading form sprites..." />
+              </T.LoadingWrapper>
             ) : (
               specialForms.map((form, index) => (
                 <S.FormItem key={index}>
                   <LazyLoadImage
-                    src={formSprites[form.name]?.sprites?.front_default ||
-                         POKEMON_IMAGE + `${form.url.split('/').filter(Boolean).pop()}.png`}
+                    src={
+                      formSprites[form.name]?.sprites?.front_default ||
+                      POKEMON_IMAGE +
+                        `${form.url.split("/").filter(Boolean).pop()}.png`
+                    }
                     alt={form.name}
                     width={80}
                     height={80}
                     effect="blur"
                   />
                   <S.FormName>
-                    {form.name.replace(name, '').replace('-', ' ').trim() || 'Default'}
+                    {form.name.replace(name, "").replace("-", " ").trim() ||
+                      "Default"}
                   </S.FormName>
                 </S.FormItem>
               ))
@@ -229,14 +246,18 @@ const AboutTab: React.FC<AboutTabProps> = ({
               <Loading />
             ) : (
               heldItemSprites.map((item, index) => (
-                <S.HeldItemWrapper key={index}>
+                <S.HeldItemWrapper
+                  key={index}
+                  onClick={() => handleHeldItemClick(item.name)}
+                  title={`View ${item.name.replace(/-/g, " ")} in Poké Mart`}
+                >
                   <S.HeldItemImage
                     src={item.sprite}
                     alt={item.name}
-                    title={item.name.replace(/-/g, ' ')}
+                    title={item.name.replace(/-/g, " ")}
                   />
                   <S.HeldItemTooltip>
-                    {item.name.replace(/-/g, ' ')}
+                    {item.name.replace(/-/g, " ")}
                   </S.HeldItemTooltip>
                 </S.HeldItemWrapper>
               ))

@@ -19,7 +19,7 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 const getOrSetCache = async <T>(
   key: string,
   fetchFn: () => Promise<T>,
-  expiresIn: number = CACHE_DURATION
+  expiresIn: number = CACHE_DURATION,
 ): Promise<T> => {
   const now = Date.now();
 
@@ -32,7 +32,7 @@ const getOrSetCache = async <T>(
   cache[key] = {
     data,
     timestamp: now,
-    expiresIn
+    expiresIn,
   };
 
   return data;
@@ -69,7 +69,10 @@ export const getDetailPokemon = async (name: string = "") => {
   }
 };
 
-export const getPokemonWithTypes = async (limit: number = 20, offset: number = 0) => {
+export const getPokemonWithTypes = async (
+  limit: number = 20,
+  offset: number = 0,
+) => {
   const cacheKey = `pokemonWithTypes-${limit}-${offset}`;
 
   try {
@@ -92,17 +95,17 @@ export const getPokemonWithTypes = async (limit: number = 20, offset: number = 0
             return {
               ...pokemon,
               types: types,
-              id: details.id
+              id: details.id,
             };
           }
 
           return { ...pokemon, types: [], id: 0 };
-        })
+        }),
       );
 
       return {
         ...response.data,
-        results: detailedPokemon
+        results: detailedPokemon,
       };
     });
   } catch (error) {
@@ -202,46 +205,57 @@ export const getRelatedPokemonByGen = async (gen: number | string) => {
 
 // Fetch all Pokemon types
 export const getAllPokemonTypes = async () => {
-  const cacheKey = 'allPokemonTypes';
+  const cacheKey = "allPokemonTypes";
 
   try {
-    return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(buildEndpointUrl("types"));
+    return await getOrSetCache(
+      cacheKey,
+      async () => {
+        const response = await axios.get(buildEndpointUrl("types"));
 
-      // Fetch detailed information for each type including the number of Pokemon
-      const typesWithDetails = await Promise.all(
-        response.data.results
-          // Filter out non-standard types like "unknown" and "shadow"
-          .filter((type: any) => !["unknown", "shadow"].includes(type.name))
-          .map(async (type: any) => {
-            try {
-              // Use a longer cache duration for type details since they rarely change
-              const typeDetail = await getOrSetCache(`typeDetail-${type.name}`, async () => {
-                const typeResponse = await axios.get(type.url);
-                return typeResponse.data;
-              }, 24 * 60 * 60 * 1000); // 24 hours cache for type details
+        // Fetch detailed information for each type including the number of Pokemon
+        const typesWithDetails = await Promise.all(
+          response.data.results
+            // Filter out non-standard types like "unknown" and "shadow"
+            .filter((type: any) => !["unknown", "shadow"].includes(type.name))
+            .map(async (type: any) => {
+              try {
+                // Use a longer cache duration for type details since they rarely change
+                const typeDetail = await getOrSetCache(
+                  `typeDetail-${type.name}`,
+                  async () => {
+                    const typeResponse = await axios.get(type.url);
+                    return typeResponse.data;
+                  },
+                  24 * 60 * 60 * 1000,
+                ); // 24 hours cache for type details
 
-              return {
-                name: type.name,
-                id: typeDetail.id,
-                pokemonCount: typeDetail.pokemon?.length || 0,
-                damageRelations: typeDetail.damage_relations,
-                url: type.url
-              };
-            } catch (error) {
-              console.error(`Error fetching details for ${type.name} type:`, error);
-              return {
-                name: type.name,
-                id: 0,
-                pokemonCount: 0,
-                url: type.url
-              };
-            }
-          })
-      );
+                return {
+                  name: type.name,
+                  id: typeDetail.id,
+                  pokemonCount: typeDetail.pokemon?.length || 0,
+                  damageRelations: typeDetail.damage_relations,
+                  url: type.url,
+                };
+              } catch (error) {
+                console.error(
+                  `Error fetching details for ${type.name} type:`,
+                  error,
+                );
+                return {
+                  name: type.name,
+                  id: 0,
+                  pokemonCount: 0,
+                  url: type.url,
+                };
+              }
+            }),
+        );
 
-      return typesWithDetails;
-    }, 60 * 60 * 1000); // 1 hour cache for all types
+        return typesWithDetails;
+      },
+      60 * 60 * 1000,
+    ); // 1 hour cache for all types
   } catch (error) {
     console.error("Error fetching Pokemon types:", error);
     return [];
@@ -250,13 +264,17 @@ export const getAllPokemonTypes = async () => {
 
 // Fetch all available regions
 export const getAllRegions = async () => {
-  const cacheKey = 'allRegions';
+  const cacheKey = "allRegions";
 
   try {
-    return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(buildEndpointUrl("regions"));
-      return response.data.results;
-    }, 24 * 60 * 60 * 1000); // 24 hours cache for regions
+    return await getOrSetCache(
+      cacheKey,
+      async () => {
+        const response = await axios.get(buildEndpointUrl("regions"));
+        return response.data.results;
+      },
+      24 * 60 * 60 * 1000,
+    ); // 24 hours cache for regions
   } catch (error) {
     console.error("Error fetching regions:", error);
     return [];
@@ -269,11 +287,15 @@ export const getRegionDetails = async (regionName: string) => {
   const cacheKey = `regionDetails-${regionName}`;
 
   try {
-    return await getOrSetCache(cacheKey, async () => {
-      const url = buildEndpointUrl("regions");
-      const response = await axios.get(url + `/${regionName}`);
-      return response.data;
-    }, 24 * 60 * 60 * 1000); // 24 hours cache for region details
+    return await getOrSetCache(
+      cacheKey,
+      async () => {
+        const url = buildEndpointUrl("regions");
+        const response = await axios.get(url + `/${regionName}`);
+        return response.data;
+      },
+      24 * 60 * 60 * 1000,
+    ); // 24 hours cache for region details
   } catch (error) {
     console.error(`Error fetching details for ${regionName} region:`, error);
     return null;
@@ -282,13 +304,17 @@ export const getRegionDetails = async (regionName: string) => {
 
 // Fetch all available pokedexes
 export const getAllPokedexes = async () => {
-  const cacheKey = 'allPokedexes';
+  const cacheKey = "allPokedexes";
 
   try {
-    return await getOrSetCache(cacheKey, async () => {
-      const response = await axios.get(buildEndpointUrl("pokedexes"));
-      return response.data.results;
-    }, 24 * 60 * 60 * 1000); // 24 hours cache for pokedex list
+    return await getOrSetCache(
+      cacheKey,
+      async () => {
+        const response = await axios.get(buildEndpointUrl("pokedexes"));
+        return response.data.results;
+      },
+      24 * 60 * 60 * 1000,
+    ); // 24 hours cache for pokedex list
   } catch (error) {
     console.error("Error fetching pokedexes:", error);
     return [];
@@ -316,14 +342,14 @@ export const getPokedexDetails = async (pokedexName: string) => {
 export const clearCache = (keyPattern?: string) => {
   if (keyPattern) {
     // Clear specific cache entries matching the pattern
-    Object.keys(cache).forEach(key => {
+    Object.keys(cache).forEach((key) => {
       if (key.includes(keyPattern)) {
         delete cache[key];
       }
     });
   } else {
     // Clear all cache
-    Object.keys(cache).forEach(key => {
+    Object.keys(cache).forEach((key) => {
       delete cache[key];
     });
   }

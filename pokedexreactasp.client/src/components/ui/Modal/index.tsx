@@ -9,20 +9,22 @@ interface IModal extends HTMLAttributes<HTMLDivElement> {
   solid?: boolean;
 }
 
-const Overlay = styled.div<IModal>(({ overlay = "dark", open = false, solid = false }) => ({
-  position: "fixed",
-  inset: 0,
-  width: "100vw",
-  height: "100vh",
-  background:
-    overlay === "dark"
-      ? colors["gray-800"]
-      : overlay === "light"
-      ? colors["gray-100"]
-      : colors["red-500"],
-  opacity: solid ? 1 : 0.9,
-  zIndex: open ? 50 : 0,
-}));
+const Overlay = styled.div<IModal>(
+  ({ overlay = "dark", open = false, solid = false }) => ({
+    position: "fixed",
+    inset: 0,
+    width: "100vw",
+    height: "100vh",
+    background:
+      overlay === "dark"
+        ? colors["gray-800"]
+        : overlay === "light"
+          ? colors["gray-100"]
+          : colors["red-500"],
+    opacity: solid ? 1 : 0.9,
+    zIndex: open ? 50 : 0,
+  }),
+);
 
 const Content = styled.div<IModal>(({ open = false }) => ({
   position: "fixed",
@@ -39,7 +41,12 @@ const Content = styled.div<IModal>(({ open = false }) => ({
   },
 }));
 
-const Modal: React.FC<IModal> = ({ children, open, overlay = "dark", solid }) => {
+const Modal: React.FC<IModal> = ({
+  children,
+  open,
+  overlay = "dark",
+  solid,
+}) => {
   return open ? (
     <>
       <Overlay open={open} overlay={overlay} solid={solid} />

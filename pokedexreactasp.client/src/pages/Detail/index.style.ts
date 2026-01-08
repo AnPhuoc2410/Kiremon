@@ -239,13 +239,15 @@ const AnotherWrapper = styled("div")({
   gap: 16,
 });
 
-const StatBar = styled("div")<{ value: number; color: string }>(({ value, color }) => ({
-  height: "10px",
-  width: `${Math.min(value / 1.5, 100)}%`,
-  backgroundColor: color,
-  borderRadius: "4px",
-  transition: "width 0.5s ease-in-out",
-}));
+const StatBar = styled("div")<{ value: number; color: string }>(
+  ({ value, color }) => ({
+    height: "10px",
+    width: `${Math.min(value / 1.5, 100)}%`,
+    backgroundColor: color,
+    borderRadius: "4px",
+    transition: "width 0.5s ease-in-out",
+  }),
+);
 
 const StatContainer = styled("div")({
   display: "flex",
@@ -264,7 +266,7 @@ const StatContainer = styled("div")({
     flex: 1,
     backgroundColor: "#F3F4F6",
     borderRadius: "4px",
-  }
+  },
 });
 
 const InfoSection = styled("div")({
@@ -276,7 +278,6 @@ const InfoSection = styled("div")({
   backgroundColor: "#FAFAFA",
   margin: "16px 0",
   boxShadow: "4px 4px 0 #E5E7EB",
-
 
   ".info-item": {
     flex: "1 1 150px",
@@ -295,7 +296,7 @@ const InfoSection = styled("div")({
     fontSize: "1.25rem",
     fontWeight: "700",
     color: "#1F2937",
-  }
+  },
 });
 
 const SpriteGallery = styled("div")({
@@ -316,7 +317,7 @@ const SpriteGallery = styled("div")({
     fontSize: "1rem",
     color: "#6B7280",
     textAlign: "center",
-  }
+  },
 });
 
 const FlavorTextBox = styled("div")({
@@ -325,14 +326,14 @@ const FlavorTextBox = styled("div")({
   fontStyle: "italic",
   position: "relative",
   margin: "12px 0",
-  "p": {
+  p: {
     padding: "0 12px",
     lineHeight: "1.6",
     fontSize: "1.3rem",
     fontWeight: "800",
     color: "#374151",
     textAlign: "center",
-  }
+  },
 });
 
 const TabsContainer = styled("div")({
@@ -349,7 +350,7 @@ const TabsContainer = styled("div")({
     borderBottom: "3px solid transparent",
     transition: "all 0.3s ease",
 
-    "p": {
+    p: {
       fontSize: "1rem",
       fontWeight: "600",
       color: "#6B7280",
@@ -358,18 +359,18 @@ const TabsContainer = styled("div")({
     "&.active": {
       borderBottomColor: "#3B82F6",
 
-      "p": {
+      p: {
         color: "#1E40AF",
         fontWeight: "700",
-      }
+      },
     },
 
     "&:hover:not(.active)": {
-      "p": {
+      p: {
         color: "#374151",
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 const SoundBar = styled("div")({
@@ -414,7 +415,7 @@ const SoundBar = styled("div")({
     borderRadius: "2px",
     transformOrigin: "center bottom",
     transition: "transform 0.1s ease",
-  }
+  },
 });
 
 const badgeGlowLegendary = keyframes`
@@ -435,8 +436,11 @@ const badgeGlowMythical = keyframes`
   }
 `;
 
-const ClassificationText = styled("div")<{ isLegendary?: boolean; isMythical?: boolean }>`
-  background-color: ${props => props.isLegendary ? '#F59E0B' : '#8B5CF6'};
+const ClassificationText = styled("div")<{
+  isLegendary?: boolean;
+  isMythical?: boolean;
+}>`
+  background-color: ${(props) => (props.isLegendary ? "#F59E0B" : "#8B5CF6")};
   color: white;
   text-transform: capitalize;
   border-radius: 6px;
@@ -446,23 +450,29 @@ const ClassificationText = styled("div")<{ isLegendary?: boolean; isMythical?: b
   letter-spacing: 0.5px;
   margin-bottom: 12px;
 
-  box-shadow: ${props => props.isLegendary
-    ? '0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(245, 158, 11, 0.7)'
-    : '0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(139, 92, 246, 0.7)'};
+  box-shadow: ${(props) =>
+    props.isLegendary
+      ? "0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(245, 158, 11, 0.7)"
+      : "0px 1px 2px rgba(0, 0, 0, 0.2), 0 0 25px rgba(139, 92, 246, 0.7)"};
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
-  animation: ${props => props.isLegendary ? badgeGlowLegendary : badgeGlowMythical} 2s ease-in-out infinite;
+  animation: ${(props) =>
+      props.isLegendary ? badgeGlowLegendary : badgeGlowMythical}
+    2s ease-in-out infinite;
 
   position: relative;
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 50%;
-    background: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+    background: linear-gradient(
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0)
+    );
     border-radius: 6px 6px 0 0;
   }
 
@@ -508,5 +518,5 @@ export {
   TabsContainer,
   SoundBar,
   ClassificationText,
-  PokemonImageWrapper
+  PokemonImageWrapper,
 };

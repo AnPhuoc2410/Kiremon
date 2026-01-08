@@ -30,8 +30,6 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
   );
   const [isLoading, setIsLoading] = useState(false);
 
-
-
   // Reset on close
   useEffect(() => {
     if (!isOpen) {
@@ -53,7 +51,7 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
     }
   }, []);
 
-    // Load pokeballs when modal opens
+  // Load pokeballs when modal opens
   useEffect(() => {
     if (isOpen && pokeballs.length === 0) {
       loadPokeballs();
@@ -62,7 +60,7 @@ const PokeballChangeModal: React.FC<PokeballChangeModalProps> = ({
 
   // Filter pokeballs based on debounced search
   const displayPokeballs = pokeballs.filter((ball) =>
-    ball.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    ball.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
   );
 
   const handleSave = () => {

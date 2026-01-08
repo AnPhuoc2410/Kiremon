@@ -52,7 +52,9 @@ export const RegionCard = styled.div`
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   cursor: pointer;
 
   &:hover {
@@ -70,13 +72,17 @@ export const RegionImage = styled.div`
   position: relative;
 
   &:after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     height: 50px;
-    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+    background: linear-gradient(
+      to top,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0)
+    );
   }
 `;
 
@@ -106,7 +112,7 @@ export const PokemonCount = styled.div<{ bg?: string; text?: string }>`
   font-size: 0.78rem;
   padding: 6px 10px;
   border-radius: 9999px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 `;
 
 export const LoadingWrapper = styled.div`
@@ -144,6 +150,8 @@ export const ErrorWrapper = styled.div`
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;

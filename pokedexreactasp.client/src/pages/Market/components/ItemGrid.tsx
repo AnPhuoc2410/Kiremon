@@ -76,7 +76,7 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
       <ItemsGrid>
         {items.map((item) => {
           const spriteUrl = getItemSpriteUrl(item);
-          
+
           return (
             <ItemCard
               key={item.id}

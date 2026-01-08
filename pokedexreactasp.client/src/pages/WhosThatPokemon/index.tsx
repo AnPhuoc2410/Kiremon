@@ -1,11 +1,11 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-import { Text } from '../../components/ui';
-import Button from '../../components/ui/Button';
-import { pokemonService } from '../../services';
-import { IPokemon } from '../../types/pokemon';
+import { Text } from "../../components/ui";
+import Button from "../../components/ui/Button";
+import { pokemonService } from "../../services";
+import { IPokemon } from "../../types/pokemon";
 import {
   GameContainer,
   GameCard,
@@ -15,8 +15,8 @@ import {
   GuessForm,
   GuessInput,
   ResultMessage,
-  ButtonsContainer
-} from './index.style';
+  ButtonsContainer,
+} from "./index.style";
 
 // Extend the base IPokemon interface with the sprites property we need for this game
 interface GamePokemon extends IPokemon {
@@ -24,15 +24,17 @@ interface GamePokemon extends IPokemon {
     other: {
       "official-artwork": {
         front_default: string;
-      }
-    }
+      };
+    };
   };
 }
 
 const WhosThatPokemon: React.FC = () => {
-  const [currentPokemon, setCurrentPokemon] = useState<GamePokemon | null>(null);
+  const [currentPokemon, setCurrentPokemon] = useState<GamePokemon | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
-  const [guess, setGuess] = useState('');
+  const [guess, setGuess] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | undefined>(undefined);
   const [score, setScore] = useState(0);
@@ -44,7 +46,7 @@ const WhosThatPokemon: React.FC = () => {
     setLoading(true);
     setRevealed(false);
     setIsCorrect(undefined);
-    setGuess('');
+    setGuess("");
 
     try {
       // Get a list of all pokemon
@@ -55,18 +57,20 @@ const WhosThatPokemon: React.FC = () => {
         const randomPokemon = response.results[randomIndex];
 
         // Get detailed pokemon info
-        const pokemonDetails = await pokemonService.getPokemonDetail(randomPokemon.name);
+        const pokemonDetails = await pokemonService.getPokemonDetail(
+          randomPokemon.name,
+        );
 
         if (pokemonDetails && randomPokemon.url) {
           setCurrentPokemon({
             ...randomPokemon,
             id: pokemonDetails.id,
-            sprites: pokemonDetails.sprites
+            sprites: pokemonDetails.sprites,
           });
         }
       }
     } catch (error) {
-      console.error('Failed to load Pokemon:', error);
+      console.error("Failed to load Pokemon:", error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +86,7 @@ const WhosThatPokemon: React.FC = () => {
 
     if (!currentPokemon || revealed) return;
 
-    setTotalAttempts(prev => prev + 1);
+    setTotalAttempts((prev) => prev + 1);
     const normalizedGuess = guess.trim().toLowerCase();
     const normalizedPokemonName = currentPokemon.name.toLowerCase();
 
@@ -91,7 +95,7 @@ const WhosThatPokemon: React.FC = () => {
     setRevealed(true);
 
     if (correct) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
     }
   };
 
@@ -107,7 +111,9 @@ const WhosThatPokemon: React.FC = () => {
 
   return (
     <GameContainer>
-      <Text as="h1" variant="outlined" size="xl">Who's That Pokémon?</Text>
+      <Text as="h1" variant="outlined" size="xl">
+        Who's That Pokémon?
+      </Text>
 
       <GameCard className="pxl-border">
         {loading ? (
@@ -120,9 +126,12 @@ const WhosThatPokemon: React.FC = () => {
 
             <PokemonImage>
               {currentPokemon?.sprites && (
-                <SilhouetteWrapper className={revealed ? 'revealed' : ''}>
+                <SilhouetteWrapper className={revealed ? "revealed" : ""}>
                   <LazyLoadImage
-                    src={currentPokemon.sprites.other["official-artwork"].front_default}
+                    src={
+                      currentPokemon.sprites.other["official-artwork"]
+                        .front_default
+                    }
                     alt="Mystery Pokemon"
                     width={250}
                     height={250}
@@ -148,7 +157,7 @@ const WhosThatPokemon: React.FC = () => {
               <>
                 <ResultMessage isCorrect={isCorrect}>
                   {isCorrect
-                    ? 'Correct! Well done!'
+                    ? "Correct! Well done!"
                     : `Incorrect. It's ${currentPokemon?.name.toUpperCase()}!`}
                 </ResultMessage>
 

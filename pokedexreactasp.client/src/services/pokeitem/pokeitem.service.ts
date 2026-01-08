@@ -1,4 +1,4 @@
-import { GRAPHQL_ENDPOINT } from '../../config/api.config';
+import { GRAPHQL_ENDPOINT } from "../../config/api.config";
 
 interface PokeballSprite {
   default: string;
@@ -30,7 +30,7 @@ interface HeldItemSprite {
 async function executeGraphQLQuery(
   query: string,
   variables: Record<string, any> | null,
-  operationName: string
+  operationName: string,
 ): Promise<PokeballResponse> {
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
@@ -84,13 +84,17 @@ export const pokeItemService = {
       const result = await executeGraphQLQuery(
         query,
         { names: itemNames },
-        "getHeldItemSprites"
+        "getHeldItemSprites",
       );
 
-      return result.data?.itemsprites?.map(item => ({
-        name: item.item?.name || '',
-        sprite: item.sprites?.default || ''
-      })).filter(item => item.name && item.sprite) || [];
+      return (
+        result.data?.itemsprites
+          ?.map((item) => ({
+            name: item.item?.name || "",
+            sprite: item.sprites?.default || "",
+          }))
+          .filter((item) => item.name && item.sprite) || []
+      );
     } catch (error) {
       console.error("Error fetching held item sprites:", error);
       return [];
@@ -99,8 +103,9 @@ export const pokeItemService = {
 
   async getPokeballSprite(): Promise<string | null> {
     // Get selected pokeball from localStorage, default to timer-ball
-    const selectedPokeball = localStorage.getItem('selectedPokeball') || 'timer-ball';
-    
+    const selectedPokeball =
+      localStorage.getItem("selectedPokeball") || "timer-ball";
+
     const query = `
       query getPokeballSprite($name: String!) {
         itemsprites(
@@ -119,7 +124,7 @@ export const pokeItemService = {
       const result = await executeGraphQLQuery(
         query,
         { name: selectedPokeball },
-        "getPokeballSprite"
+        "getPokeballSprite",
       );
 
       if (result.data?.itemsprites?.[0]?.sprites?.default) {
@@ -155,16 +160,16 @@ export const pokeItemService = {
     `;
 
     try {
-      const result = await executeGraphQLQuery(
-        query,
-        null,
-        "getAllPokeballs"
-      );
+      const result = await executeGraphQLQuery(query, null, "getAllPokeballs");
 
-      return result.data?.itemsprites?.map(item => ({
-        name: item.item?.name || '',
-        sprite: item.sprites?.default || ''
-      })).filter(item => item.name && item.sprite) || [];
+      return (
+        result.data?.itemsprites
+          ?.map((item) => ({
+            name: item.item?.name || "",
+            sprite: item.sprites?.default || "",
+          }))
+          .filter((item) => item.name && item.sprite) || []
+      );
     } catch (error) {
       console.error("Error fetching pokeballs:", error);
       return [];
@@ -190,7 +195,7 @@ export const pokeItemService = {
       const result = await executeGraphQLQuery(
         query,
         { name },
-        "getPokeballSpriteByName"
+        "getPokeballSpriteByName",
       );
 
       if (result.data?.itemsprites?.[0]?.sprites?.default) {

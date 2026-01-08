@@ -1,17 +1,19 @@
-import { ApiService } from '../api/api-client';
-import { cacheUtils } from '../cache/cache';
-import { buildEndpointUrl } from '../../config/api.config';
-import { IPokemonSpecies, IEvolutionChain } from '../../types/pokemon';
+import { ApiService } from "../api/api-client";
+import { cacheUtils } from "../cache/cache";
+import { buildEndpointUrl } from "../../config/api.config";
+import { IPokemonSpecies, IEvolutionChain } from "../../types/pokemon";
 
 class SpeciesService extends ApiService {
   constructor() {
-    super(buildEndpointUrl('species'));
+    super(buildEndpointUrl("species"));
   }
 
   /**
    * Fetch Pokemon species data which includes evolution chain URL
    */
-  async getPokemonSpecies(nameOrId: string | number): Promise<IPokemonSpecies | null> {
+  async getPokemonSpecies(
+    nameOrId: string | number,
+  ): Promise<IPokemonSpecies | null> {
     if (!nameOrId) return null;
     const cacheKey = `species:${nameOrId}`;
 
@@ -31,13 +33,13 @@ class SpeciesService extends ApiService {
   async getEvolutionChain(url: string): Promise<IEvolutionChain | null> {
     if (!url) return null;
     // Extract the ID from the URL to use as a cache key
-    const id = url.split('/').filter(Boolean).pop();
+    const id = url.split("/").filter(Boolean).pop();
     const cacheKey = `evolution:${id}`;
 
     try {
       return await cacheUtils.getOrSet(cacheKey, async () => {
         // Direct API call using axios instead of this.get because the full URL is provided
-        const evolutionService = new ApiService('');
+        const evolutionService = new ApiService("");
         return evolutionService.get<IEvolutionChain>(url);
       });
     } catch (error) {

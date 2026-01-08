@@ -6,7 +6,10 @@ import { Link } from "react-router-dom";
 
 import { Text } from "..";
 import { colors } from "../../utils";
-import { POKEMON_IMAGE, POKEMON_SHOWDOWN_IMAGE } from "../../../config/api.config";
+import {
+  POKEMON_IMAGE,
+  POKEMON_SHOWDOWN_IMAGE,
+} from "../../../config/api.config";
 import TypeIcon from "../Card/TypeIcon";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -49,7 +52,8 @@ const PixelatedPokemonCard = styled.div<Props>`
 
   &:hover {
     transform: translateY(-4px);
-    background-color: ${(props) => (props.nickname ? "white" : colors["gray-200"])};
+    background-color: ${(props) =>
+      props.nickname ? "white" : colors["gray-200"]};
     box-shadow:
       0px 12px 16px -4px rgba(16, 24, 40, 0.08),
       0px 4px 6px -2px rgba(16, 24, 40, 0.03);
@@ -98,7 +102,8 @@ const PixelatedPokemonCard = styled.div<Props>`
   }
 
   &:hover .pokemon-image-container img {
-    animation: ${gentlePopUpAnimation} 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: ${gentlePopUpAnimation} 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)
+      forwards;
     filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.2));
   }
 
@@ -111,10 +116,28 @@ const PixelatedPokemonCard = styled.div<Props>`
     z-index: 2;
   }
 
-  .capture-qty img { width: 14px; height: 14px; object-fit: contain; }
-  .pokemon-id { color: ${colors["gray-500"]}; font-size: 0.875rem; margin-bottom: 2px; }
-  .pokemon-name { font-weight: 600; font-size: 1.125rem; text-transform: capitalize; color: ${colors["gray-900"]}; margin-bottom: 8px; }
-  .types-container { display: flex; justify-content: center; gap: 0.5rem; }
+  .capture-qty img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+  }
+  .pokemon-id {
+    color: ${colors["gray-500"]};
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+  }
+  .pokemon-name {
+    font-weight: 600;
+    font-size: 1.125rem;
+    text-transform: capitalize;
+    color: ${colors["gray-900"]};
+    margin-bottom: 8px;
+  }
+  .types-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
 `;
 
 const PokemonAvatar = styled(LazyLoadImage)`
@@ -221,9 +244,13 @@ const PokeCard: React.FC<Props> = ({
           loading="eager"
           onError={handleError}
           key={`${pokemonId}-${fallbackLevel}`}
-          style={fallbackLevel === 2 ? {
-            transform: "scale(0.6)"
-          } : undefined}
+          style={
+            fallbackLevel === 2
+              ? {
+                  transform: "scale(0.6)",
+                }
+              : undefined
+          }
         />
       </div>
 

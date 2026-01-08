@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+# Optional: Validate commit message format
+# Uncomment below to enforce conventional commits
+# npx --no -- commitlint --edit $1

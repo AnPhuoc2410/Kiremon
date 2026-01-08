@@ -23,12 +23,15 @@ export const cacheUtils = {
   getOrSet: async <T>(
     key: string,
     fetchFn: () => Promise<T>,
-    expiresIn: number = DEFAULT_CACHE_DURATION
+    expiresIn: number = DEFAULT_CACHE_DURATION,
   ): Promise<T> => {
     const now = Date.now();
 
     // Check if cache exists and is still valid
-    if (cacheStore[key] && now < cacheStore[key].timestamp + cacheStore[key].expiresIn) {
+    if (
+      cacheStore[key] &&
+      now < cacheStore[key].timestamp + cacheStore[key].expiresIn
+    ) {
       return cacheStore[key].data;
     }
 
@@ -38,7 +41,7 @@ export const cacheUtils = {
     cacheStore[key] = {
       data,
       timestamp: now,
-      expiresIn
+      expiresIn,
     };
 
     return data;
@@ -50,14 +53,14 @@ export const cacheUtils = {
   clear: (keyPattern?: string): void => {
     if (keyPattern) {
       // Clear specific cache entries matching the pattern
-      Object.keys(cacheStore).forEach(key => {
+      Object.keys(cacheStore).forEach((key) => {
         if (key.includes(keyPattern)) {
           delete cacheStore[key];
         }
       });
     } else {
       // Clear all cache
-      Object.keys(cacheStore).forEach(key => {
+      Object.keys(cacheStore).forEach((key) => {
         delete cacheStore[key];
       });
     }
@@ -68,10 +71,10 @@ export const cacheUtils = {
    */
   invalidateExpired: (): void => {
     const now = Date.now();
-    Object.keys(cacheStore).forEach(key => {
+    Object.keys(cacheStore).forEach((key) => {
       if (now >= cacheStore[key].timestamp + cacheStore[key].expiresIn) {
         delete cacheStore[key];
       }
     });
-  }
+  },
 };

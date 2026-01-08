@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+cd pokedexreactasp.client
+npx lint-staged

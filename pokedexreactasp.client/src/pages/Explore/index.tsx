@@ -69,7 +69,7 @@ const Explore = () => {
         setNextUrl(nextStr || null);
         setHasMore(!!nextStr);
         setIsLoading(false);
-      } catch{
+      } catch {
         toast.error("Oops! Failed to get Pokémon. Please try again!");
         setIsLoading(false);
       }
@@ -77,7 +77,11 @@ const Explore = () => {
   }
 
   useEffect(() => {
-    if (isInitialized && isAuthenticated && (!state.pokeSummary || state.pokeSummary.length === 0)) {
+    if (
+      isInitialized &&
+      isAuthenticated &&
+      (!state.pokeSummary || state.pokeSummary.length === 0)
+    ) {
       refreshPokeSummary();
     }
   }, [isInitialized, isAuthenticated]);
@@ -85,12 +89,14 @@ const Explore = () => {
   useEffect(() => {
     if (state.pokemons && state.pokeSummary && state.pokeSummary.length > 0) {
       const updatedPokemons = state.pokemons.map((pokemon) => {
-        const summaryIdx = state.pokeSummary?.findIndex(
-          (el) => el.name === pokemon.name.toUpperCase(),
-        ) ?? -1;
+        const summaryIdx =
+          state.pokeSummary?.findIndex(
+            (el) => el.name === pokemon.name.toUpperCase(),
+          ) ?? -1;
         return {
           ...pokemon,
-          captured: summaryIdx >= 0 ? state.pokeSummary![summaryIdx].captured : 0,
+          captured:
+            summaryIdx >= 0 ? state.pokeSummary![summaryIdx].captured : 0,
         };
       });
       setState({ pokemons: updatedPokemons });

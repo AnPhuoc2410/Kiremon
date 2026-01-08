@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { marketService } from "../../services/market";
-import {
-  ItemCategory,
-  Item,
-  PokemonBasic,
-} from "../../types/market.types";
+import { ItemCategory, Item, PokemonBasic } from "../../types/market.types";
 
 // ============ Cache Configuration ============
 
 const CACHE_KEYS = {
-  CATEGORIES: 'pokemart_categories',
+  CATEGORIES: "pokemart_categories",
 } as const;
 
 // ============ Hooks ============
@@ -45,11 +41,13 @@ export function useCategories(): UseCategoriesResult {
       // Fetch from API if no cache or force refresh
       const categories = await marketService.getCategories();
       setCategories(categories);
-      
+
       // Cache the result
       sessionStorage.setItem(CACHE_KEYS.CATEGORIES, JSON.stringify(categories));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch categories");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch categories",
+      );
     } finally {
       setLoading(false);
     }
@@ -59,11 +57,11 @@ export function useCategories(): UseCategoriesResult {
     fetchCategories();
   }, [fetchCategories]);
 
-  return { 
-    categories, 
-    loading, 
-    error, 
-    refetch: () => fetchCategories(true) // Force refresh when manually refetching
+  return {
+    categories,
+    loading,
+    error,
+    refetch: () => fetchCategories(true), // Force refresh when manually refetching
   };
 }
 
@@ -128,18 +126,24 @@ export function useHeldItemDetails(): UseHeldItemDetailsResult {
 
     try {
       const itemData = await marketService.getHeldItemDetails(itemId);
-      
+
       if (itemData) {
         // Extract pokemon list from pokemonitems
-        const pokemonList = itemData.pokemonitems?.map(pi => pi.pokemon) || [];
+        const pokemonList =
+          itemData.pokemonitems?.map((pi) => pi.pokemon) || [];
         setWildPokemon(pokemonList);
-        
+
         // Extract effect text
-        const effect = itemData.itemeffecttexts?.[0]?.effect || "No description available.";
+        const effect =
+          itemData.itemeffecttexts?.[0]?.effect || "No description available.";
         setItemEffect(effect);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch held item details");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch held item details",
+      );
     } finally {
       setLoading(false);
     }
@@ -151,13 +155,13 @@ export function useHeldItemDetails(): UseHeldItemDetailsResult {
     setError(null);
   }, []);
 
-  return { 
+  return {
     wildPokemon,
-    itemEffect, 
-    loading, 
-    error, 
+    itemEffect,
+    loading,
+    error,
     fetchHeldItemDetails,
-    clearHeldItemDetails 
+    clearHeldItemDetails,
   };
 }
 
@@ -168,15 +172,15 @@ interface UsePokeMartResult {
   categoriesLoading: boolean;
   categoriesError: string | null;
   refetchCategories: () => void;
-  
+
   selectedCategory: number | null;
   setSelectedCategory: (id: number | null) => void;
-  
+
   items: Item[];
   itemsLoading: boolean;
   itemsError: string | null;
   refetchItems: () => void;
-  
+
   hoveredItem: Item | null;
   setHoveredItem: (item: Item | null) => void;
 }
@@ -184,7 +188,7 @@ interface UsePokeMartResult {
 export function usePokeMart(): UsePokeMartResult {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
-  
+
   const {
     categories,
     loading: categoriesLoading,
@@ -211,15 +215,15 @@ export function usePokeMart(): UsePokeMartResult {
     categoriesLoading,
     categoriesError,
     refetchCategories,
-    
+
     selectedCategory,
     setSelectedCategory,
-    
+
     items,
     itemsLoading,
     itemsError,
     refetchItems,
-    
+
     hoveredItem,
     setHoveredItem,
   };

@@ -17,9 +17,11 @@ export interface CategoriesResponse {
 // ============ Item Types ============
 
 export interface ItemSprite {
-  sprites: {
-    default: string;
-  } | string; // API might return string or object
+  sprites:
+    | {
+        default: string;
+      }
+    | string; // API might return string or object
 }
 
 export interface ItemEffectText {
@@ -72,7 +74,7 @@ export function getItemSpriteUrl(item: Item): string {
   }
 
   const sprite = item.itemsprites[0].sprites;
-  
+
   // If it's already a string (URL), return it
   if (typeof sprite === "string") {
     try {
@@ -84,12 +86,12 @@ export function getItemSpriteUrl(item: Item): string {
       return sprite;
     }
   }
-  
+
   // If it's an object with default property
   if (sprite && typeof sprite === "object" && "default" in sprite) {
     return sprite.default || "";
   }
-  
+
   return "";
 }
 
@@ -100,7 +102,7 @@ export function getItemEffect(item: Item): string {
   if (!item.itemeffecttexts || item.itemeffecttexts.length === 0) {
     return "No description available.";
   }
-  
+
   return item.itemeffecttexts[0].effect || "No description available.";
 }
 
@@ -111,7 +113,7 @@ export function getCategoryDisplayName(category: ItemCategory): string {
   if (category.itemcategorynames && category.itemcategorynames.length > 0) {
     return category.itemcategorynames[0].name;
   }
-  
+
   // Fallback: format the name nicely (reuse item name formatting)
   return formatItemName(category.name);
 }
@@ -123,7 +125,7 @@ export function formatItemName(name: string): string {
   return name
     .replace(/-/g, " ")
     .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
 
@@ -143,7 +145,7 @@ export function getItemDisplayName(item: Item): string {
 export function isHeldItemCategory(categoryId: number): boolean {
   // Held items categories
   // 1: Stat Boosts
-  // 12: Held Items  
+  // 12: Held Items
   // 17: In A Pinch
   // 18: Type Protection
   // 19: Type Enhancement

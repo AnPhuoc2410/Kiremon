@@ -24,7 +24,7 @@ export const getRandomBackgroundIndex = () => {
 };
 
 export const Container = styled.section<{ backgroundUrl: string }>`
-  background-image: url('${props => props.backgroundUrl}');
+  background-image: url("${(props) => props.backgroundUrl}");
   background-position: center;
   background-repeat: no-repeat;
   width: 100vw;
@@ -51,10 +51,12 @@ export const A = styled("a")({
   textDecoration: "underline",
 });
 
-export const BackgroundNavButton = styled.button<{ direction: 'left' | 'right' }>`
+export const BackgroundNavButton = styled.button<{
+  direction: "left" | "right";
+}>`
   position: absolute;
   top: 50%;
-  ${props => props.direction}: 20px;
+  ${(props) => props.direction}: 20px;
   transform: translateY(-50%);
   width: 50px;
   height: 50px;
@@ -88,7 +90,7 @@ export const BackgroundNavButton = styled.button<{ direction: 'left' | 'right' }
   @media (max-width: 768px) {
     width: 40px;
     height: 40px;
-    ${props => props.direction}: 10px;
+    ${(props) => props.direction}: 10px;
     background: rgba(0, 0, 0, 0.08);
 
     svg {

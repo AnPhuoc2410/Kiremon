@@ -7,7 +7,7 @@ export const TypeDefenseContainer = styled.div`
 
 export const TypeDefenseDescription = styled.p`
   margin-bottom: 12px;
-  color: #4B5563;
+  color: #4b5563;
   font-size: 14px;
 `;
 
@@ -24,20 +24,28 @@ export const TypeEffectiveness = styled.div<{ effectiveness: string }>`
   align-items: center;
   padding: 8px 12px;
   border-radius: 8px;
-  background-color: ${props => {
+  background-color: ${(props) => {
     switch (props.effectiveness) {
-      case 'weak': return '#FECACA'; // Light red
-      case 'resistant': return '#BBFAC9'; // Light green
-      case 'immune': return '#E5E7EB'; // Light gray
-      default: return '#F3F4F6';
+      case "weak":
+        return "#FECACA"; // Light red
+      case "resistant":
+        return "#BBFAC9"; // Light green
+      case "immune":
+        return "#E5E7EB"; // Light gray
+      default:
+        return "#F3F4F6";
     }
   }};
-  color: ${props => {
+  color: ${(props) => {
     switch (props.effectiveness) {
-      case 'weak': return '#991B1B'; // Dark red
-      case 'resistant': return '#166534'; // Dark green
-      case 'immune': return '#374151'; // Dark gray
-      default: return '#1F2937';
+      case "weak":
+        return "#991B1B"; // Dark red
+      case "resistant":
+        return "#166534"; // Dark green
+      case "immune":
+        return "#374151"; // Dark gray
+      default:
+        return "#1F2937";
     }
   }};
 `;
@@ -80,7 +88,7 @@ export const MoveCategoryTitle = styled.div`
 
   .count {
     margin-left: 8px;
-    background-color: #E5E7EB;
+    background-color: #e5e7eb;
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 14px;
@@ -94,10 +102,10 @@ export const MoveGrid = styled.div`
 `;
 
 export const MoveItem = styled.div`
-  background-color: #F9FAFB;
+  background-color: #f9fafb;
   padding: 10px 14px;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
   .move-name {
     text-transform: capitalize;
@@ -107,15 +115,15 @@ export const MoveItem = styled.div`
 
   .move-details {
     font-size: 12px;
-    color: #6B7280;
+    color: #6b7280;
     display: flex;
     justify-content: space-between;
   }
 `;
 
 export const MoreMovesItem = styled(MoveItem)`
-  background-color: #E5E7EB;
-  color: #6B7280;
+  background-color: #e5e7eb;
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;

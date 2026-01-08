@@ -14,13 +14,13 @@ export const EvolutionContainer = styled("div")({
     alignItems: "center",
     gap: 0,
     flexWrap: "wrap",
-    justifyContent: "center"
+    justifyContent: "center",
   },
 
   ".evolution-stage": {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   // Pokemon card styles
@@ -40,18 +40,19 @@ export const EvolutionContainer = styled("div")({
 
     "&:hover": {
       transform: "translateY(-6px)",
-      boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)",
-      borderColor: "#e0e0e0"
+      boxShadow:
+        "0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)",
+      borderColor: "#e0e0e0",
     },
 
-    "img": {
+    img: {
       imageRendering: "pixelated",
-      transition: "transform 0.2s ease"
+      transition: "transform 0.2s ease",
     },
 
     "&:hover img": {
-      transform: "scale(1.1)"
-    }
+      transform: "scale(1.1)",
+    },
   },
 
   ".pokemon-card--small": {
@@ -59,11 +60,11 @@ export const EvolutionContainer = styled("div")({
     minWidth: "100px",
 
     ".pokemon-id": {
-      fontSize: "0.7rem"
+      fontSize: "0.7rem",
     },
     ".pokemon-name": {
-      fontSize: "0.85rem"
-    }
+      fontSize: "0.85rem",
+    },
   },
 
   ".pokemon-card--large": {
@@ -72,18 +73,18 @@ export const EvolutionContainer = styled("div")({
     boxShadow: "0 6px 16px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.06)",
 
     ".pokemon-id": {
-      fontSize: "0.8rem"
+      fontSize: "0.8rem",
     },
     ".pokemon-name": {
-      fontSize: "1.1rem"
-    }
+      fontSize: "1.1rem",
+    },
   },
 
   ".pokemon-id": {
     color: "#9CA3AF",
     fontSize: "0.75rem",
     fontWeight: 500,
-    marginTop: "4px"
+    marginTop: "4px",
   },
 
   ".pokemon-name": {
@@ -91,7 +92,7 @@ export const EvolutionContainer = styled("div")({
     textTransform: "capitalize",
     marginTop: "2px",
     color: "#1F2937",
-    fontSize: "0.95rem"
+    fontSize: "0.95rem",
   },
 
   // Evolution arrow styles
@@ -106,14 +107,14 @@ export const EvolutionContainer = styled("div")({
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      gap: "4px"
+      gap: "4px",
     },
 
     ".item-sprite": {
       width: "32px",
       height: "32px",
       imageRendering: "pixelated",
-      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
     },
 
     ".trigger-text": {
@@ -123,34 +124,34 @@ export const EvolutionContainer = styled("div")({
       textAlign: "center",
       textTransform: "capitalize",
       maxWidth: "100px",
-      lineHeight: 1.3
+      lineHeight: 1.3,
     },
 
     ".arrow-symbol": {
       color: "#9CA3AF",
       fontSize: "24px",
       fontWeight: 300,
-      transition: "color 0.2s ease"
-    }
+      transition: "color 0.2s ease",
+    },
   },
 
   ".evolution-arrow--diagonal-up": {
     ".arrow-symbol": {
-      transform: "rotate(-30deg)"
-    }
+      transform: "rotate(-30deg)",
+    },
   },
 
   ".evolution-arrow--diagonal-down": {
     ".arrow-symbol": {
-      transform: "rotate(30deg)"
-    }
+      transform: "rotate(30deg)",
+    },
   },
 
   // Split evolution (2 branches)
   ".split-evolution": {
     display: "flex",
     flexDirection: "column",
-    gap: "24px"
+    gap: "24px",
   },
 
   ".split-branch": {
@@ -159,18 +160,18 @@ export const EvolutionContainer = styled("div")({
 
     ".branch-content": {
       display: "flex",
-      alignItems: "center"
-    }
+      alignItems: "center",
+    },
   },
 
   ".split-branch--top": {
     alignItems: "flex-end",
-    marginBottom: "8px"
+    marginBottom: "8px",
   },
 
   ".split-branch--bottom": {
     alignItems: "flex-start",
-    marginTop: "8px"
+    marginTop: "8px",
   },
 
   // Radial layout for branching evolutions (like Eevee)
@@ -180,17 +181,17 @@ export const EvolutionContainer = styled("div")({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    overflowX: "auto"
+    overflowX: "auto",
   },
 
   ".radial-chain": {
     position: "relative",
-    flexShrink: 0
+    flexShrink: 0,
   },
 
   ".radial-svg": {
     pointerEvents: "none",
-    overflow: "visible"
+    overflow: "visible",
   },
 
   ".radial-center": {
@@ -201,21 +202,22 @@ export const EvolutionContainer = styled("div")({
     zIndex: 1,
 
     ".pokemon-card": {
-      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.08)",
-      border: "3px solid #FFD700"
-    }
+      boxShadow:
+        "0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.08)",
+      border: "3px solid #FFD700",
+    },
   },
 
   ".radial-branch": {
     position: "absolute",
-    zIndex: 1
+    zIndex: 1,
   },
 
   // SVG Arrow styles
   ".arrow-group": {
     ".arrow-label-container": {
-      overflow: "visible"
-    }
+      overflow: "visible",
+    },
   },
 
   ".arrow-label-wrapper": {
@@ -227,13 +229,13 @@ export const EvolutionContainer = styled("div")({
     borderRadius: "8px",
     padding: "6px 10px",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-    gap: "3px"
+    gap: "3px",
   },
 
   ".item-sprite-svg": {
     width: "32px",
     height: "32px",
-    imageRendering: "pixelated"
+    imageRendering: "pixelated",
   },
 
   ".arrow-label-text": {
@@ -243,7 +245,7 @@ export const EvolutionContainer = styled("div")({
     textAlign: "center",
     textTransform: "capitalize",
     lineHeight: 1.2,
-    maxWidth: "100px"
+    maxWidth: "100px",
   },
 
   // Responsive adjustments
@@ -252,31 +254,30 @@ export const EvolutionContainer = styled("div")({
       width: "400px",
       height: "400px",
       transform: "scale(0.8)",
-      transformOrigin: "center center"
+      transformOrigin: "center center",
     },
 
     ".linear-chain": {
       flexDirection: "column",
-      gap: "16px"
+      gap: "16px",
     },
 
     ".split-evolution": {
-      flexDirection: "column"
+      flexDirection: "column",
     },
 
     ".evolution-arrow": {
       margin: "8px 0",
 
       ".arrow-symbol": {
-        transform: "rotate(90deg)"
-      }
+        transform: "rotate(90deg)",
+      },
     },
 
     ".evolution-arrow--diagonal-up, .evolution-arrow--diagonal-down": {
       ".arrow-symbol": {
-        transform: "rotate(90deg)"
-      }
-    }
-  }
+        transform: "rotate(90deg)",
+      },
+    },
+  },
 });
-

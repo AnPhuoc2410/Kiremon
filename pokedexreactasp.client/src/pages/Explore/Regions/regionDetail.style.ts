@@ -20,18 +20,24 @@ export const BackButton = styled.button<{ bg?: string; hoverBg?: string }>`
   margin-bottom: ${units.spacing.xl};
   align-self: flex-start;
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
   transition: all 0.2s ease;
 
   &:hover {
     background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[600]};
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.06);
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;
 
@@ -71,7 +77,7 @@ export const RegionTitle = styled.h2`
   font-size: 2.25rem;
   font-weight: 800;
   margin: 0 0 ${units.spacing.xs} 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.35);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
 `;
 
 export const RegionDescription = styled.p`
@@ -79,14 +85,16 @@ export const RegionDescription = styled.p`
   line-height: 1.6;
   margin: 0;
   max-width: 80%;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 `;
 
 export const InfoContainer = styled.div`
   background: white;
   border-radius: 16px;
   padding: ${units.spacing.xl};
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 6px 10px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.06);
   margin-bottom: ${units.spacing.sm};
 `;
 
@@ -137,14 +145,18 @@ export const LocationCard = styled.div`
   padding: ${units.spacing.sm};
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
   font-size: 0.95rem;
   color: ${colors.text.primary};
   transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 6px 12px rgba(0, 0, 0, 0.1),
+      0 2px 6px rgba(0, 0, 0, 0.08);
     background-color: ${colors.primary[100]};
   }
 `;
@@ -173,7 +185,10 @@ export const PokemonCard = styled.div`
   padding: ${units.spacing.base} ${units.spacing.xs};
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
     transform: translateY(-4px);
@@ -192,7 +207,7 @@ export const NumberBadge = styled.div<{ bg?: string }>`
   padding: 2px 8px;
   font-size: 0.7rem;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 `;
 
 export const PokemonImage = styled.img`
@@ -269,7 +284,9 @@ export const ErrorWrapper = styled.div`
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
   }
 `;
 
@@ -349,25 +366,44 @@ export const TypeBadge = styled.div<{ type: string }>`
   color: white;
   background-color: ${({ type }) => {
     switch (type) {
-      case 'normal': return '#A8A77A';
-      case 'fire': return '#EE8130';
-      case 'water': return '#6390F0';
-      case 'electric': return '#F7D02C';
-      case 'grass': return '#7AC74C';
-      case 'ice': return '#96D9D6';
-      case 'fighting': return '#C22E28';
-      case 'poison': return '#A33EA1';
-      case 'ground': return '#E2BF65';
-      case 'flying': return '#A98FF3';
-      case 'psychic': return '#F95587';
-      case 'bug': return '#A6B91A';
-      case 'rock': return '#B6A136';
-      case 'ghost': return '#735797';
-      case 'dragon': return '#6F35FC';
-      case 'dark': return '#705746';
-      case 'steel': return '#B7B7CE';
-      case 'fairy': return '#D685AD';
-      default: return '#777';
+      case "normal":
+        return "#A8A77A";
+      case "fire":
+        return "#EE8130";
+      case "water":
+        return "#6390F0";
+      case "electric":
+        return "#F7D02C";
+      case "grass":
+        return "#7AC74C";
+      case "ice":
+        return "#96D9D6";
+      case "fighting":
+        return "#C22E28";
+      case "poison":
+        return "#A33EA1";
+      case "ground":
+        return "#E2BF65";
+      case "flying":
+        return "#A98FF3";
+      case "psychic":
+        return "#F95587";
+      case "bug":
+        return "#A6B91A";
+      case "rock":
+        return "#B6A136";
+      case "ghost":
+        return "#735797";
+      case "dragon":
+        return "#6F35FC";
+      case "dark":
+        return "#705746";
+      case "steel":
+        return "#B7B7CE";
+      case "fairy":
+        return "#D685AD";
+      default:
+        return "#777";
     }
   }};
   font-weight: 500;
@@ -388,7 +424,12 @@ export const HeaderContainer = styled.div`
   margin-bottom: ${units.spacing.base};
 `;
 
-export const NumberToggle = styled.button<{ bg?: string; hoverBg?: string; textColor?: string; borderColor?: string }>`
+export const NumberToggle = styled.button<{
+  bg?: string;
+  hoverBg?: string;
+  textColor?: string;
+  borderColor?: string;
+}>`
   background: ${({ bg }) => bg || colors["gray-200"]};
   color: ${({ textColor }) => textColor || colors.text.secondary};
   border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
@@ -406,7 +447,12 @@ export const NumberToggle = styled.button<{ bg?: string; hoverBg?: string; textC
   }
 `;
 
-export const SmallToggle = styled.button<{ bg?: string; hoverBg?: string; textColor?: string; borderColor?: string }>`
+export const SmallToggle = styled.button<{
+  bg?: string;
+  hoverBg?: string;
+  textColor?: string;
+  borderColor?: string;
+}>`
   background: ${({ bg }) => bg || colors["gray-200"]};
   color: ${({ textColor }) => textColor || colors.text.secondary};
   border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
@@ -444,7 +490,7 @@ export const StatPill = styled.span`
   border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 `;
 
 // New: Hero actions under banner
@@ -463,14 +509,25 @@ export const PrimaryAction = styled.button<{ bg?: string; hoverBg?: string }>`
   border-radius: 9999px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 
-  &:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[700]}; }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background: ${({ hoverBg, bg }) => hoverBg || bg || colors.primary[700]};
+  }
 `;
 
-export const SecondaryAction = styled.button<{ borderColor?: string; textColor?: string; hoverBg?: string }>`
-  background: rgba(255,255,255,0.85);
+export const SecondaryAction = styled.button<{
+  borderColor?: string;
+  textColor?: string;
+  hoverBg?: string;
+}>`
+  background: rgba(255, 255, 255, 0.85);
   color: ${({ textColor }) => textColor || colors.text.primary};
   border: 1px solid ${({ borderColor }) => borderColor || colors["gray-300"]};
   padding: 8px 14px;
@@ -478,7 +535,14 @@ export const SecondaryAction = styled.button<{ borderColor?: string; textColor?:
   font-weight: 700;
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 
-  &:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); background: ${({ hoverBg }) => hoverBg || 'rgba(255,255,255,0.95)'}; }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    background: ${({ hoverBg }) => hoverBg || "rgba(255,255,255,0.95)"};
+  }
 `;

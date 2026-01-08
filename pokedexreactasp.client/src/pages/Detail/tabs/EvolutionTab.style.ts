@@ -15,7 +15,7 @@ export const LoadingContainer = styled.div`
 export const NoEvolutionMessage = styled.div`
   text-align: center;
   padding: 32px 0;
-  color: #6B7280;
+  color: #6b7280;
   font-style: italic;
   font-size: 1rem;
 `;

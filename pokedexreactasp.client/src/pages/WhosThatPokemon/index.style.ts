@@ -89,7 +89,8 @@ export const GuessInput = styled.input`
 export const ResultMessage = styled.div<{ isCorrect?: boolean }>`
   margin-top: ${units.spacing.xs};
   padding: ${units.spacing.xs};
-  background-color: ${props => props.isCorrect ? colors["green-300"] : colors["red-300"]};
+  background-color: ${(props) =>
+    props.isCorrect ? colors["green-300"] : colors["red-300"]};
   border-radius: 8px;
   text-align: center;
   font-weight: bold;
@@ -97,8 +98,12 @@ export const ResultMessage = styled.div<{ isCorrect?: boolean }>`
   z-index: 2;
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 `;
 

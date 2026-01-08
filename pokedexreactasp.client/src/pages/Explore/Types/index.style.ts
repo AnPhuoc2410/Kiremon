@@ -28,12 +28,14 @@ export const TypesGrid = styled.div`
 `;
 
 export const TypeCard = styled.div<{ typeColor: string }>`
-  background-color: ${props => props.typeColor || colors["gray-300"]};
+  background-color: ${(props) => props.typeColor || colors["gray-300"]};
   color: white;
   border-radius: 12px;
   padding: ${units.spacing.lg};
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -51,7 +53,7 @@ export const TypeIcon = styled.div<{ icon: string }>`
   width: 60px;
   height: 60px;
   margin-bottom: ${units.spacing.sm};
-  background-image: url(${props => props.icon});
+  background-image: url(${(props) => props.icon});
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -150,7 +152,7 @@ export const SelectedTypeInfo = styled.div<{ typeColor: string }>`
   display: flex;
   align-items: center;
   padding: ${units.spacing.sm} ${units.spacing.lg};
-  background-color: ${props => props.typeColor};
+  background-color: ${(props) => props.typeColor};
   border-radius: 12px;
   margin-bottom: ${units.spacing.base};
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -179,7 +181,9 @@ export const PokemonCard = styled.div`
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
 
   &:hover {

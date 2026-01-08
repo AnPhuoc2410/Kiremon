@@ -82,7 +82,9 @@ const ALink = styled("a")({
   display: "flex",
 });
 
-const PixelatedNavItem = styled("button")((props: IStyleProps) => getStyle(props));
+const PixelatedNavItem = styled("button")((props: IStyleProps) =>
+  getStyle(props),
+);
 
 const NavItem: React.FC<INavItem> = ({ variant = "sky", label, href }) => {
   const resolved = useResolvedPath(href);
@@ -91,7 +93,11 @@ const NavItem: React.FC<INavItem> = ({ variant = "sky", label, href }) => {
 
   return (
     <ALink onClick={() => navigate(href)}>
-      <PixelatedNavItem className="pxl-border" variant={variant} matched={matched ? true : false}>
+      <PixelatedNavItem
+        className="pxl-border"
+        variant={variant}
+        matched={matched ? true : false}
+      >
         <Text variant="outlined" size="lg">
           {label}
         </Text>

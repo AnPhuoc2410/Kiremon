@@ -57,9 +57,9 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
 
     try {
       setIsSearching(true);
-      
+
       const pokemonList = await pokemonService.searchPokemonGraphQL(query);
-      
+
       if (!pokemonList || pokemonList.length === 0) {
         setSearchedPokemons([]);
         return;
@@ -90,7 +90,8 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
   }, [debouncedSearchQuery, searchPokemon]);
 
   // Display pokemons: show search results or all loaded pokemons
-  const displayPokemons = searchedPokemons.length > 0 ? searchedPokemons : pokemons;
+  const displayPokemons =
+    searchedPokemons.length > 0 ? searchedPokemons : pokemons;
 
   // Load more pokemons using GraphQL
   const loadPokemons = useCallback(async () => {
@@ -98,9 +99,9 @@ const AvatarChangeModal: React.FC<AvatarChangeModalProps> = ({
 
     try {
       setIsLoading(true);
-      
+
       const pokemonList = await pokemonService.loadPokemonGraphQL(20, offset);
-      
+
       const pokemonDetails = pokemonList.map((pokemon) => ({
         id: pokemon.id,
         name: pokemon.name,

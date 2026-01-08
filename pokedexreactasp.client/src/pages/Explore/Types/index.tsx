@@ -2,7 +2,11 @@ import { useState, useEffect, createRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import { Header, Navbar, Loading, PokeCard } from "../../../components/ui";
-import { getAllPokemonTypes, getRelatedPokemonByType, getDetailPokemon } from "../../../services/pokemon";
+import {
+  getAllPokemonTypes,
+  getRelatedPokemonByType,
+  getDetailPokemon,
+} from "../../../services/pokemon";
 import { colors } from "../../../components/utils";
 import { useGlobalContext } from "../../../contexts";
 import { IPokemonType } from "../../../types/pokemon";
@@ -49,7 +53,7 @@ const typeColors: Record<string, string> = {
   dark: "#705746",
   steel: "#B7B7CE",
   stellar: "#A8A8A8",
-  fairy: "#D685AD"
+  fairy: "#D685AD",
 };
 
 const typeIcons: Record<string, string> = {
@@ -71,14 +75,14 @@ const typeIcons: Record<string, string> = {
   rock: rockIcon,
   steel: steelIcon,
   stellar: stellarIcon,
-  water: waterIcon
+  water: waterIcon,
 };
 
 const TypesExplore = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const typeParam = searchParams.get('type');
+  const typeParam = searchParams.get("type");
 
   const navRef = createRef<HTMLDivElement>();
   const { state, setState } = useGlobalContext();
@@ -90,7 +94,7 @@ const TypesExplore = () => {
   // Track selected type from URL parameter
   const [selectedType, setSelectedType] = useState<string | null>(typeParam);
   const [selectedTypeColor, setSelectedTypeColor] = useState<string>(
-    typeParam ? typeColors[typeParam] || colors["gray-300"] : ""
+    typeParam ? typeColors[typeParam] || colors["gray-300"] : "",
   );
   const [typePokemon, setTypePokemon] = useState<any[]>([]);
   const [isLoadingPokemon, setIsLoadingPokemon] = useState<boolean>(false);
@@ -110,7 +114,9 @@ const TypesExplore = () => {
         const typesData = await getAllPokemonTypes();
 
         // Sort types alphabetically
-        const sortedTypes = typesData.sort((a, b) => a.name.localeCompare(b.name));
+        const sortedTypes = typesData.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
 
         // Store in global state for future use
         setState({ pokemonTypes: sortedTypes });
@@ -147,7 +153,7 @@ const TypesExplore = () => {
       // rawList items are typically { name, url } but could be { pokemon: { name, url } }
       const normalized = rawList.map((p: any) => ({
         name: p?.name ?? p?.pokemon?.name,
-        url: p?.url ?? p?.pokemon?.url
+        url: p?.url ?? p?.pokemon?.url,
       }));
 
       // Fetch details for each pokemon to obtain types and id
@@ -161,20 +167,22 @@ const TypesExplore = () => {
               url: p.url,
               id: details?.id || undefined,
               types,
-              captured: 0
+              captured: 0,
             };
           } catch (e) {
             console.error(`Failed to load details for ${p.name}:`, e);
             return { name: p.name, url: p.url, types: [], captured: 0 };
           }
-        })
+        }),
       );
 
       setTypePokemon(detailed);
       setIsLoadingPokemon(false);
     } catch (err) {
       console.error(`Error fetching Pokémon of ${typeName} type:`, err);
-      setError(`Failed to load ${typeName} type Pokémon. Please try again later.`);
+      setError(
+        `Failed to load ${typeName} type Pokémon. Please try again later.`,
+      );
       setIsLoadingPokemon(false);
     }
   };
@@ -196,7 +204,11 @@ const TypesExplore = () => {
   return (
     <>
       <S.PageWrapper
-        style={selectedType ? { backgroundColor: `${selectedTypeColor}20` } : undefined}
+        style={
+          selectedType
+            ? { backgroundColor: `${selectedTypeColor}20` }
+            : undefined
+        }
       >
         <S.TypesContainer style={{ marginBottom: navHeight }}>
           <Header
@@ -206,7 +218,7 @@ const TypesExplore = () => {
 
           {!selectedType ? (
             <>
-              <S.BackButton onClick={() => navigate('/pokemons')}>
+              <S.BackButton onClick={() => navigate("/pokemons")}>
                 ← Back to Explore
               </S.BackButton>
 
@@ -227,8 +239,12 @@ const TypesExplore = () => {
                       {typeIcons[type.name] && (
                         <S.TypeIcon icon={typeIcons[type.name]} />
                       )}
-                      <S.TypeName>{type.name.charAt(0).toUpperCase() + type.name.slice(1)}</S.TypeName>
-                      <S.PokemonCount>{type.pokemonCount} Pokémon</S.PokemonCount>
+                      <S.TypeName>
+                        {type.name.charAt(0).toUpperCase() + type.name.slice(1)}
+                      </S.TypeName>
+                      <S.PokemonCount>
+                        {type.pokemonCount} Pokémon
+                      </S.PokemonCount>
                     </S.TypeCard>
                   ))}
                 </S.TypesGrid>
@@ -243,12 +259,13 @@ const TypesExplore = () => {
               <S.SelectedTypeName
                 style={{
                   color: selectedTypeColor,
-                  marginBottom: '20px',
-                  fontSize: '1.5rem',
-                  textShadow: '0px 0px 1px rgba(0, 0, 0, 0.2)'
+                  marginBottom: "20px",
+                  fontSize: "1.5rem",
+                  textShadow: "0px 0px 1px rgba(0, 0, 0, 0.2)",
                 }}
               >
-                {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Type Pokémon
+                {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}{" "}
+                Type Pokémon
               </S.SelectedTypeName>
 
               {isLoadingPokemon ? (
@@ -262,7 +279,8 @@ const TypesExplore = () => {
                   {typePokemon.length > 0 ? (
                     typePokemon.map((pokemon, index) => {
                       // Handle different response shapes: some endpoints return { pokemon: { name, url } }
-                      const name = pokemon?.name ?? pokemon?.pokemon?.name ?? "";
+                      const name =
+                        pokemon?.name ?? pokemon?.pokemon?.name ?? "";
                       const url = pokemon?.url ?? pokemon?.pokemon?.url ?? "";
                       const pokemonId = getPokemonId(url) || index;
 
@@ -272,13 +290,17 @@ const TypesExplore = () => {
                           pokemonId={pokemonId}
                           name={name}
                           captured={pokemon?.captured ?? 0}
-                          types={pokemon?.types ?? pokemon?.pokemon?.types ?? []}
+                          types={
+                            pokemon?.types ?? pokemon?.pokemon?.types ?? []
+                          }
                           onClick={() => navigate(`/pokemon/${name}`)}
                         />
                       );
                     })
                   ) : (
-                    <S.ErrorMessage>No Pokémon found for this type</S.ErrorMessage>
+                    <S.ErrorMessage>
+                      No Pokémon found for this type
+                    </S.ErrorMessage>
                   )}
                 </S.PokemonGrid>
               )}

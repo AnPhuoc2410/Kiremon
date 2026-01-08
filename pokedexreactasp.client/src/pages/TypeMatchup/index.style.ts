@@ -31,16 +31,26 @@ export const OptionsGrid = styled.div`
   }
 `;
 
-export const OptionButton = styled.button<{correct?: boolean; wrong?: boolean}>`
+export const OptionButton = styled.button<{
+  correct?: boolean;
+  wrong?: boolean;
+}>`
   padding: ${units.spacing.sm};
   border-radius: 8px;
   border: 2px solid ${colors["gray-300"]};
-  background: ${props => props.correct ? colors["green-200"] : props.wrong ? colors["red-200"] : colors["gray-100"]};
+  background: ${(props) =>
+    props.correct
+      ? colors["green-200"]
+      : props.wrong
+        ? colors["red-200"]
+        : colors["gray-100"]};
   font-weight: 600;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all 0.2s ease;
 
-  &:hover { transform: translateY(-1px); }
+  &:hover {
+    transform: translateY(-1px);
+  }
 `;
 
 export const ScoreBar = styled.div`

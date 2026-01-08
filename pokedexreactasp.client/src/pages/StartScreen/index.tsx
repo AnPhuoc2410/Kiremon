@@ -15,14 +15,14 @@ const StartScreen: React.FC = () => {
   }, []);
 
   const handlePrevBackground = () => {
-    setCurrentBgIndex((prev) => 
-      prev === 0 ? T.backgroundImages.length - 1 : prev - 1
+    setCurrentBgIndex((prev) =>
+      prev === 0 ? T.backgroundImages.length - 1 : prev - 1,
     );
   };
 
   const handleNextBackground = () => {
-    setCurrentBgIndex((prev) => 
-      prev === T.backgroundImages.length - 1 ? 0 : prev + 1
+    setCurrentBgIndex((prev) =>
+      prev === T.backgroundImages.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -44,14 +44,24 @@ const StartScreen: React.FC = () => {
     <T.Container backgroundUrl={T.backgroundImages[currentBgIndex]}>
       {/* Left Navigation Button */}
       <T.BackgroundNavButton direction="left" onClick={handlePrevBackground}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </T.BackgroundNavButton>
 
       {/* Right Navigation Button */}
       <T.BackgroundNavButton direction="right" onClick={handleNextBackground}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </T.BackgroundNavButton>
@@ -78,7 +88,8 @@ const StartScreen: React.FC = () => {
           display: "flex",
           alignItems: "center",
           gap: "5px",
-        }}>
+        }}
+      >
         <Text variant="outlined">&copy;{new Date().getFullYear()} Sheme</Text>
         <Text variant="outlined">
           | Want to contribute?{" "}

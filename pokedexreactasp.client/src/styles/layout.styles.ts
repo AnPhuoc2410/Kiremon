@@ -17,10 +17,22 @@ export const CenteredPage = styled.div`
 `;
 
 export const GradientPage = styled(CenteredPage)`
-  background: linear-gradient(180deg, ${colors["red-100"]} 0%, ${colors["gray-100"]} 100%);
+  background: linear-gradient(
+    180deg,
+    ${colors["red-100"]} 0%,
+    ${colors["gray-100"]} 100%
+  );
   background-image:
-    radial-gradient(circle at 82% 18%, rgba(239, 68, 68, 0.06) 0, transparent 18%),
-    radial-gradient(circle at 18% 82%, rgba(59, 130, 246, 0.03) 0, transparent 20%);
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(239, 68, 68, 0.06) 0,
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 18% 82%,
+      rgba(59, 130, 246, 0.03) 0,
+      transparent 20%
+    );
 `;
 
 // ============ CONTENT WRAPPERS ============
@@ -48,7 +60,7 @@ export const Container = styled.div`
 
 export const MaxWidthContainer = styled.div<{ maxWidth?: string }>`
   width: 100%;
-  max-width: ${props => props.maxWidth || "1200px"};
+  max-width: ${(props) => props.maxWidth || "1200px"};
   margin: 0 auto;
   padding: 24px;
 
@@ -84,23 +96,29 @@ export const FlexRow = styled.div`
 // ============ GRID LAYOUTS ============
 export const Grid = styled.div<{ columns?: number; gap?: string }>`
   display: grid;
-  grid-template-columns: repeat(${props => props.columns || 1}, 1fr);
-  gap: ${props => props.gap || units.spacing.base};
+  grid-template-columns: repeat(${(props) => props.columns || 1}, 1fr);
+  gap: ${(props) => props.gap || units.spacing.base};
 `;
 
 export const AutoGrid = styled.div<{ minWidth?: string; gap?: string }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(${props => props.minWidth || "150px"}, 1fr));
-  gap: ${props => props.gap || "1rem"};
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(${(props) => props.minWidth || "150px"}, 1fr)
+  );
+  gap: ${(props) => props.gap || "1rem"};
 `;
 
 // ============ SECTIONS ============
 export const Section = styled.section<{ spacing?: "sm" | "md" | "lg" }>`
-  margin-bottom: ${props => {
+  margin-bottom: ${(props) => {
     switch (props.spacing) {
-      case "sm": return "1rem";
-      case "lg": return "3rem";
-      default: return "2rem";
+      case "sm":
+        return "1rem";
+      case "lg":
+        return "3rem";
+      default:
+        return "2rem";
     }
   }};
 `;
@@ -125,7 +143,7 @@ export const LayoutWithSidebar = styled.div`
 `;
 
 export const Sidebar = styled.aside<{ width?: string }>`
-  width: ${props => props.width || "280px"};
+  width: ${(props) => props.width || "280px"};
   background: white;
   border-right: 1px solid ${colors["gray-200"]};
   flex-shrink: 0;

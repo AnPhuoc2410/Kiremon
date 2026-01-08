@@ -118,7 +118,9 @@ const WarningBox = styled.div`
 const ConfirmEmail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"loading" | "success" | "error" | "idle">("loading");
+  const [status, setStatus] = useState<
+    "loading" | "success" | "error" | "idle"
+  >("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
@@ -128,7 +130,9 @@ const ConfirmEmail: React.FC = () => {
 
     if (!userId || !token) {
       setStatus("error");
-      setErrorMessage("Invalid confirmation link. Please check your email and try again.");
+      setErrorMessage(
+        "Invalid confirmation link. Please check your email and try again.",
+      );
       return;
     }
 
@@ -185,7 +189,9 @@ const ConfirmEmail: React.FC = () => {
           <StatusContainer>
             <Loading label="" />
             <LoadingTitle>Verifying Trainer ID...</LoadingTitle>
-            <Paragraph color="muted">Please wait while we confirm your email</Paragraph>
+            <Paragraph color="muted">
+              Please wait while we confirm your email
+            </Paragraph>
           </StatusContainer>
         )}
 
@@ -220,7 +226,9 @@ const ConfirmEmail: React.FC = () => {
             </StatusContainer>
 
             <WarningBox>
-              <Paragraph style={{ color: "#92400e", marginBottom: 12, fontWeight: 600 }}>
+              <Paragraph
+                style={{ color: "#92400e", marginBottom: 12, fontWeight: 600 }}
+              >
                 Need a new confirmation email?
               </Paragraph>
               <AuthForm style={{ gap: 8 }}>
@@ -237,7 +245,14 @@ const ConfirmEmail: React.FC = () => {
             </WarningBox>
 
             <div style={{ textAlign: "center" }}>
-              <Link to="/login" style={{ color: "#2563eb", fontWeight: 600, textDecoration: "none" }}>
+              <Link
+                to="/login"
+                style={{
+                  color: "#2563eb",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
                 Back to Login
               </Link>
             </div>
@@ -249,4 +264,3 @@ const ConfirmEmail: React.FC = () => {
 };
 
 export default ConfirmEmail;
-

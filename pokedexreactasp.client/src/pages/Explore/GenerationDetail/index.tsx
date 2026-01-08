@@ -1,16 +1,20 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { GenerationDetail as GenerationDetailComponent } from '../../../components/ui';
-import { Loading, NoSignal } from '../../../components/ui';
-import { useGenerationWithDetails } from '../../../components/hooks/usePokeAPI';
-import { getRegionTheme } from '../../../components/utils/regionThemes';
-import * as S from './index.style';
+import React, { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { GenerationDetail as GenerationDetailComponent } from "../../../components/ui";
+import { Loading, NoSignal } from "../../../components/ui";
+import { useGenerationWithDetails } from "../../../components/hooks/usePokeAPI";
+import { getRegionTheme } from "../../../components/utils/regionThemes";
+import * as S from "./index.style";
 
 const GenerationDetailPage: React.FC = () => {
   const { genId } = useParams<{ genId: string }>();
   const navigate = useNavigate();
-  const { data: generation, isLoading, error } = useGenerationWithDetails(genId || '');
-  const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const {
+    data: generation,
+    isLoading,
+    error,
+  } = useGenerationWithDetails(genId || "");
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
 
   // Get region theme colors when data is available
   const regionTheme = useMemo(() => {
@@ -30,7 +34,7 @@ const GenerationDetailPage: React.FC = () => {
     // Apply region-based theme overlay
     if (regionTheme) {
       style.backgroundColor = regionTheme.background;
-      style.backgroundBlendMode = 'overlay';
+      style.backgroundBlendMode = "overlay";
       style.boxShadow = `inset 0 0 100px ${regionTheme.primary}66`;
     }
 
@@ -40,30 +44,31 @@ const GenerationDetailPage: React.FC = () => {
   useEffect(() => {
     // Set a random background image based on generation
     const backgrounds = [
-      'forest_shrine.gif',
-      'monastiraki_square.gif',
-      'national_park_night.gif',
-      'national_park.gif',
-      'olivine_cafe.gif',
-      'pacifidlog_town.gif',
-      'petalburg_woods.gif',
-      'pokemon_beach.gif',
-      'pokemon_cave.gif',
-      'pokemon_gate.gif',
-      'pokemon_school.gif',
-      'route_1_morning.gif',
-      'slateport_beach.gif',
-      'slateport_market.gif',
-      'violet_city_3.gif',
-      'violet_city_4.gif',
+      "forest_shrine.gif",
+      "monastiraki_square.gif",
+      "national_park_night.gif",
+      "national_park.gif",
+      "olivine_cafe.gif",
+      "pacifidlog_town.gif",
+      "petalburg_woods.gif",
+      "pokemon_beach.gif",
+      "pokemon_cave.gif",
+      "pokemon_gate.gif",
+      "pokemon_school.gif",
+      "route_1_morning.gif",
+      "slateport_beach.gif",
+      "slateport_market.gif",
+      "violet_city_3.gif",
+      "violet_city_4.gif",
     ];
 
-    const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    const randomBackground =
+      backgrounds[Math.floor(Math.random() * backgrounds.length)];
     setBackgroundImage(`/static/background/${randomBackground}`);
   }, [genId]);
 
   const handleBack = () => {
-    navigate('/explore/generations');
+    navigate("/explore/generations");
   };
 
   if (isLoading) {
@@ -80,9 +85,10 @@ const GenerationDetailPage: React.FC = () => {
     return (
       <S.PageContainer style={pageStyle}>
         <S.ContentWrapper>
-          <NoSignal
-          />
-          <S.BackButton onClick={handleBack}>Return to Generations</S.BackButton>
+          <NoSignal />
+          <S.BackButton onClick={handleBack}>
+            Return to Generations
+          </S.BackButton>
         </S.ContentWrapper>
       </S.PageContainer>
     );
@@ -92,10 +98,14 @@ const GenerationDetailPage: React.FC = () => {
     <S.PageContainer style={pageStyle}>
       <S.BackButton
         onClick={handleBack}
-        style={regionTheme ? {
-          backgroundColor: `${regionTheme.primary}99`,
-          color: 'white'
-        } : undefined}
+        style={
+          regionTheme
+            ? {
+                backgroundColor: `${regionTheme.primary}99`,
+                color: "white",
+              }
+            : undefined
+        }
       >
         ← Back to Generations
       </S.BackButton>

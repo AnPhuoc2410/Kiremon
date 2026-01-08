@@ -30,13 +30,18 @@ export const Header = styled(FlexBetween)`
 export const TabsContainer = BaseTabsContainer;
 
 export const Tab = styled(BaseTab)<{ active?: boolean }>`
-  border-bottom: ${props => props.active ? `3px solid ${colors["sky-500"]}` : "3px solid transparent"};
-  color: ${props => props.active ? colors["sky-600"] : colors["gray-600"]};
-  font-weight: ${props => props.active ? 600 : 400};
+  border-bottom: ${(props) =>
+    props.active ? `3px solid ${colors["sky-500"]}` : "3px solid transparent"};
+  color: ${(props) => (props.active ? colors["sky-600"] : colors["gray-600"])};
+  font-weight: ${(props) => (props.active ? 600 : 400)};
 
   &:hover {
-    color: ${props => props.active ? colors["sky-600"] : colors["gray-800"]};
-    border-bottom: ${props => props.active ? `3px solid ${colors["sky-500"]}` : `3px solid ${colors["gray-300"]}`};
+    color: ${(props) =>
+      props.active ? colors["sky-600"] : colors["gray-800"]};
+    border-bottom: ${(props) =>
+      props.active
+        ? `3px solid ${colors["sky-500"]}`
+        : `3px solid ${colors["gray-300"]}`};
   }
 `;
 
@@ -85,7 +90,7 @@ export const TypeBadge = styled.span<{ type: string }>`
   font-weight: 600;
   text-transform: uppercase;
   margin: 0.25rem;
-  background-color: ${props => {
+  background-color: ${(props) => {
     const typeColors: Record<string, string> = {
       normal: "#A8A77A",
       fire: "#EE8130",
@@ -104,11 +109,11 @@ export const TypeBadge = styled.span<{ type: string }>`
       dragon: "#6F35FC",
       dark: "#705746",
       steel: "#B7B7CE",
-      fairy: "#D685AD"
+      fairy: "#D685AD",
     };
     return typeColors[props.type.toLowerCase()] || "#777";
   }};
-  color: ${props => {
+  color: ${(props) => {
     const lightTextTypes = ["electric", "ice", "ground", "steel"];
     return lightTextTypes.includes(props.type.toLowerCase()) ? "#000" : "#fff";
   }};
@@ -144,8 +149,9 @@ export const StatBar = styled.div<{ value: number; max?: number }>`
     top: 0;
     left: 0;
     height: 100%;
-    width: ${props => Math.min((props.value / (props.max || 255)) * 100, 100)}%;
-    background-color: ${props => {
+    width: ${(props) =>
+      Math.min((props.value / (props.max || 255)) * 100, 100)}%;
+    background-color: ${(props) => {
       if (props.value >= 80) return colors["green-500"];
       if (props.value >= 50) return colors["yellow-500"];
       return colors["red-500"];
@@ -187,8 +193,10 @@ export const MovesList = styled.div`
 export const MoveItem = styled.div<{ selected?: boolean }>`
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid ${props => props.selected ? colors["sky-500"] : colors["gray-300"]};
-  background-color: ${props => props.selected ? colors["sky-100"] : "white"};
+  border: 1px solid
+    ${(props) => (props.selected ? colors["sky-500"] : colors["gray-300"])};
+  background-color: ${(props) =>
+    props.selected ? colors["sky-100"] : "white"};
   cursor: pointer;
 
   &:hover {
@@ -248,14 +256,20 @@ export const BattleLog = styled.div`
   line-height: 1.5;
 `;
 
-export const LogEntry = styled.div<{ type?: 'attack' | 'info' | 'critical' | 'heal' }>`
+export const LogEntry = styled.div<{
+  type?: "attack" | "info" | "critical" | "heal";
+}>`
   padding: 0.25rem 0;
-  color: ${props => {
+  color: ${(props) => {
     switch (props.type) {
-      case 'attack': return colors["red-600"];
-      case 'critical': return colors["orange-600"];
-      case 'heal': return colors["green-600"];
-      default: return colors["gray-700"];
+      case "attack":
+        return colors["red-600"];
+      case "critical":
+        return colors["orange-600"];
+      case "heal":
+        return colors["green-600"];
+      default:
+        return colors["gray-700"];
     }
   }};
 `;

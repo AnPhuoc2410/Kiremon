@@ -11,7 +11,10 @@ import {
   ErrorText,
   RetryButton,
 } from "../Market.styles";
-import { ItemCategory, getCategoryDisplayName } from "../../../types/market.types";
+import {
+  ItemCategory,
+  getCategoryDisplayName,
+} from "../../../types/market.types";
 
 interface CategoryTabsProps {
   categories: ItemCategory[];

@@ -1,14 +1,22 @@
-import React from 'react';
-import { Text } from '../../../components/ui';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import * as S from './SpritesTab.style';
+import React from "react";
+import { Text } from "../../../components/ui";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import * as S from "./SpritesTab.style";
 
 interface SpritesTabProps {
   sprites: any;
   name: string;
 }
 
-const PokemonAvatar = ({ src, alt, label }: { src: string; alt: string; label: string }) => (
+const PokemonAvatar = ({
+  src,
+  alt,
+  label,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+}) => (
   <S.SpriteItem>
     <S.SpriteImage>
       <LazyLoadImage
@@ -18,7 +26,7 @@ const PokemonAvatar = ({ src, alt, label }: { src: string; alt: string; label: s
         height={120}
         effect="blur"
         style={{
-          imageRendering: 'pixelated'
+          imageRendering: "pixelated",
         }}
       />
     </S.SpriteImage>
@@ -29,7 +37,9 @@ const PokemonAvatar = ({ src, alt, label }: { src: string; alt: string; label: s
 const SpritesTab: React.FC<SpritesTabProps> = ({ sprites, name }) => {
   return (
     <S.SpriteContainer>
-      <Text as="h3" style={{ marginBottom: '16px' }}>Sprite Gallery</Text>
+      <Text as="h3" style={{ marginBottom: "16px" }}>
+        Sprite Gallery
+      </Text>
       <S.SpriteGallery>
         {sprites && sprites.front_default && (
           <PokemonAvatar
@@ -61,36 +71,54 @@ const SpritesTab: React.FC<SpritesTabProps> = ({ sprites, name }) => {
         )}
       </S.SpriteGallery>
 
-      {sprites && sprites.versions && sprites.versions["generation-v"] &&
+      {sprites &&
+        sprites.versions &&
+        sprites.versions["generation-v"] &&
         sprites.versions["generation-v"]["black-white"] &&
         sprites.versions["generation-v"]["black-white"].animated && (
           <S.VersionsContainer>
             <S.GenerationTitle>Animated Sprites (Gen V)</S.GenerationTitle>
             <S.SpriteGallery>
-              {sprites.versions["generation-v"]["black-white"].animated.front_default && (
+              {sprites.versions["generation-v"]["black-white"].animated
+                .front_default && (
                 <PokemonAvatar
-                  src={sprites.versions["generation-v"]["black-white"].animated.front_default}
+                  src={
+                    sprites.versions["generation-v"]["black-white"].animated
+                      .front_default
+                  }
                   alt={`${name} animated`}
                   label="Animated Front"
                 />
               )}
-              {sprites.versions["generation-v"]["black-white"].animated.back_default && (
+              {sprites.versions["generation-v"]["black-white"].animated
+                .back_default && (
                 <PokemonAvatar
-                  src={sprites.versions["generation-v"]["black-white"].animated.back_default}
+                  src={
+                    sprites.versions["generation-v"]["black-white"].animated
+                      .back_default
+                  }
                   alt={`${name} animated back`}
                   label="Animated Back"
                 />
               )}
-              {sprites.versions["generation-v"]["black-white"].animated.front_shiny && (
+              {sprites.versions["generation-v"]["black-white"].animated
+                .front_shiny && (
                 <PokemonAvatar
-                  src={sprites.versions["generation-v"]["black-white"].animated.front_shiny}
+                  src={
+                    sprites.versions["generation-v"]["black-white"].animated
+                      .front_shiny
+                  }
                   alt={`${name} animated shiny`}
                   label="Animated Shiny Front"
                 />
               )}
-              {sprites.versions["generation-v"]["black-white"].animated.back_shiny && (
+              {sprites.versions["generation-v"]["black-white"].animated
+                .back_shiny && (
                 <PokemonAvatar
-                  src={sprites.versions["generation-v"]["black-white"].animated.back_shiny}
+                  src={
+                    sprites.versions["generation-v"]["black-white"].animated
+                      .back_shiny
+                  }
                   alt={`${name} animated shiny back`}
                   label="Animated Shiny Back"
                 />

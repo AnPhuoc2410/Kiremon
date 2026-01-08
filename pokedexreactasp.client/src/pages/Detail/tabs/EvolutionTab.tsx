@@ -1,7 +1,7 @@
-import React from 'react';
-import { Text, EvolutionChain, Loading } from '../../../components/ui';
-import * as T from '../index.style';
-import * as S from './EvolutionTab.style';
+import React from "react";
+import { Text, EvolutionChain, Loading } from "../../../components/ui";
+import * as T from "../index.style";
+import * as S from "./EvolutionTab.style";
 
 interface EvolutionTabProps {
   isLoadingEvolution: boolean;
@@ -10,7 +10,7 @@ interface EvolutionTabProps {
 
 const EvolutionTab: React.FC<EvolutionTabProps> = ({
   isLoadingEvolution,
-  evolutionChain
+  evolutionChain,
 }) => {
   return (
     <S.EvolutionContainer>

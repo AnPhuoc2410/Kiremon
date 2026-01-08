@@ -22,7 +22,7 @@ class FriendService extends AuthenticatedApiService {
 
   // Friend Requests
   async sendFriendRequest(
-    request: SendFriendRequestDto
+    request: SendFriendRequestDto,
   ): Promise<FriendOperationResultDto> {
     return this.post<FriendOperationResultDto>("/Friend/request", request);
   }
@@ -37,18 +37,20 @@ class FriendService extends AuthenticatedApiService {
 
   async acceptRequest(requestId: number): Promise<FriendOperationResultDto> {
     return this.post<FriendOperationResultDto>(
-      `/Friend/request/${requestId}/accept`
+      `/Friend/request/${requestId}/accept`,
     );
   }
 
   async declineRequest(requestId: number): Promise<FriendOperationResultDto> {
     return this.post<FriendOperationResultDto>(
-      `/Friend/request/${requestId}/decline`
+      `/Friend/request/${requestId}/decline`,
     );
   }
 
   async cancelRequest(requestId: number): Promise<FriendOperationResultDto> {
-    return this.delete<FriendOperationResultDto>(`/Friend/request/${requestId}`);
+    return this.delete<FriendOperationResultDto>(
+      `/Friend/request/${requestId}`,
+    );
   }
 
   // Friends List
@@ -70,11 +72,15 @@ class FriendService extends AuthenticatedApiService {
 
   // Search & Discovery
   async searchUsers(searchTerm: string): Promise<UserSearchResultDto[]> {
-    return this.get<UserSearchResultDto[]>(`/Friend/search?q=${encodeURIComponent(searchTerm)}`);
+    return this.get<UserSearchResultDto[]>(
+      `/Friend/search?q=${encodeURIComponent(searchTerm)}`,
+    );
   }
 
   async findByFriendCode(friendCode: string): Promise<UserSearchResultDto> {
-    return this.get<UserSearchResultDto>(`/Friend/find/${encodeURIComponent(friendCode)}`);
+    return this.get<UserSearchResultDto>(
+      `/Friend/find/${encodeURIComponent(friendCode)}`,
+    );
   }
 }
 
