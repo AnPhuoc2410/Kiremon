@@ -61,7 +61,9 @@ async function executeGraphQLQuery(
     return result;
   } catch (error) {
     console.error(`Error in executeGraphQLQuery for ${operationName}:`, error);
-    throw error;
+    throw new Error(
+      `Error executing GraphQL query '${operationName}': ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

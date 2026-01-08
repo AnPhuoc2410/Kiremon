@@ -42,7 +42,7 @@ import {
   PokemonForm,
 } from "../types/pokemon.d";
 import { IPokemonDetailResponse, IPokemonSpecies } from "../types/pokemon.d";
-import { POKEMON_IMAGE, POKEMON_SHOWDOWN_IMAGE } from "../config/api.config";
+import { POKEMON_IMAGE } from "../config/api.config";
 
 // Language ID constants for future i18n support
 export const LANGUAGE_IDS = {
@@ -236,22 +236,8 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         return localizedName || m.move.name;
       });
 
-      // Determine damage class based on move type (Gen 4+ physical/special split)
-      // Physical types: normal, fighting, flying, poison, ground, rock, bug, ghost, steel
-      // Special types: fire, water, grass, electric, psychic, ice, dragon, dark, fairy
-      const physicalTypes = new Set([
-        "normal",
-        "fighting",
-        "flying",
-        "poison",
-        "ground",
-        "rock",
-        "bug",
-        "ghost",
-        "steel",
-      ]);
-
-      // Get damage class from API or fallback to type-based logic
+      // Get damage class from API (Gen 4+ physical/special split)
+      // Since Gen 4, each move has its own damage class independent of type
       const getDamageClass = (
         move: PokemonMove,
       ): "physical" | "special" | "status" => {
@@ -260,12 +246,14 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         if (damageClassName === "physical") return "physical";
         if (damageClassName === "special") return "special";
         if (damageClassName === "status") return "status";
-        // Fallback: determine by power and type
+
         if (!move.move.power || move.move.power === 0) {
           return "status";
         }
-        const moveType = move.move.type?.name?.toLowerCase() || "normal";
-        return physicalTypes.has(moveType) ? "physical" : "special";
+
+        // If API data missing and move has power, default to physical
+        // Note: This is a fallback only - actual damage class should come from API
+        return "physical";
       };
 
       // Determine learn method based on level
@@ -776,52 +764,54 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
   );
 
   /**
-   * Load Pokemon detail by name
+   * Load related Pokemon by generation
    */
-  const loadPokemon = useCallback(
-    async (name: string, languageId: LanguageId = LANGUAGE_IDS.ENGLISH) => {
-      if (!name) return;
+  const loadRelatedPokemon = useCallback(
+    async (
+      genId: number,
+      excludeName: string,
+      languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
+    ) => {
+      if (!genId) return;
 
       try {
-        setIsLoading(true);
+        setIsLoadingRelated(true);
 
-        const response = await pokemonGraphQLService.getPokemonDetail(
-          name,
-          languageId,
+        const relatedData =
+          await pokemonGraphQLService.getRelatedPokemonByGeneration(
+            genId,
+            excludeName,
+            6,
+            languageId,
+          );
+
+        const transformedRelated: RelatedPokemonItem[] = relatedData.map(
+          (p: RelatedPokemonGraphQL) => {
+            const sprites = pokemonGraphQLService.parseSprites(
+              p.pokemons[0]?.pokemonsprites[0]?.sprites,
+            );
+
+            return {
+              name:
+                pokemonGraphQLService.getLocalizedName(
+                  p.pokemonspeciesnames,
+                  languageId,
+                ) || p.name,
+              url: "",
+              id: p.pokemons[0]?.id || p.id,
+              sprite: sprites?.front_default || undefined,
+            };
+          },
         );
 
-        if (!response) {
-          throw new Error("Pokemon not found");
-        }
-
-        const transformed = transformPokemonDetail(response, languageId);
-
-        setPokemonId(transformed.pokemonId);
-        setTypes(transformed.types);
-        setTypeNames(transformed.typeNames);
-        setMoves(transformed.moves);
-        setMoveDetails(transformed.moveDetails);
-        setStats(transformed.stats);
-        setAbilities(transformed.abilities);
-        setSprite(transformed.sprite);
-        setSprites(transformed.sprites);
-        setHeight(transformed.height);
-        setWeight(transformed.weight);
-        setBaseExperience(transformed.baseExperience);
-        setHeldItems(transformed.heldItems);
-        setSpecialForms(transformed.specialForms);
-
-        // Load species data
-        await loadSpeciesData(transformed.speciesId, languageId);
-
-        setIsLoading(false);
+        setRelatedPokemon(transformedRelated);
+        setIsLoadingRelated(false);
       } catch (error) {
-        console.error("Error loading Pokemon:", error);
-        setIsLoading(false);
-        throw error;
+        console.error("Error loading related Pokemon:", error);
+        setIsLoadingRelated(false);
       }
     },
-    [transformPokemonDetail],
+    [],
   );
 
   /**
@@ -893,58 +883,56 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         setIsLoadingEvolution(false);
       }
     },
-    [transformSpeciesData, processEvolutionChain],
+    [transformSpeciesData, processEvolutionChain, loadRelatedPokemon],
   );
 
   /**
-   * Load related Pokemon by generation
+   * Load Pokemon detail by name
    */
-  const loadRelatedPokemon = useCallback(
-    async (
-      genId: number,
-      excludeName: string,
-      languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
-    ) => {
-      if (!genId) return;
+  const loadPokemon = useCallback(
+    async (name: string, languageId: LanguageId = LANGUAGE_IDS.ENGLISH) => {
+      if (!name) return;
 
       try {
-        setIsLoadingRelated(true);
+        setIsLoading(true);
 
-        const relatedData =
-          await pokemonGraphQLService.getRelatedPokemonByGeneration(
-            genId,
-            excludeName,
-            6,
-            languageId,
-          );
-
-        const transformedRelated: RelatedPokemonItem[] = relatedData.map(
-          (p: RelatedPokemonGraphQL) => {
-            const sprites = pokemonGraphQLService.parseSprites(
-              p.pokemons[0]?.pokemonsprites[0]?.sprites,
-            );
-
-            return {
-              name:
-                pokemonGraphQLService.getLocalizedName(
-                  p.pokemonspeciesnames,
-                  languageId,
-                ) || p.name,
-              url: "",
-              id: p.pokemons[0]?.id || p.id,
-              sprite: sprites?.front_default || undefined,
-            };
-          },
+        const response = await pokemonGraphQLService.getPokemonDetail(
+          name,
+          languageId,
         );
 
-        setRelatedPokemon(transformedRelated);
-        setIsLoadingRelated(false);
+        if (!response) {
+          throw new Error("Pokemon not found");
+        }
+
+        const transformed = transformPokemonDetail(response, languageId);
+
+        setPokemonId(transformed.pokemonId);
+        setTypes(transformed.types);
+        setTypeNames(transformed.typeNames);
+        setMoves(transformed.moves);
+        setMoveDetails(transformed.moveDetails);
+        setStats(transformed.stats);
+        setAbilities(transformed.abilities);
+        setSprite(transformed.sprite);
+        setSprites(transformed.sprites);
+        setHeight(transformed.height);
+        setWeight(transformed.weight);
+        setBaseExperience(transformed.baseExperience);
+        setHeldItems(transformed.heldItems);
+        setSpecialForms(transformed.specialForms);
+
+        // Load species data
+        await loadSpeciesData(transformed.speciesId, languageId);
+
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error loading related Pokemon:", error);
-        setIsLoadingRelated(false);
+        console.error("Error loading Pokemon:", error);
+        setIsLoading(false);
+        throw error;
       }
     },
-    [],
+    [transformPokemonDetail, loadSpeciesData],
   );
 
   return {

@@ -788,7 +788,8 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
           (arr) => filterMoves(arr).length === 0,
         ) && (
           <S.EmptyState>
-            No {activeFilter === "all" ? "" : activeFilter} moves found
+            No {activeFilter === "all" ? "moves" : `${activeFilter} moves`}{" "}
+            found
           </S.EmptyState>
         )}
       </S.MovePoolContainer>

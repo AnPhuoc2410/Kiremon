@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Loading, RelatedPokemon, Text } from "../../../components/ui";
@@ -100,28 +100,36 @@ const AboutTab: React.FC<AboutTabProps> = ({
     loadFormSprites();
   }, [specialForms]);
 
+  // Create a stable string key from held item names for effect dependency
+  const heldItemNamesKey = useMemo(
+    () =>
+      heldItems
+        ?.map((item) => item.item.name)
+        .sort()
+        .join("|") || "",
+    [heldItems],
+  );
+
   // Load held item sprites using GraphQL
   useEffect(() => {
     const loadHeldItemSprites = async () => {
-      if (heldItems && heldItems.length > 0) {
-        setIsLoadingHeldItems(true);
-        try {
-          const itemNames = heldItems.map((item) => item.item.name);
-          const sprites = await pokeItemService.getHeldItemSprites(itemNames);
-          setHeldItemSprites(sprites);
-        } catch (error) {
-          console.error("Error loading held item sprites:", error);
-          setHeldItemSprites([]);
-        } finally {
-          setIsLoadingHeldItems(false);
-        }
+      if (!heldItemNamesKey) return;
+
+      const itemNames = heldItemNamesKey.split("|").filter(Boolean);
+      setIsLoadingHeldItems(true);
+      try {
+        const sprites = await pokeItemService.getHeldItemSprites(itemNames);
+        setHeldItemSprites(sprites);
+      } catch (error) {
+        console.error("Error loading held item sprites:", error);
+        setHeldItemSprites([]);
+      } finally {
+        setIsLoadingHeldItems(false);
       }
     };
 
     loadHeldItemSprites();
-    // Use stable string dependency to avoid infinite loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(heldItems?.map((item) => item.item.name))]);
+  }, [heldItemNamesKey]);
 
   return (
     <>

@@ -329,7 +329,7 @@ const GET_POKEMON_DETAIL_QUERY = `
           }
         }
       }
-      pokemonmoves(distinct_on: move_id, order_by: {move_id: asc}) {
+      pokemonmoves(order_by: {move_id: asc}) {
         level
         move {
           name
@@ -780,7 +780,14 @@ export const pokemonGraphQLService = {
       const filtered = allPokemon.filter(
         (p) => p.name.toLowerCase() !== excludeName.toLowerCase(),
       );
-      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+
+      // Fisher-Yates shuffle for proper randomization
+      const shuffled = [...filtered];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
       return shuffled.slice(0, limit);
     } catch (error) {
       console.error(`Error fetching related Pokemon:`, error);
