@@ -159,6 +159,16 @@ const buildEvolutionGraph = (
   >();
   const hasParent = new Set<string>();
 
+  // Helper to determine trigger priority (prefer item-based over location-based)
+  const getTriggerPriority = (trigger?: EvolutionTrigger): number => {
+    if (!trigger) return 0;
+    if (trigger.item) return 3; // Highest: Use item (e.g., Leaf Stone)
+    if (trigger.minLevel) return 2; // Level up
+    if (trigger.minHappiness || trigger.minAffection) return 2; // Friendship
+    if (trigger.location) return 1; // Location-based (lower priority)
+    return 1;
+  };
+
   evolutions.forEach((evo) => {
     pokemonMap.set(evo.from.name, evo.from);
     pokemonMap.set(evo.to.name, evo.to);
@@ -166,7 +176,27 @@ const buildEvolutionGraph = (
     if (!childrenMap.has(evo.from.name)) {
       childrenMap.set(evo.from.name, []);
     }
-    childrenMap.get(evo.from.name)!.push({ to: evo.to, trigger: evo.trigger });
+
+    // Check if this target Pokemon already exists in the children list
+    const existingChildren = childrenMap.get(evo.from.name)!;
+    const existingIndex = existingChildren.findIndex(
+      (child) => child.to.name === evo.to.name,
+    );
+
+    if (existingIndex === -1) {
+      // New evolution target, add it
+      existingChildren.push({ to: evo.to, trigger: evo.trigger });
+    } else {
+      // Already exists - keep the one with higher priority trigger
+      const existingPriority = getTriggerPriority(
+        existingChildren[existingIndex].trigger,
+      );
+      const newPriority = getTriggerPriority(evo.trigger);
+      if (newPriority > existingPriority) {
+        existingChildren[existingIndex] = { to: evo.to, trigger: evo.trigger };
+      }
+    }
+
     hasParent.add(evo.to.name);
   });
 
@@ -443,7 +473,7 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
           const pos = getPosition(index);
           return (
             <SvgArrowLine
-              key={`arrow-${evo.node.pokemon.name}`}
+              key={`arrow-${index}-${evo.node.pokemon.name}`}
               startX={centerX}
               startY={centerY}
               endX={centerX + pos.x}
@@ -465,7 +495,7 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
 
         return (
           <div
-            key={evo.node.pokemon.name}
+            key={`branch-${index}-${evo.node.pokemon.name}`}
             className="radial-branch"
             style={{
               left: `calc(50% + ${pos.x}px)`,
