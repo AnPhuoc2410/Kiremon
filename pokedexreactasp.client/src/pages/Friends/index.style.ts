@@ -104,7 +104,8 @@ export const FriendCard = styled.div<{ $online?: boolean }>`
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid ${(props) => (props.$online ? colors["green-200"] : colors["gray-200"])};
+  border: 2px solid
+    ${(props) => (props.$online ? colors["green-200"] : colors["gray-200"])};
   position: relative;
   overflow: hidden;
 
@@ -118,14 +119,19 @@ export const FriendCard = styled.div<{ $online?: boolean }>`
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, ${colors["green-400"]}, ${colors["green-500"]});
+        background: linear-gradient(
+          90deg,
+          ${colors["green-400"]},
+          ${colors["green-500"]}
+        );
       }
     `}
 
   &:hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    border-color: ${(props) => (props.$online ? colors["green-400"] : colors["red-400"])};
+    border-color: ${(props) =>
+      props.$online ? colors["green-400"] : colors["red-400"]};
   }
 `;
 
@@ -133,7 +139,11 @@ export const FriendAvatar = styled.div<{ $online?: boolean }>`
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, ${colors["yellow-200"]} 0%, ${colors["yellow-400"]} 100%);
+  background: linear-gradient(
+    135deg,
+    ${colors["yellow-200"]} 0%,
+    ${colors["yellow-400"]} 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,14 +151,17 @@ export const FriendAvatar = styled.div<{ $online?: boolean }>`
   font-weight: 700;
   color: ${colors["gray-700"]};
   position: relative;
-  border: 4px solid ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
+  border: 4px solid
+    ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
   transition: all 0.3s ease;
   animation: ${float} 3s ease-in-out infinite;
 
   ${(props) =>
     props.$online &&
     css`
-      animation: ${float} 3s ease-in-out infinite, ${pulse} 2s infinite;
+      animation:
+        ${float} 3s ease-in-out infinite,
+        ${pulse} 2s infinite;
     `}
 
   img {
@@ -180,7 +193,8 @@ export const FriendLevel = styled.span`
 `;
 
 export const FriendStatus = styled.span<{ $online?: boolean }>`
-  color: ${(props) => (props.$online ? colors["green-600"] : colors["gray-400"])};
+  color: ${(props) =>
+    props.$online ? colors["green-600"] : colors["gray-400"]};
   font-size: 12px;
   font-weight: 500;
 `;
@@ -205,7 +219,11 @@ export const QuickActionBtn = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
+    background: linear-gradient(
+      135deg,
+      ${colors["red-500"]} 0%,
+      ${colors["red-400"]} 100%
+    );
     border-color: ${colors["red-500"]};
     color: white;
     transform: scale(1.08);
@@ -306,7 +324,11 @@ export const FriendDetailAvatar = styled.div<{ $online?: boolean }>`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, ${colors["yellow-200"]} 0%, ${colors["yellow-400"]} 100%);
+  background: linear-gradient(
+    135deg,
+    ${colors["yellow-200"]} 0%,
+    ${colors["yellow-400"]} 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -314,13 +336,16 @@ export const FriendDetailAvatar = styled.div<{ $online?: boolean }>`
   font-weight: 700;
   color: ${colors["gray-700"]};
   margin: 0 auto 20px;
-  border: 5px solid ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
+  border: 5px solid
+    ${(props) => (props.$online ? colors["green-400"] : colors["gray-200"])};
   animation: ${float} 3s ease-in-out infinite;
 
   ${(props) =>
     props.$online &&
     css`
-      animation: ${float} 3s ease-in-out infinite, ${pulse} 2s infinite;
+      animation:
+        ${float} 3s ease-in-out infinite,
+        ${pulse} 2s infinite;
     `}
 
   img {
@@ -357,7 +382,8 @@ export const FriendDetailLevel = styled.div`
 `;
 
 export const FriendDetailStatus = styled.div<{ $online?: boolean }>`
-  color: ${(props) => (props.$online ? colors["green-600"] : colors["gray-400"])};
+  color: ${(props) =>
+    props.$online ? colors["green-600"] : colors["gray-400"]};
   font-size: 14px;
   margin-bottom: 24px;
   font-weight: 500;
@@ -420,7 +446,11 @@ export const ActionButton = styled.button<{ $variant?: "primary" | "danger" }>`
     switch (props.$variant) {
       case "primary":
         return css`
-          background: linear-gradient(135deg, ${colors["red-500"]} 0%, ${colors["red-400"]} 100%);
+          background: linear-gradient(
+            135deg,
+            ${colors["red-500"]} 0%,
+            ${colors["red-400"]} 100%
+          );
           color: white;
           box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
           &:hover {

@@ -61,4 +61,11 @@ const WrapperCardList = styled("div")({
   gap: 8,
 });
 
-export { Page, Header, Grid, EmptyState, DeleteConfirmationModal, WrapperCardList };
+export {
+  Page,
+  Header,
+  Grid,
+  EmptyState,
+  DeleteConfirmationModal,
+  WrapperCardList,
+};

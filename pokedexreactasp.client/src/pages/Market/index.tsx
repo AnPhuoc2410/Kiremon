@@ -14,11 +14,7 @@ import {
   SidebarToggle,
   SidebarOverlay,
 } from "./Market.styles";
-import {
-  CategoryTabs,
-  ItemGrid,
-  ItemDescriptionBox,
-} from "./components";
+import { CategoryTabs, ItemGrid, ItemDescriptionBox } from "./components";
 import { usePokeMart } from "../../components/hooks/useMarket";
 import { Header } from "../../components/ui";
 import { pokeItemService, marketService } from "../../services";
@@ -30,7 +26,8 @@ const Market: React.FC = () => {
   const [pokeballSprite, setPokeballSprite] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [isLoadingItemFromUrl, setIsLoadingItemFromUrl] = useState<boolean>(false);
+  const [isLoadingItemFromUrl, setIsLoadingItemFromUrl] =
+    useState<boolean>(false);
 
   const {
     categories,
@@ -75,7 +72,13 @@ const Market: React.FC = () => {
 
       loadItemFromUrl();
     }
-  }, [searchParams, categories, isLoadingItemFromUrl, setSelectedCategory, setSearchParams]);
+  }, [
+    searchParams,
+    categories,
+    isLoadingItemFromUrl,
+    setSelectedCategory,
+    setSearchParams,
+  ]);
 
   // Scroll to top functionality
   useEffect(() => {
@@ -117,7 +120,10 @@ const Market: React.FC = () => {
   return (
     <>
       <ShopContainer>
-        <Header title="Poké Mart" subtitle="Stock up on items for your journey" />
+        <Header
+          title="Poké Mart"
+          subtitle="Stock up on items for your journey"
+        />
 
         <ShopInner>
           {/* Main Content: Sidebar + Items */}
@@ -126,13 +132,20 @@ const Market: React.FC = () => {
               {/* Mobile sidebar toggle */}
               <SidebarToggle onClick={() => setSidebarOpen(!sidebarOpen)}>
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Categories
               </SidebarToggle>
 
               {/* Overlay for mobile */}
-              <SidebarOverlay $isOpen={sidebarOpen} onClick={() => setSidebarOpen(false)} />
+              <SidebarOverlay
+                $isOpen={sidebarOpen}
+                onClick={() => setSidebarOpen(false)}
+              />
 
               {/* Left: Category Sidebar */}
               <CategoryTabs

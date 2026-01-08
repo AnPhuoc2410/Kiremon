@@ -7,15 +7,18 @@ export const BaseCard = styled.div<{
   radius?: "sm" | "md" | "lg";
 }>`
   background: white;
-  border-radius: ${props => {
+  border-radius: ${(props) => {
     switch (props.radius) {
-      case "sm": return "8px";
-      case "lg": return "16px";
-      default: return "14px";
+      case "sm":
+        return "8px";
+      case "lg":
+        return "16px";
+      default:
+        return "14px";
     }
   }};
 
-  ${props => {
+  ${(props) => {
     switch (props.variant) {
       case "bordered":
         return `border: 1px solid ${colors["gray-200"]};`;
@@ -28,14 +31,19 @@ export const BaseCard = styled.div<{
 `;
 
 // ============ AUTH CARD ============
-export const AuthCard = styled(BaseCard)<{ width?: string; accentColor?: string }>`
-  width: ${props => props.width || "420px"};
+export const AuthCard = styled(BaseCard)<{
+  width?: string;
+  accentColor?: string;
+}>`
+  width: ${(props) => props.width || "420px"};
   max-width: 100%;
   background: linear-gradient(180deg, #ffffff, #fbfdff);
   padding: 28px;
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
-  border-top: 6px solid ${props => props.accentColor || colors["red-500"]};
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  border-top: 6px solid ${(props) => props.accentColor || colors["red-500"]};
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 
   &:hover {
     transform: translateY(-4px);
@@ -61,7 +69,9 @@ export const StatCard = styled(BaseCard)`
   }
 `;
 
-export const StatIcon = styled.div<{ $color?: "blue" | "green" | "red" | "yellow" }>`
+export const StatIcon = styled.div<{
+  $color?: "blue" | "green" | "red" | "yellow";
+}>`
   width: 56px;
   height: 56px;
   border-radius: 14px;
@@ -70,7 +80,7 @@ export const StatIcon = styled.div<{ $color?: "blue" | "green" | "red" | "yellow
   justify-content: center;
   color: white;
 
-  background: ${props => {
+  background: ${(props) => {
     switch (props.$color) {
       case "green":
         return `linear-gradient(135deg, ${colors["green-400"]} 0%, ${colors["green-500"]} 100%)`;
@@ -131,23 +141,24 @@ export const SlotCard = styled.div<{ isEmpty?: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: ${props => props.isEmpty ? colors["gray-100"] : "white"};
-  border: 2px dashed ${props => props.isEmpty ? colors["gray-300"] : colors["sky-300"]};
+  background: ${(props) => (props.isEmpty ? colors["gray-100"] : "white")};
+  border: 2px dashed
+    ${(props) => (props.isEmpty ? colors["gray-300"] : colors["sky-300"])};
   min-height: 200px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-  box-shadow: ${props => props.isEmpty
-    ? "none"
-    : "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-  };
+  box-shadow: ${(props) =>
+    props.isEmpty
+      ? "none"
+      : "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"};
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: ${props => props.isEmpty
-      ? "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)"
-      : "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-    };
+    box-shadow: ${(props) =>
+      props.isEmpty
+        ? "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)"
+        : "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"};
   }
 `;
 

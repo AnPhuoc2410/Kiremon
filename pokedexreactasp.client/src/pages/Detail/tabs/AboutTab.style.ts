@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
 
-export const ClassificationBanner = styled.div<{ isLegendary?: boolean; isMythical?: boolean }>`
+export const ClassificationBanner = styled.div<{
+  isLegendary?: boolean;
+  isMythical?: boolean;
+}>`
   margin-bottom: 24px;
   display: flex;
   flex-wrap: wrap;
@@ -8,15 +11,18 @@ export const ClassificationBanner = styled.div<{ isLegendary?: boolean; isMythic
   justify-content: center;
 `;
 
-export const ClassificationBadge = styled.div<{ type: 'legendary' | 'mythical' }>`
+export const ClassificationBadge = styled.div<{
+  type: "legendary" | "mythical";
+}>`
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  box-shadow: 4px 4px 0 ${props => props.type === 'legendary' ? '#F59E0B' : '#8B5CF6'};
+  box-shadow: 4px 4px 0
+    ${(props) => (props.type === "legendary" ? "#F59E0B" : "#8B5CF6")};
 
   p {
-    color: ${props => props.type === 'legendary' ? '#B45309' : '#6D28D9'};
+    color: ${(props) => (props.type === "legendary" ? "#B45309" : "#6D28D9")};
     font-weight: 700;
     font-size: 1.1rem;
   }
@@ -39,7 +45,7 @@ export const SectionTitle = styled.div`
   h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1F2937;
+    color: #1f2937;
     margin: 0;
     text-transform: uppercase;
   }
@@ -75,14 +81,14 @@ export const InfoContent = styled.div`
 export const InfoLabel = styled.div`
   font-size: 0.85rem;
   font-weight: 600;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: uppercase;
 `;
 
 export const InfoValue = styled.div`
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1F2937;
+  color: #1f2937;
   text-transform: capitalize;
 `;
 
@@ -99,9 +105,9 @@ export const AbilitiesGrid = styled.div`
 
 export const AbilityCard = styled.div<{ isHidden?: boolean }>`
   padding: 10px 16px;
-  box-shadow: 4px 4px 0 ${props => props.isHidden ? '#F3F4F6' : 'white'};
+  box-shadow: 4px 4px 0 ${(props) => (props.isHidden ? "#F3F4F6" : "white")};
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 `;
@@ -110,12 +116,12 @@ export const AbilityName = styled.span`
   text-transform: capitalize;
   font-size: 1rem;
   font-weight: 600;
-  color: #1F2937;
+  color: #1f2937;
 `;
 
 export const AbilityHiddenLabel = styled.span`
   font-size: 0.75rem;
-  color: #B45309;
+  color: #b45309;
   font-weight: 600;
   margin-top: 2px;
 `;
@@ -139,7 +145,7 @@ export const FormsGrid = styled.div`
 export const FormItem = styled.div`
   text-align: center;
   padding: 8px;
-  box-shadow: 4px 4px 0 #E5E7EB;
+  box-shadow: 4px 4px 0 #e5e7eb;
 `;
 
 export const FormName = styled.div`
@@ -166,7 +172,9 @@ export const HeldItemWrapper = styled.div`
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
-  transition: background-color 0.2s, transform 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
 
   &:hover {
     background-color: rgba(59, 130, 246, 0.1);
@@ -200,7 +208,7 @@ export const HeldItemTooltip = styled.div`
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 12px;
-  background-color: #1F2937;
+  background-color: #1f2937;
   color: white;
   font-size: 0.85rem;
   font-weight: 600;
@@ -209,14 +217,16 @@ export const HeldItemTooltip = styled.div`
   box-shadow: 4px 4px 0 #374151;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
   z-index: 10;
   margin-bottom: 8px;
 `;
 
 export const ItemCard = styled.div`
   padding: 10px 14px;
-  box-shadow: 4px 4px 0 #E5E7EB;
+  box-shadow: 4px 4px 0 #e5e7eb;
 `;
 
 export const ItemName = styled.div`
@@ -235,6 +245,6 @@ export const ItemDetails = styled.div`
 
 export const ItemDetail = styled.div`
   font-size: 0.8rem;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: capitalize;
 `;

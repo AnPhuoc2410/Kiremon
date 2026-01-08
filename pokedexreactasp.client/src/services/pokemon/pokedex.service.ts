@@ -1,25 +1,29 @@
-import { ApiService } from '../api/api-client';
-import { cacheUtils } from '../cache/cache';
-import { buildEndpointUrl } from '../../config/api.config';
-import { IPokedex, INameUrlPair, IAPIResourceList } from '../../types/pokemon';
+import { ApiService } from "../api/api-client";
+import { cacheUtils } from "../cache/cache";
+import { buildEndpointUrl } from "../../config/api.config";
+import { IPokedex, INameUrlPair, IAPIResourceList } from "../../types/pokemon";
 
 class PokedexService extends ApiService {
   constructor() {
-    super(buildEndpointUrl('pokedexes'));
+    super(buildEndpointUrl("pokedexes"));
   }
 
   /**
    * Fetch all available pokedexes
    */
   async getAllPokedexes(): Promise<INameUrlPair[]> {
-    const cacheKey = 'pokedexes:all';
+    const cacheKey = "pokedexes:all";
     const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours cache for pokedex list
 
     try {
-      return await cacheUtils.getOrSet(cacheKey, async () => {
-        const response = await this.get<IAPIResourceList>('');
-        return response.results || [];
-      }, ONE_DAY);
+      return await cacheUtils.getOrSet(
+        cacheKey,
+        async () => {
+          const response = await this.get<IAPIResourceList>("");
+          return response.results || [];
+        },
+        ONE_DAY,
+      );
     } catch (error) {
       console.error("Error fetching pokedexes:", error);
       return [];
@@ -38,7 +42,10 @@ class PokedexService extends ApiService {
         return this.get<IPokedex>(`/${pokedexName}`);
       });
     } catch (error) {
-      console.error(`Error fetching details for ${pokedexName} pokedex:`, error);
+      console.error(
+        `Error fetching details for ${pokedexName} pokedex:`,
+        error,
+      );
       return null;
     }
   }

@@ -11,8 +11,7 @@ const pokemonGenerations = [
     games: ["Red", "Blue", "Green", "Yellow"],
     region: "Kanto",
     releaseYear: 1996,
-    starterImageUrl:
-      "/generation/Kanto.jpg", // Bulbasaur, Charmander, Squirtle
+    starterImageUrl: "/generation/Kanto.jpg", // Bulbasaur, Charmander, Squirtle
     pokemonCount: 151,
     apiId: "generation-i",
   },
@@ -22,8 +21,7 @@ const pokemonGenerations = [
     games: ["Gold", "Silver", "Crystal"],
     region: "Johto",
     releaseYear: 1999,
-    starterImageUrl:
-      "/generation/Johto.jpg", // Chikorita, Cyndaquil, Totodile
+    starterImageUrl: "/generation/Johto.jpg", // Chikorita, Cyndaquil, Totodile
     pokemonCount: 100,
     apiId: "generation-ii",
   },
@@ -33,8 +31,7 @@ const pokemonGenerations = [
     games: ["Ruby", "Sapphire", "Emerald", "FireRed", "LeafGreen"],
     region: "Hoenn",
     releaseYear: 2002,
-    starterImageUrl:
-      "/generation/Hoenn.jpg", // Treecko, Torchic, Mudkip
+    starterImageUrl: "/generation/Hoenn.jpg", // Treecko, Torchic, Mudkip
     pokemonCount: 135,
     apiId: "generation-iii",
   },
@@ -44,8 +41,7 @@ const pokemonGenerations = [
     games: ["Diamond", "Pearl", "Platinum", "HeartGold", "SoulSilver"],
     region: "Sinnoh",
     releaseYear: 2006,
-    starterImageUrl:
-      "/generation/Sinnoh.jpg", // Turtwig, Chimchar, Piplup
+    starterImageUrl: "/generation/Sinnoh.jpg", // Turtwig, Chimchar, Piplup
     pokemonCount: 107,
     apiId: "generation-iv",
   },
@@ -55,8 +51,7 @@ const pokemonGenerations = [
     games: ["Black", "White", "Black 2", "White 2"],
     region: "Unova",
     releaseYear: 2010,
-    starterImageUrl:
-      "/generation/Unova.jpg", // Snivy, Tepig, Oshawott
+    starterImageUrl: "/generation/Unova.jpg", // Snivy, Tepig, Oshawott
     pokemonCount: 156,
     apiId: "generation-v",
   },
@@ -66,8 +61,7 @@ const pokemonGenerations = [
     games: ["X", "Y", "Omega Ruby", "Alpha Sapphire"],
     region: "Kalos",
     releaseYear: 2013,
-    starterImageUrl:
-      "/generation/Kalos.jpg", // Chespin, Fennekin, Froakie
+    starterImageUrl: "/generation/Kalos.jpg", // Chespin, Fennekin, Froakie
     pokemonCount: 72,
     apiId: "generation-vi",
   },
@@ -77,8 +71,7 @@ const pokemonGenerations = [
     games: ["Sun", "Moon", "Ultra Sun", "Ultra Moon", "Let's Go"],
     region: "Alola",
     releaseYear: 2016,
-    starterImageUrl:
-      "/generation/Alola.jpg", // Rowlet, Litten, Popplio
+    starterImageUrl: "/generation/Alola.jpg", // Rowlet, Litten, Popplio
     pokemonCount: 88,
     apiId: "generation-vii",
   },
@@ -94,8 +87,7 @@ const pokemonGenerations = [
     ],
     region: "Galar",
     releaseYear: 2019,
-    starterImageUrl:
-      "/generation/Galar.jpg", // Grookey, Scorbunny, Sobble
+    starterImageUrl: "/generation/Galar.jpg", // Grookey, Scorbunny, Sobble
     pokemonCount: 89,
     apiId: "generation-viii",
   },
@@ -105,8 +97,7 @@ const pokemonGenerations = [
     games: ["Scarlet", "Violet", "The Teal Mask", "The Indigo Disk"],
     region: "Paldea",
     releaseYear: 2022,
-    starterImageUrl:
-      "/generation/Paldea.jpg", // Sprigatito, Fuecoco, Quaxly
+    starterImageUrl: "/generation/Paldea.jpg", // Sprigatito, Fuecoco, Quaxly
     pokemonCount: 103,
     apiId: "generation-ix",
   },

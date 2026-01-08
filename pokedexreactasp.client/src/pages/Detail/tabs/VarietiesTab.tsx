@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Loading, Text, PokeCard } from '../../../components/ui';
-import { pokemonService } from '../../../services';
-import * as T from '../index.style';
-import * as S from './VarietiesTab.style';
-import { IVariety } from '../../../types/pokemon';
+import React, { useEffect, useState } from "react";
+import { Loading, Text, PokeCard } from "../../../components/ui";
+import { pokemonService } from "../../../services";
+import * as T from "../index.style";
+import * as S from "./VarietiesTab.style";
+import { IVariety } from "../../../types/pokemon";
 
 interface VarietiesTabProps {
   varieties: IVariety[];
@@ -23,8 +23,13 @@ interface VarietyDetail {
   }>;
 }
 
-const VarietiesTab: React.FC<VarietiesTabProps> = ({ varieties, currentPokemonName }) => {
-  const [varietyDetails, setVarietyDetails] = useState<Record<string, VarietyDetail>>({});
+const VarietiesTab: React.FC<VarietiesTabProps> = ({
+  varieties,
+  currentPokemonName,
+}) => {
+  const [varietyDetails, setVarietyDetails] = useState<
+    Record<string, VarietyDetail>
+  >({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -35,7 +40,9 @@ const VarietiesTab: React.FC<VarietiesTabProps> = ({ varieties, currentPokemonNa
 
         for (const variety of varieties) {
           try {
-            const varietyData = await pokemonService.getPokemonDetail(variety.pokemon.name);
+            const varietyData = await pokemonService.getPokemonDetail(
+              variety.pokemon.name,
+            );
             if (varietyData) {
               details[variety.pokemon.name] = {
                 id: varietyData.id,
@@ -45,7 +52,10 @@ const VarietiesTab: React.FC<VarietiesTabProps> = ({ varieties, currentPokemonNa
               };
             }
           } catch (error) {
-            console.error(`Error loading variety ${variety.pokemon.name}:`, error);
+            console.error(
+              `Error loading variety ${variety.pokemon.name}:`,
+              error,
+            );
           }
         }
 
@@ -76,7 +86,7 @@ const VarietiesTab: React.FC<VarietiesTabProps> = ({ varieties, currentPokemonNa
   return (
     <S.VarietiesContainer>
       <Text as="h3">Varieties</Text>
-      <Text size="sm" style={{ marginTop: '8px', color: '#6B7280' }}>
+      <Text size="sm" style={{ marginTop: "8px", color: "#6B7280" }}>
         Different forms and variations of this Pokémon
       </Text>
 
@@ -89,19 +99,15 @@ const VarietiesTab: React.FC<VarietiesTabProps> = ({ varieties, currentPokemonNa
           const isCurrentPokemon = variety.pokemon.name === currentPokemonName;
 
           return (
-            <div key={index} style={{ position: 'relative' }}>
+            <div key={index} style={{ position: "relative" }}>
               <PokeCard
                 name={detail.name}
                 pokemonId={detail.id}
                 sprite={detail.sprites.front_default}
-                types={detail.types.map(t => t.type.name)}
+                types={detail.types.map((t) => t.type.name)}
               />
-              {variety.is_default && (
-                <S.DefaultBadge>Default</S.DefaultBadge>
-              )}
-              {isCurrentPokemon && (
-                <S.CurrentBadge>Current</S.CurrentBadge>
-              )}
+              {variety.is_default && <S.DefaultBadge>Default</S.DefaultBadge>}
+              {isCurrentPokemon && <S.CurrentBadge>Current</S.CurrentBadge>}
             </div>
           );
         })}

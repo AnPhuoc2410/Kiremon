@@ -54,7 +54,7 @@ export const colors = {
     700: Colors.Red["red-700"],
     800: Colors.Red["red-800"],
     900: Colors.Red["red-900"],
-  }
+  },
 };
 
 export const skillColor: { [key: string]: string } = {

@@ -1,4 +1,10 @@
-import { CatchAttemptResult, Nature, PokemonGender, PokemonRank, PokeballType } from "./pokemon.enums";
+import {
+  CatchAttemptResult,
+  Nature,
+  PokemonGender,
+  PokemonRank,
+  PokeballType,
+} from "./pokemon.enums";
 
 export interface UserPokemonDto {
   id: number;
@@ -89,7 +95,6 @@ export interface UserPokemonDto {
   calculatedSpeed: number;
   notes: string | null;
 }
-
 
 export interface CatchPokemonRequest {
   pokemonApiId: number;

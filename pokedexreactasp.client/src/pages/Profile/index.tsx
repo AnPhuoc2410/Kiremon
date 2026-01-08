@@ -268,89 +268,281 @@ const CameraIcon = () => (
 
 // Friends Icons
 const FriendsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle
+      cx="9"
+      cy="7"
+      r="4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M23 21v-2a4 4 0 0 0-3-3.87"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 3.13a4 4 0 0 1 0 7.75"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const QRIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
-    <rect x="14" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
-    <rect x="3" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2"/>
-    <rect x="14" y="14" width="3" height="3" fill="currentColor"/>
-    <rect x="18" y="14" width="3" height="3" fill="currentColor"/>
-    <rect x="14" y="18" width="3" height="3" fill="currentColor"/>
-    <rect x="18" y="18" width="3" height="3" fill="currentColor"/>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="3"
+      y="3"
+      width="7"
+      height="7"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <rect
+      x="14"
+      y="3"
+      width="7"
+      height="7"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <rect
+      x="3"
+      y="14"
+      width="7"
+      height="7"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <rect x="14" y="14" width="3" height="3" fill="currentColor" />
+    <rect x="18" y="14" width="3" height="3" fill="currentColor" />
+    <rect x="14" y="18" width="3" height="3" fill="currentColor" />
+    <rect x="18" y="18" width="3" height="3" fill="currentColor" />
   </svg>
 );
 
 const CopyIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="9"
+      y="9"
+      width="13"
+      height="13"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path
+      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
   </svg>
 );
 
 const RefreshIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M23 4v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M1 20v-6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M23 4v6h-6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M1 20v-6h6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const TradeIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7 16V4M7 4L3 8M7 4L11 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17 8V20M17 20L21 16M17 20L13 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M7 16V4M7 4L3 8M7 4L11 8"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17 8V20M17 20L21 16M17 20L13 16"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const BattleIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.5 17.5L3 6V3h3l11.5 11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M13 19l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M16 16l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M19 21l2-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14.5 17.5L3 6V3h3l11.5 11.5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M13 19l6-6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M16 16l4 4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M19 21l2-2"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
 const DeleteIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M20 6L9 17l-5-5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const XIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M18 6L6 18M6 6l12 12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const AddIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 5v14M5 12h14"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 // Helper functions
 const getExpForLevel = (level: number): number => {
-
-  return 1000 + (level * 100);
+  return 1000 + level * 100;
 };
 
 const getCumulativeXpForLevel = (level: number): number => {
-
   let total = 0;
   for (let i = 1; i < level; i++) {
     total += getExpForLevel(i);
@@ -422,9 +614,14 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("profile");
 
   // My Pokemon state
-  const [pokemons, setPokemons] = useState<Array<{ id?: number; name: string; nickname: string; sprite?: string }>>([]);
+  const [pokemons, setPokemons] = useState<
+    Array<{ id?: number; name: string; nickname: string; sprite?: string }>
+  >([]);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
-  const [selectedPokemon, setSelectedPokemon] = useState<{ id?: number; nickname: string } | null>(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<{
+    id?: number;
+    nickname: string;
+  } | null>(null);
 
   // Avatar change modal state
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -440,14 +637,18 @@ const Profile: React.FC = () => {
 
   // Friends state
   const [friends, setFriends] = useState<FriendDto[]>([]);
-  const [receivedRequests, setReceivedRequests] = useState<FriendRequestDto[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<FriendRequestDto[]>(
+    [],
+  );
   const [sentRequests, setSentRequests] = useState<FriendRequestDto[]>([]);
-  const [friendsSummary, setFriendsSummary] = useState<FriendsSummaryDto | null>(null);
+  const [friendsSummary, setFriendsSummary] =
+    useState<FriendsSummaryDto | null>(null);
   const [friendCode, setFriendCode] = useState<FriendCodeDto | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [inputFriendCode, setInputFriendCode] = useState("");
   const [friendsLoading, setFriendsLoading] = useState(false);
-  const [confirmRemoveFriend, setConfirmRemoveFriend] = useState<FriendDto | null>(null);
+  const [confirmRemoveFriend, setConfirmRemoveFriend] =
+    useState<FriendDto | null>(null);
   type FriendsSubTab = "list" | "requests" | "add";
   const [friendsSubTab, setFriendsSubTab] = useState<FriendsSubTab>("list");
 
@@ -508,12 +709,14 @@ const Profile: React.FC = () => {
   const loadMyPokemonFromAPI = useCallback(async () => {
     try {
       const apiPokemon = await collectionService.getCollection();
-      setPokemons(apiPokemon.map((p) => ({
-        id: p.id,
-        name: p.name.toUpperCase(),
-        nickname: p.displayName,
-        sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
-      })));
+      setPokemons(
+        apiPokemon.map((p) => ({
+          id: p.id,
+          name: p.name.toUpperCase(),
+          nickname: p.displayName,
+          sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
+        })),
+      );
     } catch (error) {
       console.error("Error loading Pokemon:", error);
     }
@@ -543,7 +746,7 @@ const Profile: React.FC = () => {
 
   // Track if user was ever authenticated in this session
   const wasAuthenticatedRef = useRef(isAuthenticated);
-  
+
   useEffect(() => {
     if (isAuthenticated) {
       wasAuthenticatedRef.current = true;
@@ -566,7 +769,14 @@ const Profile: React.FC = () => {
       loadMyPokemonFromAPI();
       loadFriendsData();
     }
-  }, [isInitialized, isAuthenticated, navigate, loadFriendsData, fetchProfile, loadMyPokemonFromAPI]);
+  }, [
+    isInitialized,
+    isAuthenticated,
+    navigate,
+    loadFriendsData,
+    fetchProfile,
+    loadMyPokemonFromAPI,
+  ]);
 
   // Release Pokemon via API
   const releasePokemon = async (pokemon: { id?: number; nickname: string }) => {
@@ -613,7 +823,9 @@ const Profile: React.FC = () => {
       await userService.updateProfile({ avatarUrl });
 
       // Update local profile state
-      setProfile((prev: UserProfile | null) => (prev ? { ...prev, avatarUrl } : null));
+      setProfile((prev: UserProfile | null) =>
+        prev ? { ...prev, avatarUrl } : null,
+      );
 
       // Update AuthContext to sync avatar across all components
       updateUser({ avatarUrl });
@@ -699,7 +911,7 @@ const Profile: React.FC = () => {
   };
 
   const sendFriendRequest = async () => {
-     const cleanedFriendCode = inputFriendCode.replace(/\D/g, "");
+    const cleanedFriendCode = inputFriendCode.replace(/\D/g, "");
     if (cleanedFriendCode.length !== 12) {
       toast.error("Please enter a valid friend code.");
     }
@@ -759,7 +971,9 @@ const Profile: React.FC = () => {
   const removeFriend = async () => {
     if (!confirmRemoveFriend) return;
     try {
-      const result = await friendService.removeFriend(confirmRemoveFriend.userId);
+      const result = await friendService.removeFriend(
+        confirmRemoveFriend.userId,
+      );
       if (result.success) {
         toast.success(result.message);
         setConfirmRemoveFriend(null);
@@ -827,7 +1041,9 @@ const Profile: React.FC = () => {
       <Modal open={deleteConfirmation} overlay="light">
         <S.DeleteConfirmationModal>
           <div style={{ textAlign: "left" }}>
-            <Text>Are you sure you want to release {selectedPokemon?.nickname}?</Text>
+            <Text>
+              Are you sure you want to release {selectedPokemon?.nickname}?
+            </Text>
             <br />
             <Text>
               You'll have to catch another one and cannot undo this action.
@@ -892,7 +1108,9 @@ const Profile: React.FC = () => {
                 <FriendsIcon />
                 Friends
                 {totalPendingRequests > 0 && (
-                  <S.NotificationBadge>{totalPendingRequests}</S.NotificationBadge>
+                  <S.NotificationBadge>
+                    {totalPendingRequests}
+                  </S.NotificationBadge>
                 )}
               </S.SidebarNavItem>
             </S.SidebarNav>
@@ -921,7 +1139,9 @@ const Profile: React.FC = () => {
               </S.SidebarStatItem>
               <S.SidebarStatItem>
                 <S.SidebarStatLabel>Friends</S.SidebarStatLabel>
-                <S.SidebarStatValue>{friendsSummary?.totalFriends || 0}</S.SidebarStatValue>
+                <S.SidebarStatValue>
+                  {friendsSummary?.totalFriends || 0}
+                </S.SidebarStatValue>
               </S.SidebarStatItem>
             </S.SidebarStats>
           </S.Sidebar>
@@ -981,7 +1201,13 @@ const Profile: React.FC = () => {
                               Experience Progress
                             </S.ExperienceLabel>
                             <S.ExperienceValue>
-                              {getCurrentLevelXp(experience, level).toLocaleString()} / {getXpNeededForNextLevel(level).toLocaleString()} XP
+                              {getCurrentLevelXp(
+                                experience,
+                                level,
+                              ).toLocaleString()}{" "}
+                              /{" "}
+                              {getXpNeededForNextLevel(level).toLocaleString()}{" "}
+                              XP
                             </S.ExperienceValue>
                           </S.ExperienceHeader>
                           <S.ExperienceBar>
@@ -994,10 +1220,18 @@ const Profile: React.FC = () => {
                           </S.ExperienceBar>
                           <S.ExperienceInfo>
                             <S.ExperienceText>
-                              {calculateLevelProgress(experience, level).toFixed(1)}% to Level {level + 1}
+                              {calculateLevelProgress(
+                                experience,
+                                level,
+                              ).toFixed(1)}
+                              % to Level {level + 1}
                             </S.ExperienceText>
                             <S.ExperienceText>
-                              {getXpToNextLevel(experience, level).toLocaleString()} XP remaining
+                              {getXpToNextLevel(
+                                experience,
+                                level,
+                              ).toLocaleString()}{" "}
+                              XP remaining
                             </S.ExperienceText>
                           </S.ExperienceInfo>
                         </S.ExperienceSection>
@@ -1146,7 +1380,9 @@ const Profile: React.FC = () => {
                                 onClick={handleEditProfile}
                                 disabled={isUpdatingProfile}
                               >
-                                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                                {isUpdatingProfile
+                                  ? "Saving..."
+                                  : "Save Changes"}
                               </S.Button>
                             </>
                           ) : (
@@ -1186,7 +1422,9 @@ const Profile: React.FC = () => {
                   {pokemons.length > 0 ? (
                     <S.PokemonGrid>
                       {[...pokemons].reverse().map((pokemon) => (
-                        <S.PokemonCardWrapper key={pokemon.id || pokemon.nickname}>
+                        <S.PokemonCardWrapper
+                          key={pokemon.id || pokemon.nickname}
+                        >
                           <PokeCard
                             name={pokemon.name}
                             nickname={pokemon.nickname}
@@ -1194,7 +1432,10 @@ const Profile: React.FC = () => {
                           >
                             <DeleteButton
                               onClick={() => {
-                                setSelectedPokemon({ id: pokemon.id, nickname: pokemon.nickname });
+                                setSelectedPokemon({
+                                  id: pokemon.id,
+                                  nickname: pokemon.nickname,
+                                });
                                 setDeleteConfirmation(true);
                               }}
                             />
@@ -1225,7 +1466,8 @@ const Profile: React.FC = () => {
                 <S.ContentHeader>
                   <S.ContentTitle>Friends</S.ContentTitle>
                   <S.PokemonCount>
-                    {friendsSummary?.totalFriends || 0} friends • {friendsSummary?.onlineFriends || 0} online
+                    {friendsSummary?.totalFriends || 0} friends •{" "}
+                    {friendsSummary?.onlineFriends || 0} online
                   </S.PokemonCount>
                 </S.ContentHeader>
 
@@ -1251,7 +1493,9 @@ const Profile: React.FC = () => {
                       >
                         Requests
                         {totalPendingRequests > 0 && (
-                          <S.NotificationBadge>{totalPendingRequests}</S.NotificationBadge>
+                          <S.NotificationBadge>
+                            {totalPendingRequests}
+                          </S.NotificationBadge>
                         )}
                       </S.FriendsSubTab>
                       <S.FriendsSubTab
@@ -1283,7 +1527,10 @@ const Profile: React.FC = () => {
                               <S.FriendCard key={friend.userId}>
                                 <S.FriendAvatar $online={friend.isOnline}>
                                   {friend.avatarUrl ? (
-                                    <img src={friend.avatarUrl} alt={friend.username} />
+                                    <img
+                                      src={friend.avatarUrl}
+                                      alt={friend.username}
+                                    />
                                   ) : (
                                     friend.username.charAt(0).toUpperCase()
                                   )}
@@ -1291,27 +1538,36 @@ const Profile: React.FC = () => {
                                 <S.FriendInfo>
                                   <S.FriendName>
                                     {friend.nickname || friend.username}
-                                    <S.LevelBadge>Lv.{friend.trainerLevel}</S.LevelBadge>
+                                    <S.LevelBadge>
+                                      Lv.{friend.trainerLevel}
+                                    </S.LevelBadge>
                                   </S.FriendName>
                                   <S.FriendDetails>
-                                    Friends since {formatDate(friend.friendsSince)}
+                                    Friends since{" "}
+                                    {formatDate(friend.friendsSince)}
                                   </S.FriendDetails>
                                   <S.OnlineStatus $online={friend.isOnline}>
-                                    {friend.isOnline ? "● Online" : `Last seen ${getTimeAgo(friend.lastActiveDate)}`}
+                                    {friend.isOnline
+                                      ? "● Online"
+                                      : `Last seen ${getTimeAgo(friend.lastActiveDate)}`}
                                   </S.OnlineStatus>
                                   <S.FriendshipStats>
                                     <S.FriendshipStat>
-                                      <TradeIcon /> {friend.tradesWithFriend} trades
+                                      <TradeIcon /> {friend.tradesWithFriend}{" "}
+                                      trades
                                     </S.FriendshipStat>
                                     <S.FriendshipStat>
-                                      <BattleIcon /> {friend.battlesWithFriend} battles
+                                      <BattleIcon /> {friend.battlesWithFriend}{" "}
+                                      battles
                                     </S.FriendshipStat>
                                   </S.FriendshipStats>
                                 </S.FriendInfo>
                                 <S.FriendActions>
                                   <S.IconButton
                                     $variant="danger"
-                                    onClick={() => setConfirmRemoveFriend(friend)}
+                                    onClick={() =>
+                                      setConfirmRemoveFriend(friend)
+                                    }
                                     title="Remove friend"
                                   >
                                     <DeleteIcon />
@@ -1342,7 +1598,10 @@ const Profile: React.FC = () => {
                                 <S.FriendCard key={request.requestId}>
                                   <S.FriendAvatar>
                                     {request.avatarUrl ? (
-                                      <img src={request.avatarUrl} alt={request.username} />
+                                      <img
+                                        src={request.avatarUrl}
+                                        alt={request.username}
+                                      />
                                     ) : (
                                       request.username.charAt(0).toUpperCase()
                                     )}
@@ -1350,24 +1609,32 @@ const Profile: React.FC = () => {
                                   <S.FriendInfo>
                                     <S.FriendName>
                                       {request.username}
-                                      <S.LevelBadge>Lv.{request.trainerLevel}</S.LevelBadge>
+                                      <S.LevelBadge>
+                                        Lv.{request.trainerLevel}
+                                      </S.LevelBadge>
                                     </S.FriendName>
                                     <S.FriendDetails>
                                       Sent {getTimeAgo(request.sentAt)}
                                     </S.FriendDetails>
                                     {request.message && (
-                                      <S.RequestMessage>"{request.message}"</S.RequestMessage>
+                                      <S.RequestMessage>
+                                        "{request.message}"
+                                      </S.RequestMessage>
                                     )}
                                   </S.FriendInfo>
                                   <S.FriendActions>
                                     <S.SmallButton
                                       $variant="primary"
-                                      onClick={() => acceptFriendRequest(request.requestId)}
+                                      onClick={() =>
+                                        acceptFriendRequest(request.requestId)
+                                      }
                                     >
                                       <CheckIcon /> Accept
                                     </S.SmallButton>
                                     <S.SmallButton
-                                      onClick={() => declineFriendRequest(request.requestId)}
+                                      onClick={() =>
+                                        declineFriendRequest(request.requestId)
+                                      }
                                     >
                                       <XIcon /> Decline
                                     </S.SmallButton>
@@ -1395,7 +1662,10 @@ const Profile: React.FC = () => {
                                 <S.FriendCard key={request.requestId}>
                                   <S.FriendAvatar>
                                     {request.avatarUrl ? (
-                                      <img src={request.avatarUrl} alt={request.username} />
+                                      <img
+                                        src={request.avatarUrl}
+                                        alt={request.username}
+                                      />
                                     ) : (
                                       request.username.charAt(0).toUpperCase()
                                     )}
@@ -1403,15 +1673,20 @@ const Profile: React.FC = () => {
                                   <S.FriendInfo>
                                     <S.FriendName>
                                       {request.username}
-                                      <S.LevelBadge>Lv.{request.trainerLevel}</S.LevelBadge>
+                                      <S.LevelBadge>
+                                        Lv.{request.trainerLevel}
+                                      </S.LevelBadge>
                                     </S.FriendName>
                                     <S.FriendDetails>
-                                      Sent {getTimeAgo(request.sentAt)} • Pending
+                                      Sent {getTimeAgo(request.sentAt)} •
+                                      Pending
                                     </S.FriendDetails>
                                   </S.FriendInfo>
                                   <S.FriendActions>
                                     <S.SmallButton
-                                      onClick={() => cancelFriendRequest(request.requestId)}
+                                      onClick={() =>
+                                        cancelFriendRequest(request.requestId)
+                                      }
                                     >
                                       <XIcon /> Cancel
                                     </S.SmallButton>
@@ -1435,7 +1710,9 @@ const Profile: React.FC = () => {
                           </S.SectionTitle>
                           <S.FriendCodeSection>
                             <S.FriendCodeDisplay>
-                              <S.FriendCodeLabel>Share this code with friends</S.FriendCodeLabel>
+                              <S.FriendCodeLabel>
+                                Share this code with friends
+                              </S.FriendCodeLabel>
                               <S.FriendCodeValue>
                                 {friendCode?.friendCode || "--------------"}
                               </S.FriendCodeValue>
@@ -1448,11 +1725,17 @@ const Profile: React.FC = () => {
                             )}
 
                             <S.FriendCodeActions>
-                              <S.Button variant="secondary" onClick={copyFriendCode}>
+                              <S.Button
+                                variant="secondary"
+                                onClick={copyFriendCode}
+                              >
                                 <CopyIcon />
                                 Copy Code
                               </S.Button>
-                              <S.Button variant="secondary" onClick={regenerateFriendCode}>
+                              <S.Button
+                                variant="secondary"
+                                onClick={regenerateFriendCode}
+                              >
                                 <RefreshIcon />
                                 New Code
                               </S.Button>
@@ -1498,7 +1781,8 @@ const Profile: React.FC = () => {
           <div style={{ textAlign: "left" }}>
             <Text>
               Are you sure you want to remove{" "}
-              <strong>{confirmRemoveFriend?.username}</strong> from your friends list?
+              <strong>{confirmRemoveFriend?.username}</strong> from your friends
+              list?
             </Text>
           </div>
           <div className="modal-buttons">

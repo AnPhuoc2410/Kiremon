@@ -69,7 +69,13 @@ const Forgot: React.FC = () => {
             </AuthSubmit>
           </AuthForm>
         ) : (
-          <FlexCenter style={{ flexDirection: "column", padding: "20px", textAlign: "center" }}>
+          <FlexCenter
+            style={{
+              flexDirection: "column",
+              padding: "20px",
+              textAlign: "center",
+            }}
+          >
             <div style={{ fontSize: "48px", marginBottom: "16px" }}>📧</div>
             <AuthTitle style={{ color: "#10b981", marginBottom: "8px" }}>
               Email Sent!

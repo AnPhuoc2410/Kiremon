@@ -3,13 +3,18 @@ let audioCtx: AudioContext | null = null;
 
 function getCtx() {
   if (!audioCtx) {
-    const Ctor = (window.AudioContext || (window as any).webkitAudioContext);
+    const Ctor = window.AudioContext || (window as any).webkitAudioContext;
     audioCtx = new Ctor();
   }
   return audioCtx!;
 }
 
-function playTone(freq: number, durationMs = 120, type: OscillatorType = 'sine', volume = 0.05) {
+function playTone(
+  freq: number,
+  durationMs = 120,
+  type: OscillatorType = "sine",
+  volume = 0.05,
+) {
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
@@ -26,8 +31,8 @@ function playTone(freq: number, durationMs = 120, type: OscillatorType = 'sine',
 }
 
 export const sfx = {
-  click: () => playTone(600, 80, 'square', 0.04),
-  success: () => playTone(900, 140, 'sine', 0.06),
-  fail: () => playTone(200, 180, 'sawtooth', 0.06),
-  tick: () => playTone(800, 50, 'square', 0.03),
+  click: () => playTone(600, 80, "square", 0.04),
+  success: () => playTone(900, 140, "sine", 0.06),
+  fail: () => playTone(200, 180, "sawtooth", 0.06),
+  tick: () => playTone(800, 50, "square", 0.03),
 };

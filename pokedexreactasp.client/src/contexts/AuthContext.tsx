@@ -116,7 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       encodeURIComponent(JSON.stringify(loginData.user)),
       7,
     );
-
   };
 
   const authLogout = () => {

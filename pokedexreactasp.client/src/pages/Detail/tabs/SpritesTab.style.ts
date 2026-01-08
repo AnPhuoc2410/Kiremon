@@ -16,15 +16,15 @@ export const SpriteItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #F9FAFB;
+  background-color: #f9fafb;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease-in-out;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -39,7 +39,7 @@ export const SpriteImage = styled.div`
 export const SpriteLabel = styled.span`
   margin-top: 8px;
   font-size: 12px;
-  color: #4B5563;
+  color: #4b5563;
   text-align: center;
 `;
 
@@ -50,7 +50,7 @@ export const GenerationTitle = styled.h4`
   font-weight: 600;
   color: #111827;
   padding-bottom: 8px;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
 `;
 
 export const VersionsContainer = styled.div`

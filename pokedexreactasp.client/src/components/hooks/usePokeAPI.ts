@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   pokemonService,
   speciesService,
   typesService,
   regionsService,
   pokedexService,
-  generationsService
-} from '../../services';
+  generationsService,
+} from "../../services";
 
 // Generic hook for fetching Pokemon data
 export const usePokeAPI = <T>(
   fetchFunction: (...args: any[]) => Promise<T>,
   params: any[] = [],
   dependencies: any[] = [],
-  initialData: T | null = null
+  initialData: T | null = null,
 ) => {
   const [data, setData] = useState<T | null>(initialData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -63,7 +63,7 @@ export const useAllPokemon = (limit = 50, offset = 0) => {
     pokemonService.getAllPokemon.bind(pokemonService),
     [limit, offset],
     [limit, offset],
-    { count: 0, next: "", previous: "", results: [] }
+    { count: 0, next: "", previous: "", results: [] },
   );
 };
 
@@ -72,7 +72,7 @@ export const usePokemonDetails = (name: string) => {
     pokemonService.getPokemonDetail.bind(pokemonService),
     [name],
     [name],
-    null
+    null,
   );
 };
 
@@ -81,7 +81,7 @@ export const usePokemonWithTypes = (limit = 20, offset = 0) => {
     pokemonService.getPokemonWithTypes.bind(pokemonService),
     [limit, offset],
     [limit, offset],
-    { count: 0, next: "", previous: "", results: [] }
+    { count: 0, next: "", previous: "", results: [] },
   );
 };
 
@@ -90,7 +90,7 @@ export const usePokemonSpecies = (nameOrId: string | number) => {
     speciesService.getPokemonSpecies.bind(speciesService),
     [nameOrId],
     [nameOrId],
-    null
+    null,
   );
 };
 
@@ -99,7 +99,7 @@ export const useEvolutionChain = (url: string) => {
     speciesService.getEvolutionChain.bind(speciesService),
     [url],
     [url],
-    null
+    null,
   );
 };
 
@@ -108,7 +108,7 @@ export const useSpeciesWithEvolution = (nameOrId: string | number) => {
     speciesService.getSpeciesWithEvolution.bind(speciesService),
     [nameOrId],
     [nameOrId],
-    { species: null, evolution: null }
+    { species: null, evolution: null },
   );
 };
 
@@ -117,7 +117,7 @@ export const useRelatedPokemonByType = (type: string) => {
     typesService.getPokemonByType.bind(typesService),
     [type],
     [type],
-    []
+    [],
   );
 };
 
@@ -126,7 +126,7 @@ export const usePokemonTypes = () => {
     typesService.getAllTypesWithDetails.bind(typesService),
     [],
     [],
-    []
+    [],
   );
 };
 
@@ -135,7 +135,7 @@ export const useRegions = () => {
     regionsService.getAllRegions.bind(regionsService),
     [],
     [],
-    []
+    [],
   );
 };
 
@@ -144,7 +144,7 @@ export const useRegionDetails = (regionName: string) => {
     regionsService.getRegionDetails.bind(regionsService),
     [regionName],
     [regionName],
-    null
+    null,
   );
 };
 
@@ -153,7 +153,7 @@ export const usePokemonByGeneration = (generation: string | number) => {
     regionsService.getPokemonByGeneration.bind(regionsService),
     [generation],
     [generation],
-    []
+    [],
   );
 };
 
@@ -162,7 +162,7 @@ export const usePokedexes = () => {
     pokedexService.getAllPokedexes.bind(pokedexService),
     [],
     [],
-    []
+    [],
   );
 };
 
@@ -171,7 +171,7 @@ export const usePokedexDetails = (pokedexName: string) => {
     pokedexService.getPokedexDetails.bind(pokedexService),
     [pokedexName],
     [pokedexName],
-    null
+    null,
   );
 };
 
@@ -181,7 +181,7 @@ export const useAllGenerations = () => {
     generationsService.getAllGenerations.bind(generationsService),
     [],
     [],
-    []
+    [],
   );
 };
 
@@ -190,7 +190,7 @@ export const useGenerationDetails = (idOrName: string | number) => {
     generationsService.getGenerationDetails.bind(generationsService),
     [idOrName],
     [idOrName],
-    null
+    null,
   );
 };
 
@@ -199,13 +199,13 @@ export const useGenerationWithDetails = (idOrName: string | number) => {
     generationsService.getGenerationWithDetails.bind(generationsService),
     [idOrName],
     [idOrName],
-    null
+    null,
   );
 };
 
 // Hook to clear the cache if needed
 export const clearPokeAPICache = (keyPattern?: string) => {
-  import('../../services').then(({ pokeApiCache }) => {
+  import("../../services").then(({ pokeApiCache }) => {
     pokeApiCache.clear(keyPattern);
   });
 };

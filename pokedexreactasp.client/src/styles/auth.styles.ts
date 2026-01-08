@@ -100,7 +100,9 @@ export const AuthDivider = styled.div`
   }
 `;
 
-export const SocialButton = styled.button<{ $provider?: "google" | "facebook" | "github" }>`
+export const SocialButton = styled.button<{
+  $provider?: "google" | "facebook" | "github";
+}>`
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid ${colors["gray-200"]};
@@ -112,7 +114,9 @@ export const SocialButton = styled.button<{ $provider?: "google" | "facebook" | 
   justify-content: center;
   cursor: pointer;
   font-weight: 600;
-  transition: box-shadow 120ms ease, transform 120ms ease;
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
   width: 100%;
 
   &:hover {
@@ -199,7 +203,7 @@ export const AuthMessage = styled.div<{ $type?: "error" | "success" | "info" }>`
   border-radius: 8px;
   font-size: 14px;
 
-  ${props => {
+  ${(props) => {
     switch (props.$type) {
       case "error":
         return `

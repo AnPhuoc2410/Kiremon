@@ -169,6 +169,3 @@ export function getPokeballName(ball: PokeballType): string {
   };
   return names[ball] || "Poké Ball";
 }
-
-
-

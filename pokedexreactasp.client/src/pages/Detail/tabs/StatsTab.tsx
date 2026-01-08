@@ -1,6 +1,6 @@
-import React from 'react';
-import { Text } from '../../../components/ui';
-import * as S from './StatsTab.style';
+import React from "react";
+import { Text } from "../../../components/ui";
+import * as S from "./StatsTab.style";
 
 interface StatsTabProps {
   stats: Array<{
@@ -21,15 +21,18 @@ const getStatColor = (value: number) => {
 
 const StatsTab: React.FC<StatsTabProps> = ({ stats }) => {
   // Calculate total stats
-  const totalStats = stats?.reduce((sum, stat) => sum + (stat.base_stat || 0), 0) || 0;
+  const totalStats =
+    stats?.reduce((sum, stat) => sum + (stat.base_stat || 0), 0) || 0;
 
   return (
     <S.StatsContainer>
-      <Text as="h3" style={{ marginBottom: '16px' }}>Base Stats</Text>
+      <Text as="h3" style={{ marginBottom: "16px" }}>
+        Base Stats
+      </Text>
 
       {stats?.map((stat, index) => {
         const pokemonBaseStat = stat?.base_stat ?? 0;
-        const pokemonStatName = stat?.stat?.name?.replace('-', ' ');
+        const pokemonStatName = stat?.stat?.name?.replace("-", " ");
         const statColor = getStatColor(pokemonBaseStat);
 
         return (

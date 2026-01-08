@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { supabase } from '../../config/supabase.config';
+import { useState } from "react";
+import { supabase } from "../../config/supabase.config";
 
 interface UploadResult {
   url: string | null;
@@ -7,8 +7,15 @@ interface UploadResult {
 }
 
 interface UseSupabaseStorageReturn {
-  uploadFile: (file: File, bucket: string, folder?: string) => Promise<UploadResult>;
-  deleteFile: (filePath: string, bucket: string) => Promise<{ error: Error | null }>;
+  uploadFile: (
+    file: File,
+    bucket: string,
+    folder?: string,
+  ) => Promise<UploadResult>;
+  deleteFile: (
+    filePath: string,
+    bucket: string,
+  ) => Promise<{ error: Error | null }>;
   getPublicUrl: (filePath: string, bucket: string) => string | null;
   uploading: boolean;
   uploadProgress: number;
@@ -31,15 +38,15 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
    */
   const uploadFile = async (
     file: File,
-    bucket: string = 'Kiremon',
-    folder: string = ''
+    bucket: string = "Kiremon",
+    folder: string = "",
   ): Promise<UploadResult> => {
     try {
       setUploading(true);
       setUploadProgress(0);
 
       // Generate unique filename with timestamp
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = folder ? `${folder}/${fileName}` : fileName;
 
@@ -49,7 +56,7 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
-          cacheControl: '3600',
+          cacheControl: "3600",
           upsert: false,
         });
 
@@ -71,7 +78,7 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
         error: null,
       };
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
       return {
         url: null,
         error: error as Error,
@@ -90,7 +97,7 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
    */
   const deleteFile = async (
     filePath: string,
-    bucket: string = 'Kiremon'
+    bucket: string = "Kiremon",
   ): Promise<{ error: Error | null }> => {
     try {
       const { error } = await supabase.storage.from(bucket).remove([filePath]);
@@ -101,7 +108,7 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
 
       return { error: null };
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error("Error deleting file:", error);
       return { error: error as Error };
     }
   };
@@ -112,12 +119,15 @@ export const useSupabaseStorage = (): UseSupabaseStorageReturn => {
    * @param bucket - The storage bucket name (default: 'Kiremon')
    * @returns Public URL string or null
    */
-  const getPublicUrl = (filePath: string, bucket: string = 'Kiremon'): string | null => {
+  const getPublicUrl = (
+    filePath: string,
+    bucket: string = "Kiremon",
+  ): string | null => {
     try {
       const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
       return data.publicUrl;
     } catch (error) {
-      console.error('Error getting public URL:', error);
+      console.error("Error getting public URL:", error);
       return null;
     }
   };

@@ -19,15 +19,18 @@ export const Tab = styled.button<{ $active?: boolean }>`
   cursor: pointer;
   border: none;
   background: transparent;
-  border-bottom: 3px solid ${props => props.$active ? colors["sky-500"] : "transparent"};
-  color: ${props => props.$active ? colors["sky-600"] : colors["gray-600"]};
-  font-weight: ${props => props.$active ? 600 : 400};
+  border-bottom: 3px solid
+    ${(props) => (props.$active ? colors["sky-500"] : "transparent")};
+  color: ${(props) => (props.$active ? colors["sky-600"] : colors["gray-600"])};
+  font-weight: ${(props) => (props.$active ? 600 : 400)};
   transition: all 0.2s;
   white-space: nowrap;
 
   &:hover {
-    color: ${props => props.$active ? colors["sky-600"] : colors["gray-800"]};
-    border-bottom: 3px solid ${props => props.$active ? colors["sky-500"] : colors["gray-300"]};
+    color: ${(props) =>
+      props.$active ? colors["sky-600"] : colors["gray-800"]};
+    border-bottom: 3px solid
+      ${(props) => (props.$active ? colors["sky-500"] : colors["gray-300"])};
   }
 `;
 
@@ -39,11 +42,14 @@ export const IconButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: ${props => {
+  padding: ${(props) => {
     switch (props.$size) {
-      case "sm": return "6px";
-      case "lg": return "12px";
-      default: return "8px";
+      case "sm":
+        return "6px";
+      case "lg":
+        return "12px";
+      default:
+        return "8px";
     }
   }};
   border-radius: 8px;
@@ -51,7 +57,7 @@ export const IconButton = styled.button<{
   cursor: pointer;
   transition: all 0.2s ease;
 
-  ${props => {
+  ${(props) => {
     switch (props.$color) {
       case "primary":
         return `
@@ -81,18 +87,24 @@ export const IconButton = styled.button<{
   }}
 
   svg {
-    width: ${props => {
+    width: ${(props) => {
       switch (props.$size) {
-        case "sm": return "14px";
-        case "lg": return "22px";
-        default: return "18px";
+        case "sm":
+          return "14px";
+        case "lg":
+          return "22px";
+        default:
+          return "18px";
       }
     }};
-    height: ${props => {
+    height: ${(props) => {
       switch (props.$size) {
-        case "sm": return "14px";
-        case "lg": return "22px";
-        default: return "18px";
+        case "sm":
+          return "14px";
+        case "lg":
+          return "22px";
+        default:
+          return "18px";
       }
     }};
   }
@@ -115,7 +127,7 @@ export const ActionButton = styled.button`
 
 // ============ ADD BUTTON ============
 export const AddButton = styled.button<{ $color?: "red" | "blue" | "green" }>`
-  background: ${props => {
+  background: ${(props) => {
     switch (props.$color) {
       case "blue":
         return `linear-gradient(135deg, ${colors["blue-500"]} 0%, ${colors["blue-400"]} 100%)`;
@@ -153,18 +165,21 @@ export const AddButton = styled.button<{ $color?: "red" | "blue" | "green" }>`
 export const Divider = styled.hr<{ spacing?: "sm" | "md" | "lg" }>`
   border: none;
   border-top: 1px solid ${colors["gray-200"]};
-  margin: ${props => {
+  margin: ${(props) => {
     switch (props.spacing) {
-      case "sm": return "8px 0";
-      case "lg": return "24px 0";
-      default: return "16px 0";
+      case "sm":
+        return "8px 0";
+      case "lg":
+        return "24px 0";
+      default:
+        return "16px 0";
     }
   }};
 `;
 
 export const VerticalDivider = styled.div<{ height?: string }>`
   width: 1px;
-  height: ${props => props.height || "24px"};
+  height: ${(props) => props.height || "24px"};
   background: ${colors["gray-200"]};
 `;
 
@@ -178,10 +193,15 @@ export const Avatar = styled.div<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, ${colors["yellow-200"]} 0%, ${colors["yellow-400"]} 100%);
-  border: ${props => props.$borderColor ? `3px solid ${props.$borderColor}` : "none"};
+  background: linear-gradient(
+    135deg,
+    ${colors["yellow-200"]} 0%,
+    ${colors["yellow-400"]} 100%
+  );
+  border: ${(props) =>
+    props.$borderColor ? `3px solid ${props.$borderColor}` : "none"};
 
-  ${props => {
+  ${(props) => {
     switch (props.$size) {
       case "sm":
         return "width: 32px; height: 32px;";
@@ -223,7 +243,7 @@ export const EmptyState = styled.div`
 export const Overlay = styled.div<{ $opacity?: number }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, ${props => props.$opacity || 0.5});
+  background: rgba(0, 0, 0, ${(props) => props.$opacity || 0.5});
   display: flex;
   align-items: center;
   justify-content: center;
@@ -282,8 +302,12 @@ export const SearchContainer = styled.div<{ $focusColor?: string }>`
   max-width: 100%;
 
   &:focus-within {
-    border-color: ${props => props.$focusColor || colors["red-400"]};
-    box-shadow: 0 0 0 3px ${props => props.$focusColor ? `${props.$focusColor}20` : "rgba(239, 68, 68, 0.1)"};
+    border-color: ${(props) => props.$focusColor || colors["red-400"]};
+    box-shadow: 0 0 0 3px
+      ${(props) =>
+        props.$focusColor
+          ? `${props.$focusColor}20`
+          : "rgba(239, 68, 68, 0.1)"};
   }
 
   svg {
@@ -306,7 +330,9 @@ export const SearchContainer = styled.div<{ $focusColor?: string }>`
 `;
 
 // ============ STATUS INDICATORS ============
-export const StatusBadge = styled.span<{ $status?: "online" | "offline" | "away" | "busy" }>`
+export const StatusBadge = styled.span<{
+  $status?: "online" | "offline" | "away" | "busy";
+}>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -315,7 +341,7 @@ export const StatusBadge = styled.span<{ $status?: "online" | "offline" | "away"
   font-size: 12px;
   font-weight: 500;
 
-  ${props => {
+  ${(props) => {
     switch (props.$status) {
       case "online":
         return `
@@ -350,13 +376,18 @@ export const StatusBadge = styled.span<{ $status?: "online" | "offline" | "away"
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: ${props => {
+    background: ${(props) => {
       switch (props.$status) {
-        case "online": return colors["green-500"];
-        case "offline": return colors["gray-400"];
-        case "away": return colors["yellow-500"];
-        case "busy": return colors["red-500"];
-        default: return colors["gray-400"];
+        case "online":
+          return colors["green-500"];
+        case "offline":
+          return colors["gray-400"];
+        case "away":
+          return colors["yellow-500"];
+        case "busy":
+          return colors["red-500"];
+        default:
+          return colors["gray-400"];
       }
     }};
   }
@@ -366,9 +397,11 @@ export const OnlineDot = styled.span<{ $online?: boolean }>`
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: ${props => props.$online ? colors["green-500"] : colors["gray-300"]};
+  background: ${(props) =>
+    props.$online ? colors["green-500"] : colors["gray-300"]};
   border: 2px solid white;
-  box-shadow: 0 0 0 1px ${props => props.$online ? colors["green-500"] : colors["gray-300"]};
+  box-shadow: 0 0 0 1px
+    ${(props) => (props.$online ? colors["green-500"] : colors["gray-300"])};
 `;
 
 // ============ LIST & GRID ============
@@ -380,25 +413,35 @@ export const ListContainer = styled.div`
 
 export const GridContainer = styled.div<{ $minWidth?: string; $gap?: string }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(${props => props.$minWidth || "180px"}, 1fr));
-  gap: ${props => props.$gap || "16px"};
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(${(props) => props.$minWidth || "180px"}, 1fr)
+  );
+  gap: ${(props) => props.$gap || "16px"};
 `;
 
 // ============ TYPE BADGE (Pokemon types) ============
-export const TypeBadge = styled.span<{ $typeColor: string; $textColor?: string }>`
+export const TypeBadge = styled.span<{
+  $typeColor: string;
+  $textColor?: string;
+}>`
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  background-color: ${props => props.$typeColor};
-  color: ${props => props.$textColor || "#fff"};
+  background-color: ${(props) => props.$typeColor};
+  color: ${(props) => props.$textColor || "#fff"};
   margin: 0.25rem;
 `;
 
 // ============ PROGRESS BAR ============
-export const ProgressBar = styled.div<{ $value: number; $max?: number; $color?: string }>`
+export const ProgressBar = styled.div<{
+  $value: number;
+  $max?: number;
+  $color?: string;
+}>`
   height: 8px;
   width: 100%;
   background-color: ${colors["gray-200"]};
@@ -412,15 +455,18 @@ export const ProgressBar = styled.div<{ $value: number; $max?: number; $color?: 
     top: 0;
     left: 0;
     height: 100%;
-    width: ${props => Math.min((props.$value / (props.$max || 100)) * 100, 100)}%;
-    background-color: ${props => props.$color || colors["blue-500"]};
+    width: ${(props) =>
+      Math.min((props.$value / (props.$max || 100)) * 100, 100)}%;
+    background-color: ${(props) => props.$color || colors["blue-500"]};
     border-radius: 4px;
     transition: width 0.5s ease;
   }
 `;
 
 // ============ BADGE / COUNTER ============
-export const CountBadge = styled.span<{ $color?: "red" | "blue" | "green" | "yellow" }>`
+export const CountBadge = styled.span<{
+  $color?: "red" | "blue" | "green" | "yellow";
+}>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -431,7 +477,7 @@ export const CountBadge = styled.span<{ $color?: "red" | "blue" | "green" | "yel
   font-size: 12px;
   font-weight: 600;
 
-  ${props => {
+  ${(props) => {
     switch (props.$color) {
       case "blue":
         return `background: ${colors["blue-500"]}; color: white;`;
@@ -446,10 +492,14 @@ export const CountBadge = styled.span<{ $color?: "red" | "blue" | "green" | "yel
 `;
 
 // ============ LOADING SKELETON ============
-export const Skeleton = styled.div<{ $width?: string; $height?: string; $radius?: string }>`
-  width: ${props => props.$width || "100%"};
-  height: ${props => props.$height || "20px"};
-  border-radius: ${props => props.$radius || "4px"};
+export const Skeleton = styled.div<{
+  $width?: string;
+  $height?: string;
+  $radius?: string;
+}>`
+  width: ${(props) => props.$width || "100%"};
+  height: ${(props) => props.$height || "20px"};
+  border-radius: ${(props) => props.$radius || "4px"};
   background: linear-gradient(
     90deg,
     ${colors["gray-200"]} 25%,
@@ -460,7 +510,11 @@ export const Skeleton = styled.div<{ $width?: string; $height?: string; $radius?
   animation: shimmer 1.5s infinite;
 
   @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 `;
