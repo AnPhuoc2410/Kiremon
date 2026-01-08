@@ -62,6 +62,7 @@ const DetailPokemon = () => {
     types,
     typeNames,
     moves,
+    moveDetails,
     stats,
     abilities,
     sprite,
@@ -1062,7 +1063,13 @@ const DetailPokemon = () => {
           )}
 
           {/* Moves Tab */}
-          {activeTab === "moves" && <MovesTab moves={moves} types={types} />}
+          {activeTab === "moves" && (
+            <MovesTab
+              moves={moves}
+              moveDetails={moveDetails}
+              types={typeNames}
+            />
+          )}
 
           {/* Sprites Tab */}
           {activeTab === "sprites" && (

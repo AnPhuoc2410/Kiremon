@@ -23,10 +23,6 @@ export interface PokemonMove {
     type: {
       name: string;
     };
-    movenames: Array<{
-      name: string;
-      language_id: number;
-    }>;
   };
   level: number;
 }
@@ -320,10 +316,6 @@ const GET_POKEMON_DETAIL_QUERY = `
           type {
             name
           }
-          movenames {
-            name
-            language_id
-          }
         }
       }
       pokemonstats(order_by: {stat_id: asc}) {
@@ -599,14 +591,16 @@ async function executeGraphQLQuery<T>(
 
 // ============ Helper Functions ============
 
-/**
- * Parse sprites JSON string from GraphQL response
- */
-function parseSprites(spritesJson: string): PokemonSpritesData {
+/** Parse sprites from GraphQL response (handles both object and JSON string) */
+function parseSprites(
+  input: string | object | undefined | null,
+): PokemonSpritesData | null {
+  if (!input) return null;
+  if (typeof input === "object") return input as PokemonSpritesData;
   try {
-    return JSON.parse(spritesJson);
+    return JSON.parse(input);
   } catch {
-    return { front_default: null } as PokemonSpritesData;
+    return null;
   }
 }
 
@@ -751,7 +745,11 @@ export const pokemonGraphQLService = {
    */
   async getPokemonById(
     id: number,
-  ): Promise<{ id: number; name: string; sprites: PokemonSpritesData } | null> {
+  ): Promise<{
+    id: number;
+    name: string;
+    sprites: PokemonSpritesData | null;
+  } | null> {
     if (!id) return null;
     const cacheKey = `graphql:pokemon:byId:${id}`;
 
@@ -771,7 +769,7 @@ export const pokemonGraphQLService = {
         return {
           id: pokemon.id,
           name: pokemon.name,
-          sprites: parseSprites(pokemon.pokemonsprites[0]?.sprites || "{}"),
+          sprites: parseSprites(pokemon.pokemonsprites[0]?.sprites),
         };
       });
     } catch (error) {

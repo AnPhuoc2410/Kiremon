@@ -11,6 +11,19 @@ import {
   PokemonAbility,
   PokemonHeldItem,
 } from "../services/pokemon/pokemon-graphql.service";
+
+// Enhanced move details for UI display
+export interface MoveDetailData {
+  name: string;
+  localizedName: string;
+  type: string;
+  power: number | null;
+  accuracy: number | null;
+  pp: number | null;
+  damageClass: "physical" | "special" | "status";
+  learnMethod: string;
+  level: number | null;
+}
 import {
   EvolutionItem,
   PokemonSprites,
@@ -38,12 +51,46 @@ export const LANGUAGE_IDS = {
 
 export type LanguageId = (typeof LANGUAGE_IDS)[keyof typeof LANGUAGE_IDS];
 
+/** Generate fallback sprite URLs from Pokemon ID when GraphQL data is missing */
+const generateFallbackSprites = (id: number): PokemonSprites => {
+  const base = POKEMON_IMAGE.replace(/\/$/, "");
+  const animated = `${base}/versions/generation-v/black-white/animated`;
+
+  return {
+    front_default: `${base}/${id}.png`,
+    back_default: `${base}/back/${id}.png`,
+    front_shiny: `${base}/shiny/${id}.png`,
+    back_shiny: `${base}/back/shiny/${id}.png`,
+    front_female: null,
+    front_shiny_female: null,
+    back_female: null,
+    back_shiny_female: null,
+    versions: {
+      "generation-v": {
+        "black-white": {
+          animated: {
+            front_default: `${animated}/${id}.gif`,
+            back_default: `${animated}/back/${id}.gif`,
+            front_shiny: `${animated}/shiny/${id}.gif`,
+            back_shiny: `${animated}/back/shiny/${id}.gif`,
+            front_female: null,
+            front_shiny_female: null,
+            back_female: null,
+            back_shiny_female: null,
+          },
+        },
+      },
+    },
+  };
+};
+
 interface UsePokemonGraphQLResult {
   // Data states
   pokemonId: number;
   types: string[];
   typeNames: string[]; // English type names for color mapping
   moves: string[];
+  moveDetails: MoveDetailData[]; // Full move data for enhanced UI
   stats: IPokemonDetailResponse["stats"];
   abilities: IPokemonDetailResponse["abilities"];
   sprite: string;
@@ -102,6 +149,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
   const [types, setTypes] = useState<string[]>([]);
   const [typeNames, setTypeNames] = useState<string[]>([]); // English names for color
   const [moves, setMoves] = useState<string[]>([]);
+  const [moveDetails, setMoveDetails] = useState<MoveDetailData[]>([]);
   const [stats, setStats] = useState<IPokemonDetailResponse["stats"]>([]);
   const [abilities, setAbilities] = useState<
     IPokemonDetailResponse["abilities"]
@@ -150,9 +198,12 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
       data: PokemonDetailGraphQL,
       languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
     ) => {
-      const spritesData = pokemonGraphQLService.parseSprites(
-        data.pokemonsprites[0]?.sprites || "{}",
+      const parsed = pokemonGraphQLService.parseSprites(
+        data.pokemonsprites[0]?.sprites,
       );
+      const spritesData = parsed?.front_default
+        ? parsed
+        : generateFallbackSprites(data.id);
 
       const transformedTypes = data.pokemontypes.map((t: PokemonTypeSlot) => {
         const localizedName = pokemonGraphQLService.getLocalizedName(
@@ -167,12 +218,57 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
       );
 
       const transformedMoves = data.pokemonmoves.map((m: PokemonMove) => {
-        const localizedName = pokemonGraphQLService.getLocalizedName(
-          m.move.movenames,
-          languageId,
-        );
-        return localizedName || m.move.name;
+        return m.move.name;
       });
+
+      // Determine damage class based on move type (Gen 4+ physical/special split)
+      // Physical types: normal, fighting, flying, poison, ground, rock, bug, ghost, steel
+      // Special types: fire, water, grass, electric, psychic, ice, dragon, dark, fairy
+      const physicalTypes = new Set([
+        "normal",
+        "fighting",
+        "flying",
+        "poison",
+        "ground",
+        "rock",
+        "bug",
+        "ghost",
+        "steel",
+      ]);
+
+      // Determine damage class based on power and type (Gen 4+ physical/special split)
+      const getDamageClass = (
+        move: PokemonMove,
+      ): "physical" | "special" | "status" => {
+        if (!move.move.power || move.move.power === 0) {
+          return "status";
+        }
+        const moveType = move.move.type?.name?.toLowerCase() || "normal";
+        return physicalTypes.has(moveType) ? "physical" : "special";
+      };
+
+      // Determine learn method based on level
+      const getLearnMethod = (move: PokemonMove): string => {
+        if (move.level && move.level > 0) {
+          return "level-up";
+        }
+        return "machine"; // Default for level-0 moves
+      };
+
+      // Create detailed move data for enhanced UI
+      const transformedMoveDetails: MoveDetailData[] = data.pokemonmoves.map(
+        (m: PokemonMove) => ({
+          name: m.move.name,
+          localizedName: m.move.name, // Use move name directly (no localization available)
+          type: m.move.type?.name || "normal",
+          power: m.move.power,
+          accuracy: m.move.accuracy,
+          pp: m.move.pp,
+          damageClass: getDamageClass(m),
+          learnMethod: getLearnMethod(m),
+          level: m.level || null,
+        }),
+      );
 
       const transformedStats: IPokemonDetailResponse["stats"] =
         data.pokemonstats.map((s: PokemonStat) => ({
@@ -251,6 +347,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         types: transformedTypes,
         typeNames: englishTypeNames,
         moves: transformedMoves,
+        moveDetails: transformedMoveDetails,
         stats: transformedStats,
         abilities: transformedAbilities,
         sprite: spriteUrl,
@@ -446,10 +543,10 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
 
         // Get sprites
         const fromSprites = pokemonGraphQLService.parseSprites(
-          fromSpecies.pokemons[0]?.pokemonsprites[0]?.sprites || "{}",
+          fromSpecies.pokemons[0]?.pokemonsprites[0]?.sprites,
         );
         const toSprites = pokemonGraphQLService.parseSprites(
-          species.pokemons[0]?.pokemonsprites[0]?.sprites || "{}",
+          species.pokemons[0]?.pokemonsprites[0]?.sprites,
         );
 
         // Process evolution details
@@ -590,12 +687,12 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
             from: {
               id: fromSpecies.pokemons[0]?.id || fromSpecies.id,
               name: fromSpecies.name,
-              sprite: fromSprites.front_default || "",
+              sprite: fromSprites?.front_default || "",
             },
             to: {
               id: species.pokemons[0]?.id || species.id,
               name: species.name,
-              sprite: toSprites.front_default || "",
+              sprite: toSprites?.front_default || "",
             },
             trigger: textParts.length > 0 ? triggerData : undefined,
           });
@@ -607,12 +704,12 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
             from: {
               id: fromSpecies.pokemons[0]?.id || fromSpecies.id,
               name: fromSpecies.name,
-              sprite: fromSprites.front_default || "",
+              sprite: fromSprites?.front_default || "",
             },
             to: {
               id: species.pokemons[0]?.id || species.id,
               name: species.name,
-              sprite: toSprites.front_default || "",
+              sprite: toSprites?.front_default || "",
             },
           });
         }
@@ -648,6 +745,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         setTypes(transformed.types);
         setTypeNames(transformed.typeNames);
         setMoves(transformed.moves);
+        setMoveDetails(transformed.moveDetails);
         setStats(transformed.stats);
         setAbilities(transformed.abilities);
         setSprite(transformed.sprite);
@@ -768,7 +866,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         const transformedRelated: RelatedPokemonItem[] = relatedData.map(
           (p: RelatedPokemonGraphQL) => {
             const sprites = pokemonGraphQLService.parseSprites(
-              p.pokemons[0]?.pokemonsprites[0]?.sprites || "{}",
+              p.pokemons[0]?.pokemonsprites[0]?.sprites,
             );
 
             return {
@@ -779,7 +877,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
                 ) || p.name,
               url: "",
               id: p.pokemons[0]?.id || p.id,
-              sprite: sprites.front_default || undefined,
+              sprite: sprites?.front_default || undefined,
             };
           },
         );
@@ -800,6 +898,7 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
     types,
     typeNames,
     moves,
+    moveDetails,
     stats,
     abilities,
     sprite,
