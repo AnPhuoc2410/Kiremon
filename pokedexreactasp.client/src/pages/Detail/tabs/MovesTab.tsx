@@ -14,15 +14,87 @@ import {
   IconWand,
   IconRefresh,
   IconChevronDown,
+  IconTarget,
+  IconDroplet,
+  IconFlame,
+  IconHeart,
 } from "@tabler/icons-react";
 import { MoveDetailData } from "../../../hooks/usePokemonGraphQL";
 import * as S from "./MovesTab.style";
 
-// Helper to get special effect badges for a move (based on available data)
-const getMoveEffectBadges = (_move: MoveDetailData) => {
-  // Note: Extended move data (priority, generation, etc.) not available in current GraphQL schema
+// Helper to get special effect badges for a move
+const getMoveEffectBadges = (move: MoveDetailData) => {
   const badges: Array<{ icon: React.ReactNode; label: string; color: string }> =
     [];
+
+  // Priority (speed modifier)
+  if (move.priority !== 0) {
+    badges.push({
+      icon: <IconBolt size={10} />,
+      label: move.priority > 0 ? `+${move.priority}` : `${move.priority}`,
+      color: move.priority > 0 ? "#16a34a" : "#dc2626",
+    });
+  }
+
+  // Generation introduced
+  if (move.generation && move.generation > 1) {
+    badges.push({
+      icon: <IconSparkles size={10} />,
+      label: `Gen ${move.generation}`,
+      color: "#6b7280",
+    });
+  }
+
+  // Meta effects
+  if (move.meta) {
+    if (move.meta.critRate > 0) {
+      badges.push({
+        icon: <IconTarget size={10} />,
+        label: "High Crit",
+        color: "#ea580c",
+      });
+    }
+    if (move.meta.flinchChance > 0) {
+      badges.push({
+        icon: <IconAlertTriangle size={10} />,
+        label: `${move.meta.flinchChance}% Flinch`,
+        color: "#ca8a04",
+      });
+    }
+    if (move.meta.drain > 0) {
+      badges.push({
+        icon: <IconDroplet size={10} />,
+        label: `${move.meta.drain}% Drain`,
+        color: "#16a34a",
+      });
+    }
+    if (move.meta.drain < 0) {
+      badges.push({
+        icon: <IconFlame size={10} />,
+        label: `${Math.abs(move.meta.drain)}% Recoil`,
+        color: "#dc2626",
+      });
+    }
+    if (move.meta.healing > 0) {
+      badges.push({
+        icon: <IconHeart size={10} />,
+        label: `${move.meta.healing}% Heal`,
+        color: "#ec4899",
+      });
+    }
+    if (move.meta.minHits && move.meta.maxHits) {
+      const hitsLabel =
+        move.meta.minHits === move.meta.maxHits
+          ? `${move.meta.minHits} Hits`
+          : `${move.meta.minHits}-${move.meta.maxHits} Hits`;
+      badges.push({
+        icon: <IconArrowUp size={10} />,
+        label: hitsLabel,
+        color: "#6366f1",
+      });
+    }
+  }
+
   return badges;
 };
 

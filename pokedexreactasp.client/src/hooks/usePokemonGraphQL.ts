@@ -20,9 +20,20 @@ export interface MoveDetailData {
   power: number | null;
   accuracy: number | null;
   pp: number | null;
+  priority: number;
   damageClass: "physical" | "special" | "status";
   learnMethod: string;
   level: number | null;
+  generation: number | null;
+  description: string | null;
+  meta: {
+    critRate: number;
+    drain: number;
+    flinchChance: number;
+    healing: number;
+    minHits: number | null;
+    maxHits: number | null;
+  } | null;
 }
 import {
   EvolutionItem,
@@ -240,10 +251,16 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         "steel",
       ]);
 
-      // Determine damage class based on power and type (Gen 4+ physical/special split)
+      // Get damage class from API or fallback to type-based logic
       const getDamageClass = (
         move: PokemonMove,
       ): "physical" | "special" | "status" => {
+        // Use API data if available
+        const damageClassName = move.move.movedamageclass?.name?.toLowerCase();
+        if (damageClassName === "physical") return "physical";
+        if (damageClassName === "special") return "special";
+        if (damageClassName === "status") return "status";
+        // Fallback: determine by power and type
         if (!move.move.power || move.move.power === 0) {
           return "status";
         }
@@ -259,6 +276,32 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
         return "machine"; // Default for level-0 moves
       };
 
+      // Get meta data
+      const getMeta = (move: PokemonMove) => {
+        const meta = move.move.movemeta?.[0];
+        if (!meta) return null;
+        return {
+          critRate: meta.crit_rate || 0,
+          drain: meta.drain || 0,
+          flinchChance: meta.flinch_chance || 0,
+          healing: meta.healing || 0,
+          minHits: meta.min_hits,
+          maxHits: meta.max_hits,
+        };
+      };
+
+      // Get flavor text description
+      const getDescription = (move: PokemonMove): string | null => {
+        const flavorText = move.move.moveflavortexts?.[0]?.flavor_text;
+        if (!flavorText) return null;
+        // Clean up the text (remove line breaks and extra spaces)
+        return flavorText
+          .replace(/\f/g, " ")
+          .replace(/\n/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      };
+
       // Create detailed move data for enhanced UI
       const transformedMoveDetails: MoveDetailData[] = data.pokemonmoves.map(
         (m: PokemonMove) => ({
@@ -272,9 +315,13 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
           power: m.move.power,
           accuracy: m.move.accuracy,
           pp: m.move.pp,
+          priority: m.move.priority || 0,
           damageClass: getDamageClass(m),
           learnMethod: getLearnMethod(m),
           level: m.level || null,
+          generation: m.move.generation?.id || null,
+          description: getDescription(m),
+          meta: getMeta(m),
         }),
       );
 

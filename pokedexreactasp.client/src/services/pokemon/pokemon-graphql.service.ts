@@ -20,12 +20,32 @@ export interface PokemonMove {
     power: number | null;
     accuracy: number | null;
     pp: number | null;
+    priority: number;
     type: {
       name: string;
     };
+    movedamageclass: {
+      name: string;
+      id: number;
+    } | null;
+    generation: {
+      name: string;
+      id: number;
+    } | null;
     movenames: Array<{
       name: string;
       language_id: number;
+    }>;
+    moveflavortexts: Array<{
+      flavor_text: string;
+    }>;
+    movemeta: Array<{
+      crit_rate: number;
+      drain: number;
+      flinch_chance: number;
+      healing: number;
+      min_hits: number | null;
+      max_hits: number | null;
     }>;
   };
   level: number;
@@ -317,12 +337,32 @@ const GET_POKEMON_DETAIL_QUERY = `
           power
           accuracy
           pp
+          priority
           type {
             name
+          }
+          movedamageclass {
+            name
+            id
+          }
+          generation {
+            name
+            id
           }
           movenames {
             name
             language_id
+          }
+          moveflavortexts(where: {language_id: {_eq: 9}}, limit: 1, order_by: {version_group_id: desc}) {
+            flavor_text
+          }
+          movemeta {
+            crit_rate
+            drain
+            flinch_chance
+            healing
+            min_hits
+            max_hits
           }
         }
       }
