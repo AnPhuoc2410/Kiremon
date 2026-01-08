@@ -191,13 +191,14 @@ const MovesTab: React.FC<MovesTabProps> = ({ moves, types }) => {
       defenses[type] = { effectiveness: "neutral", multiplier: 1 };
     });
 
+
     // Apply each of the Pokémon's types to calculate resistances and weaknesses
     types.forEach((pokemonType) => {
-      if (!typeEffectiveness[pokemonType as keyof typeof typeEffectiveness])
-        return;
+      const normalizedType = pokemonType.toLowerCase();
+
 
       const { weakTo, resistantTo, immuneTo } =
-        typeEffectiveness[pokemonType as keyof typeof typeEffectiveness];
+        typeEffectiveness[normalizedType as keyof typeof typeEffectiveness];
 
       // Apply weaknesses (2x damage)
       weakTo.forEach((type) => {
@@ -227,10 +228,15 @@ const MovesTab: React.FC<MovesTabProps> = ({ moves, types }) => {
       });
     });
 
+    console.log("Final defenses:", defenses);
     return defenses;
   };
 
   const typeDefenses = calculateTypeDefenses();
+
+  const nonNeutralDefenses = Object.entries(typeDefenses).filter(
+    ([_, { effectiveness }]) => effectiveness !== "neutral",
+  );
 
   return (
     <div style={{ padding: "16px 0" }}>
@@ -241,39 +247,52 @@ const MovesTab: React.FC<MovesTabProps> = ({ moves, types }) => {
         </Text>
         <S.TypeDefenseDescription>
           The effectiveness of each type against{" "}
-          {types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join("/")}:
+          {types.length > 0
+            ? types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join("/")
+            : "this Pokémon"}
+          :
         </S.TypeDefenseDescription>
 
-        <S.TypeDefenseGrid>
-          {Object.entries(typeDefenses)
-            .filter(([_, { effectiveness }]) => effectiveness !== "neutral")
-            .sort((a, b) => {
-              // Sort by effectiveness: weak > resistant > immune
-              const order = { weak: 0, resistant: 1, immune: 2 };
-              return (
-                order[a[1].effectiveness as keyof typeof order] -
-                order[b[1].effectiveness as keyof typeof order]
-              );
-            })
-            .map(([type, { effectiveness, multiplier }]) => (
-              <S.TypeEffectiveness key={type} effectiveness={effectiveness}>
-                <S.TypeBadge>{type}</S.TypeBadge>
-                <S.MultiplierBadge>
-                  {multiplier === 0
-                    ? "0×"
-                    : multiplier === 0.25
-                      ? "¼×"
-                      : multiplier === 0.5
-                        ? "½×"
-                        : multiplier === 2
-                          ? "2×"
-                          : multiplier === 4
-                            ? "4×"
-                            : "1×"}
-                </S.MultiplierBadge>
-              </S.TypeEffectiveness>
-            ))}
-        </S.TypeDefenseGrid>
+        {Object.entries(typeDefenses).filter(
+          ([_, { effectiveness }]) => effectiveness !== "neutral",
+        ).length === 0 ? (
+          <div
+            style={{ padding: "16px", color: "#6b7280", fontStyle: "italic" }}
+          >
+            No special type effectiveness (all neutral damage)
+          </div>
+        ) : (
+          <S.TypeDefenseGrid>
+            {Object.entries(typeDefenses)
+              .filter(([_, { effectiveness }]) => effectiveness !== "neutral")
+              .sort((a, b) => {
+                // Sort by effectiveness: weak > resistant > immune
+                const order = { weak: 0, resistant: 1, immune: 2 };
+                return (
+                  order[a[1].effectiveness as keyof typeof order] -
+                  order[b[1].effectiveness as keyof typeof order]
+                );
+              })
+              .map(([type, { effectiveness, multiplier }]) => (
+                <S.TypeEffectiveness key={type} effectiveness={effectiveness}>
+                  <S.TypeBadge>{type}</S.TypeBadge>
+                  <S.MultiplierBadge>
+                    {multiplier === 0
+                      ? "0×"
+                      : multiplier === 0.25
+                        ? "¼×"
+                        : multiplier === 0.5
+                          ? "½×"
+                          : multiplier === 2
+                            ? "2×"
+                            : multiplier === 4
+                              ? "4×"
+                              : "1×"}
+                  </S.MultiplierBadge>
+                </S.TypeEffectiveness>
+              ))}
+          </S.TypeDefenseGrid>
+        )}
       </S.TypeDefenseContainer>
 
       {/* Move Pool Section */}
