@@ -32,30 +32,39 @@ async function executeGraphQLQuery(
   variables: Record<string, any> | null,
   operationName: string,
 ): Promise<PokeballResponse> {
-  const response = await fetch(GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "*/*",
-    },
-    body: JSON.stringify({
-      query,
-      variables,
-      operationName,
-    }),
-  });
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify({
+        query,
+        variables,
+        operationName,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to execute GraphQL query: ${operationName}`);
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}: Failed to execute GraphQL query: ${operationName}`,
+      );
+    }
+
+    const result: PokeballResponse = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${JSON.stringify(result.errors)}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`Error in executeGraphQLQuery for ${operationName}:`, error);
+    throw new Error(
+      `Error executing GraphQL query '${operationName}': ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
-
-  const result: PokeballResponse = await response.json();
-
-  if (result.errors) {
-    throw new Error(`GraphQL error: ${JSON.stringify(result.errors)}`);
-  }
-
-  return result;
 }
 
 export const pokeItemService = {

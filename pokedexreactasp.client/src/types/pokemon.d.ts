@@ -324,6 +324,7 @@ interface EvolutionItem {
     partySpecies?: string; // Pokemon needed in party
     partyType?: string; // Type needed in party
     tradeSpecies?: string; // Pokemon to trade for
+    tradeSpeciesId?: number; // ID of Pokemon to trade for (from GraphQL)
   };
 }
 

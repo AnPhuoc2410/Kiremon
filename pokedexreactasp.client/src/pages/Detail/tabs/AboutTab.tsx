@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Loading, RelatedPokemon, Text } from "../../../components/ui";
@@ -25,7 +25,6 @@ interface AboutTabProps {
       version: { name: string; url: string };
     }>;
   }>;
-  // New props for additional info
   habitat?: string;
   color?: string;
   shape?: string;
@@ -59,8 +58,6 @@ const AboutTab: React.FC<AboutTabProps> = ({
   color,
   shape,
   generation,
-  isLegendary,
-  isMythical,
 }) => {
   const navigate = useNavigate();
   const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>(
@@ -103,20 +100,36 @@ const AboutTab: React.FC<AboutTabProps> = ({
     loadFormSprites();
   }, [specialForms]);
 
+  // Create a stable string key from held item names for effect dependency
+  const heldItemNamesKey = useMemo(
+    () =>
+      heldItems
+        ?.map((item) => item.item.name)
+        .sort()
+        .join("|") || "",
+    [heldItems],
+  );
+
   // Load held item sprites using GraphQL
   useEffect(() => {
     const loadHeldItemSprites = async () => {
-      if (heldItems && heldItems.length > 0) {
-        setIsLoadingHeldItems(true);
-        const itemNames = heldItems.map((item) => item.item.name);
+      if (!heldItemNamesKey) return;
+
+      const itemNames = heldItemNamesKey.split("|").filter(Boolean);
+      setIsLoadingHeldItems(true);
+      try {
         const sprites = await pokeItemService.getHeldItemSprites(itemNames);
         setHeldItemSprites(sprites);
+      } catch (error) {
+        console.error("Error loading held item sprites:", error);
+        setHeldItemSprites([]);
+      } finally {
         setIsLoadingHeldItems(false);
       }
     };
 
     loadHeldItemSprites();
-  }, [heldItems]);
+  }, [heldItemNamesKey]);
 
   return (
     <>

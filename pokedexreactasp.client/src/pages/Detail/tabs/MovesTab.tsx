@@ -1,14 +1,112 @@
-import React, { useState, useEffect } from "react";
-import { Text } from "../../../components/ui";
+import React, { useState, useMemo } from "react";
+import {
+  IconShield,
+  IconAlertTriangle,
+  IconShieldCheck,
+  IconShieldOff,
+  IconBolt,
+  IconArrowUp,
+  IconDisc,
+  IconEgg,
+  IconSchool,
+  IconSparkles,
+  IconSword,
+  IconWand,
+  IconRefresh,
+  IconChevronDown,
+  IconTarget,
+  IconDroplet,
+  IconFlame,
+  IconHeart,
+} from "@tabler/icons-react";
+import { MoveDetailData } from "../../../hooks/usePokemonGraphQL";
 import * as S from "./MovesTab.style";
 
-// Type effectiveness data
-const typeEffectiveness = {
-  normal: {
-    weakTo: ["fighting"],
-    resistantTo: [],
-    immuneTo: ["ghost"],
-  },
+// Helper to get special effect badges for a move
+const getMoveEffectBadges = (move: MoveDetailData) => {
+  const badges: Array<{ icon: React.ReactNode; label: string; color: string }> =
+    [];
+
+  // Priority (speed modifier)
+  if (move.priority !== 0) {
+    badges.push({
+      icon: <IconBolt size={14} />,
+      label:
+        move.priority > 0
+          ? `Priority +${move.priority}`
+          : `Priority ${move.priority}`,
+      color: move.priority > 0 ? "#16a34a" : "#dc2626",
+    });
+  }
+
+  // Generation introduced
+  if (move.generation && move.generation > 1) {
+    badges.push({
+      icon: <IconSparkles size={14} />,
+      label: `Gen ${move.generation}`,
+      color: "#6366f1",
+    });
+  }
+
+  // Meta effects
+  if (move.meta) {
+    if (move.meta.critRate > 0) {
+      badges.push({
+        icon: <IconTarget size={14} />,
+        label: "High Crit",
+        color: "#ea580c",
+      });
+    }
+    if (move.meta.flinchChance > 0) {
+      badges.push({
+        icon: <IconAlertTriangle size={14} />,
+        label: `${move.meta.flinchChance}% Flinch`,
+        color: "#ca8a04",
+      });
+    }
+    if (move.meta.drain > 0) {
+      badges.push({
+        icon: <IconDroplet size={14} />,
+        label: `${move.meta.drain}% Drain`,
+        color: "#16a34a",
+      });
+    }
+    if (move.meta.drain < 0) {
+      badges.push({
+        icon: <IconFlame size={14} />,
+        label: `${Math.abs(move.meta.drain)}% Recoil`,
+        color: "#dc2626",
+      });
+    }
+    if (move.meta.healing > 0) {
+      badges.push({
+        icon: <IconHeart size={14} />,
+        label: `${move.meta.healing}% Heal`,
+        color: "#ec4899",
+      });
+    }
+    if (move.meta.minHits && move.meta.maxHits) {
+      const hitsLabel =
+        move.meta.minHits === move.meta.maxHits
+          ? `${move.meta.minHits} Hits`
+          : `${move.meta.minHits}-${move.meta.maxHits} Hits`;
+      badges.push({
+        icon: <IconArrowUp size={14} />,
+        label: hitsLabel,
+        color: "#6366f1",
+      });
+    }
+  }
+
+  return badges;
+};
+
+// Type effectiveness data for calculating defenses
+const typeEffectiveness: Record<
+  string,
+  { weakTo: string[]; resistantTo: string[]; immuneTo: string[] }
+> = {
+  normal: { weakTo: ["fighting"], resistantTo: [], immuneTo: ["ghost"] },
   fire: {
     weakTo: ["water", "ground", "rock"],
     resistantTo: ["fire", "grass", "ice", "bug", "steel", "fairy"],
@@ -109,271 +207,593 @@ const typeEffectiveness = {
 
 interface MovesTabProps {
   moves: string[];
+  moveDetails: MoveDetailData[];
   types: string[];
 }
 
-interface MoveDetails {
-  name: string;
-  level?: number;
-  method: string;
+interface OrganizedMoves {
+  levelUp: MoveDetailData[];
+  machine: MoveDetailData[];
+  egg: MoveDetailData[];
+  tutor: MoveDetailData[];
+  other: MoveDetailData[];
 }
 
-const MovesTab: React.FC<MovesTabProps> = ({ moves, types }) => {
-  const [organizeMoves, setOrganizeMoves] = useState<{
-    [key: string]: MoveDetails[];
-  }>({
-    levelUp: [],
-    tm: [],
-    egg: [],
-    tutor: [],
-    other: [],
-  });
+type MoveCategory = keyof OrganizedMoves;
 
-  // Process moves into categories
-  useEffect(() => {
-    // In a real implementation, you would fetch detailed move data from the API
-    // For demo purposes, we'll simulate this with random assignments
-    const processedMoves = {
-      levelUp: [] as MoveDetails[],
-      tm: [] as MoveDetails[],
-      egg: [] as MoveDetails[],
-      tutor: [] as MoveDetails[],
-      other: [] as MoveDetails[],
+const CATEGORY_CONFIG: Record<
+  MoveCategory,
+  { label: string; Icon: React.ElementType }
+> = {
+  levelUp: { label: "Level Up", Icon: IconArrowUp },
+  machine: { label: "TM / HM", Icon: IconDisc },
+  egg: { label: "Egg Moves", Icon: IconEgg },
+  tutor: { label: "Move Tutor", Icon: IconSchool },
+  other: { label: "Other", Icon: IconSparkles },
+};
+
+const INITIAL_VISIBLE = 8;
+
+const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
+  const [expandedCategories, setExpandedCategories] = useState<
+    Set<MoveCategory>
+  >(new Set());
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "physical" | "special" | "status"
+  >("all");
+
+  // Organize moves by learn method
+  const organizedMoves = useMemo<OrganizedMoves>(() => {
+    const result: OrganizedMoves = {
+      levelUp: [],
+      machine: [],
+      egg: [],
+      tutor: [],
+      other: [],
     };
 
-    moves.forEach((move, index) => {
-      // Randomly assign moves to categories for demonstration
-      const rand = Math.random();
+    // Use a Set to track unique moves by name
+    const seenMoves = new Set<string>();
 
-      if (rand < 0.4) {
-        processedMoves.levelUp.push({
-          name: move,
-          level: Math.floor(Math.random() * 50) + 1,
-          method: "level-up",
-        });
-      } else if (rand < 0.7) {
-        processedMoves.tm.push({
-          name: move,
-          method: "machine",
-        });
-      } else if (rand < 0.85) {
-        processedMoves.egg.push({
-          name: move,
-          method: "egg",
-        });
-      } else if (rand < 0.95) {
-        processedMoves.tutor.push({
-          name: move,
-          method: "tutor",
-        });
+    // If no moveDetails, return empty
+    if (!moveDetails || moveDetails.length === 0) {
+      return result;
+    }
+
+    moveDetails.forEach((move) => {
+      // Skip duplicates
+      if (seenMoves.has(move.name)) return;
+      seenMoves.add(move.name);
+
+      const method = move.learnMethod.toLowerCase();
+
+      if (method === "level-up") {
+        result.levelUp.push(move);
+      } else if (method === "machine") {
+        result.machine.push(move);
+      } else if (method === "egg") {
+        result.egg.push(move);
+      } else if (method === "tutor") {
+        result.tutor.push(move);
       } else {
-        processedMoves.other.push({
-          name: move,
-          method: "other",
-        });
+        result.other.push(move);
       }
     });
 
     // Sort level-up moves by level
-    processedMoves.levelUp.sort((a, b) => (a.level || 0) - (b.level || 0));
+    result.levelUp.sort((a, b) => (a.level || 0) - (b.level || 0));
 
-    setOrganizeMoves(processedMoves);
-  }, [moves]);
+    // Sort machine moves alphabetically
+    result.machine.sort((a, b) =>
+      a.localizedName.localeCompare(b.localizedName),
+    );
 
-  // Calculate type defenses based on Pokémon types
-  const calculateTypeDefenses = () => {
-    const defenses: {
-      [type: string]: { effectiveness: string; multiplier: number };
-    } = {};
+    return result;
+  }, [moveDetails]);
 
-    // Initialize all types with neutral effectiveness
+  // Filter moves by damage class
+  const filterMoves = (moves: MoveDetailData[]): MoveDetailData[] => {
+    if (activeFilter === "all") return moves;
+    return moves.filter((m) => m.damageClass === activeFilter);
+  };
+
+  // Calculate type defenses
+  const typeDefenses = useMemo(() => {
+    const defenses: Record<
+      string,
+      {
+        effectiveness: "weak" | "resistant" | "immune" | "neutral";
+        multiplier: number;
+      }
+    > = {};
+
+    // Initialize all types with neutral
     Object.keys(typeEffectiveness).forEach((type) => {
       defenses[type] = { effectiveness: "neutral", multiplier: 1 };
     });
 
-    // Apply each of the Pokémon's types to calculate resistances and weaknesses
+    // Apply each Pokémon type's effects
     types.forEach((pokemonType) => {
-      if (!typeEffectiveness[pokemonType as keyof typeof typeEffectiveness])
-        return;
+      const normalized = pokemonType.toLowerCase();
+      const effects = typeEffectiveness[normalized];
+      if (!effects) return;
 
-      const { weakTo, resistantTo, immuneTo } =
-        typeEffectiveness[pokemonType as keyof typeof typeEffectiveness];
-
-      // Apply weaknesses (2x damage)
-      weakTo.forEach((type) => {
-        if (defenses[type].effectiveness === "neutral") {
+      // Apply weaknesses
+      effects.weakTo.forEach((type) => {
+        const current = defenses[type];
+        if (current.effectiveness === "neutral") {
           defenses[type] = { effectiveness: "weak", multiplier: 2 };
-        } else if (defenses[type].effectiveness === "weak") {
-          defenses[type] = { effectiveness: "weak", multiplier: 4 }; // Double weakness (4x)
-        } else if (defenses[type].effectiveness === "resistant") {
-          defenses[type] = { effectiveness: "neutral", multiplier: 1 }; // Cancels out
+        } else if (current.effectiveness === "weak") {
+          defenses[type] = { effectiveness: "weak", multiplier: 4 };
+        } else if (current.effectiveness === "resistant") {
+          defenses[type] = { effectiveness: "neutral", multiplier: 1 };
         }
       });
 
-      // Apply resistances (0.5x damage)
-      resistantTo.forEach((type) => {
-        if (defenses[type].effectiveness === "neutral") {
+      // Apply resistances
+      effects.resistantTo.forEach((type) => {
+        const current = defenses[type];
+        if (current.effectiveness === "neutral") {
           defenses[type] = { effectiveness: "resistant", multiplier: 0.5 };
-        } else if (defenses[type].effectiveness === "resistant") {
-          defenses[type] = { effectiveness: "resistant", multiplier: 0.25 }; // Double resistance (0.25x)
-        } else if (defenses[type].effectiveness === "weak") {
-          defenses[type] = { effectiveness: "neutral", multiplier: 1 }; // Cancels out
+        } else if (current.effectiveness === "resistant") {
+          defenses[type] = { effectiveness: "resistant", multiplier: 0.25 };
+        } else if (current.effectiveness === "weak") {
+          defenses[type] = { effectiveness: "neutral", multiplier: 1 };
         }
       });
 
-      // Apply immunities (0x damage)
-      immuneTo.forEach((type) => {
+      // Apply immunities (override everything)
+      effects.immuneTo.forEach((type) => {
         defenses[type] = { effectiveness: "immune", multiplier: 0 };
       });
     });
 
     return defenses;
+  }, [types]);
+
+  // Group type defenses by effectiveness
+  const groupedDefenses = useMemo(() => {
+    const weak: Array<{ type: string; multiplier: number }> = [];
+    const resistant: Array<{ type: string; multiplier: number }> = [];
+    const immune: Array<{ type: string; multiplier: number }> = [];
+
+    Object.entries(typeDefenses).forEach(
+      ([type, { effectiveness, multiplier }]) => {
+        if (effectiveness === "weak") {
+          weak.push({ type, multiplier });
+        } else if (effectiveness === "resistant") {
+          resistant.push({ type, multiplier });
+        } else if (effectiveness === "immune") {
+          immune.push({ type, multiplier });
+        }
+      },
+    );
+
+    // Sort by multiplier (most severe first)
+    weak.sort((a, b) => b.multiplier - a.multiplier);
+    resistant.sort((a, b) => a.multiplier - b.multiplier);
+
+    return { weak, resistant, immune };
+  }, [typeDefenses]);
+
+  const toggleCategory = (category: MoveCategory) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
   };
 
-  const typeDefenses = calculateTypeDefenses();
+  const formatMultiplier = (m: number): string => {
+    if (m === 0) return "0×";
+    if (m === 0.25) return "¼×";
+    if (m === 0.5) return "½×";
+    if (m === 2) return "2×";
+    if (m === 4) return "4×";
+    return "1×";
+  };
+
+  const renderMoveCard = (move: MoveDetailData, category: MoveCategory) => {
+    const moveType = move.type.toLowerCase();
+    const effectBadges = getMoveEffectBadges(move);
+
+    // TM/HM style with disc icon
+    if (category === "machine") {
+      return (
+        <S.TMDiscCard key={move.name} moveType={moveType}>
+          <IconDisc size={36} className="disc-icon" />
+          <div className="disc-info">
+            <div className="move-name">
+              {move.localizedName.replace(/-/g, " ")}
+            </div>
+            <div className="move-meta">
+              {move.power && (
+                <span className="meta-item">
+                  PWR <span>{move.power}</span>
+                </span>
+              )}
+              {move.accuracy && (
+                <span className="meta-item">
+                  ACC <span>{move.accuracy}%</span>
+                </span>
+              )}
+              {move.pp && (
+                <span className="meta-item">
+                  PP <span>{move.pp}</span>
+                </span>
+              )}
+            </div>
+            {effectBadges.length > 0 && (
+              <S.EffectBadgesRow>
+                {effectBadges.map((badge, i) => (
+                  <S.EffectBadge key={i} badgeColor={badge.color}>
+                    {badge.icon}
+                    {badge.label}
+                  </S.EffectBadge>
+                ))}
+              </S.EffectBadgesRow>
+            )}
+          </div>
+          <span className="type-badge">{moveType}</span>
+        </S.TMDiscCard>
+      );
+    }
+
+    // Egg move style
+    if (category === "egg") {
+      return (
+        <S.EggMoveCard key={move.name} moveType={moveType}>
+          <div className="egg-icon">
+            <IconEgg size={18} />
+          </div>
+          <div className="egg-info">
+            <div className="move-name">
+              {move.localizedName.replace(/-/g, " ")}
+            </div>
+            <div className="move-stats">
+              {move.power && (
+                <span className="stat">
+                  PWR <span>{move.power}</span>
+                </span>
+              )}
+              {move.pp && (
+                <span className="stat">
+                  PP <span>{move.pp}</span>
+                </span>
+              )}
+            </div>
+            {effectBadges.length > 0 && (
+              <S.EffectBadgesRow>
+                {effectBadges.map((badge, i) => (
+                  <S.EffectBadge key={i} badgeColor={badge.color}>
+                    {badge.icon}
+                    {badge.label}
+                  </S.EffectBadge>
+                ))}
+              </S.EffectBadgesRow>
+            )}
+          </div>
+          <span className="type-badge">{moveType}</span>
+        </S.EggMoveCard>
+      );
+    }
+
+    // Tutor move style
+    if (category === "tutor") {
+      return (
+        <S.TutorMoveCard key={move.name} moveType={moveType}>
+          <div className="tutor-icon">
+            <IconSchool size={18} />
+          </div>
+          <div className="tutor-info">
+            <div className="move-name">
+              {move.localizedName.replace(/-/g, " ")}
+            </div>
+            <div className="move-stats">
+              {move.power && (
+                <span className="stat">
+                  PWR <span>{move.power}</span>
+                </span>
+              )}
+              {move.pp && (
+                <span className="stat">
+                  PP <span>{move.pp}</span>
+                </span>
+              )}
+            </div>
+            {effectBadges.length > 0 && (
+              <S.EffectBadgesRow>
+                {effectBadges.map((badge, i) => (
+                  <S.EffectBadge key={i} badgeColor={badge.color}>
+                    {badge.icon}
+                    {badge.label}
+                  </S.EffectBadge>
+                ))}
+              </S.EffectBadgesRow>
+            )}
+          </div>
+          <span className="type-badge">{moveType}</span>
+        </S.TutorMoveCard>
+      );
+    }
+
+    // Default move card (level-up, other)
+    return (
+      <S.MoveCard key={move.name} moveType={moveType}>
+        <div className="type-indicator" />
+        <div className="move-content">
+          <div className="move-header">
+            <span className="move-name">
+              {move.localizedName.replace(/-/g, " ")}
+            </span>
+            <span className="move-type-badge">
+              <img
+                src={`/src/assets/type-icon/${moveType}.png`}
+                alt={moveType}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+              {moveType}
+            </span>
+          </div>
+          <div className="move-stats">
+            {move.level && category === "levelUp" && (
+              <span className="stat-chip level">
+                <span className="label">Lv.</span>
+                <span className="value">{move.level}</span>
+              </span>
+            )}
+            {move.power && (
+              <span className="stat-chip">
+                <span className="label">PWR</span>
+                <span className="value">{move.power}</span>
+              </span>
+            )}
+            {move.accuracy && (
+              <span className="stat-chip">
+                <span className="label">ACC</span>
+                <span className="value">{move.accuracy}%</span>
+              </span>
+            )}
+            {move.pp && (
+              <span className="stat-chip">
+                <span className="label">PP</span>
+                <span className="value">{move.pp}</span>
+              </span>
+            )}
+            <span className={`damage-class ${move.damageClass}`}>
+              {move.damageClass === "physical" && <IconSword size={14} />}
+              {move.damageClass === "special" && <IconWand size={14} />}
+              {move.damageClass === "status" && <IconRefresh size={14} />}
+              {move.damageClass}
+            </span>
+          </div>
+          {effectBadges.length > 0 && (
+            <S.EffectBadgesRow>
+              {effectBadges.map((badge, i) => (
+                <S.EffectBadge key={i} badgeColor={badge.color}>
+                  {badge.icon}
+                  {badge.label}
+                </S.EffectBadge>
+              ))}
+            </S.EffectBadgesRow>
+          )}
+        </div>
+      </S.MoveCard>
+    );
+  };
+
+  const renderMoveCategory = (category: MoveCategory) => {
+    const moves = filterMoves(organizedMoves[category]);
+    if (moves.length === 0) return null;
+
+    const config = CATEGORY_CONFIG[category];
+    const { Icon } = config;
+    const isExpanded = expandedCategories.has(category);
+    const visibleMoves = isExpanded ? moves : moves.slice(0, INITIAL_VISIBLE);
+    const hasMore = moves.length > INITIAL_VISIBLE;
+
+    return (
+      <S.MoveCategoryCard key={category}>
+        <S.MoveCategoryHeader>
+          <div className="title-group">
+            <Icon size={20} />
+            <h4>{config.label}</h4>
+            <span className="count">{moves.length}</span>
+          </div>
+          {hasMore && (
+            <button
+              className="expand-btn"
+              onClick={() => toggleCategory(category)}
+            >
+              {isExpanded ? "Show Less" : `Show All (${moves.length})`}
+            </button>
+          )}
+        </S.MoveCategoryHeader>
+        <S.MoveGrid>
+          {visibleMoves.map((move) => renderMoveCard(move, category))}
+        </S.MoveGrid>
+        {!isExpanded && hasMore && (
+          <S.ShowMoreButton onClick={() => toggleCategory(category)}>
+            <span>+{moves.length - INITIAL_VISIBLE} more moves</span>
+            <IconChevronDown size={16} />
+          </S.ShowMoreButton>
+        )}
+      </S.MoveCategoryCard>
+    );
+  };
+
+  const hasAnyTypeDefenses =
+    groupedDefenses.weak.length > 0 ||
+    groupedDefenses.resistant.length > 0 ||
+    groupedDefenses.immune.length > 0;
 
   return (
-    <div style={{ padding: "16px 0" }}>
+    <S.Container>
       {/* Type Defenses Section */}
       <S.TypeDefenseContainer>
-        <Text as="h3" style={{ marginBottom: "16px" }}>
-          Type Defenses
-        </Text>
+        <S.SectionHeader>
+          <IconShield size={22} />
+          <h3>Type Defenses</h3>
+        </S.SectionHeader>
         <S.TypeDefenseDescription>
-          The effectiveness of each type against{" "}
-          {types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join("/")}:
+          How different types affect{" "}
+          <strong>
+            {types.length > 0
+              ? types
+                  .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
+                  .join(" / ")
+              : "this Pokémon"}
+          </strong>
         </S.TypeDefenseDescription>
 
-        <S.TypeDefenseGrid>
-          {Object.entries(typeDefenses)
-            .filter(([_, { effectiveness }]) => effectiveness !== "neutral")
-            .sort((a, b) => {
-              // Sort by effectiveness: weak > resistant > immune
-              const order = { weak: 0, resistant: 1, immune: 2 };
-              return (
-                order[a[1].effectiveness as keyof typeof order] -
-                order[b[1].effectiveness as keyof typeof order]
-              );
-            })
-            .map(([type, { effectiveness, multiplier }]) => (
-              <S.TypeEffectiveness key={type} effectiveness={effectiveness}>
-                <S.TypeBadge>{type}</S.TypeBadge>
-                <S.MultiplierBadge>
-                  {multiplier === 0
-                    ? "0×"
-                    : multiplier === 0.25
-                      ? "¼×"
-                      : multiplier === 0.5
-                        ? "½×"
-                        : multiplier === 2
-                          ? "2×"
-                          : multiplier === 4
-                            ? "4×"
-                            : "1×"}
-                </S.MultiplierBadge>
-              </S.TypeEffectiveness>
-            ))}
-        </S.TypeDefenseGrid>
+        {!hasAnyTypeDefenses ? (
+          <S.EmptyState>All types deal neutral damage (1×)</S.EmptyState>
+        ) : (
+          <>
+            {/* Weaknesses */}
+            {groupedDefenses.weak.length > 0 && (
+              <S.EffectivenessCategory>
+                <S.CategoryLabel variant="weak">
+                  <IconAlertTriangle size={16} />
+                  Weak to (takes more damage)
+                </S.CategoryLabel>
+                <S.TypeDefenseGrid>
+                  {groupedDefenses.weak.map(({ type, multiplier }) => (
+                    <S.TypeChip key={type} type={type}>
+                      <img
+                        src={`/src/assets/type-icon/${type}.png`}
+                        alt={type}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      {type}
+                      <span className="multiplier">
+                        {formatMultiplier(multiplier)}
+                      </span>
+                    </S.TypeChip>
+                  ))}
+                </S.TypeDefenseGrid>
+              </S.EffectivenessCategory>
+            )}
+
+            {/* Resistances */}
+            {groupedDefenses.resistant.length > 0 && (
+              <S.EffectivenessCategory>
+                <S.CategoryLabel variant="resistant">
+                  <IconShieldCheck size={16} />
+                  Resistant to (takes less damage)
+                </S.CategoryLabel>
+                <S.TypeDefenseGrid>
+                  {groupedDefenses.resistant.map(({ type, multiplier }) => (
+                    <S.TypeChip key={type} type={type}>
+                      <img
+                        src={`/src/assets/type-icon/${type}.png`}
+                        alt={type}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      {type}
+                      <span className="multiplier">
+                        {formatMultiplier(multiplier)}
+                      </span>
+                    </S.TypeChip>
+                  ))}
+                </S.TypeDefenseGrid>
+              </S.EffectivenessCategory>
+            )}
+
+            {/* Immunities */}
+            {groupedDefenses.immune.length > 0 && (
+              <S.EffectivenessCategory>
+                <S.CategoryLabel variant="immune">
+                  <IconShieldOff size={16} />
+                  Immune to (no damage)
+                </S.CategoryLabel>
+                <S.TypeDefenseGrid>
+                  {groupedDefenses.immune.map(({ type, multiplier }) => (
+                    <S.TypeChip key={type} type={type}>
+                      <img
+                        src={`/src/assets/type-icon/${type}.png`}
+                        alt={type}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      {type}
+                      <span className="multiplier">
+                        {formatMultiplier(multiplier)}
+                      </span>
+                    </S.TypeChip>
+                  ))}
+                </S.TypeDefenseGrid>
+              </S.EffectivenessCategory>
+            )}
+          </>
+        )}
       </S.TypeDefenseContainer>
 
       {/* Move Pool Section */}
       <S.MovePoolContainer>
-        <Text as="h3" style={{ marginBottom: "16px" }}>
-          Move Pool
-        </Text>
+        <S.SectionHeader>
+          <IconBolt size={22} />
+          <h3>Move Pool</h3>
+        </S.SectionHeader>
 
-        {/* Level Up Moves */}
-        {organizeMoves.levelUp.length > 0 && (
-          <S.MoveCategory>
-            <S.MoveCategoryTitle>
-              <h4>Level Up</h4>
-              <span className="count">{organizeMoves.levelUp.length}</span>
-            </S.MoveCategoryTitle>
-            <S.MoveGrid>
-              {organizeMoves.levelUp.slice(0, 12).map((move, index) => (
-                <S.MoveItem key={index}>
-                  <div className="move-name">{move.name.replace("-", " ")}</div>
-                  <div className="move-details">
-                    <span>Level {move.level}</span>
-                  </div>
-                </S.MoveItem>
-              ))}
-              {organizeMoves.levelUp.length > 12 && (
-                <S.MoreMovesItem>
-                  +{organizeMoves.levelUp.length - 12} more
-                </S.MoreMovesItem>
-              )}
-            </S.MoveGrid>
-          </S.MoveCategory>
-        )}
+        {/* Damage Class Filter */}
+        <S.FilterContainer>
+          <S.FilterButton
+            isActive={activeFilter === "all"}
+            onClick={() => setActiveFilter("all")}
+          >
+            All Moves
+          </S.FilterButton>
+          <S.FilterButton
+            isActive={activeFilter === "physical"}
+            onClick={() => setActiveFilter("physical")}
+          >
+            <IconSword size={16} />
+            Physical
+          </S.FilterButton>
+          <S.FilterButton
+            isActive={activeFilter === "special"}
+            onClick={() => setActiveFilter("special")}
+          >
+            <IconWand size={16} />
+            Special
+          </S.FilterButton>
+          <S.FilterButton
+            isActive={activeFilter === "status"}
+            onClick={() => setActiveFilter("status")}
+          >
+            <IconRefresh size={16} />
+            Status
+          </S.FilterButton>
+        </S.FilterContainer>
 
-        {/* TM/HM Moves */}
-        {organizeMoves.tm.length > 0 && (
-          <S.MoveCategory>
-            <S.MoveCategoryTitle>
-              <h4>TM/HM</h4>
-              <span className="count">{organizeMoves.tm.length}</span>
-            </S.MoveCategoryTitle>
-            <S.MoveGrid>
-              {organizeMoves.tm.slice(0, 8).map((move, index) => (
-                <S.MoveItem key={index}>
-                  <div className="move-name">{move.name.replace("-", " ")}</div>
-                </S.MoveItem>
-              ))}
-              {organizeMoves.tm.length > 8 && (
-                <S.MoreMovesItem>
-                  +{organizeMoves.tm.length - 8} more
-                </S.MoreMovesItem>
-              )}
-            </S.MoveGrid>
-          </S.MoveCategory>
-        )}
+        {/* Move Categories */}
+        {(
+          ["levelUp", "machine", "egg", "tutor", "other"] as MoveCategory[]
+        ).map(renderMoveCategory)}
 
-        {/* Egg Moves */}
-        {organizeMoves.egg.length > 0 && (
-          <S.MoveCategory>
-            <S.MoveCategoryTitle>
-              <h4>Egg Moves</h4>
-              <span className="count">{organizeMoves.egg.length}</span>
-            </S.MoveCategoryTitle>
-            <S.MoveGrid>
-              {organizeMoves.egg.slice(0, 8).map((move, index) => (
-                <S.MoveItem key={index}>
-                  <div className="move-name">{move.name.replace("-", " ")}</div>
-                </S.MoveItem>
-              ))}
-              {organizeMoves.egg.length > 8 && (
-                <S.MoreMovesItem>
-                  +{organizeMoves.egg.length - 8} more
-                </S.MoreMovesItem>
-              )}
-            </S.MoveGrid>
-          </S.MoveCategory>
-        )}
-
-        {/* Move Tutor */}
-        {organizeMoves.tutor.length > 0 && (
-          <S.MoveCategory>
-            <S.MoveCategoryTitle>
-              <h4>Move Tutor</h4>
-              <span className="count">{organizeMoves.tutor.length}</span>
-            </S.MoveCategoryTitle>
-            <S.MoveGrid>
-              {organizeMoves.tutor.slice(0, 8).map((move, index) => (
-                <S.MoveItem key={index}>
-                  <div className="move-name">{move.name.replace("-", " ")}</div>
-                </S.MoveItem>
-              ))}
-              {organizeMoves.tutor.length > 8 && (
-                <S.MoreMovesItem>
-                  +{organizeMoves.tutor.length - 8} more
-                </S.MoreMovesItem>
-              )}
-            </S.MoveGrid>
-          </S.MoveCategory>
+        {/* Empty state if no moves match filter */}
+        {Object.values(organizedMoves).every(
+          (arr) => filterMoves(arr).length === 0,
+        ) && (
+          <S.EmptyState>
+            No {activeFilter === "all" ? "moves" : `${activeFilter} moves`}{" "}
+            found
+          </S.EmptyState>
         )}
       </S.MovePoolContainer>
-    </div>
+    </S.Container>
   );
 };
 
