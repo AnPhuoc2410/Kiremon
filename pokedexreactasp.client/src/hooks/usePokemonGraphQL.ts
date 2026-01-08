@@ -218,7 +218,11 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
       );
 
       const transformedMoves = data.pokemonmoves.map((m: PokemonMove) => {
-        return m.move.name;
+        const localizedName = pokemonGraphQLService.getLocalizedName(
+          m.move.movenames,
+          languageId,
+        );
+        return localizedName || m.move.name;
       });
 
       // Determine damage class based on move type (Gen 4+ physical/special split)
@@ -259,7 +263,11 @@ export function usePokemonGraphQL(): UsePokemonGraphQLResult {
       const transformedMoveDetails: MoveDetailData[] = data.pokemonmoves.map(
         (m: PokemonMove) => ({
           name: m.move.name,
-          localizedName: m.move.name, // Use move name directly (no localization available)
+          localizedName:
+            pokemonGraphQLService.getLocalizedName(
+              m.move.movenames,
+              languageId,
+            ) || m.move.name,
           type: m.move.type?.name || "normal",
           power: m.move.power,
           accuracy: m.move.accuracy,

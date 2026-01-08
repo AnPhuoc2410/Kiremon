@@ -23,6 +23,10 @@ export interface PokemonMove {
     type: {
       name: string;
     };
+    movenames: Array<{
+      name: string;
+      language_id: number;
+    }>;
   };
   level: number;
 }
@@ -315,6 +319,10 @@ const GET_POKEMON_DETAIL_QUERY = `
           pp
           type {
             name
+          }
+          movenames {
+            name
+            language_id
           }
         }
       }
@@ -743,9 +751,7 @@ export const pokemonGraphQLService = {
   /**
    * Get Pokemon by ID (for evolution chain processing)
    */
-  async getPokemonById(
-    id: number,
-  ): Promise<{
+  async getPokemonById(id: number): Promise<{
     id: number;
     name: string;
     sprites: PokemonSpritesData | null;
