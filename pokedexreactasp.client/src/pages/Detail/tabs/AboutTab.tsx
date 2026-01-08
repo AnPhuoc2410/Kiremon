@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Loading, Text } from '../../../components/ui';
+import { useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import * as T from '../index.style';
-import { RelatedPokemon } from '../../../components/ui';
+import { Loading, RelatedPokemon, Text } from '../../../components/ui';
 import { POKEMON_IMAGE } from '../../../config/api.config';
-import * as S from './AboutTab.style';
 import { pokemonService } from '../../../services';
 import { pokeItemService } from '../../../services/pokeitem/pokeitem.service';
+import * as T from '../index.style';
+import * as S from './AboutTab.style';
 
 interface AboutTabProps {
   abilities: Array<{
@@ -62,10 +62,15 @@ const AboutTab: React.FC<AboutTabProps> = ({
   isLegendary,
   isMythical
 }) => {
+  const navigate = useNavigate();
   const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>({});
   const [isLoadingSprites, setIsLoadingSprites] = useState<boolean>(false);
   const [heldItemSprites, setHeldItemSprites] = useState<HeldItemWithSprite[]>([]);
   const [isLoadingHeldItems, setIsLoadingHeldItems] = useState<boolean>(false);
+
+  const handleHeldItemClick = (itemName: string) => {
+    navigate(`/poke-mart?item=${encodeURIComponent(itemName)}`);
+  };
 
   useEffect(() => {
     const loadFormSprites = async () => {
@@ -229,7 +234,11 @@ const AboutTab: React.FC<AboutTabProps> = ({
               <Loading />
             ) : (
               heldItemSprites.map((item, index) => (
-                <S.HeldItemWrapper key={index}>
+                <S.HeldItemWrapper
+                  key={index}
+                  onClick={() => handleHeldItemClick(item.name)}
+                  title={`View ${item.name.replace(/-/g, ' ')} in Poké Mart`}
+                >
                   <S.HeldItemImage
                     src={item.sprite}
                     alt={item.name}

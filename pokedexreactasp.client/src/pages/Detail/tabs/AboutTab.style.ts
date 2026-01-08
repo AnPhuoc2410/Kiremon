@@ -164,10 +164,22 @@ export const HeldItemWrapper = styled.div`
   position: relative;
   display: inline-block;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s, transform 0.2s;
+
+  &:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+  }
 
   &:hover > div {
     opacity: 1;
     visibility: visible;
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 

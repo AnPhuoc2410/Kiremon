@@ -58,6 +58,23 @@ const GET_HELD_ITEM_DETAILS_QUERY = `
   }
 `;
 
+const SEARCH_ITEM_BY_NAME_QUERY = `
+  query searchItemByName($name: String!) {
+    item(where: {name: {_eq: $name}}) {
+      id
+      name
+      cost
+      item_category_id
+      itemnames(where: {language_id: {_eq: 9}}) {
+        name
+      }
+      itemsprites {
+        sprites
+      }
+    }
+  }
+`;
+
 // ============ GraphQL Fetch Function ============
 
 async function executeGraphQLQuery<T>(
@@ -118,7 +135,24 @@ export const marketService = {
       GET_HELD_ITEM_DETAILS_QUERY,
       { itemId }
     );
-    
+
     return data.item && data.item.length > 0 ? data.item[0] : null;
+  },
+
+  /**
+   * Search item by exact name
+   */
+  async searchItemByName(name: string): Promise<{ item: Item; categoryId: number } | null> {
+    const data = await executeGraphQLQuery<{ item: Array<Item & { item_category_id: number }> }>(
+      SEARCH_ITEM_BY_NAME_QUERY,
+      { name }
+    );
+
+    if (data.item && data.item.length > 0) {
+      const itemData = data.item[0];
+      const { item_category_id, ...item } = itemData;
+      return { item, categoryId: item_category_id };
+    }
+    return null;
   },
 };

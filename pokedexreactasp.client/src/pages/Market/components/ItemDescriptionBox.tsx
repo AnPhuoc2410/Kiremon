@@ -33,12 +33,12 @@ const getPokemonSprite = (pokemonId: number): string => {
 };
 
 export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({ item, categoryId, onClose }) => {
-  const { 
+  const {
     wildPokemon,
-    itemEffect, 
-    loading: wildPokemonLoading, 
-    fetchHeldItemDetails, 
-    clearHeldItemDetails 
+    itemEffect,
+    loading: wildPokemonLoading,
+    fetchHeldItemDetails,
+    clearHeldItemDetails
   } = useHeldItemDetails();
 
   // Always fetch held item details when item changes to check if it has wild Pokemon
@@ -94,23 +94,23 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({ item, ca
                   Price: ₽{item.cost.toLocaleString()}
                 </DialogDescription>
               )}
-              
+
               {/* Wild Pokemon Section - Only show when data is loaded */}
               {wildPokemon.length > 0 && (
                 <WildPokemonSection>
                   <WildPokemonTitle>
                     Wild Pokémon ({wildPokemon.length})
                   </WildPokemonTitle>
-                  
+
                   <WildPokemonList $isExpanded={true}>
                     {wildPokemon.map((pokemon: PokemonBasic) => (
-                      <WildPokemonItem 
-                        key={pokemon.id} 
-                        href={`/pokemon/${pokemon.id}`}
+                      <WildPokemonItem
+                        key={pokemon.id}
+                        href={`/pokemon/${pokemon.name}`}
                         title={`View ${pokemon.name}`}
                       >
-                        <img 
-                          src={getPokemonSprite(pokemon.id)} 
+                        <img
+                          src={getPokemonSprite(pokemon.id)}
                           alt={pokemon.name}
                           loading="lazy"
                         />

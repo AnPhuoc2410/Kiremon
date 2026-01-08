@@ -1,54 +1,52 @@
-import toast from "react-hot-toast";
 import styled from "@emotion/styled";
-import { useParams, Link } from "react-router-dom";
-import { clearTimeout, setTimeout } from "worker-timers";
+import { ChangeEvent, createRef, FormEvent, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { FormEvent, ChangeEvent, useEffect, useState, createRef, useRef } from "react";
+import { Link, useParams } from "react-router-dom";
+import { clearTimeout, setTimeout } from "worker-timers";
 
-import { useGlobalContext, useAuth } from "../../contexts";
+import {
+  Button,
+  Input,
+  Loading,
+  Modal,
+  Navbar,
+  Text,
+  TypeIcon
+} from "../../components/ui";
+import { useAuth, useGlobalContext } from "../../contexts";
 import { collectionService } from "../../services";
 import {
+  EvolutionItem,
   IPokemonDetailResponse,
   IPokemonSpecies,
-  EvolutionItem,
-  RelatedPokemonItem,
   PokemonForm,
-  PokemonSprites
+  PokemonSprites,
+  RelatedPokemonItem
 } from "../../types/pokemon";
 import { CatchAttemptResult, PokeballType } from "../../types/pokemon.enums";
 import { CatchAttemptResultDto, CaughtPokemonDto } from "../../types/userspokemon.types";
-import {
-  Button,
-  Navbar,
-  Text,
-  Loading,
-  TypeIcon,
-  Input,
-  Modal,
-  EvolutionChain,
-  RelatedPokemon
-} from "../../components/ui";
 
 // Import tab components
 import AboutTab from "./tabs/AboutTab";
-import StatsTab from "./tabs/StatsTab";
+import BreedingTab from "./tabs/BreedingTab";
 import EvolutionTab from "./tabs/EvolutionTab";
 import MovesTab from "./tabs/MovesTab";
 import SpritesTab from "./tabs/SpritesTab";
-import VarietiesTab from "./tabs/VarietiesTab";
+import StatsTab from "./tabs/StatsTab";
 import TrainingTab from "./tabs/TrainingTab";
-import BreedingTab from "./tabs/BreedingTab";
+import VarietiesTab from "./tabs/VarietiesTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
-import * as T from "./index.style";
-import {
-  getDetailPokemon,
-  getPokemonSpecies,
-  getEvolutionChain,
-  getRelatedPokemonByGen
-} from "../../services/pokemon";
 import { skillColor } from "../../components/utils";
 import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
+import {
+  getDetailPokemon,
+  getEvolutionChain,
+  getPokemonSpecies,
+  getRelatedPokemonByGen
+} from "../../services/pokemon";
+import * as T from "./index.style";
 
 // Define interfaces for the component's state
 type TypesPokemon = { type: { name: string } };

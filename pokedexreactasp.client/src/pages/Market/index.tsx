@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   ShopContainer,
   ShopInner,
@@ -20,41 +21,61 @@ import {
 } from "./components";
 import { usePokeMart } from "../../components/hooks/useMarket";
 import { Header } from "../../components/ui";
-import { pokeItemService } from "../../services";
+import { pokeItemService, marketService } from "../../services";
 import { Item } from "../../types/market.types";
 
-/**
- * Poké Mart - A retro-styled shop interface for browsing Pokémon items
- * 
- * Features:
- * - Classic GameBoy/Nintendo DS pixel art aesthetic
- * - Category tabs for filtering items (Pokéballs, Medicine, Berries, etc.)
- * - Interactive item grid with hover effects
- * - Dialog box showing item descriptions
- * - Fully responsive design
- * 
- * Data is fetched from PokeAPI GraphQL (beta)
- */
 const Market: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [pokeballSprite, setPokeballSprite] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isLoadingItemFromUrl, setIsLoadingItemFromUrl] = useState<boolean>(false);
 
   const {
     categories,
     categoriesLoading,
     categoriesError,
     refetchCategories,
-    
+
     selectedCategory,
     setSelectedCategory,
-    
+
     items,
     itemsLoading,
     itemsError,
     refetchItems,
   } = usePokeMart();
+
+  // Handle URL search params for item navigation
+  useEffect(() => {
+    const itemName = searchParams.get("item");
+    if (itemName && categories.length > 0 && !isLoadingItemFromUrl) {
+      setIsLoadingItemFromUrl(true);
+
+      const loadItemFromUrl = async () => {
+        try {
+          const result = await marketService.searchItemByName(itemName);
+          if (result) {
+            // Set the correct category
+            setSelectedCategory(result.categoryId);
+            // Set the selected item after a brief delay to allow items to load
+            setTimeout(() => {
+              setSelectedItem(result.item);
+              // Clear the search param after navigation
+              setSearchParams({}, { replace: true });
+            }, 500);
+          }
+        } catch (error) {
+          console.error("Failed to load item from URL:", error);
+        } finally {
+          setIsLoadingItemFromUrl(false);
+        }
+      };
+
+      loadItemFromUrl();
+    }
+  }, [searchParams, categories, isLoadingItemFromUrl, setSelectedCategory, setSearchParams]);
 
   // Scroll to top functionality
   useEffect(() => {
@@ -97,7 +118,7 @@ const Market: React.FC = () => {
     <>
       <ShopContainer>
         <Header title="Poké Mart" subtitle="Stock up on items for your journey" />
-        
+
         <ShopInner>
           {/* Main Content: Sidebar + Items */}
           <MainContent>
@@ -109,10 +130,10 @@ const Market: React.FC = () => {
                 </svg>
                 Categories
               </SidebarToggle>
-              
+
               {/* Overlay for mobile */}
               <SidebarOverlay $isOpen={sidebarOpen} onClick={() => setSidebarOpen(false)} />
-              
+
               {/* Left: Category Sidebar */}
               <CategoryTabs
                 categories={categories}
@@ -124,7 +145,7 @@ const Market: React.FC = () => {
                 isOpen={sidebarOpen}
               />
             </SidebarContainer>
-            
+
             {/* Right: Content Area */}
             <ContentArea>
               {/* Items Grid */}
@@ -138,10 +159,10 @@ const Market: React.FC = () => {
                   onRetry={refetchItems}
                 />
               </ItemsContainer>
-              
+
               {/* Description Panel (Desktop Sidebar / Mobile Modal) */}
               <DescriptionPanel>
-                <ItemDescriptionBox 
+                <ItemDescriptionBox
                   item={selectedItem}
                   categoryId={selectedCategory}
                   onClose={() => setSelectedItem(null)}
