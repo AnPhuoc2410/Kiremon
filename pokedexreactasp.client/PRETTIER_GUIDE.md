@@ -102,17 +102,24 @@ Tạo file `.vscode/settings.json` trong thư mục dự án:
 - **Format Document**: `Shift+Alt+F` (Windows) hoặc `Shift+Option+F` (Mac)
 - **Format Selection**: `Ctrl+K Ctrl+F` (Windows) hoặc `Cmd+K Cmd+F` (Mac)
 
-### 4. Pre-commit Hook (Tự động format trước khi commit)
+### 4. Pre-commit Hook (Tự động format trước khi commit) ✅ ĐÃ CÀI ĐẶT
 
-#### Cài đặt Husky và lint-staged:
+**Husky đã được cấu hình sẵn trong dự án!** Mỗi khi bạn commit code:
 
+1. Husky sẽ tự động chạy `lint-staged`
+2. `lint-staged` sẽ format tất cả file đang staged bằng Prettier
+3. ESLint sẽ tự động fix các lỗi có thể sửa được
+4. Nếu tất cả OK → Commit thành công
+5. Nếu có lỗi → Commit bị hủy, bạn cần fix lỗi trước
+
+#### Cấu hình hiện tại:
+
+**`.husky/pre-commit`:**
 ```bash
-npm install --save-dev husky lint-staged
-npx husky install
+npx lint-staged
 ```
 
-#### Thêm vào `package.json`:
-
+**`package.json`:**
 ```json
 {
   "lint-staged": {
@@ -127,10 +134,26 @@ npx husky install
 }
 ```
 
-#### Tạo pre-commit hook:
+#### Test Husky:
 
 ```bash
-npx husky add .husky/pre-commit "npx lint-staged"
+# 1. Tạo thay đổi
+echo "const test={a:1}" > test.ts
+
+# 2. Add file
+git add test.ts
+
+# 3. Commit - Husky sẽ tự động format
+git commit -m "test husky"
+
+# 4. File sẽ được format thành:
+# const test = { a: 1 };
+```
+
+#### Bỏ qua pre-commit hook (không khuyến khích):
+
+```bash
+git commit -m "message" --no-verify
 ```
 
 ## 📝 Ví Dụ Sử Dụng
