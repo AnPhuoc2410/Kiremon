@@ -25,7 +25,6 @@ interface AboutTabProps {
       version: { name: string; url: string };
     }>;
   }>;
-  // New props for additional info
   habitat?: string;
   color?: string;
   shape?: string;
@@ -59,8 +58,6 @@ const AboutTab: React.FC<AboutTabProps> = ({
   color,
   shape,
   generation,
-  isLegendary,
-  isMythical,
 }) => {
   const navigate = useNavigate();
   const [formSprites, setFormSprites] = useState<Record<string, FormSprite>>(
@@ -108,15 +105,23 @@ const AboutTab: React.FC<AboutTabProps> = ({
     const loadHeldItemSprites = async () => {
       if (heldItems && heldItems.length > 0) {
         setIsLoadingHeldItems(true);
-        const itemNames = heldItems.map((item) => item.item.name);
-        const sprites = await pokeItemService.getHeldItemSprites(itemNames);
-        setHeldItemSprites(sprites);
-        setIsLoadingHeldItems(false);
+        try {
+          const itemNames = heldItems.map((item) => item.item.name);
+          const sprites = await pokeItemService.getHeldItemSprites(itemNames);
+          setHeldItemSprites(sprites);
+        } catch (error) {
+          console.error("Error loading held item sprites:", error);
+          setHeldItemSprites([]);
+        } finally {
+          setIsLoadingHeldItems(false);
+        }
       }
     };
 
     loadHeldItemSprites();
-  }, [heldItems]);
+    // Use stable string dependency to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(heldItems?.map((item) => item.item.name))]);
 
   return (
     <>
