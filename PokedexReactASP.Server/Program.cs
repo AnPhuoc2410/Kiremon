@@ -108,6 +108,14 @@ namespace PokedexReactASP.Server
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
 
+            // TCG API Client
+            builder.Services.AddHttpClient("TcgApi", client =>
+            {
+                client.BaseAddress = new Uri("https://api.pokemontcg.io/v2/");
+                client.DefaultRequestHeaders.Add("User-Agent", "Kiremon/1.0");
+                client.Timeout = TimeSpan.FromSeconds(60); // Explicit timeout
+            });
+
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
