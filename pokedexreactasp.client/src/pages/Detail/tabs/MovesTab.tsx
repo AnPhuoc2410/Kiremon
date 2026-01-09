@@ -18,6 +18,10 @@ import {
   IconDroplet,
   IconFlame,
   IconHeart,
+  IconSnowflake,
+  IconBiohazard,
+  IconZzz,
+  IconQuestionMark,
 } from "@tabler/icons-react";
 import * as S from "./MovesTab.style";
 import { MoveDetailData } from "../../../hooks/queries";
@@ -96,6 +100,72 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
         color: "#6366f1",
       });
     }
+    if (move.meta.ailment) {
+      let icon = <IconAlertTriangle size={14} />;
+      let color = "#eab308";
+      const name = move.meta.ailment.name;
+
+      if (name === "burn") {
+        icon = <IconFlame size={14} />;
+        color = "#ef4444";
+      } else if (name === "freeze") {
+        icon = <IconSnowflake size={14} />;
+        color = "#0ea5e9";
+      } else if (name === "paralysis") {
+        icon = <IconBolt size={14} />;
+        color = "#eab308";
+      } else if (name === "poison" || name === "toxic") {
+        icon = <IconBiohazard size={14} />;
+        color = "#a855f7";
+      } else if (name === "sleep") {
+        icon = <IconZzz size={14} />;
+        color = "#6366f1";
+      } else if (name === "confusion") {
+        icon = <IconQuestionMark size={14} />;
+        color = "#ec4899";
+      }
+
+      const chance = move.meta.ailment.chance ?? move.effectChance;
+      const chanceLabel = chance && chance > 0 ? `${chance}% ` : "";
+
+      badges.push({
+        icon,
+        label: `${chanceLabel}${name.charAt(0).toUpperCase() + name.slice(1)}`,
+        color,
+      });
+    }
+  }
+
+  // Stat changes
+  if (move.statChanges && move.statChanges.length > 0) {
+    move.statChanges.forEach((statChange) => {
+      let icon = <IconArrowUp size={14} />;
+      let color = statChange.change > 0 ? "#16a34a" : "#dc2626";
+
+      // Attempt to map stat to an icon
+      if (statChange.stat.includes("attack")) {
+        icon = <IconSword size={14} />;
+        color = statChange.change > 0 ? "#ef4444" : "#991b1b";
+      } else if (statChange.stat.includes("defense")) {
+        icon = <IconShield size={14} />;
+        color = statChange.change > 0 ? "#3b82f6" : "#1e40af";
+      } else if (statChange.stat.includes("speed")) {
+        icon = <IconBolt size={14} />;
+        color = statChange.change > 0 ? "#eab308" : "#854d0e";
+      }
+
+      // Use effect chance for stat changes if available (e.g. 10% chance to lower defense)
+      const chance = move.effectChance;
+      const chanceLabel = chance && chance < 100 ? `${chance}% ` : "";
+
+      badges.push({
+        icon,
+        label: `${chanceLabel}${statChange.stat.replace("-", " ")} ${
+          statChange.change > 0 ? "+" : ""
+        }${statChange.change}`,
+        color,
+      });
+    });
   }
 
   return badges;

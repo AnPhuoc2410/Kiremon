@@ -567,27 +567,39 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
 export const EffectBadgesRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
 `;
 
-export const EffectBadge = styled.span<{ badgeColor: string }>`
+export const EffectBadge = styled.span<{
+  badgeColor: string;
+  variant?: "outlined" | "filled";
+}>`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: ${({ badgeColor }) => `${badgeColor}18`};
-  color: ${({ badgeColor }) => badgeColor};
-  text-transform: capitalize;
-  border: 1px solid ${({ badgeColor }) => `${badgeColor}30`};
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: ${({ badgeColor, variant }) =>
+    variant === "filled" ? badgeColor : `${badgeColor}15`};
+  color: ${({ badgeColor, variant }) =>
+    variant === "filled" ? "#ffffff" : badgeColor};
+  border: 1px solid
+    ${({ badgeColor, variant }) =>
+      variant === "filled" ? "transparent" : `${badgeColor}40`};
+  transition: all 0.2s ease;
 
   svg {
     flex-shrink: 0;
     width: 14px;
     height: 14px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px ${({ badgeColor }) => `${badgeColor}30`};
   }
 `;
 

@@ -21,6 +21,7 @@ export interface PokemonMove {
     accuracy: number | null;
     pp: number | null;
     priority: number;
+    move_effect_chance: number | null;
     type: {
       name: string;
     };
@@ -46,6 +47,16 @@ export interface PokemonMove {
       healing: number;
       min_hits: number | null;
       max_hits: number | null;
+      movemetaailment: {
+        name: string;
+      } | null;
+      ailment_chance: number;
+    }>;
+    movemetastatchanges: Array<{
+      change: number;
+      stat: {
+        name: string;
+      };
     }>;
   };
   level: number;
@@ -338,6 +349,7 @@ const GET_POKEMON_DETAIL_QUERY = `
           accuracy
           pp
           priority
+          move_effect_chance
           type {
             name
           }
@@ -363,6 +375,16 @@ const GET_POKEMON_DETAIL_QUERY = `
             healing
             min_hits
             max_hits
+            movemetaailment {
+              name
+            }
+            ailment_chance
+          }
+          movemetastatchanges {
+            change
+            stat {
+              name
+            }
           }
         }
       }

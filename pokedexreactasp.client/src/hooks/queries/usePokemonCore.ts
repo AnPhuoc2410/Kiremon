@@ -57,7 +57,16 @@ export interface MoveDetailData {
     healing: number;
     minHits: number | null;
     maxHits: number | null;
+    ailment: {
+      name: string;
+      chance: number | null;
+    } | null;
   } | null;
+  effectChance: number | null;
+  statChanges: Array<{
+    change: number;
+    stat: string;
+  }>;
 }
 
 /** Generate fallback sprite URLs from Pokemon ID when GraphQL data is missing */
@@ -152,7 +161,23 @@ function transformPokemonDetail(
       healing: meta.healing || 0,
       minHits: meta.min_hits,
       maxHits: meta.max_hits,
+      ailment:
+        meta.movemetaailment && meta.movemetaailment.name !== "none"
+          ? {
+              name: meta.movemetaailment.name,
+              chance: meta.ailment_chance || move.move.move_effect_chance,
+            }
+          : null,
     };
+  };
+
+  const getStatChanges = (move: PokemonMove) => {
+    return (
+      move.move.movemetastatchanges?.map((sc) => ({
+        change: sc.change,
+        stat: sc.stat.name,
+      })) || []
+    );
   };
 
   const getDescription = (move: PokemonMove): string | null => {
@@ -182,6 +207,8 @@ function transformPokemonDetail(
       generation: m.move.generation?.id || null,
       description: getDescription(m),
       meta: getMeta(m),
+      effectChance: m.move.move_effect_chance,
+      statChanges: getStatChanges(m),
     }),
   );
 
