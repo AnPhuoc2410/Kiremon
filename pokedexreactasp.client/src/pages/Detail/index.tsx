@@ -38,7 +38,6 @@ import SpritesTab from "./tabs/SpritesTab";
 import StatsTab from "./tabs/StatsTab";
 import TrainingTab from "./tabs/TrainingTab";
 import VarietiesTab from "./tabs/VarietiesTab";
-import TCGTab from "./tabs/TCGTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { skillColor } from "../../components/utils";
@@ -1098,13 +1097,11 @@ const DetailPokemon = () => {
             <SpritesTab sprites={sprites} name={name} />
           )}
 
+
           {/* Varieties Tab */}
           {activeTab === "varieties" && (
             <VarietiesTab varieties={varieties} currentPokemonName={name} />
           )}
-
-          {/* TCG Tab */}
-          {activeTab === "tcg" && <TCGTab />}
         </T.Content>
       </T.Page>
 
