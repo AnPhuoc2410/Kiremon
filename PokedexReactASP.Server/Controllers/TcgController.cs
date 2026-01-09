@@ -26,7 +26,7 @@ namespace PokedexReactASP.Server.Controllers
         {
             try
             {
-                var apiKey = _configuration["TcgApiKey"] ?? "b9a3a622-75e4-4cd2-acc3-8b053cf4d6f4";
+                var apiKey = _configuration["TcgApiKey"];
                 
                 var queryParams = new Dictionary<string, string?>
                 {
