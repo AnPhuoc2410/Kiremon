@@ -19,6 +19,7 @@ using PokedexReactASP.Server.Seed;
 using System.Text;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using PokedexReactASP.Application.Common.Helpers;
 
 namespace PokedexReactASP.Server
 {
@@ -116,6 +117,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddSingleton<IShinyRollerService, ShinyRollerService>();
             builder.Services.AddSingleton<INatureGeneratorService, NatureGeneratorService>();
             builder.Services.AddSingleton<ICatchRateCalculatorService, CatchRateCalculatorService>();
+            builder.Services.AddSingleton<PokeItemMapper>();
             builder.Services.AddScoped<IPokemonFactoryService, PokemonFactoryService>();
             
             // Presence Tracker (SignalR)
@@ -125,6 +127,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<ISocialAuthService, SocialVerifyService>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
             builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
+            builder.Services.Configure<ItemSystemSettings>(builder.Configuration.GetSection(ItemSystemSettings.SectionName));
             builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
             {
                 client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
