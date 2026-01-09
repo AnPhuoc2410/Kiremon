@@ -1,15 +1,31 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Header, Loading, Modal, Button, Text, Navbar } from "../../components/ui";
+import {
+  Header,
+  Loading,
+  Modal,
+  Button,
+  Text,
+  Navbar,
+} from "../../components/ui";
 import { useDebounce } from "../../components/hooks";
 import { useAuth } from "../../contexts/AuthContext";
 import { friendService } from "../../services";
 import { presenceHub } from "../../services/signalr/presence.hub";
 import { FriendDto, FriendsSummaryDto } from "../../types/friend.types";
 import * as S from "./index.style";
-import { BattleIcon, CloseIcon, DeleteIcon, FriendsIcon, GiftIcon, MessageIcon, SearchIcon, TradeIcon, ViewPokemonIcon } from "./icons";
-
+import {
+  BattleIcon,
+  CloseIcon,
+  DeleteIcon,
+  FriendsIcon,
+  GiftIcon,
+  MessageIcon,
+  SearchIcon,
+  TradeIcon,
+  ViewPokemonIcon,
+} from "./icons";
 
 interface FriendPokemon {
   id: number;
@@ -31,7 +47,9 @@ const FriendsPage: React.FC = () => {
   const [selectedFriend, setSelectedFriend] = useState<FriendDto | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<FriendDto | null>(null);
   const [showGiftModal, setShowGiftModal] = useState<FriendDto | null>(null);
-  const [showPokemonModal, setShowPokemonModal] = useState<FriendDto | null>(null);
+  const [showPokemonModal, setShowPokemonModal] = useState<FriendDto | null>(
+    null,
+  );
   const [friendPokemon, setFriendPokemon] = useState<FriendPokemon[]>([]);
   const [loadingPokemon, setLoadingPokemon] = useState(false);
 
@@ -64,23 +82,23 @@ const FriendsPage: React.FC = () => {
       // Subscribe to events FIRST to avoid missing messages
       const unsubOnline = presenceHub.onUserOnline((userId) => {
         setFriends((prev) =>
-          prev.map((f) =>
-            f.userId === userId ? { ...f, isOnline: true } : f
-          )
+          prev.map((f) => (f.userId === userId ? { ...f, isOnline: true } : f)),
         );
         setSummary((prev) =>
-          prev ? { ...prev, onlineFriends: prev.onlineFriends + 1 } : null
+          prev ? { ...prev, onlineFriends: prev.onlineFriends + 1 } : null,
         );
       });
 
       const unsubOffline = presenceHub.onUserOffline((userId) => {
         setFriends((prev) =>
           prev.map((f) =>
-            f.userId === userId ? { ...f, isOnline: false } : f
-          )
+            f.userId === userId ? { ...f, isOnline: false } : f,
+          ),
         );
         setSummary((prev) =>
-          prev ? { ...prev, onlineFriends: Math.max(0, prev.onlineFriends - 1) } : null
+          prev
+            ? { ...prev, onlineFriends: Math.max(0, prev.onlineFriends - 1) }
+            : null,
         );
       });
 
@@ -90,13 +108,15 @@ const FriendsPage: React.FC = () => {
         const onlineIds = await presenceHub.getOnlineFriends();
 
         if (onlineIds && onlineIds.length > 0) {
-          setFriends(prev => prev.map(f => {
-            const isOnline = onlineIds.includes(f.userId);
-            return { ...f, isOnline };
-          }));
+          setFriends((prev) =>
+            prev.map((f) => {
+              const isOnline = onlineIds.includes(f.userId);
+              return { ...f, isOnline };
+            }),
+          );
 
           // Recalculate summary if needed, but summary endpoint might already have it?
-          // Summary endpoint comes from HTTP API, which might rely on DB LastActive or similar, 
+          // Summary endpoint comes from HTTP API, which might rely on DB LastActive or similar,
           // but PresenceTracker is in-memory.
           // So we should rely on the SignalR result for the most accurate "Online Now" count.
           setSummary((prev) => {
@@ -143,12 +163,51 @@ const FriendsPage: React.FC = () => {
       // TODO: Replace with actual API call to get friend's Pokemon
       // Mock data for now
       const mockPokemon: FriendPokemon[] = [
-        { id: 1, pokemonId: 25, name: "Pikachu", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png", nickname: "Sparky" },
-        { id: 2, pokemonId: 6, name: "Charizard", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png", nickname: "Blaze" },
-        { id: 3, pokemonId: 9, name: "Blastoise", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png" },
-        { id: 4, pokemonId: 150, name: "Mewtwo", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" },
-        { id: 5, pokemonId: 143, name: "Snorlax", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png", nickname: "Big Boy" },
-        { id: 6, pokemonId: 131, name: "Lapras", sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/131.png" },
+        {
+          id: 1,
+          pokemonId: 25,
+          name: "Pikachu",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+          nickname: "Sparky",
+        },
+        {
+          id: 2,
+          pokemonId: 6,
+          name: "Charizard",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
+          nickname: "Blaze",
+        },
+        {
+          id: 3,
+          pokemonId: 9,
+          name: "Blastoise",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
+        },
+        {
+          id: 4,
+          pokemonId: 150,
+          name: "Mewtwo",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png",
+        },
+        {
+          id: 5,
+          pokemonId: 143,
+          name: "Snorlax",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png",
+          nickname: "Big Boy",
+        },
+        {
+          id: 6,
+          pokemonId: 131,
+          name: "Lapras",
+          sprite:
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/131.png",
+        },
       ];
       setFriendPokemon(mockPokemon);
     } catch (error) {
@@ -183,8 +242,12 @@ const FriendsPage: React.FC = () => {
   // Filter friends by debounced search
   const filteredFriends = friends.filter(
     (friend) =>
-      friend.username.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-      friend.nickname?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      friend.username
+        .toLowerCase()
+        .includes(debouncedSearchQuery.toLowerCase()) ||
+      friend.nickname
+        ?.toLowerCase()
+        .includes(debouncedSearchQuery.toLowerCase()),
   );
 
   // Separate online and offline friends
@@ -382,7 +445,10 @@ const FriendsPage: React.FC = () => {
 
             <S.FriendDetailAvatar $online={selectedFriend.isOnline}>
               {selectedFriend.avatarUrl ? (
-                <img src={selectedFriend.avatarUrl} alt={selectedFriend.username} />
+                <img
+                  src={selectedFriend.avatarUrl}
+                  alt={selectedFriend.username}
+                />
               ) : (
                 selectedFriend.username.charAt(0).toUpperCase()
               )}
@@ -400,7 +466,9 @@ const FriendsPage: React.FC = () => {
             </S.FriendDetailLevel>
 
             <S.FriendDetailStatus $online={selectedFriend.isOnline}>
-              {selectedFriend.isOnline ? "● Online" : `Last seen ${getTimeAgo(selectedFriend.lastActiveDate)}`}
+              {selectedFriend.isOnline
+                ? "● Online"
+                : `Last seen ${getTimeAgo(selectedFriend.lastActiveDate)}`}
             </S.FriendDetailStatus>
 
             <S.FriendDetailStats>
@@ -413,7 +481,9 @@ const FriendsPage: React.FC = () => {
                 <span className="label">Trades</span>
               </S.DetailStat>
               <S.DetailStat>
-                <span className="value">{selectedFriend.battlesWithFriend}</span>
+                <span className="value">
+                  {selectedFriend.battlesWithFriend}
+                </span>
                 <span className="label">Battles</span>
               </S.DetailStat>
             </S.FriendDetailStats>
@@ -423,27 +493,38 @@ const FriendsPage: React.FC = () => {
             </S.FriendDetailInfo>
 
             <S.FriendDetailActions>
-              <S.ActionButton $variant="primary" onClick={() => {
-                const friend = selectedFriend;
-                setSelectedFriend(null);
-                setShowGiftModal(friend);
-              }}>
+              <S.ActionButton
+                $variant="primary"
+                onClick={() => {
+                  const friend = selectedFriend;
+                  setSelectedFriend(null);
+                  setShowGiftModal(friend);
+                }}
+              >
                 <GiftIcon /> Send Gift
               </S.ActionButton>
-              <S.ActionButton onClick={() => {
-                const friend = selectedFriend;
-                setSelectedFriend(null);
-                viewFriendPokemon(friend);
-              }}>
+              <S.ActionButton
+                onClick={() => {
+                  const friend = selectedFriend;
+                  setSelectedFriend(null);
+                  viewFriendPokemon(friend);
+                }}
+              >
                 <ViewPokemonIcon /> View Pokémon
               </S.ActionButton>
-              <S.ActionButton onClick={() => toast("Trade feature coming soon! 🔄")}>
+              <S.ActionButton
+                onClick={() => toast("Trade feature coming soon! 🔄")}
+              >
                 <TradeIcon /> Trade
               </S.ActionButton>
-              <S.ActionButton onClick={() => toast("Battle feature coming soon! ⚔️")}>
+              <S.ActionButton
+                onClick={() => toast("Battle feature coming soon! ⚔️")}
+              >
                 <BattleIcon /> Battle
               </S.ActionButton>
-              <S.ActionButton onClick={() => toast("Message feature coming soon! 💬")}>
+              <S.ActionButton
+                onClick={() => toast("Message feature coming soon! 💬")}
+              >
                 <MessageIcon /> Message
               </S.ActionButton>
               <S.ActionButton
@@ -474,32 +555,50 @@ const FriendsPage: React.FC = () => {
 
             <S.GiftGrid>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+                  alt="Poké Ball"
+                />
                 <span>Poké Ball</span>
                 <span className="quantity">x5</span>
               </S.GiftItem>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png"
+                  alt="Great Ball"
+                />
                 <span>Great Ball</span>
                 <span className="quantity">x3</span>
               </S.GiftItem>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png"
+                  alt="Ultra Ball"
+                />
                 <span>Ultra Ball</span>
                 <span className="quantity">x1</span>
               </S.GiftItem>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png" alt="Potion" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png"
+                  alt="Potion"
+                />
                 <span>Potion</span>
                 <span className="quantity">x10</span>
               </S.GiftItem>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png" alt="Revive" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png"
+                  alt="Revive"
+                />
                 <span>Revive</span>
                 <span className="quantity">x2</span>
               </S.GiftItem>
               <S.GiftItem onClick={() => sendGift(showGiftModal)}>
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png" alt="Rare Candy" />
+                <img
+                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png"
+                  alt="Rare Candy"
+                />
                 <span>Rare Candy</span>
                 <span className="quantity">x1</span>
               </S.GiftItem>
@@ -534,7 +633,9 @@ const FriendsPage: React.FC = () => {
                 {friendPokemon.map((pokemon) => (
                   <S.PokemonCard key={pokemon.id}>
                     <img src={pokemon.sprite} alt={pokemon.name} />
-                    <span className="name">{pokemon.nickname || pokemon.name}</span>
+                    <span className="name">
+                      {pokemon.nickname || pokemon.name}
+                    </span>
                     {pokemon.nickname && (
                       <span className="species">{pokemon.name}</span>
                     )}

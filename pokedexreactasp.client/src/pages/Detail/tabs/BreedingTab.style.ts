@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export const Container = styled.div`
   display: flex;
@@ -22,7 +22,7 @@ export const SectionTitle = styled.div`
   h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1F2937;
+    color: #1f2937;
     margin: 0;
     text-transform: uppercase;
   }
@@ -56,7 +56,7 @@ export const EggGroupIcon = styled.span`
 export const EggGroupName = styled.span`
   font-size: 1rem;
   font-weight: 600;
-  color: #1E40AF;
+  color: #1e40af;
   text-transform: capitalize;
 `;
 
@@ -75,16 +75,16 @@ export const GenderBar = styled.div`
 `;
 
 export const MaleBar = styled.div<{ percentage: number }>`
-  width: ${props => props.percentage}%;
-  background-color: #3B82F6;
+  width: ${(props) => props.percentage}%;
+  background-color: #3b82f6;
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
 export const FemaleBar = styled.div<{ percentage: number }>`
-  width: ${props => props.percentage}%;
-  background-color: #EC4899;
+  width: ${(props) => props.percentage}%;
+  background-color: #ec4899;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,7 +94,7 @@ export const GenderLabel = styled.span<{ show: boolean }>`
   font-size: 1rem;
   font-weight: 700;
   color: white;
-  display: ${props => props.show ? 'block' : 'none'};
+  display: ${(props) => (props.show ? "block" : "none")};
 `;
 
 export const GenderLegend = styled.div`
@@ -118,13 +118,13 @@ export const GenderLegendItem = styled.div`
 
 export const MaleIcon = styled.span`
   font-size: 1.25rem;
-  color: #3B82F6;
+  color: #3b82f6;
   font-weight: bold;
 `;
 
 export const FemaleIcon = styled.span`
   font-size: 1.25rem;
-  color: #EC4899;
+  color: #ec4899;
   font-weight: bold;
 `;
 
@@ -157,33 +157,33 @@ export const InfoCard = styled.div`
 export const InfoLabel = styled.div`
   font-size: 0.85rem;
   font-weight: 600;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: uppercase;
 `;
 
 export const InfoValue = styled.div`
   font-size: 1.75rem;
   font-weight: 800;
-  color: #1F2937;
+  color: #1f2937;
   line-height: 1;
 `;
 
 export const InfoDescription = styled.div`
   font-size: 0.85rem;
-  color: #9CA3AF;
+  color: #9ca3af;
   margin-top: 4px;
 `;
 
 export const HappinessBar = styled.div`
   width: 100%;
   height: 10px;
-  background-color: #E5E7EB;
+  background-color: #e5e7eb;
 `;
 
 export const HappinessFill = styled.div<{ happiness: number }>`
   height: 100%;
-  width: ${props => (props.happiness / 255) * 100}%;
-  background-color: #F59E0B;
+  width: ${(props) => (props.happiness / 255) * 100}%;
+  background-color: #f59e0b;
 `;
 
 export const TipsCard = styled.div`
@@ -213,19 +213,19 @@ export const TipContent = styled.div`
 export const TipTitle = styled.div`
   font-size: 1rem;
   font-weight: 700;
-  color: #B45309;
+  color: #b45309;
 `;
 
 export const TipText = styled.div`
   font-size: 0.9rem;
-  color: #78350F;
+  color: #78350f;
   line-height: 1.4;
 `;
 
 export const NoData = styled.div`
   text-align: center;
   padding: 32px 16px;
-  color: #9CA3AF;
+  color: #9ca3af;
 
   p {
     font-size: 1rem;

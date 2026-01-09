@@ -21,7 +21,6 @@ const initialState: IState = {
   pokemonTypes: [],
 };
 
-
 const GlobalContext = createContext<IGlobalContext>({
   state: initialState,
   setState: () => {},

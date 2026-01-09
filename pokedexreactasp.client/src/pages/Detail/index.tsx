@@ -1,60 +1,55 @@
-import toast from "react-hot-toast";
 import styled from "@emotion/styled";
-import { useParams, Link } from "react-router-dom";
-import { clearTimeout, setTimeout } from "worker-timers";
-import { LazyLoadImage } from "react-lazy-load-image-component";
-import { FormEvent, ChangeEvent, useEffect, useState, createRef, useRef } from "react";
-
-import { useGlobalContext, useAuth } from "../../contexts";
-import { collectionService } from "../../services";
 import {
-  IPokemonDetailResponse,
-  IPokemonSpecies,
-  EvolutionItem,
-  RelatedPokemonItem,
-  PokemonForm,
-  PokemonSprites
-} from "../../types/pokemon";
-import { CatchAttemptResult, PokeballType } from "../../types/pokemon.enums";
-import { CatchAttemptResultDto, CaughtPokemonDto } from "../../types/userspokemon.types";
+  ChangeEvent,
+  createRef,
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import toast from "react-hot-toast";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { Link, useParams } from "react-router-dom";
+import { clearTimeout, setTimeout } from "worker-timers";
+
 import {
   Button,
+  Input,
+  Loading,
+  Modal,
   Navbar,
   Text,
-  Loading,
   TypeIcon,
-  Input,
-  Modal,
-  EvolutionChain,
-  RelatedPokemon
 } from "../../components/ui";
+import { useAuth, useGlobalContext } from "../../contexts";
+import { collectionService } from "../../services";
+import { CatchAttemptResult, PokeballType } from "../../types/pokemon.enums";
+import {
+  CatchAttemptResultDto,
+  CaughtPokemonDto,
+} from "../../types/userspokemon.types";
 
 // Import tab components
 import AboutTab from "./tabs/AboutTab";
-import StatsTab from "./tabs/StatsTab";
+import BreedingTab from "./tabs/BreedingTab";
 import EvolutionTab from "./tabs/EvolutionTab";
 import MovesTab from "./tabs/MovesTab";
 import SpritesTab from "./tabs/SpritesTab";
-import VarietiesTab from "./tabs/VarietiesTab";
+import StatsTab from "./tabs/StatsTab";
 import TrainingTab from "./tabs/TrainingTab";
-import BreedingTab from "./tabs/BreedingTab";
+import VarietiesTab from "./tabs/VarietiesTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
-import * as T from "./index.style";
-import {
-  getDetailPokemon,
-  getPokemonSpecies,
-  getEvolutionChain,
-  getRelatedPokemonByGen
-} from "../../services/pokemon";
 import { skillColor } from "../../components/utils";
 import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
-
-// Define interfaces for the component's state
-type TypesPokemon = { type: { name: string } };
-type MovesPokemon = { move: { name: string } };
-
-
+// Use new TanStack Query hooks for optimized data fetching
+import {
+  usePokemonCore,
+  usePokemonEvolution,
+  useRelatedPokemon,
+  LANGUAGE_IDS,
+} from "../../hooks/queries";
+import * as T from "./index.style";
 
 const PokemonAvatar = styled(LazyLoadImage)`
   image-rendering: pixelated;
@@ -67,65 +62,86 @@ const DetailPokemon = () => {
 
   const throwBallTimeout = useRef<NodeJS.Timeout | number>(0);
 
-  const [sprite, setSprite] = useState<string>("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [moves, setMoves] = useState<string[]>([]);
+  // Track active tab for lazy loading
+  const [activeTab, setActiveTab] = useState<string>("about");
+
+  // Use TanStack Query hooks for optimized data fetching
+  const {
+    pokemonId,
+    types,
+    typeNames,
+    moves,
+    moveDetails,
+    stats,
+    abilities,
+    sprite,
+    sprites,
+    height,
+    weight,
+    baseExperience,
+    heldItems,
+    specialForms,
+    speciesData: species,
+    captureRate,
+    baseHappiness,
+    flavorText,
+    varieties,
+    eggGroups,
+    habitat,
+    growthRate,
+    generation,
+    generationId,
+    evolutionChainId,
+    isLegendary,
+    isMythical,
+    shape,
+    color,
+    hatchCounter,
+    genderRate,
+    isLoading,
+  } = usePokemonCore(name, LANGUAGE_IDS.ENGLISH);
+
+  // Lazy load evolution data only when Evolution tab is active
+  const { evolutionChain, isLoading: isLoadingEvolution } = usePokemonEvolution(
+    evolutionChainId,
+    activeTab === "evolution",
+  );
+
+  // Lazy load related Pokemon only when About tab is active
+  const { relatedPokemon, isLoading: isLoadingRelated } = useRelatedPokemon(
+    generationId,
+    name,
+    LANGUAGE_IDS.ENGLISH,
+    activeTab === "about",
+  );
+
+  // Local UI states (not from GraphQL)
   const [nickname, setNickname] = useState<string>("");
   const [navHeight, setNavHeight] = useState<number>(0);
-  const [stats, setStats] = useState<IPokemonDetailResponse["stats"]>([]);
-  const [abilities, setAbilities] = useState<IPokemonDetailResponse["abilities"]>([]);
-  const [pokemonId, setPokemonId] = useState<number>(0);
-  const [evolutionChain, setEvolutionChain] = useState<EvolutionItem[]>([]);
-  const [relatedPokemon, setRelatedPokemon] = useState<RelatedPokemonItem[]>([]);
-  const [specialForms, setSpecialForms] = useState<PokemonForm[]>([]);
-  const [species, setSpecies] = useState<IPokemonSpecies | null>(null);
-  const [isLoadingEvolution, setIsLoadingEvolution] = useState<boolean>(false);
-  const [isLoadingRelated, setIsLoadingRelated] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>("about");
-  const [heldItems, setHeldItems] = useState<IPokemonDetailResponse["held_items"]>([]);
-  const [audioRef] = useState<HTMLAudioElement | null>(typeof Audio !== 'undefined' ? new Audio() : null);
+  const [audioRef] = useState<HTMLAudioElement | null>(
+    typeof Audio !== "undefined" ? new Audio() : null,
+  );
   const [isPlayingCry, setIsPlayingCry] = useState<boolean>(false);
   const [audioProgress, setAudioProgress] = useState<number>(0);
-  const [audioDuration, setAudioDuration] = useState<number>(0);
-  const [audioVisualization, setAudioVisualization] = useState<number[]>(Array(10).fill(1));
+  const [audioVisualization, setAudioVisualization] = useState<number[]>(
+    Array(10).fill(1),
+  );
 
-  // New state variables for additional Pokemon data
-  const [height, setHeight] = useState<number>(0);
-  const [weight, setWeight] = useState<number>(0);
-  const [baseExperience, setBaseExperience] = useState<number>(0);
-  const [captureRate, setCaptureRate] = useState<number>(0);
-  const [baseHappiness, setBaseHappiness] = useState<number>(0);
-  const [flavorText, setFlavorText] = useState<string>("");
-  const [sprites, setSprites] = useState<PokemonSprites>({ front_default: "" });
-  const [varieties, setVarieties] = useState<IPokemonSpecies["varieties"]>([]);
-
-  // Additional Pokemon species information
-  const [eggGroups, setEggGroups] = useState<string[]>([]);
-  const [habitat, setHabitat] = useState<string>("");
-  const [growthRate, setGrowthRate] = useState<string>("");
-  const [generation, setGeneration] = useState<string>("");
-  const [isLegendary, setIsLegendary] = useState<boolean>(false);
-  const [isMythical, setIsMythical] = useState<boolean>(false);
-  const [shape, setShape] = useState<string>("");
-  const [color, setColor] = useState<string>("");
-  const [hatchCounter, setHatchCounter] = useState<number>(0);
-  const [genderRate, setGenderRate] = useState<number>(-1);
-
+  // Catch-related states
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isCaught, setIsCaught] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCatching, setIsCatching] = useState<boolean>(false);
-  const [imageError, setImageError] = useState<boolean>(false);
   const [fallbackLevel, setFallbackLevel] = useState<number>(0);
   const [isEndPhase, setIsEndPhase] = useState<boolean>(false);
 
   const [nicknameModal, setNicknameModal] = useState<boolean>(false);
-  const [nicknameIsValid, setNicknameIsValid] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [shakeCount, setShakeCount] = useState<number>(0);
   const [catchRatePercent, setCatchRatePercentState] = useState<number>(0);
-  const [catchAttemptResult, setCatchAttemptResult] = useState<CatchAttemptResultDto | null>(null);
-  const [caughtPokemonData, setCaughtPokemonData] = useState<CaughtPokemonDto | null>(null);
+  const [catchAttemptResult, setCatchAttemptResult] =
+    useState<CatchAttemptResultDto | null>(null);
+  const [caughtPokemonData, setCaughtPokemonData] =
+    useState<CaughtPokemonDto | null>(null);
   const [isPokemonFled, setIsPokemonFled] = useState<boolean>(false);
   const [catchResult, setCatchResult] = useState<{
     ivTotal?: number;
@@ -137,316 +153,6 @@ const DetailPokemon = () => {
   const { refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
-
-  // Helper function to process evolution chain data
-  const processEvolutionChain = async (evolutionData: any): Promise<EvolutionItem[]> => {
-    // Process chain data to extract evolution details
-    const processChain = async (chain: any, evolutions: EvolutionItem[] = []): Promise<EvolutionItem[]> => {
-      if (!chain) return evolutions;
-
-      const pokemonDetailsFrom = await getDetailPokemon(chain.species.name);
-
-      // For each evolution branch from this Pokémon
-      for (const evolution of chain.evolves_to) {
-        const pokemonDetailsTo = await getDetailPokemon(evolution.species.name);
-
-        // Get evolution trigger details
-        let triggerText = '';
-        let triggerData: EvolutionItem['trigger'] = { text: '' };
-
-        if (evolution.evolution_details && evolution.evolution_details.length > 0) {
-          const detail = evolution.evolution_details[0];
-          const textParts: string[] = [];
-
-          // Basic trigger type
-          if (detail.trigger) {
-            triggerData.type = detail.trigger.name;
-          }
-
-          // Level requirement
-          if (detail.min_level) {
-            triggerData.minLevel = detail.min_level;
-            textParts.push(`Level ${detail.min_level}`);
-          }
-
-          // Evolution item (stones, etc.)
-          if (detail.item) {
-            triggerData.item = detail.item.name;
-            textParts.push(`Use ${detail.item.name.replace(/-/g, ' ')}`);
-          }
-
-          // Held item during trade
-          if (detail.held_item) {
-            triggerData.heldItem = detail.held_item.name;
-            if (detail.trigger?.name === 'trade') {
-              textParts.push(`Trade holding ${detail.held_item.name.replace(/-/g, ' ')}`);
-            }
-          }
-
-          // Trade trigger
-          if (detail.trigger?.name === 'trade' && !detail.held_item && !detail.trade_species) {
-            textParts.push('Trade');
-          }
-
-          // Trade for specific Pokemon
-          if (detail.trade_species) {
-            triggerData.tradeSpecies = detail.trade_species.name;
-            textParts.push(`Trade for ${detail.trade_species.name}`);
-          }
-
-          // Happiness requirement
-          if (detail.min_happiness) {
-            triggerData.minHappiness = detail.min_happiness;
-            textParts.push(`Happiness ${detail.min_happiness}+`);
-          }
-
-          // Beauty requirement (Feebas -> Milotic in some games)
-          if (detail.min_beauty) {
-            triggerData.minBeauty = detail.min_beauty;
-            textParts.push(`Beauty ${detail.min_beauty}+`);
-          }
-
-          // Affection requirement (Pokemon Amie/Refresh)
-          if (detail.min_affection) {
-            triggerData.minAffection = detail.min_affection;
-            textParts.push(`Affection ${detail.min_affection}+`);
-          }
-
-          // Time of day
-          if (detail.time_of_day) {
-            triggerData.timeOfDay = detail.time_of_day;
-            textParts.push(detail.time_of_day);
-          }
-
-          // Location requirement
-          if (detail.location) {
-            triggerData.location = detail.location.name;
-            textParts.push(`at ${detail.location.name.replace(/-/g, ' ')}`);
-          }
-
-          // Known move requirement
-          if (detail.known_move) {
-            triggerData.knownMove = detail.known_move.name;
-            textParts.push(`knowing ${detail.known_move.name.replace(/-/g, ' ')}`);
-          }
-
-          // Known move type requirement
-          if (detail.known_move_type) {
-            triggerData.knownMoveType = detail.known_move_type.name;
-            textParts.push(`knowing ${detail.known_move_type.name}-type move`);
-          }
-
-          // Gender requirement
-          if (detail.gender !== null && detail.gender !== undefined) {
-            triggerData.gender = detail.gender;
-            const genderText = detail.gender === 1 ? 'Female' : 'Male';
-            textParts.push(genderText);
-          }
-
-          // Rain requirement (Sliggoo -> Goodra)
-          if (detail.needs_overworld_rain) {
-            triggerData.needsOverworldRain = true;
-            textParts.push('in rain');
-          }
-
-          // Turn upside down (Inkay -> Malamar)
-          if (detail.turn_upside_down) {
-            triggerData.turnUpsideDown = true;
-            textParts.push('upside down');
-          }
-
-          // Physical stats comparison (Tyrogue evolutions)
-          if (detail.relative_physical_stats !== null && detail.relative_physical_stats !== undefined) {
-            triggerData.relativePhysicalStats = detail.relative_physical_stats;
-            if (detail.relative_physical_stats === 1) {
-              textParts.push('Atk > Def');
-            } else if (detail.relative_physical_stats === -1) {
-              textParts.push('Def > Atk');
-            } else {
-              textParts.push('Atk = Def');
-            }
-          }
-
-          // Party species requirement (Mantyke -> Mantine needs Remoraid)
-          if (detail.party_species) {
-            triggerData.partySpecies = detail.party_species.name;
-            textParts.push(`with ${detail.party_species.name} in party`);
-          }
-
-          // Party type requirement (Pancham -> Pangoro needs Dark-type)
-          if (detail.party_type) {
-            triggerData.partyType = detail.party_type.name;
-            textParts.push(`with ${detail.party_type.name}-type in party`);
-          }
-
-          triggerText = textParts.join(', ');
-          triggerData.text = triggerText;
-        }
-
-        // Add this evolution step to our chain
-        evolutions.push({
-          from: {
-            id: pokemonDetailsFrom.id,
-            name: chain.species.name,
-            sprite: pokemonDetailsFrom.sprites.front_default
-          },
-          to: {
-            id: pokemonDetailsTo.id,
-            name: evolution.species.name,
-            sprite: pokemonDetailsTo.sprites.front_default
-          },
-          trigger: triggerText ? triggerData : undefined
-        });
-
-        // Process the next chain (recursive)
-        await processChain(evolution, evolutions);
-      }
-
-      return evolutions;
-    };
-
-    return await processChain(evolutionData.chain);
-  };
-
-  // Format flavor text by removing weird characters and line breaks
-  const formatFlavorText = (text: string) => {
-    if (!text) return "";
-    return text
-      .replace(/\f/g, ' ')
-      .replace(/\u00ad\n/g, '')
-      .replace(/\u00ad/g, '')
-      .replace(/\n/g, ' ');
-  };
-
-  // Get a random English flavor text
-  const getRandomFlavorText = (species: any) => {
-    if (!species || !species.flavor_text_entries || !species.flavor_text_entries.length) return "";
-
-    const englishEntries = species.flavor_text_entries.filter(
-      (entry: any) => entry.language.name === "en"
-    );
-
-    if (!englishEntries.length) return "";
-
-    const randomIndex = Math.floor(Math.random() * englishEntries.length);
-    return formatFlavorText(englishEntries[randomIndex].flavor_text);
-  };
-
-  async function loadPokemon() {
-    try {
-      setIsLoading(true);
-
-      const response = await getDetailPokemon(name);
-
-      // Set basic Pokemon data
-      setPokemonId(response?.id || 0);
-      setTypes(response?.types.map((type: TypesPokemon) => type.type?.name));
-      setMoves(response?.moves.map((move: MovesPokemon) => move.move?.name));
-
-      const animatedGen5 = response?.sprites.versions?.["generation-v"]?.["black-white"].animated.front_default;
-      const showdownSprite = response?.sprites.other?.showdown?.front_default;
-      const defaultSprite = response?.sprites.front_default;
-
-      setSprite(
-        animatedGen5 ||
-        defaultSprite ||
-        showdownSprite ||
-        `${POKEMON_SHOWDOWN_IMAGE}/${response?.id}.gif`
-      );
-      setStats(response?.stats);
-      setAbilities(response?.abilities);
-      setHeldItems(response?.held_items || []);
-
-      // Set new properties
-      setHeight(response?.height || 0);
-      setWeight(response?.weight || 0);
-      setBaseExperience(response?.base_experience || 0);
-      setSprites(response?.sprites || {});
-
-      // Load species data, evolution chain, and related Pokemon
-      const speciesIdentifier = response?.species?.name || response?.id;
-      loadSpeciesData(speciesIdentifier);
-
-      // Check for special forms
-      if (response.forms && response.forms.length > 1) {
-        setSpecialForms(response.forms);
-      }
-
-      setIsLoading(false);
-    } catch (error) {
-      toast.error("Oops! Failed to get Pokemon data. Please try again!");
-      setIsLoading(false);
-      console.error({ error });
-    }
-  }
-
-  // Load species data and evolution chain
-  async function loadSpeciesData(pokemonId: string | number) {
-    try {
-      setIsLoadingEvolution(true);
-
-      const speciesData = await getPokemonSpecies(pokemonId);
-      setSpecies(speciesData);
-
-      setCaptureRate(speciesData?.capture_rate || 0);
-      setBaseHappiness(speciesData?.base_happiness || 0);
-      setFlavorText(getRandomFlavorText(speciesData));
-      setVarieties(speciesData?.varieties || []);
-
-      // Set additional species data
-      setEggGroups(speciesData?.egg_groups?.map((eg: any) => eg.name) || []);
-      setHabitat(speciesData?.habitat?.name || "");
-      setGrowthRate(speciesData?.growth_rate?.name || "");
-      setGeneration(speciesData?.generation?.name || "");
-      setIsLegendary(speciesData?.is_legendary || false);
-      setIsMythical(speciesData?.is_mythical || false);
-      setShape(speciesData?.shape?.name || "");
-      setColor(speciesData?.color?.name || "");
-      setHatchCounter(speciesData?.hatch_counter || 0);
-      setGenderRate(speciesData?.gender_rate ?? -1);
-
-      // Extract generation number from URL and load related Pokémon
-      if (speciesData && speciesData.generation && speciesData.generation.url) {
-        const genNumber = speciesData.generation.url.split('/').filter(Boolean).pop();
-        loadRelatedPokemon(genNumber);
-      } else {
-        // Fallback to generation 1 if we can't determine generation
-        loadRelatedPokemon(1);
-      }
-
-      // Get evolution chain if available
-      if (speciesData && speciesData.evolution_chain && speciesData.evolution_chain.url) {
-        const evolutionData = await getEvolutionChain(speciesData.evolution_chain.url);
-
-        if (evolutionData) {
-          const processedEvolutions = await processEvolutionChain(evolutionData);
-          setEvolutionChain(processedEvolutions);
-        }
-      }
-
-      setIsLoadingEvolution(false);
-    } catch (error) {
-      console.error("Error loading species data:", error);
-      setIsLoadingEvolution(false);
-    }
-  }
-
-  // Load related Pokemon by generation
-  async function loadRelatedPokemon(gen: string | number = 1) {
-    try {
-      setIsLoadingRelated(true);
-
-      const relatedPokemonData = await getRelatedPokemonByGen(gen);
-      // Filter out current Pokemon from related list
-      const filtered = relatedPokemonData.filter((p: any) => p.name !== name);
-      setRelatedPokemon(filtered.slice(0, 6));
-
-      setIsLoadingRelated(false);
-    } catch (error) {
-      console.error("Error loading related Pokemon:", error);
-      setIsLoadingRelated(false);
-    }
-  }
 
   // Attempt to catch Pokemon using server-side Game Mechanics
   async function attemptCatchPokemon(): Promise<CatchAttemptResultDto | null> {
@@ -464,9 +170,10 @@ const DetailPokemon = () => {
       });
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error attempting catch:", error);
-      toast.error(error.response?.data?.message || "Failed to attempt catch");
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to attempt catch");
       return null;
     }
   }
@@ -522,7 +229,9 @@ const DetailPokemon = () => {
 
       // Show trainer XP gained
       if (result.trainerExpGained > 0) {
-        toast.success(`+${result.trainerExpGained} Trainer XP!`, { duration: 2000 });
+        toast.success(`+${result.trainerExpGained} Trainer XP!`, {
+          duration: 2000,
+        });
       }
     } else if (result.result === CatchAttemptResult.Fled) {
       setIsCaught(false);
@@ -531,11 +240,15 @@ const DetailPokemon = () => {
       setIsCaught(false);
       // Show some XP was still gained on failure
       if (result.trainerExpGained > 0) {
-        toast(`+${result.trainerExpGained} XP for trying!`, { duration: 2000, icon: '💪' });
+        toast(`+${result.trainerExpGained} XP for trying!`, {
+          duration: 2000,
+          icon: "💪",
+        });
       }
     }
 
-    if (throwBallTimeout.current) clearTimeout(throwBallTimeout.current as number);
+    if (throwBallTimeout.current)
+      clearTimeout(throwBallTimeout.current as number);
 
     throwBallTimeout.current = setTimeout(() => {
       setIsEndPhase(false);
@@ -550,7 +263,10 @@ const DetailPokemon = () => {
         setNicknameModal(true);
       } else if (result.result === CatchAttemptResult.Fled) {
         // Pokemon fled - cannot try again
-        toast.error(`${name?.toUpperCase()} fled!`, { duration: 3000, icon: '💨' });
+        toast.error(`${name?.toUpperCase()} fled!`, {
+          duration: 3000,
+          icon: "💨",
+        });
       }
       // Escaped - user can try again
     }, 1500);
@@ -571,13 +287,17 @@ const DetailPokemon = () => {
       // If user wants to update nickname after catch
       if (nickname.trim() && nickname.trim() !== caughtPokemonData.nickname) {
         try {
-          const response = await collectionService.updateNickname(caughtPokemonData.id, nickname.trim());
+          const response = await collectionService.updateNickname(
+            caughtPokemonData.id,
+            nickname.trim(),
+          );
           if (response && response.nickname) {
             setNickname(response.nickname);
             // Verify we update the local data as well so the "Whoosh!" screen shows correct name
-            if (caughtPokemonData) caughtPokemonData.nickname = response.nickname;
+            if (caughtPokemonData)
+              caughtPokemonData.nickname = response.nickname;
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Error updating nickname:", error);
           // Don't fail the whole process, just show warning
           toast.error("Failed to update nickname, but Pokémon was saved!");
@@ -596,21 +316,27 @@ const DetailPokemon = () => {
         isShiny
           ? `✨ Shiny ${pokemon?.displayName} caught! ${rank}`
           : `${pokemon?.displayName} was caught! ${rank}`,
-        { duration: 4000 }
+        { duration: 4000 },
       );
 
       if (catchAttemptResult.isNewSpecies) {
-        toast.success("📖 New species registered in Pokédex!", { duration: 3000 });
+        toast.success("📖 New species registered in Pokédex!", {
+          duration: 3000,
+        });
       }
 
       if (catchAttemptResult.trainerLeveledUp) {
-        toast.success(`🎉 Trainer leveled up to ${catchAttemptResult.newTrainerLevel}!`, { duration: 3000 });
+        toast.success(
+          `🎉 Trainer leveled up to ${catchAttemptResult.newTrainerLevel}!`,
+          { duration: 3000 },
+        );
       }
 
       setIsSaved(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error in nickname save:", error);
-      toast.error(error.response?.data?.message || "Something went wrong");
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setIsSaving(false);
     }
@@ -630,7 +356,7 @@ const DetailPokemon = () => {
         console.error("Error loading Pokemon cry");
         // Fallback to Pokemon Showdown's audio files if the PokeAPI cry fails to load
         if (name) {
-          const formattedName = name.toLowerCase().replace('-', '');
+          const formattedName = name.toLowerCase().replace("-", "");
           audioRef.src = `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3`;
           audioRef.play().catch(() => {
             console.error("Fallback cry also failed to load");
@@ -650,22 +376,16 @@ const DetailPokemon = () => {
 
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
-    setImageError(false);
     setFallbackLevel(0);
-    loadPokemon();
-
-    return () => {
-      setTypes([]);
-      setMoves([]);
-      setStats([]);
-      setSprite("");
-      setAbilities([]);
-      setEvolutionChain([]);
-      setRelatedPokemon([]);
-      setSpecialForms([]);
-      setSpecies(null);
-    };
+    // Reset active tab when navigating to a new Pokemon
+    setActiveTab("about");
   }, [name]);
+
+  useEffect(() => {
+    if (navRef.current) {
+      setNavHeight(navRef.current.offsetHeight);
+    }
+  }, [navRef]);
 
   useEffect(() => {
     document.title = `#${pokemonId} - ${name?.toUpperCase()}`;
@@ -699,11 +419,6 @@ const DetailPokemon = () => {
       setAudioVisualization(newVisualization);
     };
 
-    // Set the duration when audio data is loaded
-    const handleLoadedMetadata = () => {
-      setAudioDuration(audioRef.duration);
-    };
-
     // Reset states when audio ends
     const handleEnded = () => {
       setAudioProgress(0);
@@ -712,15 +427,13 @@ const DetailPokemon = () => {
     };
 
     // Add event listeners
-    audioRef.addEventListener('timeupdate', handleTimeUpdate);
-    audioRef.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audioRef.addEventListener('ended', handleEnded);
+    audioRef.addEventListener("timeupdate", handleTimeUpdate);
+    audioRef.addEventListener("ended", handleEnded);
 
     // Clean up event listeners
     return () => {
-      audioRef.removeEventListener('timeupdate', handleTimeUpdate);
-      audioRef.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audioRef.removeEventListener('ended', handleEnded);
+      audioRef.removeEventListener("timeupdate", handleTimeUpdate);
+      audioRef.removeEventListener("ended", handleEnded);
     };
   }, [audioRef, audioVisualization]);
 
@@ -741,7 +454,7 @@ const DetailPokemon = () => {
           </T.ImageContainer>
           <div style={{ display: "grid", placeItems: "center", gap: "12px" }}>
             <LazyLoadImage
-              className={`pokeball ${shakeCount > 0 ? 'shaking' : ''}`}
+              className={`pokeball ${shakeCount > 0 ? "shaking" : ""}`}
               src="/static/pokeball.png"
               alt="pokeball"
               width={128}
@@ -756,7 +469,8 @@ const DetailPokemon = () => {
                     width: "16px",
                     height: "16px",
                     borderRadius: "50%",
-                    backgroundColor: shakeCount >= shake ? "#4ade80" : "#374151",
+                    backgroundColor:
+                      shakeCount >= shake ? "#4ade80" : "#374151",
                     transition: "background-color 0.3s ease",
                     boxShadow: shakeCount >= shake ? "0 0 8px #4ade80" : "none",
                   }}
@@ -786,12 +500,17 @@ const DetailPokemon = () => {
                 />
               </T.ImageContainer>
 
-              <LazyLoadImage src="/static/pokeball.png" alt="pokeball" width={128} height={128} />
+              <LazyLoadImage
+                src="/static/pokeball.png"
+                alt="pokeball"
+                width={128}
+                height={128}
+              />
               <Text variant="outlined" size="xl">
                 {isPokemonFled
                   ? `${name?.toUpperCase()} fled!`
-                  : catchAttemptResult?.message || `Oh no, ${name?.toUpperCase()} broke free!`
-                }
+                  : catchAttemptResult?.message ||
+                    `Oh no, ${name?.toUpperCase()} broke free!`}
               </Text>
               {!isPokemonFled && catchRatePercent > 0 && (
                 <Text size="sm" style={{ color: "#9CA3AF", marginTop: "8px" }}>
@@ -804,7 +523,11 @@ const DetailPokemon = () => {
             <T.PostCatchModal>
               <T.ImageContainer>
                 <PokemonAvatar
-                  src={caughtPokemonData?.isShiny ? (caughtPokemonData?.spriteUrl || sprite) : sprite}
+                  src={
+                    caughtPokemonData?.isShiny
+                      ? caughtPokemonData?.spriteUrl || sprite
+                      : sprite
+                  }
                   alt={name}
                   width={320}
                   height={320}
@@ -814,7 +537,12 @@ const DetailPokemon = () => {
                 />
               </T.ImageContainer>
 
-              <LazyLoadImage src="/static/pokeball.png" alt="pokeball" width={128} height={128} />
+              <LazyLoadImage
+                src="/static/pokeball.png"
+                alt="pokeball"
+                width={128}
+                height={128}
+              />
               <Text variant="outlined" size="xl">
                 {caughtPokemonData?.isShiny ? "✨ " : ""}
                 Gotcha! {name?.toUpperCase()} was caught!
@@ -822,7 +550,8 @@ const DetailPokemon = () => {
               {caughtPokemonData && (
                 <div style={{ marginTop: "12px", textAlign: "center" }}>
                   <Text size="sm" style={{ color: "#60A5FA" }}>
-                    Level {caughtPokemonData.level} • {caughtPokemonData.rankDisplay}
+                    Level {caughtPokemonData.level} •{" "}
+                    {caughtPokemonData.rankDisplay}
                   </Text>
                 </div>
               )}
@@ -835,7 +564,11 @@ const DetailPokemon = () => {
         <T.NicknamingModal>
           <T.ImageContainer>
             <PokemonAvatar
-              src={caughtPokemonData?.isShiny ? (caughtPokemonData?.spriteUrl || sprite) : sprite}
+              src={
+                caughtPokemonData?.isShiny
+                  ? caughtPokemonData?.spriteUrl || sprite
+                  : sprite
+              }
               alt={name}
               width={320}
               height={320}
@@ -854,16 +587,27 @@ const DetailPokemon = () => {
             <T.NicknamingForm onSubmit={onNicknameSave}>
               <div className="pxl-border" style={{ textAlign: "left" }}>
                 <Text>Congratulations!</Text>
-                <Text>You just caught a {caughtPokemonData?.displayName || name?.toUpperCase()}!</Text>
+                <Text>
+                  You just caught a{" "}
+                  {caughtPokemonData?.displayName || name?.toUpperCase()}!
+                </Text>
 
                 {/* Show caught Pokemon details */}
                 {caughtPokemonData && (
-                  <div style={{ marginTop: 12, padding: "8px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "8px 0",
+                      borderTop: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
                     <Text size="sm" style={{ color: "#9CA3AF" }}>
-                      Level {caughtPokemonData.level} • {caughtPokemonData.rankDisplay}
+                      Level {caughtPokemonData.level} •{" "}
+                      {caughtPokemonData.rankDisplay}
                     </Text>
                     <Text size="sm" style={{ color: "#60A5FA", marginTop: 4 }}>
-                      Best stat: {caughtPokemonData.bestStatName} ({caughtPokemonData.bestStatIv} IV)
+                      Best stat: {caughtPokemonData.bestStatName} (
+                      {caughtPokemonData.bestStatIv} IV)
                     </Text>
                     <Text size="sm" style={{ color: "#9CA3AF", marginTop: 4 }}>
                       {caughtPokemonData.ivVerdict}
@@ -876,7 +620,9 @@ const DetailPokemon = () => {
               </div>
 
               <Input
-                placeholder={caughtPokemonData?.nickname || "enter a nickname (optional)"}
+                placeholder={
+                  caughtPokemonData?.nickname || "enter a nickname (optional)"
+                }
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setNickname(e.target.value.toUpperCase())
                 }
@@ -884,26 +630,41 @@ const DetailPokemon = () => {
               />
 
               <Button type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : nickname.trim() ? "Save with Nickname" : "Keep Original Name"}
+                {isSaving
+                  ? "Saving..."
+                  : nickname.trim()
+                    ? "Save with Nickname"
+                    : "Keep Original Name"}
               </Button>
             </T.NicknamingForm>
           ) : (
             <T.AnotherWrapper>
               <div className="pxl-border" style={{ textAlign: "left" }}>
-                <Text>Whoosh! {nickname || caughtPokemonData?.displayName} is now in your Pokémon list!</Text>
+                <Text>
+                  Whoosh! {nickname || caughtPokemonData?.displayName} is now in
+                  your Pokémon list!
+                </Text>
 
                 {caughtPokemonData && (
                   <div style={{ marginTop: 12, padding: "8px 0" }}>
                     <Text size="sm" style={{ color: "#60A5FA" }}>
-                      ⭐ {caughtPokemonData.rankDisplay} ({caughtPokemonData.ivTotal}/186 IV)
+                      ⭐ {caughtPokemonData.rankDisplay} (
+                      {caughtPokemonData.ivTotal}/186 IV)
                     </Text>
-                    {catchResult?.experienceGained && catchResult.experienceGained > 0 && (
-                      <Text size="sm" style={{ color: "#34D399", marginTop: 4 }}>
-                        +{catchResult.experienceGained} Trainer XP!
-                      </Text>
-                    )}
+                    {catchResult?.experienceGained &&
+                      catchResult.experienceGained > 0 && (
+                        <Text
+                          size="sm"
+                          style={{ color: "#34D399", marginTop: 4 }}
+                        >
+                          +{catchResult.experienceGained} Trainer XP!
+                        </Text>
+                      )}
                     {catchResult?.isNewSpecies && (
-                      <Text size="sm" style={{ color: "#FBBF24", marginTop: 4 }}>
+                      <Text
+                        size="sm"
+                        style={{ color: "#FBBF24", marginTop: 4 }}
+                      >
                         🆕 New species registered!
                       </Text>
                     )}
@@ -931,19 +692,41 @@ const DetailPokemon = () => {
           height={512}
         />
 
-        <T.PokeName style={{ background: types.length > 0 ? `linear-gradient(to right, ${skillColor[`${types[0]}-200`] || '#A8A77A'}, transparent)` : undefined }}>
+        <T.PokeName
+          style={{
+            background:
+              typeNames.length > 0
+                ? `linear-gradient(to right, ${skillColor[`${typeNames[0]}-200`] || "#A8A77A"}, transparent)`
+                : undefined,
+          }}
+        >
           <Text as="h1" variant="outlined" size="xl">
             {name}
           </Text>
           <Text as="h2" variant="outlined" size="base" className="genera-text">
-            {species && species.genera && species.genera.find((g: any) => g.language.name === 'en')?.genus || ''}
+            {(species &&
+              species.genera &&
+              species.genera.find(
+                (g: { genus: string; language: { name: string } }) =>
+                  g.language.name === "en",
+              )?.genus) ||
+              ""}
           </Text>
         </T.PokeName>
 
         <T.PokemonContainer>
-          <div className="img-pokemon" style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            className="img-pokemon"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
             {!isLoading ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
                 {/* Classification Badge */}
                 {(isLegendary || isMythical) && (
                   <T.ClassificationText
@@ -959,7 +742,7 @@ const DetailPokemon = () => {
                     src={
                       fallbackLevel === 2
                         ? "/substitute.png"
-                        : (imageError || fallbackLevel === 1) // If explicit error or level 1
+                        : fallbackLevel === 1
                           ? `${POKEMON_SHOWDOWN_IMAGE}/${pokemonId}.gif`
                           : sprite
                     }
@@ -974,20 +757,23 @@ const DetailPokemon = () => {
                       if (fallbackLevel === 0) setFallbackLevel(1);
                       // Level 1 -> 2 (Substitute)
                       else if (fallbackLevel === 1) setFallbackLevel(2);
-
-                      setImageError(true);
                     }}
                     key={`detail-${pokemonId}-${fallbackLevel}`}
-                    style={fallbackLevel === 2 ? {
-                      transform: "scale(0.8)"
-                    } : undefined}
+                    style={
+                      fallbackLevel === 2
+                        ? {
+                            transform: "scale(0.8)",
+                          }
+                        : undefined
+                    }
                   />
                 </T.PokemonImageWrapper>
                 {/* Type Icons */}
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                  {types && types.map((type: string, index: number) => (
-                    <TypeIcon key={index} type={type} size="md" />
-                  ))}
+                <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                  {types &&
+                    types.map((type: string, index: number) => (
+                      <TypeIcon key={index} type={type} size="md" />
+                    ))}
                 </div>
                 {/* Flavor Text */}
                 {flavorText && (
@@ -1021,7 +807,7 @@ const DetailPokemon = () => {
               <div className="info-item">
                 <Text className="info-label">Capture Rate</Text>
                 <Text className="info-value">{captureRate}</Text>
-                <Text style={{ fontSize: '0.75rem', color: '#6B7280' }}>
+                <Text style={{ fontSize: "0.75rem", color: "#6B7280" }}>
                   {Math.round((captureRate / 255) * 100)}% at full health
                 </Text>
               </div>
@@ -1030,52 +816,130 @@ const DetailPokemon = () => {
                 <Text className="info-value">{baseHappiness}</Text>
               </div>
             </T.InfoSection>
-            <div className="info-item" style={{ alignItems: "center", justifyContent: "left", paddingTop: '12px', display: 'flex', flexDirection: 'row' }}>
+            <div
+              className="info-item"
+              style={{
+                alignItems: "center",
+                justifyContent: "left",
+                paddingTop: "12px",
+                display: "flex",
+                flexDirection: "row",
+              }}
+            >
               <button
                 onClick={playPokemonCry}
                 disabled={isPlayingCry}
                 style={{
-                  background: isPlayingCry ? `rgba(255, 255, 255, 0.3)` : 'rgba(255, 255, 255, 0.15)',
-                  border: '2px solid rgba(100, 100, 100, 0.3)',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '12px',
-                  transition: 'all 0.3s ease',
-                  boxShadow: isPlayingCry ? '0 0 8px 2px rgba(255, 255, 255, 0.6)' : 'none',
-                  width: '60px',
-                  height: '60px'
+                  background: isPlayingCry
+                    ? `rgba(255, 255, 255, 0.3)`
+                    : "rgba(255, 255, 255, 0.15)",
+                  border: "2px solid rgba(100, 100, 100, 0.3)",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "12px",
+                  transition: "all 0.3s ease",
+                  boxShadow: isPlayingCry
+                    ? "0 0 8px 2px rgba(255, 255, 255, 0.6)"
+                    : "none",
+                  width: "60px",
+                  height: "60px",
                 }}
                 title="Play Pokémon cry"
               >
                 {isPlayingCry ? (
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     {/* Pokeball-themed sound icon (playing) */}
                     <circle cx="12" cy="12" r="10" fill="#FF5555" />
-                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white" />
-                    <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="white" />
-                    <path fillRule="evenodd" clipRule="evenodd" d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FFF">
-                      <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
+                      fill="white"
+                    />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z"
+                      fill="#FFF"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.5;1"
+                        dur="1s"
+                        repeatCount="indefinite"
+                      />
                     </path>
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FFF">
-                      <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z"
+                      fill="#FFF"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.5;1"
+                        dur="1s"
+                        repeatCount="indefinite"
+                      />
                     </path>
                     {/* Sound waves */}
-                    <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="white" strokeWidth="2" strokeLinecap="round">
-                      <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+                    <path
+                      d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    >
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.3;1"
+                        dur="1s"
+                        repeatCount="indefinite"
+                      />
                     </path>
                   </svg>
                 ) : (
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     {/* Pokeball-themed sound icon (not playing) */}
-                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="#333" />
-                    <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="#333" />
-                    <path d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z" fill="#FF5555" />
-                    <path d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z" fill="#FF5555" />
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
+                      fill="#333"
+                    />
+                    <path
+                      d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
+                      fill="#333"
+                    />
+                    <path
+                      d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z"
+                      fill="#FF5555"
+                    />
+                    <path
+                      d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z"
+                      fill="#FF5555"
+                    />
                     {/* Sound waves */}
-                    <path d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16" stroke="#333" strokeWidth="2" strokeLinecap="round" />
+                    <path
+                      d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16"
+                      stroke="#333"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
                   </svg>
                 )}
               </button>
@@ -1093,7 +957,10 @@ const DetailPokemon = () => {
                         className="sound-bar-line"
                         style={{
                           transform: `scaleY(${height})`,
-                          backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)'
+                          backgroundColor:
+                            index % 2 === 0
+                              ? "rgba(255, 255, 255, 0.8)"
+                              : "rgba(255, 255, 255, 0.5)",
                         }}
                       />
                     ))}
@@ -1110,57 +977,57 @@ const DetailPokemon = () => {
         <T.Content style={{ marginTop: "30px" }}>
           <T.TabsContainer>
             <div
-              className={`tab ${activeTab === 'about' ? 'active' : ''}`}
-              onClick={() => setActiveTab('about')}
+              className={`tab ${activeTab === "about" ? "active" : ""}`}
+              onClick={() => setActiveTab("about")}
             >
               <Text>About</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
-              onClick={() => setActiveTab('stats')}
+              className={`tab ${activeTab === "stats" ? "active" : ""}`}
+              onClick={() => setActiveTab("stats")}
             >
               <Text>Stats</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'training' ? 'active' : ''}`}
-              onClick={() => setActiveTab('training')}
+              className={`tab ${activeTab === "training" ? "active" : ""}`}
+              onClick={() => setActiveTab("training")}
             >
               <Text>Training</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'breeding' ? 'active' : ''}`}
-              onClick={() => setActiveTab('breeding')}
+              className={`tab ${activeTab === "breeding" ? "active" : ""}`}
+              onClick={() => setActiveTab("breeding")}
             >
               <Text>Breeding</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'evolution' ? 'active' : ''}`}
-              onClick={() => setActiveTab('evolution')}
+              className={`tab ${activeTab === "evolution" ? "active" : ""}`}
+              onClick={() => setActiveTab("evolution")}
             >
               <Text>Evolution</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'moves' ? 'active' : ''}`}
-              onClick={() => setActiveTab('moves')}
+              className={`tab ${activeTab === "moves" ? "active" : ""}`}
+              onClick={() => setActiveTab("moves")}
             >
               <Text>Moves</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'sprites' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sprites')}
+              className={`tab ${activeTab === "sprites" ? "active" : ""}`}
+              onClick={() => setActiveTab("sprites")}
             >
               <Text>Sprites</Text>
             </div>
             <div
-              className={`tab ${activeTab === 'varieties' ? 'active' : ''}`}
-              onClick={() => setActiveTab('varieties')}
+              className={`tab ${activeTab === "varieties" ? "active" : ""}`}
+              onClick={() => setActiveTab("varieties")}
             >
               <Text>Varieties</Text>
             </div>
           </T.TabsContainer>
 
           {/* About Tab */}
-          {activeTab === 'about' && (
+          {activeTab === "about" && (
             <AboutTab
               abilities={abilities}
               relatedPokemon={relatedPokemon}
@@ -1179,12 +1046,10 @@ const DetailPokemon = () => {
           )}
 
           {/* Stats Tab */}
-          {activeTab === 'stats' && (
-            <StatsTab stats={stats} />
-          )}
+          {activeTab === "stats" && <StatsTab stats={stats} />}
 
           {/* Training Tab */}
-          {activeTab === 'training' && (
+          {activeTab === "training" && (
             <TrainingTab
               stats={stats}
               baseExperience={baseExperience}
@@ -1195,7 +1060,7 @@ const DetailPokemon = () => {
           )}
 
           {/* Breeding Tab */}
-          {activeTab === 'breeding' && (
+          {activeTab === "breeding" && (
             <BreedingTab
               eggGroups={eggGroups}
               genderRate={genderRate}
@@ -1205,7 +1070,7 @@ const DetailPokemon = () => {
           )}
 
           {/* Evolution Tab */}
-          {activeTab === 'evolution' && (
+          {activeTab === "evolution" && (
             <EvolutionTab
               isLoadingEvolution={isLoadingEvolution}
               evolutionChain={evolutionChain}
@@ -1213,17 +1078,21 @@ const DetailPokemon = () => {
           )}
 
           {/* Moves Tab */}
-          {activeTab === 'moves' && (
-            <MovesTab moves={moves} types={types} />
+          {activeTab === "moves" && (
+            <MovesTab
+              moves={moves}
+              moveDetails={moveDetails}
+              types={typeNames}
+            />
           )}
 
           {/* Sprites Tab */}
-          {activeTab === 'sprites' && (
+          {activeTab === "sprites" && (
             <SpritesTab sprites={sprites} name={name} />
           )}
 
           {/* Varieties Tab */}
-          {activeTab === 'varieties' && (
+          {activeTab === "varieties" && (
             <VarietiesTab varieties={varieties} currentPokemonName={name} />
           )}
         </T.Content>
@@ -1234,10 +1103,7 @@ const DetailPokemon = () => {
           <>
             {!isAuthenticated ? (
               <Link to="/login">
-                <Button
-                  variant="dark"
-                  size="xl"
-                  icon="/static/pokeball.png">
+                <Button variant="dark" size="xl" icon="/static/pokeball.png">
                   Login to Catch
                 </Button>
               </Link>
@@ -1246,15 +1112,13 @@ const DetailPokemon = () => {
                 variant="dark"
                 size="xl"
                 disabled
-                icon="/static/pokeball.png">
+                icon="/static/pokeball.png"
+              >
                 Pokémon Fled
               </Button>
             ) : isSaved ? (
               <Link to="/pokemons">
-                <Button
-                  variant="dark"
-                  size="xl"
-                  icon="/static/pokeball.png">
+                <Button variant="dark" size="xl" icon="/static/pokeball.png">
                   Find Another
                 </Button>
               </Link>
@@ -1264,7 +1128,8 @@ const DetailPokemon = () => {
                 onClick={() => throwPokeball()}
                 size="xl"
                 disabled={isCatching}
-                icon="/static/pokeball.png">
+                icon="/static/pokeball.png"
+              >
                 {isCatching ? "Catching..." : "Catch"}
               </Button>
             )}

@@ -10,10 +10,12 @@ export const Form = styled.form`
 
 export const FormGroup = styled.div<{ inline?: boolean }>`
   display: flex;
-  flex-direction: ${props => props.inline ? "row" : "column"};
+  flex-direction: ${(props) => (props.inline ? "row" : "column")};
   gap: 8px;
 
-  ${props => props.inline && `
+  ${(props) =>
+    props.inline &&
+    `
     align-items: center;
     flex-wrap: wrap;
   `}
@@ -26,23 +28,29 @@ export const FormInput = styled.input<{
 }>`
   padding: ${({ $size = "md" }) => {
     switch ($size) {
-      case "sm": return "8px 10px";
-      case "lg": return "14px 16px";
-      default: return "10px 12px";
+      case "sm":
+        return "8px 10px";
+      case "lg":
+        return "14px 16px";
+      default:
+        return "10px 12px";
     }
   }};
   border-radius: 8px;
-  border: 1px solid ${props => props.hasError ? colors["red-500"] : colors["gray-300"]};
+  border: 1px solid
+    ${(props) => (props.hasError ? colors["red-500"] : colors["gray-300"])};
   outline: none;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
-    border-color: ${props => props.hasError ? colors["red-500"] : colors["blue-500"]};
-    box-shadow: 0 0 0 3px ${props => props.hasError
-      ? "rgba(239, 68, 68, 0.1)"
-      : "rgba(59, 130, 246, 0.06)"
-    };
+    border-color: ${(props) =>
+      props.hasError ? colors["red-500"] : colors["blue-500"]};
+    box-shadow: 0 0 0 3px
+      ${(props) =>
+        props.hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(59, 130, 246, 0.06)"};
   }
 
   &::placeholder {
@@ -58,32 +66,38 @@ export const FormInput = styled.input<{
 export const FormTextarea = styled.textarea<{ hasError?: boolean }>`
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid ${props => props.hasError ? colors["red-500"] : colors["gray-300"]};
+  border: 1px solid
+    ${(props) => (props.hasError ? colors["red-500"] : colors["gray-300"])};
   outline: none;
   font-size: 14px;
   resize: vertical;
   min-height: 100px;
   font-family: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
-    border-color: ${props => props.hasError ? colors["red-500"] : colors["blue-500"]};
-    box-shadow: 0 0 0 3px ${props => props.hasError
-      ? "rgba(239, 68, 68, 0.1)"
-      : "rgba(59, 130, 246, 0.06)"
-    };
+    border-color: ${(props) =>
+      props.hasError ? colors["red-500"] : colors["blue-500"]};
+    box-shadow: 0 0 0 3px
+      ${(props) =>
+        props.hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(59, 130, 246, 0.06)"};
   }
 `;
 
 export const FormSelect = styled.select<{ hasError?: boolean }>`
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid ${props => props.hasError ? colors["red-500"] : colors["gray-300"]};
+  border: 1px solid
+    ${(props) => (props.hasError ? colors["red-500"] : colors["gray-300"])};
   outline: none;
   font-size: 14px;
   background: white;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
     border-color: ${colors["blue-500"]};
@@ -99,17 +113,22 @@ export const SubmitButton = styled.button<{
 }>`
   padding: ${({ $size = "md" }) => {
     switch ($size) {
-      case "sm": return "8px 12px";
-      case "lg": return "14px 20px";
-      default: return "10px 16px";
+      case "sm":
+        return "8px 12px";
+      case "lg":
+        return "14px 20px";
+      default:
+        return "10px 16px";
     }
   }};
   border-radius: 8px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-  width: ${({ $fullWidth }) => $fullWidth ? "100%" : "auto"};
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+  width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
 
   ${({ $variant = "primary" }) => {
     switch ($variant) {
@@ -157,7 +176,9 @@ export const FormLabel = styled.label<{ required?: boolean }>`
   font-weight: 500;
   color: ${colors["gray-700"]};
 
-  ${props => props.required && `
+  ${(props) =>
+    props.required &&
+    `
     &::after {
       content: " *";
       color: ${colors["red-500"]};
@@ -184,7 +205,7 @@ export const InputWrapper = styled.div`
 
 export const InputIcon = styled.span<{ position?: "left" | "right" }>`
   position: absolute;
-  ${props => props.position === "right" ? "right: 12px;" : "left: 12px;"}
+  ${(props) => (props.position === "right" ? "right: 12px;" : "left: 12px;")}
   color: ${colors["gray-400"]};
   display: flex;
   align-items: center;

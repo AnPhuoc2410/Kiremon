@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Link } from 'react-router-dom';
-import { Text } from '..';
-import { POKEMON_IMAGE } from '../../../config/api.config';
-import { getEvolutionIcons } from '../../utils/evolutionIcons';
-import * as S from './index.style';
+import React, { useMemo } from "react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { Link } from "react-router-dom";
+import { Text } from "..";
+import { POKEMON_IMAGE } from "../../../config/api.config";
+import { getEvolutionIcons } from "../../utils/evolutionIcons";
+import * as S from "./index.style";
 
 interface EvolutionPokemon {
   id: number;
@@ -46,23 +46,26 @@ interface EvolutionChainProps {
 
 // Item name to sprite URL mapping
 const getItemSprite = (itemName: string): string => {
-  const formattedName = itemName.toLowerCase().replace(/\s+/g, '-');
+  const formattedName = itemName.toLowerCase().replace(/\s+/g, "-");
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${formattedName}.png`;
 };
 
 // Pokemon Card Component
-const PokemonCard: React.FC<{ pokemon: EvolutionPokemon; size?: 'small' | 'medium' | 'large' }> = ({
-  pokemon,
-  size = 'medium'
-}) => {
+const PokemonCard: React.FC<{
+  pokemon: EvolutionPokemon;
+  size?: "small" | "medium" | "large";
+}> = ({ pokemon, size = "medium" }) => {
   const sizeMap = {
     small: 64,
     medium: 80,
-    large: 96
+    large: 96,
   };
 
   return (
-    <Link to={`/pokemon/${pokemon.name}`} className={`pokemon-card pokemon-card--${size}`}>
+    <Link
+      to={`/pokemon/${pokemon.name}`}
+      className={`pokemon-card pokemon-card--${size}`}
+    >
       <LazyLoadImage
         src={pokemon.sprite || `${POKEMON_IMAGE}/${pokemon.id}.png`}
         alt={pokemon.name}
@@ -70,7 +73,7 @@ const PokemonCard: React.FC<{ pokemon: EvolutionPokemon; size?: 'small' | 'mediu
         height={sizeMap[size]}
         effect="blur"
       />
-      <Text className="pokemon-id">#{String(pokemon.id).padStart(4, '0')}</Text>
+      <Text className="pokemon-id">#{String(pokemon.id).padStart(4, "0")}</Text>
       <Text className="pokemon-name">{pokemon.name}</Text>
     </Link>
   );
@@ -79,16 +82,16 @@ const PokemonCard: React.FC<{ pokemon: EvolutionPokemon; size?: 'small' | 'mediu
 // Evolution Arrow Component with detailed info display
 const EvolutionArrow: React.FC<{
   trigger?: EvolutionTrigger;
-  direction?: 'horizontal' | 'diagonal-up' | 'diagonal-down';
-}> = ({ trigger, direction = 'horizontal' }) => {
+  direction?: "horizontal" | "diagonal-up" | "diagonal-down";
+}> = ({ trigger, direction = "horizontal" }) => {
   const getArrowIcon = () => {
     switch (direction) {
-      case 'diagonal-up':
-        return '↗';
-      case 'diagonal-down':
-        return '↘';
+      case "diagonal-up":
+        return "↗";
+      case "diagonal-down":
+        return "↘";
       default:
-        return '→';
+        return "→";
     }
   };
 
@@ -104,23 +107,31 @@ const EvolutionArrow: React.FC<{
             alt={itemToShow}
             className="item-sprite"
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).style.display = "none";
             }}
           />
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
-            <i
-              key={idx}
-              className={icon.className}
-              title={icon.alt}
-              style={{
-                color: icon.color,
-                fontSize: '16px',
-                lineHeight: 1
-              }}
-            />
-          ))}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            flexWrap: "wrap",
+          }}
+        >
+          {trigger &&
+            getEvolutionIcons(trigger).map((icon, idx) => (
+              <i
+                key={idx}
+                className={icon.className}
+                title={icon.alt}
+                style={{
+                  color: icon.color,
+                  fontSize: "16px",
+                  lineHeight: 1,
+                }}
+              />
+            ))}
           {trigger && <Text className="trigger-text">{trigger.text}</Text>}
         </div>
         <div className="arrow-symbol">{getArrowIcon()}</div>
@@ -135,22 +146,57 @@ interface EvolutionNode {
   evolvesTo: { node: EvolutionNode; trigger?: EvolutionTrigger }[];
 }
 
-const buildEvolutionGraph = (evolutions: EvolutionData[]): EvolutionNode | null => {
+const buildEvolutionGraph = (
+  evolutions: EvolutionData[],
+): EvolutionNode | null => {
   if (evolutions.length === 0) return null;
 
   // Find all unique Pokemon
   const pokemonMap = new Map<string, EvolutionPokemon>();
-  const childrenMap = new Map<string, { to: EvolutionPokemon; trigger?: EvolutionTrigger }[]>();
+  const childrenMap = new Map<
+    string,
+    { to: EvolutionPokemon; trigger?: EvolutionTrigger }[]
+  >();
   const hasParent = new Set<string>();
 
-  evolutions.forEach(evo => {
+  // Helper to determine trigger priority (prefer item-based over location-based)
+  const getTriggerPriority = (trigger?: EvolutionTrigger): number => {
+    if (!trigger) return 0;
+    if (trigger.item) return 3; // Highest: Use item (e.g., Leaf Stone)
+    if (trigger.minLevel) return 2; // Level up
+    if (trigger.minHappiness || trigger.minAffection) return 2; // Friendship
+    if (trigger.location) return 1; // Location-based (lower priority)
+    return 1;
+  };
+
+  evolutions.forEach((evo) => {
     pokemonMap.set(evo.from.name, evo.from);
     pokemonMap.set(evo.to.name, evo.to);
 
     if (!childrenMap.has(evo.from.name)) {
       childrenMap.set(evo.from.name, []);
     }
-    childrenMap.get(evo.from.name)!.push({ to: evo.to, trigger: evo.trigger });
+
+    // Check if this target Pokemon already exists in the children list
+    const existingChildren = childrenMap.get(evo.from.name)!;
+    const existingIndex = existingChildren.findIndex(
+      (child) => child.to.name === evo.to.name,
+    );
+
+    if (existingIndex === -1) {
+      // New evolution target, add it
+      existingChildren.push({ to: evo.to, trigger: evo.trigger });
+    } else {
+      // Already exists - keep the one with higher priority trigger
+      const existingPriority = getTriggerPriority(
+        existingChildren[existingIndex].trigger,
+      );
+      const newPriority = getTriggerPriority(evo.trigger);
+      if (newPriority > existingPriority) {
+        existingChildren[existingIndex] = { to: evo.to, trigger: evo.trigger };
+      }
+    }
+
     hasParent.add(evo.to.name);
   });
 
@@ -171,10 +217,10 @@ const buildEvolutionGraph = (evolutions: EvolutionData[]): EvolutionNode | null 
 
     return {
       pokemon,
-      evolvesTo: children.map(child => ({
+      evolvesTo: children.map((child) => ({
         node: buildNode(child.to.name),
-        trigger: child.trigger
-      }))
+        trigger: child.trigger,
+      })),
     };
   };
 
@@ -204,9 +250,11 @@ const SvgArrowLine: React.FC<{
   const shortenStart = 70; // Distance from center of start card
   const shortenEnd = 70; // Distance from center of end card
 
-  const lineLength = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+  const lineLength = Math.sqrt(
+    Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2),
+  );
   const ratio1 = shortenStart / lineLength;
-  const ratio2 = 1 - (shortenEnd / lineLength);
+  const ratio2 = 1 - shortenEnd / lineLength;
 
   const actualStartX = startX + (endX - startX) * ratio1;
   const actualStartY = startY + (endY - startY) * ratio1;
@@ -251,7 +299,7 @@ const SvgArrowLine: React.FC<{
         y={labelY - 32}
         width="120"
         height="64"
-        style={{ overflow: 'visible' }}
+        style={{ overflow: "visible" }}
       >
         <div className="arrow-label-wrapper">
           {itemToShow && (
@@ -261,20 +309,31 @@ const SvgArrowLine: React.FC<{
               className="item-sprite-svg"
             />
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {trigger && getEvolutionIcons(trigger).map((icon, idx) => (
-              <i
-                key={idx}
-                className={icon.className}
-                title={icon.alt}
-                style={{
-                  color: icon.color,
-                  fontSize: '16px',
-                  lineHeight: 1
-                }}
-              />
-            ))}
-            {trigger && <span className="arrow-label-text">{trigger.text}</span>}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {trigger &&
+              getEvolutionIcons(trigger).map((icon, idx) => (
+                <i
+                  key={idx}
+                  className={icon.className}
+                  title={icon.alt}
+                  style={{
+                    color: icon.color,
+                    fontSize: "16px",
+                    lineHeight: 1,
+                  }}
+                />
+              ))}
+            {trigger && (
+              <span className="arrow-label-text">{trigger.text}</span>
+            )}
           </div>
         </div>
       </foreignObject>
@@ -298,32 +357,55 @@ const LinearEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
             {evolutionCount === 1 ? (
               // Single evolution path
               <>
-                <EvolutionArrow trigger={node.evolvesTo[0].trigger} direction="horizontal" />
+                <EvolutionArrow
+                  trigger={node.evolvesTo[0].trigger}
+                  direction="horizontal"
+                />
                 {renderChain(node.evolvesTo[0].node)}
               </>
             ) : evolutionCount === 2 ? (
               // Two evolution paths (like Slowpoke, Tyrogue)
               <div className="split-evolution">
                 <div className="split-branch split-branch--top">
-                  <EvolutionArrow trigger={node.evolvesTo[0].trigger} direction="diagonal-up" />
+                  <EvolutionArrow
+                    trigger={node.evolvesTo[0].trigger}
+                    direction="diagonal-up"
+                  />
                   <div className="branch-content">
                     <PokemonCard pokemon={node.evolvesTo[0].node.pokemon} />
                     {node.evolvesTo[0].node.evolvesTo.length > 0 && (
                       <>
-                        <EvolutionArrow trigger={node.evolvesTo[0].node.evolvesTo[0].trigger} direction="horizontal" />
-                        <PokemonCard pokemon={node.evolvesTo[0].node.evolvesTo[0].node.pokemon} />
+                        <EvolutionArrow
+                          trigger={node.evolvesTo[0].node.evolvesTo[0].trigger}
+                          direction="horizontal"
+                        />
+                        <PokemonCard
+                          pokemon={
+                            node.evolvesTo[0].node.evolvesTo[0].node.pokemon
+                          }
+                        />
                       </>
                     )}
                   </div>
                 </div>
                 <div className="split-branch split-branch--bottom">
-                  <EvolutionArrow trigger={node.evolvesTo[1].trigger} direction="diagonal-down" />
+                  <EvolutionArrow
+                    trigger={node.evolvesTo[1].trigger}
+                    direction="diagonal-down"
+                  />
                   <div className="branch-content">
                     <PokemonCard pokemon={node.evolvesTo[1].node.pokemon} />
                     {node.evolvesTo[1].node.evolvesTo.length > 0 && (
                       <>
-                        <EvolutionArrow trigger={node.evolvesTo[1].node.evolvesTo[0].trigger} direction="horizontal" />
-                        <PokemonCard pokemon={node.evolvesTo[1].node.evolvesTo[0].node.pokemon} />
+                        <EvolutionArrow
+                          trigger={node.evolvesTo[1].node.evolvesTo[0].trigger}
+                          direction="horizontal"
+                        />
+                        <PokemonCard
+                          pokemon={
+                            node.evolvesTo[1].node.evolvesTo[0].node.pokemon
+                          }
+                        />
                       </>
                     )}
                   </div>
@@ -336,11 +418,7 @@ const LinearEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
     );
   };
 
-  return (
-    <div className="linear-chain">
-      {renderChain(root)}
-    </div>
-  );
+  return <div className="linear-chain">{renderChain(root)}</div>;
 };
 
 const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
@@ -355,7 +433,7 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
   const getPosition = (index: number) => {
     const angleStep = 360 / count;
     // Start from top (-90°) and distribute evenly
-    const angle = -90 + (angleStep * index);
+    const angle = -90 + angleStep * index;
 
     // Convert to radians
     const radians = (angle * Math.PI) / 180;
@@ -367,13 +445,16 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
   };
 
   return (
-    <div className="radial-chain" style={{ width: containerSize, height: containerSize }}>
+    <div
+      className="radial-chain"
+      style={{ width: containerSize, height: containerSize }}
+    >
       {/* SVG layer for arrows */}
       <svg
         className="radial-svg"
         width={containerSize}
         height={containerSize}
-        style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}
+        style={{ position: "absolute", top: 0, left: 0, zIndex: 1 }}
       >
         <defs>
           <marker
@@ -392,7 +473,7 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
           const pos = getPosition(index);
           return (
             <SvgArrowLine
-              key={`arrow-${evo.node.pokemon.name}`}
+              key={`arrow-${index}-${evo.node.pokemon.name}`}
               startX={centerX}
               startY={centerY}
               endX={centerX + pos.x}
@@ -414,12 +495,12 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
 
         return (
           <div
-            key={evo.node.pokemon.name}
+            key={`branch-${index}-${evo.node.pokemon.name}`}
             className="radial-branch"
             style={{
               left: `calc(50% + ${pos.x}px)`,
               top: `calc(50% + ${pos.y}px)`,
-              transform: 'translate(-50%, -50%)'
+              transform: "translate(-50%, -50%)",
             }}
           >
             <PokemonCard pokemon={evo.node.pokemon} size="small" />
@@ -432,7 +513,10 @@ const RadialEvolutionChain: React.FC<{ root: EvolutionNode }> = ({ root }) => {
 
 // Main Evolution Chain Component
 const EvolutionChain: React.FC<EvolutionChainProps> = ({ evolutions }) => {
-  const evolutionGraph = useMemo(() => buildEvolutionGraph(evolutions), [evolutions]);
+  const evolutionGraph = useMemo(
+    () => buildEvolutionGraph(evolutions),
+    [evolutions],
+  );
 
   if (!evolutionGraph) return null;
 
@@ -440,7 +524,9 @@ const EvolutionChain: React.FC<EvolutionChainProps> = ({ evolutions }) => {
   const useBranchingLayout = directEvolutionCount > 2;
 
   return (
-    <S.EvolutionContainer className={useBranchingLayout ? 'radial-layout' : 'linear-layout'}>
+    <S.EvolutionContainer
+      className={useBranchingLayout ? "radial-layout" : "linear-layout"}
+    >
       {useBranchingLayout ? (
         <RadialEvolutionChain root={evolutionGraph} />
       ) : (

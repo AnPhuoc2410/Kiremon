@@ -5,7 +5,7 @@ const createApiClient = (baseURL: string): AxiosInstance => {
   const client = axios.create({
     baseURL,
     timeout: 15000, // 15 seconds timeout
-    withCredentials: false, 
+    withCredentials: false,
     headers: {
       "Content-Type": "application/json",
     },

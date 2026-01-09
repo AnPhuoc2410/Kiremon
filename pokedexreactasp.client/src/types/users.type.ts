@@ -1,4 +1,3 @@
-
 export type UserBase = {
   userId: string;
   userName: string;
@@ -17,7 +16,10 @@ export type UserBase = {
   point: number;
 };
 
-export type AddEmployee = Omit<UserBase, "role" | "userId" | "point" | "status" | "joinDate"> & {
+export type AddEmployee = Omit<
+  UserBase,
+  "role" | "userId" | "point" | "status" | "joinDate"
+> & {
   confirmPassword: string;
 };
 

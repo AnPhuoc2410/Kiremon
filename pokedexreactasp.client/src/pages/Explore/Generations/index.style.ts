@@ -24,7 +24,9 @@ export const GenerationCard = styled.div`
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   cursor: pointer;
 
   &:hover {
@@ -39,7 +41,7 @@ export const GenerationBanner = styled.div<{ imageUrl: string }>`
   justify-content: center;
   align-items: center;
   position: relative;
-  background-image: url(${props => props.imageUrl});
+  background-image: url(${(props) => props.imageUrl});
   background-size: cover;
   background-position: center;
 
@@ -115,7 +117,9 @@ export const BackButton = styled.button`
   font-weight: 700;
   cursor: pointer;
   margin-top: ${units.spacing.base};
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     background-color: ${colors["blue-600"]};

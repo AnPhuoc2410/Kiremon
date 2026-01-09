@@ -94,10 +94,14 @@ const getStyle = ({ variant = "sky" }: IButtonProps) => {
   }
 };
 
-const PixelatedButton = styled("button")((props: IButtonProps) => getStyle(props));
+const PixelatedButton = styled("button")((props: IButtonProps) =>
+  getStyle(props),
+);
 
 // Map Button sizes to Text sizes
-const getTextSize = (buttonSize: "sm" | "md" | "lg" | "xl"): "base" | "lg" | "xl" => {
+const getTextSize = (
+  buttonSize: "sm" | "md" | "lg" | "xl",
+): "base" | "lg" | "xl" => {
   switch (buttonSize) {
     case "sm":
       return "base";
@@ -128,7 +132,12 @@ const getIconSize = (buttonSize: "sm" | "md" | "lg" | "xl"): number => {
   }
 };
 
-const Button: React.FC<IButtonProps> = ({ children, size = "lg", icon, ...props }) => {
+const Button: React.FC<IButtonProps> = ({
+  children,
+  size = "lg",
+  icon,
+  ...props
+}) => {
   const textSize = getTextSize(size);
   const iconSize = getIconSize(size);
 

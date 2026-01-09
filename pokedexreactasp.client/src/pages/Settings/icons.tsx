@@ -189,7 +189,14 @@ export const PaletteIcon = () => (
 
 export const GlobeIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <circle
+      cx="10"
+      cy="10"
+      r="8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+    />
     <path
       d="M2 10H18M10 2C12 5 12 15 10 18M10 2C8 5 8 15 10 18"
       stroke="currentColor"
@@ -232,12 +239,12 @@ export const TrashIcon = () => (
 
 export const ArrowUpCircleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle 
-      cx="10" 
-      cy="10" 
-      r="8" 
-      stroke="currentColor" 
-      strokeWidth="1.5" 
+    <circle
+      cx="10"
+      cy="10"
+      r="8"
+      stroke="currentColor"
+      strokeWidth="1.5"
       fill="none"
     />
     <path

@@ -1,4 +1,4 @@
-import { GRAPHQL_ENDPOINT } from '../../config/api.config';
+import { GRAPHQL_ENDPOINT } from "../../config/api.config";
 import {
   CategoriesResponse,
   ItemsResponse,
@@ -6,7 +6,7 @@ import {
   ItemCategory,
   Item,
   ItemWithHeldPokemon,
-} from '../../types/market.types';
+} from "../../types/market.types";
 
 // ============ GraphQL Queries ============
 
@@ -58,11 +58,28 @@ const GET_HELD_ITEM_DETAILS_QUERY = `
   }
 `;
 
+const SEARCH_ITEM_BY_NAME_QUERY = `
+  query searchItemByName($name: String!) {
+    item(where: {name: {_eq: $name}}) {
+      id
+      name
+      cost
+      item_category_id
+      itemnames(where: {language_id: {_eq: 9}}) {
+        name
+      }
+      itemsprites {
+        sprites
+      }
+    }
+  }
+`;
+
 // ============ GraphQL Fetch Function ============
 
 async function executeGraphQLQuery<T>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
 ): Promise<T> {
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
@@ -76,7 +93,9 @@ async function executeGraphQLQuery<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`GraphQL request failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `GraphQL request failed: ${response.status} ${response.statusText}`,
+    );
   }
 
   const result = await response.json();
@@ -95,7 +114,8 @@ export const marketService = {
    * Fetch all item categories
    */
   async getCategories(): Promise<ItemCategory[]> {
-    const data = await executeGraphQLQuery<CategoriesResponse>(GET_CATEGORIES_QUERY);
+    const data =
+      await executeGraphQLQuery<CategoriesResponse>(GET_CATEGORIES_QUERY);
     return data.itemcategory;
   },
 
@@ -105,7 +125,7 @@ export const marketService = {
   async getItemsByCategory(categoryId: number): Promise<Item[]> {
     const data = await executeGraphQLQuery<ItemsResponse>(
       GET_ITEMS_BY_CATEGORY_QUERY,
-      { categoryId }
+      { categoryId },
     );
     return data.item;
   },
@@ -113,12 +133,32 @@ export const marketService = {
   /**
    * Fetch held item details including description and wild Pokemon
    */
-  async getHeldItemDetails(itemId: number): Promise<ItemWithHeldPokemon | null> {
+  async getHeldItemDetails(
+    itemId: number,
+  ): Promise<ItemWithHeldPokemon | null> {
     const data = await executeGraphQLQuery<HeldItemDetailsResponse>(
       GET_HELD_ITEM_DETAILS_QUERY,
-      { itemId }
+      { itemId },
     );
-    
+
     return data.item && data.item.length > 0 ? data.item[0] : null;
+  },
+
+  /**
+   * Search item by exact name
+   */
+  async searchItemByName(
+    name: string,
+  ): Promise<{ item: Item; categoryId: number } | null> {
+    const data = await executeGraphQLQuery<{
+      item: Array<Item & { item_category_id: number }>;
+    }>(SEARCH_ITEM_BY_NAME_QUERY, { name });
+
+    if (data.item && data.item.length > 0) {
+      const itemData = data.item[0];
+      const { item_category_id, ...item } = itemData;
+      return { item, categoryId: item_category_id };
+    }
+    return null;
   },
 };

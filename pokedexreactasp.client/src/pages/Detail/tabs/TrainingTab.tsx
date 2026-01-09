@@ -1,7 +1,7 @@
-import React from 'react';
-import { Text } from '../../../components/ui';
-import * as S from './TrainingTab.style';
-import Divider from '../../../components/ui/Divider';
+import React from "react";
+import { Text } from "../../../components/ui";
+import * as S from "./TrainingTab.style";
+import Divider from "../../../components/ui/Divider";
 
 interface TrainingTabProps {
   stats: Array<{
@@ -20,17 +20,17 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
   baseExperience,
   captureRate,
   baseHappiness,
-  growthRate
+  growthRate,
 }) => {
   // Calculate total EVs
   const totalEVs = stats.reduce((sum, stat) => sum + (stat.effort || 0), 0);
 
   // Get EVs that are greater than 0
   const evYields = stats
-    .filter(stat => stat.effort > 0)
-    .map(stat => ({
+    .filter((stat) => stat.effort > 0)
+    .map((stat) => ({
       name: stat.stat.name,
-      value: stat.effort
+      value: stat.effort,
     }));
 
   return (
@@ -45,13 +45,15 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
             <S.EVGrid>
               {evYields.map((ev, index) => (
                 <S.EVItem key={index}>
-                  <S.EVName>{ev.name.replace('-', ' ')}</S.EVName>
+                  <S.EVName>{ev.name.replace("-", " ")}</S.EVName>
                   <S.EVValue>+{ev.value} EV</S.EVValue>
                 </S.EVItem>
               ))}
               <S.EVTotal>
                 <Text>Total EVs:</Text>
-                <Text style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>{totalEVs}</Text>
+                <Text style={{ fontWeight: "bold", fontSize: "1.25rem" }}>
+                  {totalEVs}
+                </Text>
               </S.EVTotal>
             </S.EVGrid>
           ) : (
@@ -62,7 +64,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
         </S.Card>
       </S.Section>
 
-      <Divider variant='pokeball'/>
+      <Divider variant="pokeball" />
 
       {/* Training Info Section */}
       <S.Section>
@@ -83,7 +85,8 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
               <S.CatchRateFill rate={captureRate} />
             </S.CatchRateBar>
             <S.InfoDescription>
-              {Math.round((captureRate / 255) * 100)}% at full health with Pokéball
+              {Math.round((captureRate / 255) * 100)}% at full health with
+              Pokéball
             </S.InfoDescription>
           </S.InfoCard>
 
@@ -93,15 +96,13 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
             <S.HappinessBar>
               <S.HappinessFill happiness={baseHappiness} />
             </S.HappinessBar>
-            <S.InfoDescription>
-              Starting friendship level
-            </S.InfoDescription>
+            <S.InfoDescription>Starting friendship level</S.InfoDescription>
           </S.InfoCard>
 
           <S.InfoCard>
             <S.InfoLabel>Growth Rate</S.InfoLabel>
             <S.GrowthRateBadge rate={growthRate}>
-              {growthRate.replace('-', ' ')}
+              {growthRate.replace("-", " ")}
             </S.GrowthRateBadge>
             <S.InfoDescription>
               {getGrowthRateDescription(growthRate)}
@@ -116,14 +117,14 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
 // Helper function to get growth rate description
 function getGrowthRateDescription(rate: string): string {
   const descriptions: Record<string, string> = {
-    'slow': '1,250,000 XP to level 100',
-    'medium': '1,000,000 XP to level 100',
-    'fast': '800,000 XP to level 100',
-    'medium-slow': '1,059,860 XP to level 100',
-    'slow-then-very-fast': 'Varies (fluctuating)',
-    'fast-then-very-slow': 'Varies (fluctuating)'
+    slow: "1,250,000 XP to level 100",
+    medium: "1,000,000 XP to level 100",
+    fast: "800,000 XP to level 100",
+    "medium-slow": "1,059,860 XP to level 100",
+    "slow-then-very-fast": "Varies (fluctuating)",
+    "fast-then-very-slow": "Varies (fluctuating)",
   };
-  return descriptions[rate] || 'Experience needed to level up';
+  return descriptions[rate] || "Experience needed to level up";
 }
 
 export default TrainingTab;

@@ -1,25 +1,29 @@
-import { ApiService } from '../api/api-client';
-import { cacheUtils } from '../cache/cache';
-import { buildEndpointUrl } from '../../config/api.config';
-import { IRegion, INameUrlPair, IAPIResourceList } from '../../types/pokemon';
+import { ApiService } from "../api/api-client";
+import { cacheUtils } from "../cache/cache";
+import { buildEndpointUrl } from "../../config/api.config";
+import { IRegion, INameUrlPair, IAPIResourceList } from "../../types/pokemon";
 
 class RegionsService extends ApiService {
   constructor() {
-    super(buildEndpointUrl('regions'));
+    super(buildEndpointUrl("regions"));
   }
 
   /**
    * Fetch all available regions
    */
   async getAllRegions(): Promise<INameUrlPair[]> {
-    const cacheKey = 'regions:all';
+    const cacheKey = "regions:all";
     const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours cache for regions
 
     try {
-      return await cacheUtils.getOrSet(cacheKey, async () => {
-        const response = await this.get<IAPIResourceList>('');
-        return response.results || [];
-      }, ONE_DAY);
+      return await cacheUtils.getOrSet(
+        cacheKey,
+        async () => {
+          const response = await this.get<IAPIResourceList>("");
+          return response.results || [];
+        },
+        ONE_DAY,
+      );
     } catch (error) {
       console.error("Error fetching regions:", error);
       return [];
@@ -35,9 +39,13 @@ class RegionsService extends ApiService {
     const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours cache for region details
 
     try {
-      return await cacheUtils.getOrSet(cacheKey, async () => {
-        return this.get<IRegion>(`/${regionName}`);
-      }, ONE_DAY);
+      return await cacheUtils.getOrSet(
+        cacheKey,
+        async () => {
+          return this.get<IRegion>(`/${regionName}`);
+        },
+        ONE_DAY,
+      );
     } catch (error) {
       console.error(`Error fetching details for ${regionName} region:`, error);
       return null;
@@ -54,8 +62,10 @@ class RegionsService extends ApiService {
     try {
       return await cacheUtils.getOrSet(cacheKey, async () => {
         // Create a generations service
-        const genService = new ApiService(buildEndpointUrl('generations'));
-        const response = await genService.get<{ pokemon_species: INameUrlPair[] }>(`/${gen}`);
+        const genService = new ApiService(buildEndpointUrl("generations"));
+        const response = await genService.get<{
+          pokemon_species: INameUrlPair[];
+        }>(`/${gen}`);
 
         // Get Pokemon from the generation
         const pokemonList = response.pokemon_species || [];

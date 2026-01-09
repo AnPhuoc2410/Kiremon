@@ -58,7 +58,9 @@ const ResetPassword: React.FC = () => {
     const finalEmail = email || "";
 
     if (!finalToken || !finalEmail) {
-      toast.error("Missing token or email. Please use the link from your email.");
+      toast.error(
+        "Missing token or email. Please use the link from your email.",
+      );
       return;
     }
 
@@ -91,7 +93,9 @@ const ResetPassword: React.FC = () => {
           <AuthLogo src="/pokeball-logo.png" alt="Pokéball logo" />
           <div>
             <AuthTitle>Reset Password</AuthTitle>
-            <AuthSubtitle>Create a new password for your Trainer account</AuthSubtitle>
+            <AuthSubtitle>
+              Create a new password for your Trainer account
+            </AuthSubtitle>
           </div>
         </AuthHeader>
 
@@ -108,7 +112,9 @@ const ResetPassword: React.FC = () => {
                 required
               />
 
-              <FormLabel htmlFor="reset-token">Reset Token (from email)</FormLabel>
+              <FormLabel htmlFor="reset-token">
+                Reset Token (from email)
+              </FormLabel>
               <AuthInput
                 id="reset-token"
                 type="text"
@@ -158,4 +164,3 @@ const ResetPassword: React.FC = () => {
 };
 
 export default ResetPassword;
-

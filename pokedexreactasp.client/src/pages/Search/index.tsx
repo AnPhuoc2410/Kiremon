@@ -1,7 +1,13 @@
 import React, { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { Header, Navbar, PokeCard, SkeletonCard, Text } from "../../components/ui";
+import {
+  Header,
+  Navbar,
+  PokeCard,
+  SkeletonCard,
+  Text,
+} from "../../components/ui";
 import * as T from "../Explore/index.style";
 import { IPokemon } from "../../types/pokemon";
 import { getPokemonId } from "../../components/utils";
@@ -18,7 +24,9 @@ const SearchPage: React.FC = () => {
   const filtered = useMemo(() => {
     if (!q) return [] as IPokemon[];
     const term = q.toLowerCase();
-    return (allPokemon || []).filter((p) => p.name.toLowerCase().includes(term));
+    return (allPokemon || []).filter((p) =>
+      p.name.toLowerCase().includes(term),
+    );
   }, [q, allPokemon]);
 
   const isEmptyQuery = q.length === 0;
@@ -26,7 +34,10 @@ const SearchPage: React.FC = () => {
   return (
     <>
       <T.Container>
-        <Header title="Search Pokémon" subtitle={q ? `Results for "${q}"` : "Type a name to search"} />
+        <Header
+          title="Search Pokémon"
+          subtitle={q ? `Results for "${q}"` : "Type a name to search"}
+        />
 
         {isEmptyQuery ? (
           <div style={{ padding: 24 }}>

@@ -800,7 +800,8 @@ export const ThemeSelector = styled.div`
 export const ThemeOption = styled.button<{ active?: boolean }>`
   flex: 1;
   padding: 12px 16px;
-  border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
+  border: 2px solid
+    ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
   background: ${({ active }) => (active ? colors["red-500"] : "white")};
   color: ${({ active }) => (active ? colors["red-700"] : colors["gray-700"])};
   border-radius: 8px;
@@ -860,7 +861,8 @@ export const PokeballOption = styled.button<{ active?: boolean }>`
   align-items: center;
   gap: 8px;
   padding: 12px;
-  border: 2px solid ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
+  border: 2px solid
+    ${({ active }) => (active ? colors["red-500"] : colors["gray-300"])};
   background: ${({ active }) => (active ? colors["red-100"] : "white")};
   border-radius: 12px;
   cursor: pointer;

@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export const Container = styled.div`
   display: flex;
@@ -22,7 +22,7 @@ export const SectionTitle = styled.div`
   h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1F2937;
+    color: #1f2937;
     margin: 0;
     text-transform: uppercase;
   }
@@ -58,7 +58,7 @@ export const EVName = styled.div`
 export const EVValue = styled.div`
   font-size: 1.1rem;
   font-weight: 700;
-  color: #3B82F6;
+  color: #3b82f6;
   padding: 4px 10px;
 `;
 
@@ -72,7 +72,7 @@ export const EVTotal = styled.div`
 
   p {
     font-size: 1rem;
-    color: #B45309;
+    color: #b45309;
   }
 `;
 
@@ -92,45 +92,45 @@ export const InfoCard = styled.div`
 export const InfoLabel = styled.div`
   font-size: 0.85rem;
   font-weight: 600;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: uppercase;
 `;
 
 export const InfoValue = styled.div`
   font-size: 1.75rem;
   font-weight: 800;
-  color: #1F2937;
+  color: #1f2937;
   line-height: 1;
 `;
 
 export const InfoDescription = styled.div`
   font-size: 0.85rem;
-  color: #9CA3AF;
+  color: #9ca3af;
   margin-top: 4px;
 `;
 
 export const CatchRateBar = styled.div`
   width: 100%;
   height: 10px;
-  background-color: #E5E7EB;
+  background-color: #e5e7eb;
 `;
 
 export const CatchRateFill = styled.div<{ rate: number }>`
   height: 100%;
-  width: ${props => (props.rate / 255) * 100}%;
-  background-color: #10B981;
+  width: ${(props) => (props.rate / 255) * 100}%;
+  background-color: #10b981;
 `;
 
 export const HappinessBar = styled.div`
   width: 100%;
   height: 10px;
-  background-color: #E5E7EB;
+  background-color: #e5e7eb;
 `;
 
 export const HappinessFill = styled.div<{ happiness: number }>`
   height: 100%;
-  width: ${props => (props.happiness / 255) * 100}%;
-  background-color: #F59E0B;
+  width: ${(props) => (props.happiness / 255) * 100}%;
+  background-color: #f59e0b;
 `;
 
 export const GrowthRateBadge = styled.div<{ rate: string }>`
@@ -139,14 +139,14 @@ export const GrowthRateBadge = styled.div<{ rate: string }>`
   font-weight: 700;
   text-transform: capitalize;
   text-align: center;
-  color: ${props => getGrowthRateColor(props.rate)};
-  box-shadow: ${props => getGrowthRateColor(props.rate)};
+  color: ${(props) => getGrowthRateColor(props.rate)};
+  box-shadow: ${(props) => getGrowthRateColor(props.rate)};
 `;
 
 export const NoData = styled.div`
   text-align: center;
   padding: 32px 16px;
-  color: #9CA3AF;
+  color: #9ca3af;
 
   p {
     font-size: 1rem;
@@ -155,12 +155,12 @@ export const NoData = styled.div`
 
 function getGrowthRateColor(rate: string): string {
   const colors: Record<string, string> = {
-    'slow': '#EF4444',
-    'medium': '#3B82F6',
-    'fast': '#10B981',
-    'medium-slow': '#F59E0B',
-    'slow-then-very-fast': '#8B5CF6',
-    'fast-then-very-slow': '#EC4899'
+    slow: "#EF4444",
+    medium: "#3B82F6",
+    fast: "#10B981",
+    "medium-slow": "#F59E0B",
+    "slow-then-very-fast": "#8B5CF6",
+    "fast-then-very-slow": "#EC4899",
   };
-  return colors[rate] || '#9CA3AF';
+  return colors[rate] || "#9CA3AF";
 }

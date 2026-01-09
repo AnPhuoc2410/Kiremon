@@ -1,10 +1,10 @@
-import { ApiService } from '../api/api-client';
-import { cacheUtils } from '../cache/cache';
-import { buildEndpointUrl, GRAPHQL_ENDPOINT } from '../../config/api.config';
+import { ApiService } from "../api/api-client";
+import { cacheUtils } from "../cache/cache";
+import { buildEndpointUrl, GRAPHQL_ENDPOINT } from "../../config/api.config";
 import {
   IAllPokemonResponse,
   IPokemonDetailResponse,
-} from '../../types/pokemon';
+} from "../../types/pokemon";
 
 interface PokemonGraphQLResult {
   id: number;
@@ -25,13 +25,13 @@ interface SearchPokemonResponse {
 async function executeGraphQLQuery(
   query: string,
   variables: Record<string, any>,
-  operationName: string
+  operationName: string,
 ): Promise<SearchPokemonResponse> {
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "*/*",
+      Accept: "*/*",
     },
     body: JSON.stringify({
       query,
@@ -55,19 +55,22 @@ async function executeGraphQLQuery(
 
 class PokemonService extends ApiService {
   constructor() {
-    super(buildEndpointUrl('pokemon'));
+    super(buildEndpointUrl("pokemon"));
   }
 
   /**
    * Get a list of all Pokemon with pagination
    */
-  async getAllPokemon(limit: number = 50, offset: number = 0): Promise<IAllPokemonResponse> {
+  async getAllPokemon(
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<IAllPokemonResponse> {
     const cacheKey = `pokemon:all:${limit}:${offset}`;
 
     try {
       return await cacheUtils.getOrSet(cacheKey, async () => {
-        return this.get<IAllPokemonResponse>('', {
-          params: { limit, offset }
+        return this.get<IAllPokemonResponse>("", {
+          params: { limit, offset },
         });
       });
     } catch (error) {
@@ -79,7 +82,9 @@ class PokemonService extends ApiService {
   /**
    * Get detailed information about a single Pokemon
    */
-  async getPokemonDetail(nameOrId: string | number): Promise<IPokemonDetailResponse | null> {
+  async getPokemonDetail(
+    nameOrId: string | number,
+  ): Promise<IPokemonDetailResponse | null> {
     if (!nameOrId) return null;
     const cacheKey = `pokemon:detail:${nameOrId}`;
 
@@ -96,14 +101,17 @@ class PokemonService extends ApiService {
   /**
    * Get Pokemon with their types
    */
-  async getPokemonWithTypes(limit: number = 20, offset: number = 0): Promise<IAllPokemonResponse> {
+  async getPokemonWithTypes(
+    limit: number = 20,
+    offset: number = 0,
+  ): Promise<IAllPokemonResponse> {
     const cacheKey = `pokemon:withTypes:${limit}:${offset}`;
 
     try {
       return await cacheUtils.getOrSet(cacheKey, async () => {
         // Get the list of pokemon
-        const response = await this.get<IAllPokemonResponse>('', {
-          params: { limit, offset }
+        const response = await this.get<IAllPokemonResponse>("", {
+          params: { limit, offset },
         });
 
         const results = response.results;
@@ -118,17 +126,17 @@ class PokemonService extends ApiService {
               return {
                 ...pokemon,
                 types: types,
-                id: details.id
+                id: details.id,
               };
             }
 
             return { ...pokemon, types: [], id: 0 };
-          })
+          }),
         );
 
         return {
           ...response,
-          results: detailedPokemon
+          results: detailedPokemon,
         };
       });
     } catch (error) {
@@ -146,7 +154,7 @@ class PokemonService extends ApiService {
 
     try {
       return await cacheUtils.getOrSet(cacheKey, async () => {
-        const formsService = new ApiService(buildEndpointUrl('forms'));
+        const formsService = new ApiService(buildEndpointUrl("forms"));
         return formsService.get(`/${nameOrId}`);
       });
     } catch (error) {
@@ -165,10 +173,10 @@ class PokemonService extends ApiService {
     try {
       // Determine if query is a number (ID) or text (name)
       const isIdSearch = /^\d+$/.test(query.trim());
-      
+
       let graphqlQuery: string;
       let variables: Record<string, any>;
-      
+
       if (isIdSearch) {
         // Search by ID
         graphqlQuery = `
@@ -205,9 +213,9 @@ class PokemonService extends ApiService {
       const result = await executeGraphQLQuery(
         graphqlQuery,
         variables,
-        isIdSearch ? "searchPokemonById" : "searchPokemonByName"
+        isIdSearch ? "searchPokemonById" : "searchPokemonByName",
       );
-      
+
       if (!result.data?.pokemon || result.data.pokemon.length === 0) {
         return [];
       }
@@ -222,7 +230,10 @@ class PokemonService extends ApiService {
   /**
    * Load Pokemon list using GraphQL with pagination
    */
-  async loadPokemonGraphQL(limit: number = 20, offset: number = 0): Promise<PokemonGraphQLResult[]> {
+  async loadPokemonGraphQL(
+    limit: number = 20,
+    offset: number = 0,
+  ): Promise<PokemonGraphQLResult[]> {
     try {
       const graphqlQuery = `
         query loadPokemons($limit: Int!, $offset: Int!) {
@@ -239,7 +250,7 @@ class PokemonService extends ApiService {
       const result = await executeGraphQLQuery(
         graphqlQuery,
         { limit, offset },
-        "loadPokemons"
+        "loadPokemons",
       );
 
       return result.data?.pokemon || [];

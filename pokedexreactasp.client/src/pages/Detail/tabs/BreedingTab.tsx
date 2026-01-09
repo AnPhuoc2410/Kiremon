@@ -1,6 +1,6 @@
-import React from 'react';
-import { Text } from '../../../components/ui';
-import * as S from './BreedingTab.style';
+import React from "react";
+import { Text } from "../../../components/ui";
+import * as S from "./BreedingTab.style";
 
 interface BreedingTabProps {
   eggGroups: string[];
@@ -13,7 +13,7 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
   eggGroups,
   genderRate,
   hatchCounter,
-  baseHappiness
+  baseHappiness,
 }) => {
   const getGenderInfo = (genderRate: number) => {
     if (genderRate === -1) {
@@ -41,7 +41,7 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
             <S.EggGroupGrid>
               {eggGroups.map((group, index) => (
                 <S.EggGroupBadge key={index}>
-                  <S.EggGroupName>{group.replace('-', ' ')}</S.EggGroupName>
+                  <S.EggGroupName>{group.replace("-", " ")}</S.EggGroupName>
                 </S.EggGroupBadge>
               ))}
             </S.EggGroupGrid>
@@ -61,8 +61,10 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
         <S.Card>
           {genderInfo.genderless ? (
             <S.GenderlessBox>
-              <Text style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Genderless</Text>
-              <Text style={{ color: '#9CA3AF' }}>
+              <Text style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
+                Genderless
+              </Text>
+              <Text style={{ color: "#9CA3AF" }}>
                 This Pokémon has no gender
               </Text>
             </S.GenderlessBox>
@@ -142,7 +144,8 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
             <S.TipContent>
               <S.TipTitle>Faster Hatching</S.TipTitle>
               <S.TipText>
-                Use a Pokémon with Flame Body or Magma Armor ability to halve egg cycles!
+                Use a Pokémon with Flame Body or Magma Armor ability to halve
+                egg cycles!
               </S.TipText>
             </S.TipContent>
           </S.Tip>
@@ -150,7 +153,8 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
             <S.TipContent>
               <S.TipTitle>Egg Moves</S.TipTitle>
               <S.TipText>
-                Breed with compatible Pokémon to pass down special moves to offspring.
+                Breed with compatible Pokémon to pass down special moves to
+                offspring.
               </S.TipText>
             </S.TipContent>
           </S.Tip>
@@ -158,7 +162,8 @@ const BreedingTab: React.FC<BreedingTabProps> = ({
             <S.TipContent>
               <S.TipTitle>Perfect IVs</S.TipTitle>
               <S.TipText>
-                Use Destiny Knot to pass down 5 random IVs from parents to offspring.
+                Use Destiny Knot to pass down 5 random IVs from parents to
+                offspring.
               </S.TipText>
             </S.TipContent>
           </S.Tip>

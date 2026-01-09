@@ -42,8 +42,13 @@ class CollectionService extends AuthenticatedApiService {
    * Attempt to catch a Pokemon using Game Mechanics
    * Server calculates: catch rate, shake count, IVs, shiny, level, nature, gender
    */
-  async attemptCatch(request: CatchAttemptRequest): Promise<CatchAttemptResultDto> {
-    return this.post<CatchAttemptResultDto>("/User/pokemon/attempt-catch", request);
+  async attemptCatch(
+    request: CatchAttemptRequest,
+  ): Promise<CatchAttemptResultDto> {
+    return this.post<CatchAttemptResultDto>(
+      "/User/pokemon/attempt-catch",
+      request,
+    );
   }
 
   /**
@@ -63,7 +68,10 @@ class CollectionService extends AuthenticatedApiService {
   /**
    * Update Pokemon nickname
    */
-  async updateNickname(userPokemonId: number, nickname: string): Promise<UserPokemonDto> {
+  async updateNickname(
+    userPokemonId: number,
+    nickname: string,
+  ): Promise<UserPokemonDto> {
     return this.put<UserPokemonDto>(`/User/pokemon/${userPokemonId}/nickname`, {
       nickname,
     });
@@ -85,6 +93,3 @@ class CollectionService extends AuthenticatedApiService {
 }
 
 export const collectionService = new CollectionService();
-
-
-

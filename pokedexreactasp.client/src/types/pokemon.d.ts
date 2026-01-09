@@ -293,7 +293,7 @@ export interface ILocation {
 }
 
 // Interface for evolution chain items
-interface EvolutionItem {
+export interface EvolutionItem {
   from: {
     id: number;
     name: string;
@@ -324,24 +324,25 @@ interface EvolutionItem {
     partySpecies?: string; // Pokemon needed in party
     partyType?: string; // Type needed in party
     tradeSpecies?: string; // Pokemon to trade for
+    tradeSpeciesId?: number; // ID of Pokemon to trade for (from GraphQL)
   };
 }
 
 // Interface for related Pokemon
-interface RelatedPokemonItem extends INameUrlPair {
+export interface RelatedPokemonItem extends INameUrlPair {
   id?: number;
   sprite?: string;
 }
 
 // Interface for special forms
-interface PokemonForm extends INameUrlPair {
+export interface PokemonForm extends INameUrlPair {
   id?: number;
   sprite?: string;
   is_default?: boolean;
 }
 
 // Interface for Pokemon sprites
-interface PokemonSprites {
+export interface PokemonSprites {
   front_default: string;
   front_shiny?: string;
   front_female?: string | null;
@@ -366,26 +367,32 @@ interface PokemonSprites {
       front_shiny: string | null;
     };
   };
-  versions?: Record<string, Record<string, {
-    front_default?: string | null;
-    front_female?: string | null;
-    front_shiny?: string | null;
-    front_shiny_female?: string | null;
-    back_default?: string | null;
-    back_female?: string | null;
-    back_shiny?: string | null;
-    back_shiny_female?: string | null;
-    animated?: {
-      front_default: string | null;
-      front_female: string | null;
-      front_shiny: string | null;
-      front_shiny_female: string | null;
-      back_default: string | null;
-      back_female: string | null;
-      back_shiny: string | null;
-      back_shiny_female: string | null;
-    };
-  }>>;
+  versions?: Record<
+    string,
+    Record<
+      string,
+      {
+        front_default?: string | null;
+        front_female?: string | null;
+        front_shiny?: string | null;
+        front_shiny_female?: string | null;
+        back_default?: string | null;
+        back_female?: string | null;
+        back_shiny?: string | null;
+        back_shiny_female?: string | null;
+        animated?: {
+          front_default: string | null;
+          front_female: string | null;
+          front_shiny: string | null;
+          front_shiny_female: string | null;
+          back_default: string | null;
+          back_female: string | null;
+          back_shiny: string | null;
+          back_shiny_female: string | null;
+        };
+      }
+    >
+  >;
 }
 
 // Species and Evolution interfaces

@@ -7,12 +7,16 @@ export const PageTitle = styled.h1<{ size?: "sm" | "md" | "lg" | "xl" }>`
   font-weight: 700;
   color: ${colors["gray-900"]};
 
-  font-size: ${props => {
+  font-size: ${(props) => {
     switch (props.size) {
-      case "sm": return "1.25rem";
-      case "lg": return "2rem";
-      case "xl": return "2.5rem";
-      default: return "1.5rem";
+      case "sm":
+        return "1.25rem";
+      case "lg":
+        return "2rem";
+      case "xl":
+        return "2.5rem";
+      default:
+        return "1.5rem";
     }
   }};
 `;
@@ -23,11 +27,14 @@ export const SectionTitle = styled.h2<{ size?: "sm" | "md" | "lg" }>`
   color: ${colors["gray-900"]};
   letter-spacing: 0.4px;
 
-  font-size: ${props => {
+  font-size: ${(props) => {
     switch (props.size) {
-      case "sm": return "1rem";
-      case "lg": return "1.5rem";
-      default: return "1.25rem";
+      case "sm":
+        return "1rem";
+      case "lg":
+        return "1.5rem";
+      default:
+        return "1.25rem";
     }
   }};
 `;
@@ -37,11 +44,14 @@ export const CardTitle = styled.h3<{ size?: "sm" | "md" | "lg" }>`
   font-weight: 600;
   color: ${colors["gray-900"]};
 
-  font-size: ${props => {
+  font-size: ${(props) => {
     switch (props.size) {
-      case "sm": return "0.875rem";
-      case "lg": return "1.25rem";
-      default: return "1rem";
+      case "sm":
+        return "0.875rem";
+      case "lg":
+        return "1.25rem";
+      default:
+        return "1rem";
     }
   }};
 `;
@@ -53,19 +63,25 @@ export const Paragraph = styled.p<{
 }>`
   margin: 0;
 
-  font-size: ${props => {
+  font-size: ${(props) => {
     switch (props.size) {
-      case "sm": return "13px";
-      case "lg": return "16px";
-      default: return "14px";
+      case "sm":
+        return "13px";
+      case "lg":
+        return "16px";
+      default:
+        return "14px";
     }
   }};
 
-  color: ${props => {
+  color: ${(props) => {
     switch (props.color) {
-      case "primary": return colors["gray-900"];
-      case "muted": return colors["gray-500"];
-      default: return colors["gray-600"];
+      case "primary":
+        return colors["gray-900"];
+      case "muted":
+        return colors["gray-500"];
+      default:
+        return colors["gray-600"];
     }
   }};
 `;
@@ -76,15 +92,21 @@ export const Subtitle = styled.p`
   font-size: 14px;
 `;
 
-export const SmallText = styled.small<{ color?: "default" | "muted" | "error" | "success" }>`
+export const SmallText = styled.small<{
+  color?: "default" | "muted" | "error" | "success";
+}>`
   font-size: 12px;
 
-  color: ${props => {
+  color: ${(props) => {
     switch (props.color) {
-      case "muted": return colors["gray-400"];
-      case "error": return colors["red-500"];
-      case "success": return colors["green-500"];
-      default: return colors["gray-500"];
+      case "muted":
+        return colors["gray-400"];
+      case "error":
+        return colors["red-500"];
+      case "success":
+        return colors["green-500"];
+      default:
+        return colors["gray-500"];
     }
   }};
 `;
@@ -95,7 +117,7 @@ export const Link = styled.a<{ variant?: "default" | "primary" | "muted" }>`
   cursor: pointer;
   transition: color 0.2s ease;
 
-  ${props => {
+  ${(props) => {
     switch (props.variant) {
       case "primary":
         return `
@@ -123,12 +145,12 @@ export const Badge = styled.span<{
 }>`
   display: inline-flex;
   align-items: center;
-  padding: ${props => props.size === "sm" ? "2px 8px" : "4px 12px"};
+  padding: ${(props) => (props.size === "sm" ? "2px 8px" : "4px 12px")};
   border-radius: 9999px;
-  font-size: ${props => props.size === "sm" ? "11px" : "12px"};
+  font-size: ${(props) => (props.size === "sm" ? "11px" : "12px")};
   font-weight: 500;
 
-  ${props => {
+  ${(props) => {
     switch (props.variant) {
       case "primary":
         return `

@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
-import { RegionTheme } from '../../utils/regionThemes';
+import styled from "@emotion/styled";
+import { RegionTheme } from "../../utils/regionThemes";
 
 interface ThemedProps {
   theme?: RegionTheme;
@@ -13,9 +13,10 @@ export const GenerationContainer = styled.div<ThemedProps>`
   margin: 0 auto;
   padding: 20px;
   border-radius: 8px;
-  background-color: ${props => props.theme ? `${props.theme.background}ee` : 'rgba(255, 255, 255, 0.9)'};
+  background-color: ${(props) =>
+    props.theme ? `${props.theme.background}ee` : "rgba(255, 255, 255, 0.9)"};
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  border: 1px solid ${props => props.theme?.primary || '#ddd'};
+  border: 1px solid ${(props) => props.theme?.primary || "#ddd"};
 `;
 
 export const TitleArea = styled.div<ThemedProps>`
@@ -24,12 +25,12 @@ export const TitleArea = styled.div<ThemedProps>`
 
   h1 {
     margin-bottom: 0;
-    color: ${props => props.theme?.primary || '#333'};
+    color: ${(props) => props.theme?.primary || "#333"};
   }
 
   h2 {
     margin-top: 5px;
-    color: ${props => props.theme?.secondary || '#666'};
+    color: ${(props) => props.theme?.secondary || "#666"};
   }
 `;
 
@@ -50,20 +51,21 @@ export const TabButton = styled.button<TabButtonProps>`
   padding: 10px 20px;
   border: none;
   border-radius: 20px;
-  background-color: ${props => props.active
-    ? props.theme?.primary || '#ef5350'
-    : props.theme?.background || '#f2f2f2'};
-  color: ${props => props.active
-    ? 'white'
-    : props.theme?.secondary || '#333'};
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  background-color: ${(props) =>
+    props.active
+      ? props.theme?.primary || "#ef5350"
+      : props.theme?.background || "#f2f2f2"};
+  color: ${(props) =>
+    props.active ? "white" : props.theme?.secondary || "#333"};
+  font-weight: ${(props) => (props.active ? "bold" : "normal")};
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${props => props.active
-      ? props.theme?.primary || '#ef5350'
-      : props.theme?.overlay || '#e0e0e0'};
+    background-color: ${(props) =>
+      props.active
+        ? props.theme?.primary || "#ef5350"
+        : props.theme?.overlay || "#e0e0e0"};
     transform: translateY(-2px);
   }
 `;
@@ -74,10 +76,10 @@ export const GenerationContent = styled.div`
 
 export const TabContent = styled.div<ThemedProps>`
   padding: 20px;
-  background-color: ${props => props.theme?.overlay || '#fafafa'};
+  background-color: ${(props) => props.theme?.overlay || "#fafafa"};
   border-radius: 8px;
   min-height: 300px;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
 `;
 
 export const PokemonGrid = styled.div`
@@ -94,7 +96,9 @@ export const PokemonCard = styled.div<ThemedProps>`
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   border: 1px solid #eee;
 
   img {
@@ -106,7 +110,7 @@ export const PokemonCard = styled.div<ThemedProps>`
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border-color: ${props => props.theme?.accent || '#ddd'};
+    border-color: ${(props) => props.theme?.accent || "#ddd"};
   }
 `;
 
@@ -119,8 +123,9 @@ export const VersionsGrid = styled.div`
 export const VersionCard = styled.div<ThemedProps>`
   padding: 15px;
   border-radius: 8px;
-  background-color: ${props => props.theme ? `${props.theme.background}dd` : '#e8f5e9'};
-  border: 1px solid ${props => props.theme?.secondary || '#c8e6c9'};
+  background-color: ${(props) =>
+    props.theme ? `${props.theme.background}dd` : "#e8f5e9"};
+  border: 1px solid ${(props) => props.theme?.secondary || "#c8e6c9"};
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
@@ -151,8 +156,8 @@ export const Pagination = styled.div<ThemedProps>`
 
   button {
     padding: 5px 15px;
-    border: 1px solid ${props => props.theme?.primary || '#ddd'};
-    background-color: ${props => props.theme?.background || 'white'};
+    border: 1px solid ${(props) => props.theme?.primary || "#ddd"};
+    background-color: ${(props) => props.theme?.background || "white"};
     border-radius: 5px;
     cursor: pointer;
 
@@ -162,7 +167,7 @@ export const Pagination = styled.div<ThemedProps>`
     }
 
     &:hover:not(:disabled) {
-      background-color: ${props => props.theme?.overlay || '#f0f0f0'};
+      background-color: ${(props) => props.theme?.overlay || "#f0f0f0"};
     }
   }
 `;

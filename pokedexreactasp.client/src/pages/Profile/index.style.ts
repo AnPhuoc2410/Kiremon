@@ -426,11 +426,7 @@ export const ExperienceBar = styled.div`
 export const ExperienceFill = styled.div<{ percentage: number }>`
   width: ${({ percentage }) => percentage}%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    #4dd0e1,
-    #26c6da
-  );
+  background: linear-gradient(90deg, #4dd0e1, #26c6da);
   border-radius: 6px;
   transition: width 0.5s ease-out;
   position: relative;
@@ -1098,8 +1094,8 @@ export const FriendAvatar = styled.div<{ $online?: boolean }>`
     ${colors["yellow-200"]} 0%,
     ${colors["yellow-400"]} 100%
   );
-  border: 3px solid ${({ $online }) =>
-    $online ? colors["green-500"] : colors["gray-300"]};
+  border: 3px solid
+    ${({ $online }) => ($online ? colors["green-500"] : colors["gray-300"])};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1219,22 +1215,22 @@ export const IconButton = styled.button<{ $variant?: "primary" | "danger" }>`
     $variant === "primary"
       ? colors["blue-100"]
       : $variant === "danger"
-      ? colors["red-100"]
-      : colors["gray-200"]};
+        ? colors["red-100"]
+        : colors["gray-200"]};
   color: ${({ $variant }) =>
     $variant === "primary"
       ? colors["blue-600"]
       : $variant === "danger"
-      ? colors["red-600"]
-      : colors["gray-600"]};
+        ? colors["red-600"]
+        : colors["gray-600"]};
 
   &:hover {
     background: ${({ $variant }) =>
       $variant === "primary"
         ? colors["blue-200"]
         : $variant === "danger"
-        ? colors["red-200"]
-        : colors["gray-300"]};
+          ? colors["red-200"]
+          : colors["gray-300"]};
   }
 
   svg {
@@ -1259,18 +1255,20 @@ export const SmallButton = styled.button<{ $variant?: "primary" | "danger" }>`
     $variant === "primary"
       ? colors["green-500"]
       : $variant === "danger"
-      ? colors["red-500"]
-      : colors["gray-200"]};
+        ? colors["red-500"]
+        : colors["gray-200"]};
   color: ${({ $variant }) =>
-    $variant === "primary" || $variant === "danger" ? "white" : colors["gray-700"]};
+    $variant === "primary" || $variant === "danger"
+      ? "white"
+      : colors["gray-700"]};
 
   &:hover {
     background: ${({ $variant }) =>
       $variant === "primary"
         ? colors["green-600"]
         : $variant === "danger"
-        ? colors["red-600"]
-        : colors["gray-300"]};
+          ? colors["red-600"]
+          : colors["gray-300"]};
   }
 
   svg {
@@ -1294,7 +1292,11 @@ export const FriendCodeSection = styled.div`
 `;
 
 export const FriendCodeDisplay = styled.div`
-  background: linear-gradient(135deg, ${colors["gray-900"]} 0%, ${colors["gray-800"]} 100%);
+  background: linear-gradient(
+    135deg,
+    ${colors["gray-900"]} 0%,
+    ${colors["gray-800"]} 100%
+  );
   border-radius: 16px;
   padding: 24px 32px;
   text-align: center;

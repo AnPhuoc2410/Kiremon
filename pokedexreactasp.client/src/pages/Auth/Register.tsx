@@ -50,7 +50,7 @@ const Register: React.FC = () => {
         lastName: null,
       });
       toast.success(
-        "Registration successful! Please check your email to confirm your account."
+        "Registration successful! Please check your email to confirm your account.",
       );
       setTimeout(() => {
         navigate("/login");
@@ -73,7 +73,9 @@ const Register: React.FC = () => {
           <AuthLogo src="/pokeball-logo.png" alt="pokeball" />
           <div>
             <AuthTitle>New Trainer Signup</AuthTitle>
-            <AuthSubtitle>Create your Trainer ID and start exploring</AuthSubtitle>
+            <AuthSubtitle>
+              Create your Trainer ID and start exploring
+            </AuthSubtitle>
           </div>
         </AuthHeader>
 
