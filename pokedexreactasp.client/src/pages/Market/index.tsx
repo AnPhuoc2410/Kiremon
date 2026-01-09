@@ -15,9 +15,9 @@ import {
   SidebarOverlay,
 } from "./Market.styles";
 import { CategoryTabs, ItemGrid, ItemDescriptionBox } from "./components";
-import { usePokeMart } from "../../components/hooks/useMarket";
+import { usePokeMartQuery, useSearchItem } from "../../hooks/queries";
 import { Header } from "../../components/ui";
-import { pokeItemService, marketService } from "../../services";
+import { pokeItemService } from "../../services";
 import { Item } from "../../types/market.types";
 
 const Market: React.FC = () => {
@@ -26,8 +26,6 @@ const Market: React.FC = () => {
   const [pokeballSprite, setPokeballSprite] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [isLoadingItemFromUrl, setIsLoadingItemFromUrl] =
-    useState<boolean>(false);
 
   const {
     categories,
@@ -42,43 +40,25 @@ const Market: React.FC = () => {
     itemsLoading,
     itemsError,
     refetchItems,
-  } = usePokeMart();
+  } = usePokeMartQuery();
 
-  // Handle URL search params for item navigation
+  // Handle URL search params for item navigation using TanStack Query
+  const itemNameFromUrl = searchParams.get("item");
+  const { searchResult, isLoading: isSearchingItem } = useSearchItem(
+    itemNameFromUrl,
+    !!itemNameFromUrl && categories.length > 0,
+  );
+
+  // Navigate to item from URL search result
   useEffect(() => {
-    const itemName = searchParams.get("item");
-    if (itemName && categories.length > 0 && !isLoadingItemFromUrl) {
-      setIsLoadingItemFromUrl(true);
-
-      const loadItemFromUrl = async () => {
-        try {
-          const result = await marketService.searchItemByName(itemName);
-          if (result) {
-            // Set the correct category
-            setSelectedCategory(result.categoryId);
-            // Set the selected item after a brief delay to allow items to load
-            setTimeout(() => {
-              setSelectedItem(result.item);
-              // Clear the search param after navigation
-              setSearchParams({}, { replace: true });
-            }, 500);
-          }
-        } catch (error) {
-          console.error("Failed to load item from URL:", error);
-        } finally {
-          setIsLoadingItemFromUrl(false);
-        }
-      };
-
-      loadItemFromUrl();
+    if (searchResult && !isSearchingItem) {
+      setSelectedCategory(searchResult.categoryId);
+      setTimeout(() => {
+        setSelectedItem(searchResult.item);
+        setSearchParams({}, { replace: true });
+      }, 300);
     }
-  }, [
-    searchParams,
-    categories,
-    isLoadingItemFromUrl,
-    setSelectedCategory,
-    setSearchParams,
-  ]);
+  }, [searchResult, isSearchingItem, setSelectedCategory, setSearchParams]);
 
   // Scroll to top functionality
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   DialogBox,
   DialogOverlay,
@@ -12,15 +12,13 @@ import {
   WildPokemonTitle,
   WildPokemonList,
   WildPokemonItem,
-  WildPokemonLoading,
-  WildPokemonEmpty,
 } from "../Market.styles";
 import {
   Item,
   PokemonBasic,
   getItemDisplayName,
 } from "../../../types/market.types";
-import { useHeldItemDetails } from "../../../components/hooks/useMarket";
+import { useHeldItemDetails } from "../../../hooks/queries";
 
 interface ItemDescriptionBoxProps {
   item: Item | null;
@@ -40,19 +38,8 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
   const {
     wildPokemon,
     itemEffect,
-    loading: wildPokemonLoading,
-    fetchHeldItemDetails,
-    clearHeldItemDetails,
-  } = useHeldItemDetails();
-
-  // Always fetch held item details when item changes to check if it has wild Pokemon
-  useEffect(() => {
-    if (item) {
-      fetchHeldItemDetails(item.id);
-    } else {
-      clearHeldItemDetails();
-    }
-  }, [item, fetchHeldItemDetails, clearHeldItemDetails]);
+    isLoading: wildPokemonLoading,
+  } = useHeldItemDetails(item?.id ?? null, !!item);
 
   if (!item) {
     return (

@@ -3,8 +3,7 @@ import { Global } from "@emotion/react";
 import { Toaster, toast } from "react-hot-toast";
 
 import Routes from "./routes";
-import { GlobalProvider, AuthProvider } from "./contexts";
-import { QueryProvider } from "./providers/QueryProvider";
+import { GlobalProvider, QueryProvider } from "./contexts";
 import NoSignal from "./components/ui/NoSignal";
 import { globalStyle } from "./emotion/global.style";
 import withOnlineStatus from "./components/utils/hoc/onlineStatus";
