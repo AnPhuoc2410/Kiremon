@@ -19,8 +19,8 @@ import {
   IconFlame,
   IconHeart,
 } from "@tabler/icons-react";
-import { MoveDetailData } from "../../../hooks/usePokemonGraphQL";
 import * as S from "./MovesTab.style";
+import { MoveDetailData } from "../../../hooks/queries";
 
 // Helper to get special effect badges for a move
 const getMoveEffectBadges = (move: MoveDetailData) => {

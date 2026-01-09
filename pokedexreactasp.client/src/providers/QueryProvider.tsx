@@ -29,5 +29,4 @@ export function QueryProvider({ children }: QueryProviderProps) {
   );
 }
 
-// Export queryClient for potential direct access (e.g., prefetching)
 export { queryClient };
