@@ -199,5 +199,32 @@ namespace PokedexReactASP.Domain.Entities
         public double WinRate => TotalBattles > 0 ? (double)BattlesWon / TotalBattles * 100 : 0;
 
         #endregion
+
+        #region Location Management
+
+        /// <summary>
+        /// Verifies if the Pokemon is in the Party or in a Box
+        /// </summary>
+        public bool IsInParty { get; set; } = false;
+
+        /// <summary>
+        /// Slot index within Party or Box
+        /// - If in Party: 0 to 5
+        /// - If in Box: 0 to 29 (6x5 grid)
+        /// </summary>
+        public int SlotIndex { get; set; } = 0;
+
+        /// <summary>
+        /// Box's ID where this Pokemon is stored (null if IsInParty = true)
+        /// </summary>
+        public int? BoxId { get; set; }
+        public virtual UserBox? Box { get; set; }
+
+        /// <summary>
+        /// Held item API ID for easy reference to PokeAPI data
+        /// </summary>
+        public int? HeldItemApiId { get; set; }
+
+        #endregion
     }
 }

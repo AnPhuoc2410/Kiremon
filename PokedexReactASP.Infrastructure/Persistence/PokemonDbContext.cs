@@ -11,6 +11,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
         }
 
         public DbSet<UserPokemon> UserPokemon { get; set; }
+        public DbSet<UserBox> UserBoxes { get; set; } 
+        public DbSet<UserItem> UserItems { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
 
@@ -45,12 +47,20 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.HasIndex(e => e.PokemonApiId);
                 entity.HasIndex(e => new { e.UserId, e.PokemonApiId });
                 entity.HasIndex(e => new { e.UserId, e.IsFavorite });
+                entity.HasIndex(e => new { e.UserId, e.IsInParty, e.SlotIndex });
+                entity.HasIndex(e => e.BoxId);
 
                 // Configure relationship with User
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.UserPokemons)
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Cấu hình quan hệ Box - Pokemon
+                entity.HasOne(p => p.Box)
+                    .WithMany(b => b.Pokemons)
+                    .HasForeignKey(p => p.BoxId)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 // String length constraints
                 entity.Property(e => e.Nickname).HasMaxLength(50);
@@ -65,6 +75,38 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.PokemonApiId).IsRequired();
                 entity.Property(e => e.CaughtDate).IsRequired();
                 
+            });
+
+            // Configure UserBox entity
+            modelBuilder.Entity<UserBox>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.BackgroundImage).HasMaxLength(200);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Boxes)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure UserItem entity
+            modelBuilder.Entity<UserItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.ItemApiId });
+                entity.HasIndex(e => new { e.UserId, e.PocketName });
+
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.PocketName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.CategoryName).HasMaxLength(50);
+                entity.Property(e => e.SpriteUrl).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Inventory)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configure Friendship entity
