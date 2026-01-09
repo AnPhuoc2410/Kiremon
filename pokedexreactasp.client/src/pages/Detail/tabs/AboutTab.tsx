@@ -5,6 +5,7 @@ import { Loading, RelatedPokemon, Text } from "../../../components/ui";
 import { POKEMON_IMAGE } from "../../../config/api.config";
 import { pokemonService } from "../../../services";
 import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
+import { RelatedPokemonItem, IPokemonSpecies } from "../../../types/pokemon.d";
 import * as T from "../index.style";
 import * as S from "./AboutTab.style";
 
@@ -13,10 +14,15 @@ interface AboutTabProps {
     ability?: { name: string };
     is_hidden?: boolean;
   }>;
-  relatedPokemon: any[];
-  specialForms: any[];
+  relatedPokemon: RelatedPokemonItem[];
+  specialForms: Array<{
+    name: string;
+    url: string;
+    id?: number;
+    is_default?: boolean;
+  }>;
   isLoadingRelated: boolean;
-  species: any;
+  species: IPokemonSpecies | null;
   name: string;
   heldItems?: Array<{
     item: { name: string; url: string };

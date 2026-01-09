@@ -1,13 +1,19 @@
 import React from "react";
 import { Text, EvolutionChain, Loading } from "../../../components/ui";
+import { EvolutionItem } from "../../../types/pokemon.d";
 import * as T from "../index.style";
 import * as S from "./EvolutionTab.style";
 
 interface EvolutionTabProps {
   isLoadingEvolution: boolean;
-  evolutionChain: any[];
+  evolutionChain: EvolutionItem[];
 }
 
+/**
+ * Evolution Tab Component
+ * Uses lazy-loaded evolution data from usePokemonEvolution hook
+ * Data is only fetched when this tab becomes active
+ */
 const EvolutionTab: React.FC<EvolutionTabProps> = ({
   isLoadingEvolution,
   evolutionChain,

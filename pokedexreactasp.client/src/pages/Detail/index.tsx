@@ -42,7 +42,13 @@ import VarietiesTab from "./tabs/VarietiesTab";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { skillColor } from "../../components/utils";
 import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
-import { LANGUAGE_IDS, usePokemonGraphQL } from "../../hooks/usePokemonGraphQL";
+// Use new TanStack Query hooks for optimized data fetching
+import {
+  usePokemonCore,
+  usePokemonEvolution,
+  useRelatedPokemon,
+  LANGUAGE_IDS,
+} from "../../hooks/queries";
 import * as T from "./index.style";
 
 const PokemonAvatar = styled(LazyLoadImage)`
@@ -56,7 +62,10 @@ const DetailPokemon = () => {
 
   const throwBallTimeout = useRef<NodeJS.Timeout | number>(0);
 
-  // Use GraphQL hook for Pokemon data fetching
+  // Track active tab for lazy loading
+  const [activeTab, setActiveTab] = useState<string>("about");
+
+  // Use TanStack Query hooks for optimized data fetching
   const {
     pokemonId,
     types,
@@ -72,9 +81,7 @@ const DetailPokemon = () => {
     baseExperience,
     heldItems,
     specialForms,
-    species,
-    evolutionChain,
-    relatedPokemon,
+    speciesData: species,
     captureRate,
     baseHappiness,
     flavorText,
@@ -83,6 +90,8 @@ const DetailPokemon = () => {
     habitat,
     growthRate,
     generation,
+    generationId,
+    evolutionChainId,
     isLegendary,
     isMythical,
     shape,
@@ -90,15 +99,25 @@ const DetailPokemon = () => {
     hatchCounter,
     genderRate,
     isLoading,
-    isLoadingEvolution,
-    isLoadingRelated,
-    loadPokemon,
-  } = usePokemonGraphQL();
+  } = usePokemonCore(name, LANGUAGE_IDS.ENGLISH);
+
+  // Lazy load evolution data only when Evolution tab is active
+  const { evolutionChain, isLoading: isLoadingEvolution } = usePokemonEvolution(
+    evolutionChainId,
+    activeTab === "evolution",
+  );
+
+  // Lazy load related Pokemon only when About tab is active
+  const { relatedPokemon, isLoading: isLoadingRelated } = useRelatedPokemon(
+    generationId,
+    name,
+    LANGUAGE_IDS.ENGLISH,
+    activeTab === "about",
+  );
 
   // Local UI states (not from GraphQL)
   const [nickname, setNickname] = useState<string>("");
   const [navHeight, setNavHeight] = useState<number>(0);
-  const [activeTab, setActiveTab] = useState<string>("about");
   const [audioRef] = useState<HTMLAudioElement | null>(
     typeof Audio !== "undefined" ? new Audio() : null,
   );
@@ -358,13 +377,9 @@ const DetailPokemon = () => {
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
     setFallbackLevel(0);
-
-    // Load Pokemon data using GraphQL
-    loadPokemon(name, LANGUAGE_IDS.ENGLISH).catch((error) => {
-      toast.error("Oops! Failed to get Pokemon data. Please try again!");
-      console.error({ error });
-    });
-  }, [name, loadPokemon]);
+    // Reset active tab when navigating to a new Pokemon
+    setActiveTab("about");
+  }, [name]);
 
   useEffect(() => {
     if (navRef.current) {
