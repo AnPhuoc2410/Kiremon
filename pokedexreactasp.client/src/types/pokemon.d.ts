@@ -293,7 +293,7 @@ export interface ILocation {
 }
 
 // Interface for evolution chain items
-interface EvolutionItem {
+export interface EvolutionItem {
   from: {
     id: number;
     name: string;
@@ -329,20 +329,20 @@ interface EvolutionItem {
 }
 
 // Interface for related Pokemon
-interface RelatedPokemonItem extends INameUrlPair {
+export interface RelatedPokemonItem extends INameUrlPair {
   id?: number;
   sprite?: string;
 }
 
 // Interface for special forms
-interface PokemonForm extends INameUrlPair {
+export interface PokemonForm extends INameUrlPair {
   id?: number;
   sprite?: string;
   is_default?: boolean;
 }
 
 // Interface for Pokemon sprites
-interface PokemonSprites {
+export interface PokemonSprites {
   front_default: string;
   front_shiny?: string;
   front_female?: string | null;

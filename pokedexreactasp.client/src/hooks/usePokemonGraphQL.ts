@@ -1,3 +1,17 @@
+/**
+ * @deprecated This hook is deprecated. Use the TanStack Query-based hooks instead:
+ * - usePokemonCore: For Pokemon detail and species data
+ * - usePokemonEvolution: For lazy-loaded evolution chain data
+ * - useRelatedPokemon: For lazy-loaded related Pokemon data
+ *
+ * Import from: import { usePokemonCore, usePokemonEvolution, useRelatedPokemon } from "../hooks/queries";
+ *
+ * Benefits of new hooks:
+ * - Parallel data fetching (faster initial load)
+ * - Lazy loading for evolution and related Pokemon (smaller initial payload)
+ * - React-aware caching (instant back navigation)
+ * - Automatic cache invalidation
+ */
 import { useState, useCallback } from "react";
 import {
   pokemonGraphQLService,
@@ -153,6 +167,12 @@ interface UsePokemonGraphQLResult {
 /**
  * Hook to fetch Pokemon data using GraphQL
  * Supports multi-language through languageId parameter
+ *
+ * @deprecated Use usePokemonCore, usePokemonEvolution, and useRelatedPokemon from hooks/queries instead.
+ * This hook loads all data sequentially. The new hooks provide:
+ * - Parallel loading for faster initial render
+ * - Lazy loading for evolution and related Pokemon
+ * - React-aware caching with TanStack Query
  */
 export function usePokemonGraphQL(): UsePokemonGraphQLResult {
   // Pokemon detail states
