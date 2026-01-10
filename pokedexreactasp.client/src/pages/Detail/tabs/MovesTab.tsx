@@ -28,8 +28,12 @@ import { MoveDetailData } from "../../../hooks/queries";
 
 // Helper to get special effect badges for a move
 const getMoveEffectBadges = (move: MoveDetailData) => {
-  const badges: Array<{ icon: React.ReactNode; label: string; color: string }> =
-    [];
+  const badges: Array<{
+    icon: React.ReactNode;
+    label: string;
+    color: string;
+    chance?: string;
+  }> = [];
 
   // Priority (speed modifier)
   if (move.priority !== 0) {
@@ -126,12 +130,12 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
       }
 
       const chance = move.meta.ailment.chance ?? move.effectChance;
-      const chanceLabel = chance && chance > 0 ? `${chance}% ` : "";
 
       badges.push({
         icon,
-        label: `${chanceLabel}${name.charAt(0).toUpperCase() + name.slice(1)}`,
+        label: `${name.charAt(0).toUpperCase() + name.slice(1)}`,
         color,
+        chance: chance && chance > 0 ? `${chance}%` : undefined,
       });
     }
   }
@@ -156,14 +160,14 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
 
       // Use effect chance for stat changes if available (e.g. 10% chance to lower defense)
       const chance = move.effectChance;
-      const chanceLabel = chance && chance < 100 ? `${chance}% ` : "";
 
       badges.push({
         icon,
-        label: `${chanceLabel}${statChange.stat.replace("-", " ")} ${
+        label: `${statChange.stat.replace("-", " ")} ${
           statChange.change > 0 ? "+" : ""
         }${statChange.change}`,
         color,
+        chance: chance && chance < 100 ? `${chance}%` : undefined,
       });
     });
   }
@@ -474,7 +478,11 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
     // TM/HM style with disc icon
     if (category === "machine") {
       return (
-        <S.TMDiscCard key={move.name} moveType={moveType}>
+        <S.TMDiscCard
+          key={move.name}
+          moveType={moveType}
+          title={move.description || undefined}
+        >
           <IconDisc size={36} className="disc-icon" />
           <div className="disc-info">
             <div className="move-name">
@@ -499,12 +507,22 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
             </div>
             {effectBadges.length > 0 && (
               <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) => (
-                  <S.EffectBadge key={i} badgeColor={badge.color}>
-                    {badge.icon}
-                    {badge.label}
-                  </S.EffectBadge>
-                ))}
+                {effectBadges.map((badge, i) =>
+                  badge.chance ? (
+                    <S.SplitBadge key={i} badgeColor={badge.color}>
+                      <div className="left">{badge.chance}</div>
+                      <div className="right">
+                        {badge.icon}
+                        {badge.label}
+                      </div>
+                    </S.SplitBadge>
+                  ) : (
+                    <S.EffectBadge key={i} badgeColor={badge.color}>
+                      {badge.icon}
+                      {badge.label}
+                    </S.EffectBadge>
+                  ),
+                )}
               </S.EffectBadgesRow>
             )}
           </div>
@@ -516,7 +534,11 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
     // Egg move style
     if (category === "egg") {
       return (
-        <S.EggMoveCard key={move.name} moveType={moveType}>
+        <S.EggMoveCard
+          key={move.name}
+          moveType={moveType}
+          title={move.description || undefined}
+        >
           <div className="egg-icon">
             <IconEgg size={18} />
           </div>
@@ -538,12 +560,22 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
             </div>
             {effectBadges.length > 0 && (
               <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) => (
-                  <S.EffectBadge key={i} badgeColor={badge.color}>
-                    {badge.icon}
-                    {badge.label}
-                  </S.EffectBadge>
-                ))}
+                {effectBadges.map((badge, i) =>
+                  badge.chance ? (
+                    <S.SplitBadge key={i} badgeColor={badge.color}>
+                      <div className="left">{badge.chance}</div>
+                      <div className="right">
+                        {badge.icon}
+                        {badge.label}
+                      </div>
+                    </S.SplitBadge>
+                  ) : (
+                    <S.EffectBadge key={i} badgeColor={badge.color}>
+                      {badge.icon}
+                      {badge.label}
+                    </S.EffectBadge>
+                  ),
+                )}
               </S.EffectBadgesRow>
             )}
           </div>
@@ -555,7 +587,11 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
     // Tutor move style
     if (category === "tutor") {
       return (
-        <S.TutorMoveCard key={move.name} moveType={moveType}>
+        <S.TutorMoveCard
+          key={move.name}
+          moveType={moveType}
+          title={move.description || undefined}
+        >
           <div className="tutor-icon">
             <IconSchool size={18} />
           </div>
@@ -577,12 +613,22 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
             </div>
             {effectBadges.length > 0 && (
               <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) => (
-                  <S.EffectBadge key={i} badgeColor={badge.color}>
-                    {badge.icon}
-                    {badge.label}
-                  </S.EffectBadge>
-                ))}
+                {effectBadges.map((badge, i) =>
+                  badge.chance ? (
+                    <S.SplitBadge key={i} badgeColor={badge.color}>
+                      <div className="left">{badge.chance}</div>
+                      <div className="right">
+                        {badge.icon}
+                        {badge.label}
+                      </div>
+                    </S.SplitBadge>
+                  ) : (
+                    <S.EffectBadge key={i} badgeColor={badge.color}>
+                      {badge.icon}
+                      {badge.label}
+                    </S.EffectBadge>
+                  ),
+                )}
               </S.EffectBadgesRow>
             )}
           </div>
@@ -593,7 +639,11 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
 
     // Default move card (level-up, other)
     return (
-      <S.MoveCard key={move.name} moveType={moveType}>
+      <S.MoveCard
+        key={move.name}
+        moveType={moveType}
+        title={move.description || undefined}
+      >
         <div className="type-indicator" />
         <div className="move-content">
           <div className="move-header">
@@ -645,12 +695,22 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
           </div>
           {effectBadges.length > 0 && (
             <S.EffectBadgesRow>
-              {effectBadges.map((badge, i) => (
-                <S.EffectBadge key={i} badgeColor={badge.color}>
-                  {badge.icon}
-                  {badge.label}
-                </S.EffectBadge>
-              ))}
+              {effectBadges.map((badge, i) =>
+                badge.chance ? (
+                  <S.SplitBadge key={i} badgeColor={badge.color}>
+                    <div className="left">{badge.chance}</div>
+                    <div className="right">
+                      {badge.icon}
+                      {badge.label}
+                    </div>
+                  </S.SplitBadge>
+                ) : (
+                  <S.EffectBadge key={i} badgeColor={badge.color}>
+                    {badge.icon}
+                    {badge.label}
+                  </S.EffectBadge>
+                ),
+              )}
             </S.EffectBadgesRow>
           )}
         </div>

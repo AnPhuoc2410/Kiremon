@@ -597,9 +597,84 @@ export const EffectBadge = styled.span<{
     height: 14px;
   }
 
-  &:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px ${({ badgeColor }) => `${badgeColor}30`};
+  }
+`;
+
+export const SplitBadge = styled.div<{ badgeColor: string }>`
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid ${({ badgeColor }) => `${badgeColor}40`};
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px ${({ badgeColor }) => `${badgeColor}20`};
+  }
+
+  .left {
+    background: #f3f4f6;
+    color: #4b5563;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid ${({ badgeColor }) => `${badgeColor}20`};
+  }
+
+  .right {
+    background: ${({ badgeColor }) => `${badgeColor}15`};
+    color: ${({ badgeColor }) => badgeColor};
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+export const GroupedSplitBadge = styled(SplitBadge)`
+  .left {
+    font-size: 0.9rem;
+    padding: 0 12px;
+    background: #f3f4f6;
+    color: #374151;
+    font-weight: 800;
+  }
+
+  .right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 8px;
+    max-width: 300px;
+  }
+`;
+
+export const MiniStatBadge = styled.span<{ color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: white;
+  color: ${({ color }) => color};
+  border: 1px solid ${({ color }) => `${color}40`};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  svg {
+    width: 12px;
+    height: 12px;
   }
 `;
 
