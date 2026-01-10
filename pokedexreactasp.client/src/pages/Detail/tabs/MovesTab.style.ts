@@ -646,7 +646,6 @@ export const GroupedSplitBadge = styled(SplitBadge)`
   .left {
     font-size: 0.9rem;
     padding: 0 12px;
-    background: #f3f4f6;
     color: #374151;
     font-weight: 800;
   }

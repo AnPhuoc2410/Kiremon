@@ -158,7 +158,6 @@ const getMoveEffectBadges = (move: MoveDetailData) => {
         color = statChange.change > 0 ? "#eab308" : "#854d0e";
       }
 
-      // Use effect chance for stat changes if available (e.g. 10% chance to lower defense)
       const chance = move.effectChance;
 
       badges.push({
@@ -471,9 +470,244 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
     return "1×";
   };
 
+  const getMoveEffectBadges = (move: MoveDetailData) => {
+    const badges: Array<{
+      icon: React.ReactNode;
+      label: string;
+      color: string;
+      chance?: string;
+      isGrouped?: boolean;
+      groupedStats?: Array<{
+        icon: React.ReactNode;
+        label: string;
+        color: string;
+      }>;
+    }> = [];
+
+    // Priority (speed modifier)
+    if (move.priority !== 0) {
+      badges.push({
+        icon: <IconBolt size={14} />,
+        label:
+          move.priority > 0
+            ? `Priority +${move.priority}`
+            : `Priority ${move.priority}`,
+        color: move.priority > 0 ? "#16a34a" : "#dc2626",
+      });
+    }
+
+    // Generation introduced
+    if (move.generation && move.generation > 1) {
+      badges.push({
+        icon: <IconSparkles size={14} />,
+        label: `Gen ${move.generation}`,
+        color: "#6366f1",
+      });
+    }
+
+    // Meta effects
+    if (move.meta) {
+      if (move.meta.critRate > 0) {
+        badges.push({
+          icon: <IconTarget size={14} />,
+          label: "High Crit",
+          color: "#ea580c",
+        });
+      }
+      if (move.meta.flinchChance > 0) {
+        const chance = Math.max(move.meta.flinchChance, move.effectChance || 0);
+        badges.push({
+          icon: <IconAlertTriangle size={14} />,
+          label: `${chance}% Flinch`,
+          color: "#ca8a04",
+        });
+      }
+      if (move.meta.drain > 0) {
+        badges.push({
+          icon: <IconDroplet size={14} />,
+          label: `${move.meta.drain}% Drain`,
+          color: "#16a34a",
+        });
+      }
+      if (move.meta.drain < 0) {
+        badges.push({
+          icon: <IconFlame size={14} />,
+          label: `${Math.abs(move.meta.drain)}% Recoil`,
+          color: "#dc2626",
+        });
+      }
+      if (move.meta.healing > 0) {
+        badges.push({
+          icon: <IconHeart size={14} />,
+          label: `${move.meta.healing}% Heal`,
+          color: "#ec4899",
+        });
+      }
+      if (move.meta.minHits && move.meta.maxHits) {
+        const hitsLabel =
+          move.meta.minHits === move.meta.maxHits
+            ? `${move.meta.minHits} Hits`
+            : `${move.meta.minHits}-${move.meta.maxHits} Hits`;
+        badges.push({
+          icon: <IconArrowUp size={14} />,
+          label: hitsLabel,
+          color: "#6366f1",
+        });
+      }
+      if (move.meta.ailment && move.meta.ailment.name !== "none") {
+        let icon = <IconAlertTriangle size={14} />;
+        let color = "#eab308";
+        const name = move.meta.ailment.name;
+
+        if (name === "burn") {
+          icon = <IconFlame size={14} />;
+          color = "#ef4444";
+        } else if (name === "freeze") {
+          icon = <IconSnowflake size={14} />;
+          color = "#0ea5e9";
+        } else if (name === "paralysis") {
+          icon = <IconBolt size={14} />;
+          color = "#eab308";
+        } else if (name === "poison" || name === "toxic") {
+          icon = <IconBiohazard size={14} />;
+          color = "#a855f7";
+        } else if (name === "sleep") {
+          icon = <IconZzz size={14} />;
+          color = "#6366f1";
+        } else if (name === "confusion") {
+          icon = <IconQuestionMark size={14} />;
+          color = "#ec4899";
+        }
+
+        const chance = move.meta.ailment.chance ?? move.effectChance;
+
+        badges.push({
+          icon,
+          label: `${name.charAt(0).toUpperCase() + name.slice(1)}`,
+          color,
+          chance: chance && chance > 0 ? `${chance}%` : undefined,
+        });
+      }
+    }
+
+    // Stat changes
+    if (move.statChanges && move.statChanges.length > 0) {
+      // Check for grouping possibility
+      const statsCount = move.statChanges.length;
+      const commonChance = move.effectChance;
+
+      // If we have > 3 stats and they share a chance (often 10% for "All Stats Up" moves)
+      if (statsCount > 3 && commonChance && commonChance < 100) {
+        const groupedStats = move.statChanges.map((statChange) => {
+          let icon = <IconArrowUp size={12} />;
+          let color = statChange.change > 0 ? "#16a34a" : "#dc2626";
+
+          if (statChange.stat.includes("attack")) {
+            icon = <IconSword size={12} />;
+            color = statChange.change > 0 ? "#ef4444" : "#991b1b";
+          } else if (statChange.stat.includes("defense")) {
+            icon = <IconShield size={12} />;
+            color = statChange.change > 0 ? "#3b82f6" : "#1e40af";
+          } else if (statChange.stat.includes("speed")) {
+            icon = <IconBolt size={12} />;
+            color = statChange.change > 0 ? "#eab308" : "#854d0e";
+          }
+
+          return {
+            icon,
+            label: `${statChange.stat.replace("special-", "Sp.").replace("-", " ")} ${statChange.change > 0 ? "+" : ""}${statChange.change}`,
+            color,
+          };
+        });
+
+        badges.push({
+          icon: <IconSparkles size={14} />,
+          label: "Grouped Stats",
+          isGrouped: true,
+          chance: `${commonChance}%`,
+          color: "transparent",
+          groupedStats,
+        });
+      } else {
+        move.statChanges.forEach((statChange) => {
+          let icon = <IconArrowUp size={14} />;
+          let color = statChange.change > 0 ? "#16a34a" : "#dc2626";
+
+          // Attempt to map stat to an icon
+          if (statChange.stat.includes("attack")) {
+            icon = <IconSword size={14} />;
+            color = statChange.change > 0 ? "#ef4444" : "#991b1b";
+          } else if (statChange.stat.includes("defense")) {
+            icon = <IconShield size={14} />;
+            color = statChange.change > 0 ? "#3b82f6" : "#1e40af";
+          } else if (statChange.stat.includes("speed")) {
+            icon = <IconBolt size={14} />;
+            color = statChange.change > 0 ? "#eab308" : "#854d0e";
+          }
+
+          // Use effect chance for stat changes if available (e.g. 10% chance to lower defense)
+          const chance = move.effectChance;
+
+          badges.push({
+            icon,
+            label: `${statChange.stat.replace("-", " ")} ${
+              statChange.change > 0 ? "+" : ""
+            }${statChange.change}`,
+            color,
+            chance: chance && chance < 100 ? `${chance}%` : undefined,
+          });
+        });
+      }
+    }
+
+    return badges;
+  };
+
   const renderMoveCard = (move: MoveDetailData, category: MoveCategory) => {
     const moveType = move.type.toLowerCase();
     const effectBadges = getMoveEffectBadges(move);
+
+    const renderBadgesRow = () => {
+      if (effectBadges.length === 0) return null;
+      return (
+        <S.EffectBadgesRow>
+          {effectBadges.map((badge, i) => {
+            if (badge.isGrouped && badge.groupedStats) {
+              return (
+                <S.GroupedSplitBadge key={i} badgeColor={badge.color}>
+                  <div className="left">{badge.chance}</div>
+                  <div className="right">
+                    {badge.groupedStats.map((stat, j) => (
+                      <S.MiniStatBadge key={j} color={stat.color}>
+                        {stat.icon}
+                        {stat.label}
+                      </S.MiniStatBadge>
+                    ))}
+                  </div>
+                </S.GroupedSplitBadge>
+              );
+            } else if (badge.chance) {
+              return (
+                <S.SplitBadge key={i} badgeColor={badge.color}>
+                  <div className="left">{badge.chance}</div>
+                  <div className="right">
+                    {badge.icon}
+                    {badge.label}
+                  </div>
+                </S.SplitBadge>
+              );
+            } else {
+              return (
+                <S.EffectBadge key={i} badgeColor={badge.color}>
+                  {badge.icon}
+                  {badge.label}
+                </S.EffectBadge>
+              );
+            }
+          })}
+        </S.EffectBadgesRow>
+      );
+    };
 
     // TM/HM style with disc icon
     if (category === "machine") {
@@ -505,26 +739,7 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
                 </span>
               )}
             </div>
-            {effectBadges.length > 0 && (
-              <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) =>
-                  badge.chance ? (
-                    <S.SplitBadge key={i} badgeColor={badge.color}>
-                      <div className="left">{badge.chance}</div>
-                      <div className="right">
-                        {badge.icon}
-                        {badge.label}
-                      </div>
-                    </S.SplitBadge>
-                  ) : (
-                    <S.EffectBadge key={i} badgeColor={badge.color}>
-                      {badge.icon}
-                      {badge.label}
-                    </S.EffectBadge>
-                  ),
-                )}
-              </S.EffectBadgesRow>
-            )}
+            {renderBadgesRow()}
           </div>
           <span className="type-badge">{moveType}</span>
         </S.TMDiscCard>
@@ -558,26 +773,7 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
                 </span>
               )}
             </div>
-            {effectBadges.length > 0 && (
-              <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) =>
-                  badge.chance ? (
-                    <S.SplitBadge key={i} badgeColor={badge.color}>
-                      <div className="left">{badge.chance}</div>
-                      <div className="right">
-                        {badge.icon}
-                        {badge.label}
-                      </div>
-                    </S.SplitBadge>
-                  ) : (
-                    <S.EffectBadge key={i} badgeColor={badge.color}>
-                      {badge.icon}
-                      {badge.label}
-                    </S.EffectBadge>
-                  ),
-                )}
-              </S.EffectBadgesRow>
-            )}
+            {renderBadgesRow()}
           </div>
           <span className="type-badge">{moveType}</span>
         </S.EggMoveCard>
@@ -611,26 +807,7 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
                 </span>
               )}
             </div>
-            {effectBadges.length > 0 && (
-              <S.EffectBadgesRow>
-                {effectBadges.map((badge, i) =>
-                  badge.chance ? (
-                    <S.SplitBadge key={i} badgeColor={badge.color}>
-                      <div className="left">{badge.chance}</div>
-                      <div className="right">
-                        {badge.icon}
-                        {badge.label}
-                      </div>
-                    </S.SplitBadge>
-                  ) : (
-                    <S.EffectBadge key={i} badgeColor={badge.color}>
-                      {badge.icon}
-                      {badge.label}
-                    </S.EffectBadge>
-                  ),
-                )}
-              </S.EffectBadgesRow>
-            )}
+            {renderBadgesRow()}
           </div>
           <span className="type-badge">{moveType}</span>
         </S.TutorMoveCard>
@@ -693,26 +870,7 @@ const MovesTab: React.FC<MovesTabProps> = ({ moveDetails, types }) => {
               {move.damageClass}
             </span>
           </div>
-          {effectBadges.length > 0 && (
-            <S.EffectBadgesRow>
-              {effectBadges.map((badge, i) =>
-                badge.chance ? (
-                  <S.SplitBadge key={i} badgeColor={badge.color}>
-                    <div className="left">{badge.chance}</div>
-                    <div className="right">
-                      {badge.icon}
-                      {badge.label}
-                    </div>
-                  </S.SplitBadge>
-                ) : (
-                  <S.EffectBadge key={i} badgeColor={badge.color}>
-                    {badge.icon}
-                    {badge.label}
-                  </S.EffectBadge>
-                ),
-              )}
-            </S.EffectBadgesRow>
-          )}
+          {renderBadgesRow()}
         </div>
       </S.MoveCard>
     );
