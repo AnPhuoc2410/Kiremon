@@ -221,7 +221,9 @@ export const MoveCard = styled.div<{ moveType: string }>`
   align-items: stretch;
   background: #fafafa;
   border-radius: 6px;
-  overflow: hidden;
+  border-radius: 6px;
+  position: relative;
+  cursor: pointer;
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
@@ -356,10 +358,10 @@ export const MoveCard = styled.div<{ moveType: string }>`
 export const TMDiscCard = styled.div<{ moveType: string }>`
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   background: #fafafa;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 10px;
   transition: transform 0.15s ease;
   box-shadow: 3px 3px 0 #e5e7eb;
 
@@ -371,8 +373,8 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
     flex-shrink: 0;
     color: ${({ moveType }) => typeColors[moveType]?.bg || "#a8a878"};
     filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.15));
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 
   .disc-info {
@@ -653,8 +655,8 @@ export const GroupedSplitBadge = styled(SplitBadge)`
   .right {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 8px;
+    gap: 4px;
+    padding: 4px 6px;
     max-width: 300px;
   }
 `;
@@ -662,9 +664,9 @@ export const GroupedSplitBadge = styled(SplitBadge)`
 export const MiniStatBadge = styled.span<{ color: string }>`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   font-size: 0.7rem;
-  padding: 2px 6px;
+  padding: 2px 4px;
   border-radius: 4px;
   background: white;
   color: ${({ color }) => color};
@@ -784,4 +786,36 @@ export const FilterButton = styled.button<{ isActive?: boolean }>`
             color: #4b5563;
           }
         `}
+`;
+
+export const InfoPopover = styled.div<{ isOpen: boolean }>`
+position: absolute;
+bottom: calc(100 % + 10px);
+left: 50 %;
+transform: translateX(-50 %) translateY(${({ isOpen }) => (isOpen ? "0" : "10px")});
+width: 280px;
+background: white;
+padding: 12px 16px;
+border - radius: 12px;
+box - shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+z - index: 100;
+text - align: center;
+font - size: 0.9rem;
+color: #374151;
+pointer - events: ${({ isOpen }) => (isOpen ? "auto" : "none")};
+opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
+visibility: ${({ isOpen }) => (isOpen ? "visible" : "hidden")};
+transition: all 0.25s cubic - bezier(0.16, 1, 0.3, 1);
+line - height: 1.5;
+
+  &::after {
+  content: "";
+  position: absolute;
+  top: 100 %;
+  left: 50 %;
+  margin - left: -8px;
+  border - width: 8px;
+  border - style: solid;
+  border - color: white transparent transparent transparent;
+}
 `;
