@@ -27,13 +27,47 @@ const PokeName = styled("div")(
       width: "32vw",
     },
     marginTop: units.spacing.xl,
+    // Flex layout for name and icon
+    display: "flex",
+    alignItems: "center",
+
     h1: {
       textTransform: "uppercase",
-      position: "absolute",
-      top: -20,
-      left: 24,
+      position: "relative", // Changed from absolute to flow with flex
+      top: -10, // Adjustment for alignment
+      left: 0, // Reset
+      marginLeft: "20px",
+      zIndex: 2,
+      marginRight: "12px", // Space between name and icon
       "@media (min-width: 1024px)": {
-        left: 128,
+        marginLeft: "124px",
+      },
+    },
+
+    // Speaker Icon Button
+    ".cry-btn": {
+      zIndex: 2,
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      color: "#333", // Default color
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "4px",
+      marginTop: "-4px", // Align with text
+      transition: "transform 0.1s ease",
+
+      "&:hover": {
+        transform: "scale(1.1)",
+      },
+
+      "&:active": {
+        transform: "scale(0.95)",
+      },
+
+      svg: {
+        filter: "drop-shadow(1px 1px 0 #fff)", // Contrast
       },
     },
     div: {

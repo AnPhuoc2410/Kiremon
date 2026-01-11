@@ -42,7 +42,6 @@ import VarietiesTab from "./tabs/VarietiesTab";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { skillColor } from "../../components/utils";
 import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
-// Use new TanStack Query hooks for optimized data fetching
 import {
   usePokemonCore,
   usePokemonEvolution,
@@ -65,7 +64,6 @@ const DetailPokemon = () => {
   // Track active tab for lazy loading
   const [activeTab, setActiveTab] = useState<string>("about");
 
-  // Use TanStack Query hooks for optimized data fetching
   const {
     pokemonId,
     types,
@@ -101,13 +99,11 @@ const DetailPokemon = () => {
     isLoading,
   } = usePokemonCore(name, LANGUAGE_IDS.ENGLISH);
 
-  // Lazy load evolution data only when Evolution tab is active
   const { evolutionChain, isLoading: isLoadingEvolution } = usePokemonEvolution(
     evolutionChainId,
     activeTab === "evolution",
   );
 
-  // Lazy load related Pokemon only when About tab is active
   const { relatedPokemon, isLoading: isLoadingRelated } = useRelatedPokemon(
     generationId,
     name,
@@ -115,7 +111,6 @@ const DetailPokemon = () => {
     activeTab === "about",
   );
 
-  // Local UI states (not from GraphQL)
   const [nickname, setNickname] = useState<string>("");
   const [navHeight, setNavHeight] = useState<number>(0);
   const [audioRef] = useState<HTMLAudioElement | null>(
@@ -154,7 +149,6 @@ const DetailPokemon = () => {
   const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
 
-  // Attempt to catch Pokemon using server-side Game Mechanics
   async function attemptCatchPokemon(): Promise<CatchAttemptResultDto | null> {
     if (!isAuthenticated) {
       toast.error("Please log in to catch Pokémon!");
@@ -696,13 +690,92 @@ const DetailPokemon = () => {
           style={{
             background:
               typeNames.length > 0
-                ? `linear-gradient(to right, ${skillColor[`${typeNames[0]}-200`] || "#A8A77A"}, transparent)`
+                ? `
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 50%
+          ),
+          linear-gradient(
+            to right, 
+            ${skillColor[`${typeNames[0]}-200`] || "#A8A77A"}, 
+            transparent
+          )
+        `
                 : undefined,
           }}
         >
           <Text as="h1" variant="outlined" size="xl">
             {name}
           </Text>
+
+          <button
+            className="cry-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              playPokemonCry();
+            }}
+            title="Play Cry"
+            aria-label="Play Cry"
+          >
+            {isPlayingCry ? (
+              // Playing icon (Sound waves active)
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 5L6 9H2V15H6L11 19V5Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M19.07 4.93C20.9447 6.80527 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07M15.54 8.46C16.4774 9.39763 17.0039 10.6692 17.0039 12C17.0039 13.3308 16.4774 14.6024 15.54 15.54"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <animate
+                    attributeName="opacity"
+                    values="0.3;1;0.3"
+                    dur="1s"
+                    repeatCount="indefinite"
+                  />
+                </path>
+              </svg>
+            ) : (
+              // Idle icon
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 5L6 9H2V15H6L11 19V5Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15.54 8.46C16.4774 9.39763 17.0039 10.6692 17.0039 12C17.0039 13.3308 16.4774 14.6024 15.54 15.54"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
+
           <Text as="h2" variant="outlined" size="base" className="genera-text">
             {(species &&
               species.genera &&
@@ -816,161 +889,6 @@ const DetailPokemon = () => {
                 <Text className="info-value">{baseHappiness}</Text>
               </div>
             </T.InfoSection>
-            <div
-              className="info-item"
-              style={{
-                alignItems: "center",
-                justifyContent: "left",
-                paddingTop: "12px",
-                display: "flex",
-                flexDirection: "row",
-              }}
-            >
-              <button
-                onClick={playPokemonCry}
-                disabled={isPlayingCry}
-                style={{
-                  background: isPlayingCry
-                    ? `rgba(255, 255, 255, 0.3)`
-                    : "rgba(255, 255, 255, 0.15)",
-                  border: "2px solid rgba(100, 100, 100, 0.3)",
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "12px",
-                  transition: "all 0.3s ease",
-                  boxShadow: isPlayingCry
-                    ? "0 0 8px 2px rgba(255, 255, 255, 0.6)"
-                    : "none",
-                  width: "60px",
-                  height: "60px",
-                }}
-                title="Play Pokémon cry"
-              >
-                {isPlayingCry ? (
-                  <svg
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {/* Pokeball-themed sound icon (playing) */}
-                    <circle cx="12" cy="12" r="10" fill="#FF5555" />
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
-                      fill="white"
-                    />
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z"
-                      fill="#FFF"
-                    >
-                      <animate
-                        attributeName="opacity"
-                        values="1;0.5;1"
-                        dur="1s"
-                        repeatCount="indefinite"
-                      />
-                    </path>
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z"
-                      fill="#FFF"
-                    >
-                      <animate
-                        attributeName="opacity"
-                        values="1;0.5;1"
-                        dur="1s"
-                        repeatCount="indefinite"
-                      />
-                    </path>
-                    {/* Sound waves */}
-                    <path
-                      d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    >
-                      <animate
-                        attributeName="opacity"
-                        values="1;0.3;1"
-                        dur="1s"
-                        repeatCount="indefinite"
-                      />
-                    </path>
-                  </svg>
-                ) : (
-                  <svg
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {/* Pokeball-themed sound icon (not playing) */}
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
-                      fill="#333"
-                    />
-                    <path
-                      d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"
-                      fill="#333"
-                    />
-                    <path
-                      d="M2 12C2 6.48 6.48 2 12 2V4C7.58 4 4 7.58 4 12H2Z"
-                      fill="#FF5555"
-                    />
-                    <path
-                      d="M12 2C17.52 2 22 6.48 22 12H20C20 7.58 16.42 4 12 4V2Z"
-                      fill="#FF5555"
-                    />
-                    {/* Sound waves */}
-                    <path
-                      d="M16 8C17.1 8.9 18 10.4 18 12C18 13.6 17.1 15.1 16 16"
-                      stroke="#333"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                )}
-              </button>
-              {/* Sound bar visualization */}
-              {isPlayingCry && (
-                <T.SoundBar>
-                  <div
-                    className="sound-bar-progress"
-                    style={{ width: `${audioProgress * 100}%` }}
-                  />
-                  <div className="sound-bar-visualization">
-                    {audioVisualization.map((height, index) => (
-                      <div
-                        key={index}
-                        className="sound-bar-line"
-                        style={{
-                          transform: `scaleY(${height})`,
-                          backgroundColor:
-                            index % 2 === 0
-                              ? "rgba(255, 255, 255, 0.8)"
-                              : "rgba(255, 255, 255, 0.5)",
-                        }}
-                      />
-                    ))}
-                  </div>
-                </T.SoundBar>
-              )}
-            </div>
-            <Text style={{ marginLeft: "10px" }} variant="outlined" size="lg">
-              {isPlayingCry ? "Playing..." : "Cry"}
-            </Text>
           </div>
         </T.PokemonContainer>
 
