@@ -67,3 +67,4 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export { AuthProvider, useAuth } from "./AuthContext";
+export { QueryProvider } from "./QueryProvider";

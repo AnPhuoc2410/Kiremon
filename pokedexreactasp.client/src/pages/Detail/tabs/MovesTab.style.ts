@@ -216,12 +216,13 @@ export const MoveGrid = styled.div`
   gap: 10px;
 `;
 
-export const MoveCard = styled.div<{ moveType: string }>`
+export const MoveCard = styled.div<{ moveType: string; isOpen?: boolean }>`
   display: flex;
+  position: relative;
   align-items: stretch;
   background: #fafafa;
   border-radius: 6px;
-  overflow: hidden;
+  z-index: ${({ isOpen }) => (isOpen ? 100 : "auto")};
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
@@ -353,8 +354,9 @@ export const MoveCard = styled.div<{ moveType: string }>`
 `;
 
 // ============ TM/HM Disc Style ============
-export const TMDiscCard = styled.div<{ moveType: string }>`
+export const TMDiscCard = styled.div<{ moveType: string; isOpen?: boolean }>`
   display: flex;
+  position: relative;
   align-items: center;
   gap: 14px;
   background: #fafafa;
@@ -362,6 +364,7 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
   padding: 12px 16px;
   transition: transform 0.15s ease;
   box-shadow: 3px 3px 0 #e5e7eb;
+  z-index: ${({ isOpen }) => (isOpen ? 100 : "auto")};
 
   &:hover {
     transform: translateY(-2px);
@@ -418,8 +421,9 @@ export const TMDiscCard = styled.div<{ moveType: string }>`
 `;
 
 // ============ Egg Move Style ============
-export const EggMoveCard = styled.div<{ moveType: string }>`
+export const EggMoveCard = styled.div<{ moveType: string; isOpen?: boolean }>`
   display: flex;
+  position: relative;
   align-items: center;
   gap: 14px;
   background: #fffbeb;
@@ -427,26 +431,18 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
   padding: 12px 16px;
   box-shadow: 3px 3px 0 #fde68a;
   transition: transform 0.15s ease;
+  z-index: ${({ isOpen }) => (isOpen ? 100 : "auto")};
 
   &:hover {
     transform: translateY(-2px);
   }
 
   .egg-icon {
-    width: 38px;
-    height: 38px;
-    background: #fef3c7;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 69px;
+    height: 69px;
+    object-fit: contain;
+    image-rendering: pixelated;
     flex-shrink: 0;
-
-    svg {
-      color: #d97706;
-      width: 22px;
-      height: 22px;
-    }
   }
 
   .egg-info {
@@ -491,8 +487,9 @@ export const EggMoveCard = styled.div<{ moveType: string }>`
 `;
 
 // ============ Tutor Move Style ============
-export const TutorMoveCard = styled.div<{ moveType: string }>`
+export const TutorMoveCard = styled.div<{ moveType: string; isOpen?: boolean }>`
   display: flex;
+  position: relative;
   align-items: center;
   gap: 14px;
   background: #f0fdf4;
@@ -500,6 +497,7 @@ export const TutorMoveCard = styled.div<{ moveType: string }>`
   padding: 12px 16px;
   box-shadow: 3px 3px 0 #bbf7d0;
   transition: transform 0.15s ease;
+  z-index: ${({ isOpen }) => (isOpen ? 100 : "auto")};
 
   &:hover {
     transform: translateY(-2px);
@@ -693,9 +691,131 @@ export const FilterButton = styled.button<{ isActive?: boolean }>`
           color: #6b7280;
           border-color: #e5e7eb;
 
-          &:hover {
-            background: #e5e7eb;
-            color: #4b5563;
           }
         `}
+`;
+
+// ============ Info Popover ============
+export const InfoPopover = styled.div<{
+  isOpen: boolean;
+  placement: "top" | "bottom";
+}>`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 20;
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  cursor: default;
+  text-align: left;
+
+  ${({ placement }) =>
+    placement === "top"
+      ? `
+        bottom: 100%;
+        margin-bottom: 12px;
+      `
+      : `
+        top: 100%;
+        margin-top: 12px;
+      `}
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border: 1px solid #e5e7eb;
+    left: 50%;
+    margin-left: -6px;
+
+    ${({ placement }) =>
+      placement === "top"
+        ? `
+          bottom: -6px;
+          border-top: none;
+          border-left: none;
+        `
+        : `
+          top: -6px;
+          border-bottom: none;
+          border-right: none;
+        `}
+  }
+`;
+
+// ============ Split Badges ============
+export const SplitBadge = styled.div<{ badgeColor: string }>`
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid ${({ badgeColor }) => `${badgeColor}30`};
+  border-radius: 4px;
+  overflow: hidden;
+  height: 24px;
+  font-size: 0.75rem;
+
+  .left {
+    background: ${({ badgeColor }) => `${badgeColor}15`};
+    color: ${({ badgeColor }) => badgeColor};
+    font-weight: 700;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid ${({ badgeColor }) => `${badgeColor}30`};
+  }
+
+  .right {
+    background: white;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+    color: #4b5563;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      color: ${({ badgeColor }) => badgeColor};
+    }
+  }
+`;
+
+export const GroupedSplitBadge = styled(SplitBadge)`
+  height: auto;
+  min-height: 24px;
+
+  .right {
+    flex-wrap: wrap;
+    padding: 4px 6px;
+    gap: 4px;
+  }
+`;
+
+export const MiniStatBadge = styled.span<{ color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: ${({ color }) => `${color}10`};
+  color: ${({ color }) => color};
+  border: 1px solid ${({ color }) => `${color}20`};
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 `;

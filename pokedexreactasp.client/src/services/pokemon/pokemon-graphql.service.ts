@@ -21,6 +21,7 @@ export interface PokemonMove {
     accuracy: number | null;
     pp: number | null;
     priority: number;
+    move_effect_chance: number | null;
     type: {
       name: string;
     };
@@ -46,9 +47,22 @@ export interface PokemonMove {
       healing: number;
       min_hits: number | null;
       max_hits: number | null;
+      movemetaailment: {
+        name: string;
+      } | null;
+      ailment_chance: number;
+    }>;
+    movemetastatchanges: Array<{
+      change: number;
+      stat: {
+        name: string;
+      };
     }>;
   };
   level: number;
+  movelearnmethod: {
+    name: string;
+  };
 }
 
 export interface PokemonStat {
@@ -331,6 +345,9 @@ const GET_POKEMON_DETAIL_QUERY = `
       }
       pokemonmoves(order_by: {move_id: asc}) {
         level
+        movelearnmethod {
+          name
+        }
         move {
           name
           id
@@ -338,6 +355,7 @@ const GET_POKEMON_DETAIL_QUERY = `
           accuracy
           pp
           priority
+          move_effect_chance
           type {
             name
           }
@@ -353,7 +371,7 @@ const GET_POKEMON_DETAIL_QUERY = `
             name
             language_id
           }
-          moveflavortexts(where: {language_id: {_eq: 9}}, limit: 1, order_by: {version_group_id: desc}) {
+          moveflavortexts(where: {language_id: {_eq: 9}}, limit: 1, order_by: {version_group_id: asc}) {
             flavor_text
           }
           movemeta {
@@ -363,6 +381,16 @@ const GET_POKEMON_DETAIL_QUERY = `
             healing
             min_hits
             max_hits
+            movemetaailment {
+              name
+            }
+            ailment_chance
+          }
+          movemetastatchanges {
+            change
+            stat {
+              name
+            }
           }
         }
       }

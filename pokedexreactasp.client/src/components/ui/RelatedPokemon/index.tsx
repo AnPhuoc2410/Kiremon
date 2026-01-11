@@ -46,9 +46,10 @@ const PokemonCard = styled.div`
 
 interface RelatedPokemonProps {
   pokemonList: {
-    id: number;
+    id?: number;
     name: string;
     url?: string;
+    sprite?: string;
   }[];
   title: string;
 }
