@@ -438,20 +438,11 @@ export const EggMoveCard = styled.div<{ moveType: string; isOpen?: boolean }>`
   }
 
   .egg-icon {
-    width: 38px;
-    height: 38px;
-    background: #fef3c7;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 69px;
+    height: 69px;
+    object-fit: contain;
+    image-rendering: pixelated;
     flex-shrink: 0;
-
-    svg {
-      color: #d97706;
-      width: 22px;
-      height: 22px;
-    }
   }
 
   .egg-info {

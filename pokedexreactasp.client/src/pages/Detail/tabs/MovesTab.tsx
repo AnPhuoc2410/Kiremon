@@ -519,9 +519,7 @@ const MoveCardItem: React.FC<{
         onClick={handleToggle}
       >
         {popoverContent}
-        <div className="egg-icon">
-          <IconEgg size={18} />
-        </div>
+        <img src="/poke_egg.png" alt="Egg Move" className="egg-icon" />
         <div className="egg-info">
           <div className="move-name">
             {move.localizedName.replace(/-/g, " ")}
