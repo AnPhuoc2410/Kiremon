@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   IconShield,
   IconAlertTriangle,
@@ -357,8 +357,21 @@ const MoveCardItem: React.FC<{
   category: MoveCategory;
 }> = ({ move, category }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [placement, setPlacement] = useState<"top" | "bottom">("top");
+  const cardRef = useRef<HTMLDivElement>(null);
   const moveType = move.type.toLowerCase();
   const effectBadges = getMoveEffectBadges(move);
+
+  const calculatePosition = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      if (rect.top < 280) {
+        setPlacement("bottom");
+      } else {
+        setPlacement("top");
+      }
+    }
+  };
 
   const renderBadgesRow = () => {
     if (effectBadges.length === 0) return null;
@@ -403,7 +416,7 @@ const MoveCardItem: React.FC<{
   };
 
   const popoverContent = (
-    <S.InfoPopover isOpen={isOpen}>
+    <S.InfoPopover isOpen={isOpen} placement={placement}>
       <div style={{ fontWeight: 700, marginBottom: 4, color: "#111827" }}>
         {move.localizedName.replace(/-/g, " ")}
       </div>
@@ -438,12 +451,21 @@ const MoveCardItem: React.FC<{
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isOpen) {
+      calculatePosition();
+    }
     setIsOpen(!isOpen);
   };
 
   if (category === "machine") {
     return (
-      <S.TMDiscCard key={move.name} moveType={moveType} onClick={handleToggle}>
+      <S.TMDiscCard
+        ref={cardRef}
+        key={move.name}
+        moveType={moveType}
+        isOpen={isOpen}
+        onClick={handleToggle}
+      >
         {popoverContent}
         <img
           src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-${moveType}.png`}
@@ -489,7 +511,13 @@ const MoveCardItem: React.FC<{
 
   if (category === "egg") {
     return (
-      <S.EggMoveCard key={move.name} moveType={moveType} onClick={handleToggle}>
+      <S.EggMoveCard
+        ref={cardRef}
+        key={move.name}
+        moveType={moveType}
+        isOpen={isOpen}
+        onClick={handleToggle}
+      >
         {popoverContent}
         <div className="egg-icon">
           <IconEgg size={18} />
@@ -520,8 +548,10 @@ const MoveCardItem: React.FC<{
   if (category === "tutor") {
     return (
       <S.TutorMoveCard
+        ref={cardRef}
         key={move.name}
         moveType={moveType}
+        isOpen={isOpen}
         onClick={handleToggle}
       >
         {popoverContent}
@@ -552,7 +582,13 @@ const MoveCardItem: React.FC<{
   }
 
   return (
-    <S.MoveCard key={move.name} moveType={moveType} onClick={handleToggle}>
+    <S.MoveCard
+      ref={cardRef}
+      key={move.name}
+      moveType={moveType}
+      isOpen={isOpen}
+      onClick={handleToggle}
+    >
       {popoverContent}
       <div className="type-indicator" />
       <div className="move-content">

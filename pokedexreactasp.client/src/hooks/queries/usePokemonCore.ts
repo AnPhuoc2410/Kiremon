@@ -147,6 +147,10 @@ function transformPokemonDetail(
   };
 
   const getLearnMethod = (move: PokemonMove): string => {
+    if (move.movelearnmethod?.name) {
+      return move.movelearnmethod.name;
+    }
+    // Fallback if data is missing
     if (move.level && move.level > 0) return "level-up";
     return "machine";
   };

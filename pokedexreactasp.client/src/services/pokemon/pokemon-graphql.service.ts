@@ -60,6 +60,9 @@ export interface PokemonMove {
     }>;
   };
   level: number;
+  movelearnmethod: {
+    name: string;
+  };
 }
 
 export interface PokemonStat {
@@ -342,6 +345,9 @@ const GET_POKEMON_DETAIL_QUERY = `
       }
       pokemonmoves(order_by: {move_id: asc}) {
         level
+        movelearnmethod {
+          name
+        }
         move {
           name
           id
