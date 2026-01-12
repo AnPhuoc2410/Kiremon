@@ -54,9 +54,8 @@ export const StatValue = styled.span`
 
 export const StatBarContainer = styled.div`
   width: 100%;
-  height: 8px;
+  height: 12px;
   background-color: #e5e7eb;
-  border-radius: 4px;
   overflow: hidden;
 `;
 
@@ -64,25 +63,30 @@ export const StatBar = styled.div<{ value: number; color: string }>`
   height: 100%;
   width: ${(props) => Math.min(props.value / 2, 100)}%;
   background-color: ${(props) => props.color};
-  border-radius: 4px;
   transition: width 0.3s ease-in-out;
 `;
 
 export const TotalStats = styled.div`
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
-  font-weight: 600;
-  font-size: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  background-color: #f9fafb;
+  font-weight: 700;
+  font-size: 1.125rem;
+  /* Pixel font if globally available usually inherits, but we can enforce if needed */
 `;
 
 export const StatLabel = styled.span`
-  margin-right: 8px;
   color: #6b7280;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
 `;
 
 export const StatTotal = styled.span`
   color: #111827;
+  font-size: 1.25rem;
 `;

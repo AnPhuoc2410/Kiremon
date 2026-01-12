@@ -60,11 +60,18 @@ const CustomTooltip = ({ active, payload, color }: any) => {
         }}
       >
         <p
-          style={{ margin: 0, fontWeight: "bold", textTransform: "capitalize" }}
+          style={{
+            margin: 0,
+            fontWeight: "bold",
+            textTransform: "capitalize",
+            fontSize: "12px",
+          }}
         >
           {data.subject?.replace("-", " ")}
         </p>
-        <p style={{ margin: "4px 0 0", color: color }}>Value: {data.value}</p>
+        <p style={{ margin: "4px 0 0", color: color, fontSize: "12px" }}>
+          Value: {data.value}
+        </p>
       </div>
     );
   }
@@ -139,7 +146,12 @@ const StatsTab: React.FC<StatsTabProps> = ({ stats, color = "#34D399" }) => {
             <PolarAngleAxis
               dataKey="subject"
               tickFormatter={formatStatName}
-              tick={{ fill: "#4b5563", fontSize: 12, fontWeight: 600 }}
+              tick={{
+                fill: "#4b5563",
+                fontSize: 10,
+                fontWeight: 600,
+                fontFamily: "'Press Start 2P', cursive, sans-serif",
+              }}
             />
             <PolarRadiusAxis
               angle={30}
