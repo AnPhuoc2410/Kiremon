@@ -2,6 +2,33 @@ import styled from "@emotion/styled";
 
 export const StatsContainer = styled.div`
   padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 48px;
+  }
+`;
+
+export const StatsList = styled.div`
+  flex: 1;
+  width: 100%;
+`;
+
+export const ChartContainer = styled.div`
+  flex: 1;
+  width: 100%;
+  height: 300px; /* Explicit height for Recharts */
+  min-width: 0; /* Fix for flexbox overflow */
+  max-width: 500px;
+  margin: 0 auto;
+
+  @media (min-width: 768px) {
+    height: 400px; /* Larger chart on desktop */
+  }
 `;
 
 export const StatItem = styled.div`

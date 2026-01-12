@@ -964,7 +964,16 @@ const DetailPokemon = () => {
           )}
 
           {/* Stats Tab */}
-          {activeTab === "stats" && <StatsTab stats={stats} />}
+          {activeTab === "stats" && (
+            <StatsTab
+              stats={stats}
+              color={
+                typeNames.length > 0
+                  ? skillColor[`${typeNames[0]}-300`]
+                  : undefined
+              }
+            />
+          )}
 
           {/* Training Tab */}
           {activeTab === "training" && (
