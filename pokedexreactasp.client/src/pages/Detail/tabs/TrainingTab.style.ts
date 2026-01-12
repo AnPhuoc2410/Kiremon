@@ -65,8 +65,9 @@ export const EVValue = styled.div`
 export const EVTotal = styled.div`
   grid-column: 1 / -1;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 8px;
   padding: 14px;
   margin-top: 8px;
 
@@ -134,11 +135,11 @@ export const HappinessFill = styled.div<{ happiness: number }>`
 `;
 
 export const GrowthRateBadge = styled.div<{ rate: string }>`
-  padding: 10px 16px;
+  padding: 10px;
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: capitalize;
-  text-align: center;
+  text-align: left;
   color: ${(props) => getGrowthRateColor(props.rate)};
   box-shadow: ${(props) => getGrowthRateColor(props.rate)};
 `;

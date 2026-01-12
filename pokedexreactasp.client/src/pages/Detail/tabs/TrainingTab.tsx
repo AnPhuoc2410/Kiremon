@@ -103,6 +103,28 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
             <S.InfoLabel>Growth Rate</S.InfoLabel>
             <S.GrowthRateBadge rate={growthRate}>
               {growthRate.replace("-", " ")}
+              {/* Pixel Growth Curve Icon */}
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  marginLeft: "8px",
+                  display: "inline-block",
+                  verticalAlign: "text-bottom",
+                }}
+              >
+                {/* Axes */}
+                <path d="M2 22H22V20H4V2H2V22Z" fill="currentColor" />
+                {/* Curve Points - Exponential-ish look */}
+                <path
+                  d="M6 18H8V16H6V18ZM8 16H10V14H8V16ZM10 14H12V11H10V14ZM12 11H14V8H12V11ZM14 8H16V4H14V8ZM16 4H18V2H16V4Z"
+                  fill="currentColor"
+                  fillOpacity="0.8"
+                />
+              </svg>
             </S.GrowthRateBadge>
             <S.InfoDescription>
               {getGrowthRateDescription(growthRate)}
