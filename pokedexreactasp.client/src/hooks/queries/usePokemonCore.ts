@@ -344,6 +344,13 @@ function transformSpeciesData(
         )
       : "";
 
+  // Get localized Pokemon name
+  const localizedNameEntry = data.pokemonspeciesnames.find(
+    (n: SpeciesName) => n.language_id === languageId,
+  );
+  const localizedName = localizedNameEntry?.name || data.name;
+  const localizedGenus = localizedNameEntry?.genus || "";
+
   const eggGroupNames = data.pokemonegggroups.map(
     (eg: EggGroupEntry) =>
       pokemonGraphQLService.getLocalizedName(
@@ -436,6 +443,8 @@ function transformSpeciesData(
     hatchCounter: data.hatch_counter,
     genderRate: data.gender_rate,
     evolutionChainId: data.evolution_chain_id,
+    localizedName,
+    localizedGenus,
   };
 }
 
@@ -532,6 +541,8 @@ export function usePokemonCore(
     hatchCounter: transformedSpecies?.hatchCounter ?? 0,
     genderRate: transformedSpecies?.genderRate ?? -1,
     evolutionChainId: transformedSpecies?.evolutionChainId ?? null,
+    localizedName: transformedSpecies?.localizedName ?? "",
+    localizedGenus: transformedSpecies?.localizedGenus ?? "",
 
     // Loading states
     isLoading,

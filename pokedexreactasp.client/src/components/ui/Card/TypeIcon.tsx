@@ -1,5 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
+import { useLanguage } from "../../../contexts";
+import { getLocalizedTypeName } from "../../../utils/typeI18n";
 
 // Pokemon type colors
 const typeColors: Record<string, string> = {
@@ -82,12 +84,16 @@ const TypeBadge = styled.div<{ bgColor: string; size: string }>`
 `;
 
 const TypeIcon: React.FC<TypeIconProps> = ({ type, size = "md" }) => {
+  const { languageId } = useLanguage();
   const normalizedType = type.toLowerCase();
   const bgColor = typeColors[normalizedType] || "#777777";
 
+  // Get localized type name
+  const localizedTypeName = getLocalizedTypeName(normalizedType, languageId);
+
   return (
     <TypeBadge bgColor={bgColor} size={size}>
-      {normalizedType}
+      {localizedTypeName}
     </TypeBadge>
   );
 };

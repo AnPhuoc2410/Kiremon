@@ -47,6 +47,7 @@ import {
   usePokemonEvolution,
   useRelatedPokemon,
 } from "../../hooks/queries";
+import { getLocalizedLabel } from "../../utils/typeI18n";
 import * as T from "./index.style";
 
 const PokemonAvatar = styled(LazyLoadImage)`
@@ -97,6 +98,8 @@ const DetailPokemon = () => {
     hatchCounter,
     genderRate,
     isLoading,
+    localizedName,
+    localizedGenus,
   } = usePokemonCore(name, languageId);
 
   const { evolutionChain, isLoading: isLoadingEvolution } = usePokemonEvolution(
@@ -706,7 +709,7 @@ const DetailPokemon = () => {
           }}
         >
           <Text as="h1" variant="outlined" size="xl">
-            {name}
+            {localizedName || name}
           </Text>
 
           <button
@@ -777,13 +780,7 @@ const DetailPokemon = () => {
           </button>
 
           <Text as="h2" variant="outlined" size="base" className="genera-text">
-            {(species &&
-              species.genera &&
-              species.genera.find(
-                (g: { genus: string; language: { name: string } }) =>
-                  g.language.name === "en",
-              )?.genus) ||
-              ""}
+            {localizedGenus}
           </Text>
         </T.PokeName>
 
@@ -806,7 +803,9 @@ const DetailPokemon = () => {
                     isLegendary={isLegendary}
                     isMythical={isMythical}
                   >
-                    {isLegendary ? "Legendary" : "Mythical"}
+                    {isLegendary
+                      ? getLocalizedLabel("legendary", languageId)
+                      : getLocalizedLabel("mythical", languageId)}
                   </T.ClassificationText>
                 )}
                 {/* Pokemon Image */}
@@ -843,9 +842,9 @@ const DetailPokemon = () => {
                 </T.PokemonImageWrapper>
                 {/* Type Icons */}
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                  {types &&
-                    types.map((type: string, index: number) => (
-                      <TypeIcon key={index} type={type} size="md" />
+                  {typeNames &&
+                    typeNames.map((typeName: string, index: number) => (
+                      <TypeIcon key={index} type={typeName} size="md" />
                     ))}
                 </div>
                 {/* Flavor Text */}
