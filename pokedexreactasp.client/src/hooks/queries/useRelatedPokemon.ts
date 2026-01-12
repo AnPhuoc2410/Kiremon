@@ -28,6 +28,7 @@ function transformRelatedPokemon(
       url: "",
       id: p.pokemons[0]?.id || p.id,
       sprite: sprites?.front_default || undefined,
+      slug: p.name,
     };
   });
 }

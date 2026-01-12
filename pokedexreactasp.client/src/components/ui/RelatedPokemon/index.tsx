@@ -50,6 +50,7 @@ interface RelatedPokemonProps {
     name: string;
     url?: string;
     sprite?: string;
+    slug?: string;
   }[];
   title: string;
 }
@@ -70,10 +71,12 @@ const RelatedPokemon: React.FC<RelatedPokemonProps> = ({
               ? parseInt(pokemon.url.split("/").filter(Boolean).pop() || "0")
               : 0);
 
+          const urlName = pokemon.slug || pokemon.name;
+
           return (
             <Link
-              key={pokemon.name}
-              to={`/pokemon/${pokemon.name}`}
+              key={urlName}
+              to={`/pokemon/${urlName}`}
               style={{ textDecoration: "none" }}
             >
               <PokemonCard>

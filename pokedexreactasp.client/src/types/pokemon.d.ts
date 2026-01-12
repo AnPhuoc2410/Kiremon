@@ -332,6 +332,7 @@ export interface EvolutionItem {
 export interface RelatedPokemonItem extends INameUrlPair {
   id?: number;
   sprite?: string;
+  slug?: string; // English name for URL routing
 }
 
 // Interface for special forms
