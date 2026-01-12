@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as S from "./index.style";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts";
 
 interface HeaderProps {
   title: string;
@@ -72,6 +73,36 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
+const GlobeIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+    <path
+      d="M2 12H22"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M12 2C14.5 4.5 16 8 16 12C16 16 14.5 19.5 12 22"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M12 2C9.5 4.5 8 8 8 12C8 16 9.5 19.5 12 22"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 interface NavItemWithDropdownProps {
   title: string;
   children: React.ReactNode;
@@ -123,8 +154,11 @@ const Header: React.FC<HeaderProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated, user, authLogout } = useAuth();
+  const { currentLanguage, setLanguage, availableLanguages } = useLanguage();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +174,12 @@ const Header: React.FC<HeaderProps> = ({
         !userMenuRef.current.contains(event.target as Node)
       ) {
         setIsUserMenuOpen(false);
+      }
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsLangMenuOpen(false);
       }
     };
 
@@ -195,6 +235,32 @@ const Header: React.FC<HeaderProps> = ({
               />
             </S.SearchContainer>
           </form>
+
+          <S.LanguageMenuContainer ref={langMenuRef}>
+            <S.LanguageButton
+              isOpen={isLangMenuOpen}
+              onClick={() => setIsLangMenuOpen((prev) => !prev)}
+            >
+              <GlobeIcon />
+              <span>{currentLanguage.code.toUpperCase()}</span>
+              <ChevronDownIcon />
+            </S.LanguageButton>
+            <S.LanguageDropdown isOpen={isLangMenuOpen}>
+              {availableLanguages.map((lang) => (
+                <S.LanguageOption
+                  key={lang.id}
+                  isActive={lang.id === currentLanguage.id}
+                  onClick={() => {
+                    setLanguage(lang.id);
+                    setIsLangMenuOpen(false);
+                  }}
+                >
+                  <span className="code">{lang.code.toUpperCase()}</span>
+                  <span className="name">{lang.nativeName}</span>
+                </S.LanguageOption>
+              ))}
+            </S.LanguageDropdown>
+          </S.LanguageMenuContainer>
 
           {!isAuthenticated ? (
             <S.LoginButton onClick={() => navigate("/login")}>

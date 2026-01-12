@@ -21,7 +21,7 @@ import {
   Text,
   TypeIcon,
 } from "../../components/ui";
-import { useAuth, useGlobalContext } from "../../contexts";
+import { useAuth, useGlobalContext, useLanguage } from "../../contexts";
 import { collectionService } from "../../services";
 import { CatchAttemptResult, PokeballType } from "../../types/pokemon.enums";
 import {
@@ -46,7 +46,6 @@ import {
   usePokemonCore,
   usePokemonEvolution,
   useRelatedPokemon,
-  LANGUAGE_IDS,
 } from "../../hooks/queries";
 import * as T from "./index.style";
 
@@ -58,6 +57,7 @@ const PokemonAvatar = styled(LazyLoadImage)`
 
 const DetailPokemon = () => {
   const { name = "" } = useParams();
+  const { languageId } = useLanguage();
 
   const throwBallTimeout = useRef<NodeJS.Timeout | number>(0);
 
@@ -97,7 +97,7 @@ const DetailPokemon = () => {
     hatchCounter,
     genderRate,
     isLoading,
-  } = usePokemonCore(name, LANGUAGE_IDS.ENGLISH);
+  } = usePokemonCore(name, languageId);
 
   const { evolutionChain, isLoading: isLoadingEvolution } = usePokemonEvolution(
     evolutionChainId,
@@ -107,7 +107,7 @@ const DetailPokemon = () => {
   const { relatedPokemon, isLoading: isLoadingRelated } = useRelatedPokemon(
     generationId,
     name,
-    LANGUAGE_IDS.ENGLISH,
+    languageId,
     activeTab === "about",
   );
 

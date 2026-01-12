@@ -3,7 +3,7 @@ import { Global } from "@emotion/react";
 import { Toaster, toast } from "react-hot-toast";
 
 import Routes from "./routes";
-import { GlobalProvider, QueryProvider } from "./contexts";
+import { GlobalProvider, QueryProvider, LanguageProvider } from "./contexts";
 import NoSignal from "./components/ui/NoSignal";
 import { globalStyle } from "./emotion/global.style";
 import withOnlineStatus from "./components/utils/hoc/onlineStatus";
@@ -30,9 +30,11 @@ function App({ onlineStatus }: AppProps) {
     <>
       <Global styles={globalStyle} />
       <QueryProvider>
-        <GlobalProvider>
-          <Routes />
-        </GlobalProvider>
+        <LanguageProvider>
+          <GlobalProvider>
+            <Routes />
+          </GlobalProvider>
+        </LanguageProvider>
       </QueryProvider>
       <Toaster position="top-right" />
     </>

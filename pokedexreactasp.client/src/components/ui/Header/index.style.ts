@@ -195,6 +195,102 @@ export const UserDropdown = styled.div<{ isOpen: boolean }>`
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
+export const LanguageMenuContainer = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+export const LanguageButton = styled.button<{ isOpen?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid ${colors["gray-200"]};
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: ${colors["blue-400"]};
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+    color: ${colors["gray-700"]};
+  }
+
+  svg {
+    color: ${colors["gray-600"]};
+    transition: transform 0.25s ease;
+  }
+
+  svg:last-child {
+    width: 14px;
+    height: 14px;
+    transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+  }
+`;
+
+export const LanguageDropdown = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid ${colors["gray-200"]};
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  padding: 6px 0;
+  z-index: 200;
+  overflow: hidden;
+
+  /* Animation */
+  visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  transform: ${(props) =>
+    props.isOpen ? "translateY(0) scale(1)" : "translateY(-10px) scale(0.95)"};
+  transform-origin: top right;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
+export const LanguageOption = styled.button<{ isActive?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background: ${(props) =>
+    props.isActive ? colors["blue-100"] : "transparent"};
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${colors["gray-100"]};
+    padding-left: 20px;
+  }
+
+  .code {
+    font-size: 12px;
+    font-weight: 700;
+    color: ${(props) =>
+      props.isActive ? colors["blue-600"] : colors["gray-500"]};
+    min-width: 28px;
+    text-align: left;
+  }
+
+  .name {
+    font-size: 14px;
+    font-weight: 500;
+    color: ${(props) =>
+      props.isActive ? colors["blue-600"] : colors["gray-700"]};
+  }
+`;
+
 export const NavContainer = styled.nav`
   margin-top: 16px;
   border-top: 1px solid ${colors["gray-200"]};

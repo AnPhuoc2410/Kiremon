@@ -68,3 +68,10 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
 
 export { AuthProvider, useAuth } from "./AuthContext";
 export { QueryProvider } from "./QueryProvider";
+export {
+  LanguageProvider,
+  useLanguage,
+  LANGUAGE_IDS,
+  AVAILABLE_LANGUAGES,
+} from "./LanguageContext";
+export type { LanguageId, LanguageOption } from "./LanguageContext";
