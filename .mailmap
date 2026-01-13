@@ -7,6 +7,7 @@
 # After rebase operations, this helps maintain clean git history
 
 # Map lcaohoanq commits to the repository owner
-An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> lcaohoanq <*>
-An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Lương Cao Hoàng <*>
-An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Luong Cao Hoang <*>
+# These mappings handle any historical commits that may have been rebased
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> lcaohoanq <lcaohoanq@users.noreply.github.com>
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Lương Cao Hoàng <lcaohoanq@users.noreply.github.com>
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Luong Cao Hoang <lcaohoanq@users.noreply.github.com>

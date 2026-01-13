@@ -21,8 +21,8 @@ If you notice that GitHub shows more contributors than appear in the git history
 
 The git history in this repository has been curated through rebasing to maintain a clean commit history. This means:
 
-- Git log shows only current commit authors
-- GitHub's contributor graph may show historical contributors
+- Git log shows only authors of commits in the current history (after rebasing operations)
+- GitHub's contributor graph may show historical contributors from pull requests and activities
 - The `.mailmap` file consolidates identities at the git level
 
 This is a normal part of maintaining a clean git history and does not indicate any issues with the repository.

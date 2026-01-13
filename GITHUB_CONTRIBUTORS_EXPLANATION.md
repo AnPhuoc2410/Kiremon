@@ -27,7 +27,7 @@ GitHub tính toán số lượng contributors dựa trên nhiều yếu tố, kh
 ## Giải pháp đã thực hiện
 
 ### 1. File `.mailmap`
-- Tạo file `.mailmap` để map (ánh xạ) identity của lcaohoanq về An Phuoc Dao
+- Tạo file `.mailmap` để ánh xạ danh tính của lcaohoanq về An Phuoc Dao
 - File này hoạt động ở mức git command line
 - Khi chạy `git shortlog` hoặc `git log`, lcaohoanq sẽ hiển thị là An Phuoc Dao
 
