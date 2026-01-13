@@ -941,6 +941,12 @@ const DetailPokemon = () => {
             >
               <Text>Varieties</Text>
             </div>
+            <div
+              className={`tab ${activeTab === "tcg" ? "active" : ""}`}
+              onClick={() => setActiveTab("tcg")}
+            >
+              <Text>TCG Cards</Text>
+            </div>
           </T.TabsContainer>
 
           {/* About Tab */}
@@ -1016,6 +1022,7 @@ const DetailPokemon = () => {
           {activeTab === "sprites" && (
             <SpritesTab sprites={sprites} name={name} />
           )}
+
 
           {/* Varieties Tab */}
           {activeTab === "varieties" && (

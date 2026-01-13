@@ -108,6 +108,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
 
+
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
