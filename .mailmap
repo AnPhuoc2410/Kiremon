@@ -1,0 +1,12 @@
+# Git Mailmap File
+# This file maps author and committer names/emails to canonical identities
+# 
+# Format: Preferred Name <preferred@email> Old Name <old@email>
+#
+# Purpose: Consolidate contributor identities for accurate attribution
+# After rebase operations, this helps maintain clean git history
+
+# Map lcaohoanq commits to the repository owner
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> lcaohoanq <*>
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Lương Cao Hoàng <*>
+An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com> Luong Cao Hoang <*>
