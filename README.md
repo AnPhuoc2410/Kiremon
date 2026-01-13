@@ -188,6 +188,12 @@ cd pokedexreactasp.client && npm install && npm run dev
 
 ---
 
+## 👥 Contributors
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for detailed contributor information and attribution notes.
+
+---
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE)
