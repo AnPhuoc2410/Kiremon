@@ -1,0 +1,7 @@
+# Git Mailmap File
+# This file controls how Git displays contributor names and email addresses
+# Format: Proper Name <proper@email.xx> Commit Name <commit@email.xx>
+
+# Map all commits to the correct identity
+An Phuoc Dao <an.phuoc2410@gmail.com> An Phuoc Dao <153256952+AnPhuoc2410@users.noreply.github.com>
+An Phuoc Dao <an.phuoc2410@gmail.com> AnPhuoc2410 <153256952+AnPhuoc2410@users.noreply.github.com>
