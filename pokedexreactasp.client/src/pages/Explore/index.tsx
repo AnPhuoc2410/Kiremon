@@ -1,9 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import toast from "react-hot-toast";
 import { useState, createRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useGlobalContext, useAuth } from "../../contexts";
+import { useGlobalContext, useAuth, useLanguage } from "../../contexts";
 import { IPokemon } from "../../types/pokemon";
 import {
   Text,
@@ -15,6 +14,7 @@ import {
 
 import { getPokemonId } from "../../components/utils";
 import { POKEMON_API } from "../../config/api.config";
+import { t } from "../../utils/uiI18n";
 
 import * as T from "./index.style";
 import { pokemonService, pokeItemService } from "../../services";
@@ -22,6 +22,7 @@ import { pokemonService, pokeItemService } from "../../services";
 const Explore = () => {
   const { state, setState, refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated, isInitialized } = useAuth();
+  const { languageId } = useLanguage();
   const navRef = createRef<HTMLDivElement>();
 
   const [nextUrl, setNextUrl] = useState<string | null>(
@@ -70,7 +71,7 @@ const Explore = () => {
         setHasMore(!!nextStr);
         setIsLoading(false);
       } catch {
-        toast.error("Oops! Failed to get Pokémon. Please try again!");
+        toast.error(t("error.loadPokemon", languageId));
         setIsLoading(false);
       }
     }
@@ -137,7 +138,10 @@ const Explore = () => {
   return (
     <>
       <T.Container style={{ marginBottom: navHeight }}>
-        <Header title="Explore Pokémon" subtitle="Challenge & catch them all" />
+        <Header
+          title={t("explore.title", languageId)}
+          subtitle={t("explore.subtitle", languageId)}
+        />
 
         <InfiniteScroll
           dataLength={state?.pokemons?.length || 0}
@@ -154,7 +158,7 @@ const Explore = () => {
           }
           endMessage={
             <div style={{ textAlign: "center", padding: "20px" }}>
-              <Text>You've caught them all! No more Pokémon to display.</Text>
+              <Text>{t("explore.endMessage", languageId)}</Text>
             </div>
           }
         >

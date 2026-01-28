@@ -11,6 +11,8 @@ import {
   POKEMON_SHOWDOWN_IMAGE,
 } from "../../../config/api.config";
 import TypeIcon from "../Card/TypeIcon";
+import { useLanguage } from "../../../contexts";
+import { usePokemonName } from "../../../hooks/usePokemonName";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 
@@ -161,6 +163,14 @@ const PokeCard: React.FC<Props> = ({
   const [fallbackLevel, setFallbackLevel] = useState<number>(0);
   const formattedId = pokemonId ? String(pokemonId).padStart(3, "0") : "";
 
+  // Get localized Pokemon name
+  const { languageId } = useLanguage();
+  const localizedName = usePokemonName(
+    pokemonId ? Number(pokemonId) : undefined,
+    name || "",
+    languageId,
+  );
+
   useEffect(() => {
     setFallbackLevel(0);
     setHasAnimatedImage(false);
@@ -256,7 +266,7 @@ const PokeCard: React.FC<Props> = ({
 
       <div className="pokemon-info">
         {formattedId && <Text className="pokemon-id">#{formattedId}</Text>}
-        <Text className="pokemon-name">{nickname || name}</Text>
+        <Text className="pokemon-name">{nickname || localizedName}</Text>
 
         {types.length > 0 && (
           <div className="types-container">

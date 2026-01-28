@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import * as S from "./index.style";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useLanguage } from "../../../contexts";
+import { t } from "../../../utils/uiI18n";
 
 interface HeaderProps {
   title: string;
@@ -154,7 +155,8 @@ const Header: React.FC<HeaderProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated, user, authLogout } = useAuth();
-  const { currentLanguage, setLanguage, availableLanguages } = useLanguage();
+  const { currentLanguage, setLanguage, availableLanguages, languageId } =
+    useLanguage();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -214,7 +216,7 @@ const Header: React.FC<HeaderProps> = ({
               <Link to={backTo} className="back-button">
                 <S.BackButton>
                   <BackIcon />
-                  <span>Back</span>
+                  <span>{t("common.back", languageId)}</span>
                 </S.BackButton>
               </Link>
             )}
@@ -229,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({
               <SearchIcon />
               <input
                 type="text"
-                placeholder="Search Pokémon..."
+                placeholder={t("search.placeholder", languageId)}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -264,7 +266,7 @@ const Header: React.FC<HeaderProps> = ({
 
           {!isAuthenticated ? (
             <S.LoginButton onClick={() => navigate("/login")}>
-              Login
+              {t("user.login", languageId)}
             </S.LoginButton>
           ) : (
             <S.UserMenuContainer ref={userMenuRef}>
@@ -280,13 +282,19 @@ const Header: React.FC<HeaderProps> = ({
               </S.UserButton>
               <S.UserDropdown isOpen={isUserMenuOpen}>
                 <Link to="/profile">
-                  <S.DropdownItem>Profile</S.DropdownItem>
+                  <S.DropdownItem>
+                    {t("user.profile", languageId)}
+                  </S.DropdownItem>
                 </Link>
                 <Link to="/friends">
-                  <S.DropdownItem as="span">Friends</S.DropdownItem>
+                  <S.DropdownItem as="span">
+                    {t("user.friends", languageId)}
+                  </S.DropdownItem>
                 </Link>
                 <Link to="/settings">
-                  <S.DropdownItem>Settings</S.DropdownItem>
+                  <S.DropdownItem>
+                    {t("user.settings", languageId)}
+                  </S.DropdownItem>
                 </Link>
                 <S.DropdownItem
                   as="button"
@@ -295,7 +303,7 @@ const Header: React.FC<HeaderProps> = ({
                     authLogout();
                   }}
                 >
-                  Logout
+                  {t("user.logout", languageId)}
                 </S.DropdownItem>
               </S.UserDropdown>
             </S.UserMenuContainer>
@@ -309,46 +317,58 @@ const Header: React.FC<HeaderProps> = ({
         <S.NavList>
           <S.NavItem>
             <Link to="/pokemons">
-              <S.NavLink as="span">Pokédex</S.NavLink>
+              <S.NavLink as="span">{t("nav.pokedex", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
 
           <S.NavItem>
             <Link to="/my-pokemon">
-              <S.NavLink as="span">My Pokémon</S.NavLink>
+              <S.NavLink as="span">{t("nav.myPokemon", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
 
-          <NavItemWithDropdown title="Mini Games">
+          <NavItemWithDropdown title={t("nav.miniGames", languageId)}>
             <Link to="/games/combat-team">
-              <S.DropdownItem>Combat Team</S.DropdownItem>
+              <S.DropdownItem>
+                {t("games.combatTeam", languageId)}
+              </S.DropdownItem>
             </Link>
             <Link to="/games/whos-that-pokemon">
-              <S.DropdownItem>Who's That Pokémon?</S.DropdownItem>
+              <S.DropdownItem>
+                {t("games.whosThatPokemon", languageId)}
+              </S.DropdownItem>
             </Link>
             <Link to="/games/type-matchup">
-              <S.DropdownItem>Type Matchup Quiz</S.DropdownItem>
+              <S.DropdownItem>
+                {t("games.typeMatchup", languageId)}
+              </S.DropdownItem>
             </Link>
             <Link to="/games/catch-challenge">
-              <S.DropdownItem>Catch Challenge</S.DropdownItem>
+              <S.DropdownItem>
+                {t("games.catchChallenge", languageId)}
+              </S.DropdownItem>
             </Link>
           </NavItemWithDropdown>
 
-          <NavItemWithDropdown title="Explore">
+          <NavItemWithDropdown title={t("nav.explore", languageId)}>
             <Link to="/explore/regions">
-              <S.DropdownItem>Regions</S.DropdownItem>
+              <S.DropdownItem>
+                {t("explore.regions", languageId)}
+              </S.DropdownItem>
             </Link>
             <Link to="/explore/types">
-              <S.DropdownItem>Types</S.DropdownItem>
+              <S.DropdownItem>{t("explore.types", languageId)}</S.DropdownItem>
             </Link>
             <Link to="/explore/generations">
-              <S.DropdownItem>Generations</S.DropdownItem>
+              <S.DropdownItem>
+                {t("explore.generations", languageId)}
+              </S.DropdownItem>
             </Link>
           </NavItemWithDropdown>
 
           <S.NavItem>
             <Link to="/poke-mart">
-              <S.NavLink as="span">Poké Mart</S.NavLink>
+              <S.NavLink as="span">{t("nav.pokeMart", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
         </S.NavList>

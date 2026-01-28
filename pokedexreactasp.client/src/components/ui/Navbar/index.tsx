@@ -3,6 +3,8 @@ import styled from "@emotion/styled";
 
 import { NavItem } from "..";
 import { units } from "../../utils";
+import { useLanguage } from "../../../contexts";
+import { t } from "../../../utils/uiI18n";
 
 interface INavbar {
   children?: React.ReactNode;
@@ -39,6 +41,8 @@ const InnerNav = styled("div")({
 
 const Navbar = React.forwardRef<HTMLDivElement, INavbar>(
   ({ fadeHeight = 124, children }, ref) => {
+    const { languageId } = useLanguage();
+
     return (
       <GradientBakcdrop
         style={{
@@ -51,8 +55,12 @@ const Navbar = React.forwardRef<HTMLDivElement, INavbar>(
         <OuterNav>
           {children}
           <InnerNav>
-            <NavItem href="/pokemons" label="Explore" />
-            <NavItem href="/my-pokemon" label="My Pokemon" variant="light" />
+            <NavItem href="/pokemons" label={t("nav.explore", languageId)} />
+            <NavItem
+              href="/my-pokemon"
+              label={t("nav.myPokemon", languageId)}
+              variant="light"
+            />
           </InnerNav>
         </OuterNav>
       </GradientBakcdrop>
