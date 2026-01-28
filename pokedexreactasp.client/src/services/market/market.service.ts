@@ -1,4 +1,5 @@
 import { GRAPHQL_ENDPOINT } from "../../config/api.config";
+import { LANGUAGE_IDS } from "../../contexts";
 import {
   CategoriesResponse,
   ItemsResponse,
@@ -11,11 +12,11 @@ import {
 // ============ GraphQL Queries ============
 
 const GET_CATEGORIES_QUERY = `
-  query getCategories {
+  query getCategories($languageId: Int!) {
     itemcategory {
       id
       name
-      itemcategorynames(where: {language_id: {_eq: 9}}) {
+      itemcategorynames(where: {language_id: {_eq: $languageId}}) {
         name
       }
     }
@@ -23,12 +24,12 @@ const GET_CATEGORIES_QUERY = `
 `;
 
 const GET_ITEMS_BY_CATEGORY_QUERY = `
-  query getItemsByCategory($categoryId: Int!) {
+  query getItemsByCategory($categoryId: Int!, $languageId: Int!) {
     item(where: {item_category_id: {_eq: $categoryId}}) {
       id
       name
       cost
-      itemnames(where: {language_id: {_eq: 9}}) {
+      itemnames(where: {language_id: {_eq: $languageId}}) {
         name
       }
       itemsprites {
@@ -39,10 +40,10 @@ const GET_ITEMS_BY_CATEGORY_QUERY = `
 `;
 
 const GET_HELD_ITEM_DETAILS_QUERY = `
-  query getHeldItemDetails($itemId: Int!) {
+  query getHeldItemDetails($itemId: Int!, $languageId: Int!) {
     item(where: {id: {_eq: $itemId}}) {
       id
-      itemeffecttexts(where: {language_id: {_eq: 9}}, limit: 1) {
+      itemeffecttexts(where: {language_id: {_eq: $languageId}}, limit: 1) {
         effect
       }
       pokemonitems(
@@ -59,13 +60,13 @@ const GET_HELD_ITEM_DETAILS_QUERY = `
 `;
 
 const SEARCH_ITEM_BY_NAME_QUERY = `
-  query searchItemByName($name: String!) {
+  query searchItemByName($name: String!, $languageId: Int!) {
     item(where: {name: {_eq: $name}}) {
       id
       name
       cost
       item_category_id
-      itemnames(where: {language_id: {_eq: 9}}) {
+      itemnames(where: {language_id: {_eq: $languageId}}) {
         name
       }
       itemsprites {
@@ -112,33 +113,46 @@ async function executeGraphQLQuery<T>(
 export const marketService = {
   /**
    * Fetch all item categories
+   * @param languageId - Language ID for localized names (default: English)
    */
-  async getCategories(): Promise<ItemCategory[]> {
-    const data =
-      await executeGraphQLQuery<CategoriesResponse>(GET_CATEGORIES_QUERY);
+  async getCategories(
+    languageId: number = LANGUAGE_IDS.ENGLISH,
+  ): Promise<ItemCategory[]> {
+    const data = await executeGraphQLQuery<CategoriesResponse>(
+      GET_CATEGORIES_QUERY,
+      { languageId },
+    );
     return data.itemcategory;
   },
 
   /**
    * Fetch items by category ID
+   * @param categoryId - Category ID to fetch items for
+   * @param languageId - Language ID for localized names (default: English)
    */
-  async getItemsByCategory(categoryId: number): Promise<Item[]> {
+  async getItemsByCategory(
+    categoryId: number,
+    languageId: number = LANGUAGE_IDS.ENGLISH,
+  ): Promise<Item[]> {
     const data = await executeGraphQLQuery<ItemsResponse>(
       GET_ITEMS_BY_CATEGORY_QUERY,
-      { categoryId },
+      { categoryId, languageId },
     );
     return data.item;
   },
 
   /**
    * Fetch held item details including description and wild Pokemon
+   * @param itemId - Item ID to fetch details for
+   * @param languageId - Language ID for localized text (default: English)
    */
   async getHeldItemDetails(
     itemId: number,
+    languageId: number = LANGUAGE_IDS.ENGLISH,
   ): Promise<ItemWithHeldPokemon | null> {
     const data = await executeGraphQLQuery<HeldItemDetailsResponse>(
       GET_HELD_ITEM_DETAILS_QUERY,
-      { itemId },
+      { itemId, languageId },
     );
 
     return data.item && data.item.length > 0 ? data.item[0] : null;
@@ -146,13 +160,16 @@ export const marketService = {
 
   /**
    * Search item by exact name
+   * @param name - Item name to search for
+   * @param languageId - Language ID for localized names (default: English)
    */
   async searchItemByName(
     name: string,
+    languageId: number = LANGUAGE_IDS.ENGLISH,
   ): Promise<{ item: Item; categoryId: number } | null> {
     const data = await executeGraphQLQuery<{
       item: Array<Item & { item_category_id: number }>;
-    }>(SEARCH_ITEM_BY_NAME_QUERY, { name });
+    }>(SEARCH_ITEM_BY_NAME_QUERY, { name, languageId });
 
     if (data.item && data.item.length > 0) {
       const itemData = data.item[0];
