@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
 import { marketService } from "../../services/market";
+import { useLanguage, LanguageId, LANGUAGE_IDS } from "../../contexts";
 import {
   ItemCategory,
   Item,
@@ -12,13 +13,14 @@ import {
 
 export const marketQueryKeys = {
   all: ["market"] as const,
-  categories: () => [...marketQueryKeys.all, "categories"] as const,
-  items: (categoryId: number) =>
-    [...marketQueryKeys.all, "items", categoryId] as const,
-  heldItemDetails: (itemId: number) =>
-    [...marketQueryKeys.all, "heldItem", itemId] as const,
-  searchItem: (name: string) =>
-    [...marketQueryKeys.all, "search", name] as const,
+  categories: (languageId: LanguageId) =>
+    [...marketQueryKeys.all, "categories", languageId] as const,
+  items: (categoryId: number, languageId: LanguageId) =>
+    [...marketQueryKeys.all, "items", categoryId, languageId] as const,
+  heldItemDetails: (itemId: number, languageId: LanguageId) =>
+    [...marketQueryKeys.all, "heldItem", itemId, languageId] as const,
+  searchItem: (name: string, languageId: LanguageId) =>
+    [...marketQueryKeys.all, "search", name, languageId] as const,
 };
 
 // ============ Categories Hook ============
@@ -36,9 +38,11 @@ interface UseMarketCategoriesResult {
  * Categories are static and rarely change - uses long staleTime
  */
 export function useMarketCategories(): UseMarketCategoriesResult {
+  const { languageId } = useLanguage();
+
   const query = useQuery({
-    queryKey: marketQueryKeys.categories(),
-    queryFn: () => marketService.getCategories(),
+    queryKey: marketQueryKeys.categories(languageId),
+    queryFn: () => marketService.getCategories(languageId),
     // Categories are very static - keep stale for 30 minutes
     staleTime: 30 * 60 * 1000,
     // Keep in cache for 1 hour
@@ -71,9 +75,11 @@ interface UseMarketItemsResult {
 export function useMarketItems(
   categoryId: number | null,
 ): UseMarketItemsResult {
+  const { languageId } = useLanguage();
+
   const query = useQuery({
-    queryKey: marketQueryKeys.items(categoryId ?? 0),
-    queryFn: () => marketService.getItemsByCategory(categoryId!),
+    queryKey: marketQueryKeys.items(categoryId ?? 0, languageId),
+    queryFn: () => marketService.getItemsByCategory(categoryId!, languageId),
     enabled: categoryId !== null,
     // Items change rarely - keep stale for 10 minutes
     staleTime: 10 * 60 * 1000,
@@ -109,9 +115,11 @@ export function useHeldItemDetails(
   itemId: number | null,
   enabled: boolean = true,
 ): UseHeldItemDetailsResult {
+  const { languageId } = useLanguage();
+
   const query = useQuery({
-    queryKey: marketQueryKeys.heldItemDetails(itemId ?? 0),
-    queryFn: () => marketService.getHeldItemDetails(itemId!),
+    queryKey: marketQueryKeys.heldItemDetails(itemId ?? 0, languageId),
+    queryFn: () => marketService.getHeldItemDetails(itemId!, languageId),
     enabled: itemId !== null && enabled,
     // Item details are static
     staleTime: 15 * 60 * 1000,
@@ -155,9 +163,11 @@ export function useSearchItem(
   name: string | null,
   enabled: boolean = true,
 ): UseSearchItemResult {
+  const { languageId } = useLanguage();
+
   const query = useQuery({
-    queryKey: marketQueryKeys.searchItem(name ?? ""),
-    queryFn: () => marketService.searchItemByName(name!),
+    queryKey: marketQueryKeys.searchItem(name ?? "", languageId),
+    queryFn: () => marketService.searchItemByName(name!, languageId),
     enabled: !!name && enabled,
     staleTime: 10 * 60 * 1000,
   });

@@ -19,6 +19,8 @@ import {
   getItemDisplayName,
 } from "../../../types/market.types";
 import { useHeldItemDetails } from "../../../hooks/queries";
+import { useLanguage } from "../../../contexts";
+import { t } from "../../../utils/uiI18n";
 
 interface ItemDescriptionBoxProps {
   item: Item | null;
@@ -35,6 +37,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
   categoryId,
   onClose,
 }) => {
+  const { languageId } = useLanguage();
   const {
     wildPokemon,
     itemEffect,
@@ -54,7 +57,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <div>Click an item to see details</div>
+            <div>{t("market.clickItem", languageId)}</div>
           </DialogPlaceholder>
         </DialogContent>
       </DialogBox>
@@ -84,13 +87,13 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
           {wildPokemonLoading ? (
             <DialogPlaceholder>
               <div style={{ fontSize: "14px", color: "#6b7280" }}>
-                Loading details...
+                {t("common.loadingDetails", languageId)}
               </div>
             </DialogPlaceholder>
           ) : (
             <>
               <DialogDescription>
-                {itemEffect || "No description available."}
+                {itemEffect || t("market.noDescription", languageId)}
               </DialogDescription>
               {item.cost !== undefined && item.cost > 0 && (
                 <DialogDescription
@@ -101,7 +104,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
                     fontSize: "16px",
                   }}
                 >
-                  Price: ₽{item.cost.toLocaleString()}
+                  {t("market.price", languageId)}: ₽{item.cost.toLocaleString()}
                 </DialogDescription>
               )}
 
@@ -109,7 +112,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
               {wildPokemon.length > 0 && (
                 <WildPokemonSection>
                   <WildPokemonTitle>
-                    Wild Pokémon ({wildPokemon.length})
+                    {t("market.wildPokemon", languageId)} ({wildPokemon.length})
                   </WildPokemonTitle>
 
                   <WildPokemonList $isExpanded={true}>

@@ -15,6 +15,8 @@ import {
   ItemCategory,
   getCategoryDisplayName,
 } from "../../../types/market.types";
+import { useLanguage } from "../../../contexts";
+import { t } from "../../../utils/uiI18n";
 
 interface CategoryTabsProps {
   categories: ItemCategory[];
@@ -35,12 +37,14 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
   onRetry,
   isOpen = false,
 }) => {
+  const { languageId } = useLanguage();
+
   if (loading) {
     return (
       <CategorySidebar $isOpen={isOpen}>
         <LoadingContainer>
           <LoadingSpinner />
-          <LoadingText>Loading...</LoadingText>
+          <LoadingText>{t("common.loading", languageId)}</LoadingText>
         </LoadingContainer>
       </CategorySidebar>
     );
@@ -51,7 +55,9 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
       <CategorySidebar $isOpen={isOpen}>
         <ErrorContainer>
           <ErrorText>⚠️ {error}</ErrorText>
-          <RetryButton onClick={onRetry}>Retry</RetryButton>
+          <RetryButton onClick={onRetry}>
+            {t("common.retry", languageId)}
+          </RetryButton>
         </ErrorContainer>
       </CategorySidebar>
     );
@@ -59,7 +65,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
 
   return (
     <CategorySidebar $isOpen={isOpen}>
-      <SidebarTitle>Categories</SidebarTitle>
+      <SidebarTitle>{t("market.categories", languageId)}</SidebarTitle>
       <CategoryTabsContainer>
         {categories.map((category) => (
           <CategoryTab

@@ -17,8 +17,10 @@ import {
 import {
   Item,
   getItemSpriteUrl,
-  formatItemName,
+  getItemDisplayName,
 } from "../../../types/market.types";
+import { useLanguage } from "../../../contexts";
+import { t } from "../../../utils/uiI18n";
 
 interface ItemGridProps {
   items: Item[];
@@ -37,12 +39,14 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
   onSelectItem,
   onRetry,
 }) => {
+  const { languageId } = useLanguage();
+
   if (loading) {
     return (
       <ItemsSection>
         <LoadingContainer>
           <LoadingSpinner />
-          <LoadingText>Loading items...</LoadingText>
+          <LoadingText>{t("common.loadingItems", languageId)}</LoadingText>
         </LoadingContainer>
       </ItemsSection>
     );
@@ -53,7 +57,9 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
       <ItemsSection>
         <ErrorContainer>
           <ErrorText>⚠️ {error}</ErrorText>
-          <RetryButton onClick={onRetry}>Retry</RetryButton>
+          <RetryButton onClick={onRetry}>
+            {t("common.retry", languageId)}
+          </RetryButton>
         </ErrorContainer>
       </ItemsSection>
     );
@@ -64,8 +70,8 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
       <ItemsSection>
         <EmptyState>
           <span>📦</span>
-          <span>No items available in this category.</span>
-          <span>Please select another category!</span>
+          <span>{t("market.noItems", languageId)}</span>
+          <span>{t("market.selectCategory", languageId)}</span>
         </EmptyState>
       </ItemsSection>
     );
@@ -76,6 +82,7 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
       <ItemsGrid>
         {items.map((item) => {
           const spriteUrl = getItemSpriteUrl(item);
+          const displayName = getItemDisplayName(item);
 
           return (
             <ItemCard
@@ -84,7 +91,7 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
               onClick={() => onSelectItem?.(item)}
               tabIndex={0}
               role="button"
-              aria-label={`${formatItemName(item.name)} - ${item.cost || 0} Pokédollars`}
+              aria-label={`${displayName} - ${item.cost || 0} Pokédollars`}
             >
               <ItemSprite>
                 {spriteUrl ? (
@@ -99,7 +106,7 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
                   <span style={{ fontSize: "32px" }}>📦</span>
                 )}
               </ItemSprite>
-              <ItemName>{formatItemName(item.name)}</ItemName>
+              <ItemName>{displayName}</ItemName>
               {item.cost !== undefined && item.cost > 0 && (
                 <ItemPrice>{item.cost.toLocaleString()}</ItemPrice>
               )}

@@ -1,26 +1,20 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { UserConfig } from "vite";
 
-// Development config
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+export default (env: Record<string, string>): UserConfig => ({
   server: {
-    host: true,
-    port: 3000,
-    strictPort: true,
+    port: parseInt(env.VITE_PORT) || 3000,
+    open: true,
+    cors: true,
     proxy: {
       "/api": {
-        target: "http://localhost:5240",
+        target: env.VITE_API_BASE_URL,
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
         secure: false,
       },
     },
   },
-  publicDir: "public",
+  build: {
+    sourcemap: true,
+  },
 });

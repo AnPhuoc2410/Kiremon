@@ -1,22 +1,22 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
-import { Header, Navbar, Loading, PokeCard } from "../../../components/ui";
+import { Header, Navbar, Loading, PokeCard } from "@/components/ui";
 import {
   getAllPokemonTypes,
   getRelatedPokemonByType,
   getDetailPokemon,
-} from "../../../services/pokemon";
-import { colors } from "../../../components/utils";
+} from "@/services/pokemon";
+import { colors } from "@/components/utils";
 import { useGlobalContext } from "../../../contexts";
-import { IPokemonType } from "../../../types/pokemon";
+import { IPokemonType } from "@/types/pokemon";
 import * as S from "./index.style";
-import { POKEMON_IMAGE } from "../../../config/api.config";
-import { getPokemonId } from "../../../components/utils";
+import { POKEMON_IMAGE } from "@/config/api.config";
+import { getPokemonId } from "@/components/utils";
 
 import bugIcon from "../../../assets/type-icon/bug.png";
 import darkIcon from "../../../assets/type-icon/dark.png";
-import dragonIcon from "../../../assets/type-icon/dragon.png";
+import dragonIcon from "@/assets/type-icon/dragon.png";
 import electricIcon from "../../../assets/type-icon/electric.png";
 import fairyIcon from "../../../assets/type-icon/fairy.png";
 import fightingIcon from "../../../assets/type-icon/fighting.png";

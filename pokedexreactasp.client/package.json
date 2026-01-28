@@ -43,9 +43,12 @@
     "react-lazy-load-image-component": "^1.6.3",
     "react-router-dom": "^7.10.1",
     "recharts": "^3.6.0",
+    "rollup-plugin-visualizer": "^6.0.5",
     "rpg-awesome": "^0.2.0",
     "sass": "^1.95.0",
     "tailwindcss": "^4.1.17",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-tsconfig-paths": "^6.0.5",
     "worker-timers": "^8.0.25"
   },
   "devDependencies": {

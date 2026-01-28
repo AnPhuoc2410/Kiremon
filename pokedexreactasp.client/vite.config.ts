@@ -1,13 +1,19 @@
-import { defineConfig, loadEnv } from "vite";
-import prodConfig from "./vite.config.prod";
+// vite.config.ts
+import { defineConfig, loadEnv, mergeConfig } from "vite";
+import baseConfig from "./vite.config.base";
 import devConfig from "./vite.config.dev";
+import prodConfig from "./vite.config.prod";
 
 export default defineConfig(({ command, mode }) => {
+  // Load toàn bộ env vars (bao gồm cả prefix VITE_)
   const env = loadEnv(mode, process.cwd(), "");
 
-  if (mode === "development") {
-    return devConfig;
-  }
+  const isDev = mode === "development";
 
-  return prodConfig;
+  // Chọn config dựa trên mode
+  const envConfig = isDev ? devConfig(env) : prodConfig(env);
+
+  // Merge Base Config với Environment Config
+  // Base config được ưu tiên thấp hơn, Env config sẽ override
+  return mergeConfig(baseConfig(env), envConfig);
 });
