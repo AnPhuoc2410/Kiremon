@@ -19,6 +19,8 @@ import { usePokeMartQuery, useSearchItem } from "../../hooks/queries";
 import { Header } from "../../components/ui";
 import { pokeItemService } from "../../services";
 import { Item } from "../../types/market.types";
+import { useLanguage } from "../../contexts";
+import { t } from "../../utils/uiI18n";
 
 const Market: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +28,7 @@ const Market: React.FC = () => {
   const [pokeballSprite, setPokeballSprite] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const { languageId } = useLanguage();
 
   const {
     categories,
@@ -101,8 +104,8 @@ const Market: React.FC = () => {
     <>
       <ShopContainer>
         <Header
-          title="Poké Mart"
-          subtitle="Stock up on items for your journey"
+          title={t("market.title", languageId)}
+          subtitle={t("market.subtitle", languageId)}
         />
 
         <ShopInner>
@@ -118,7 +121,7 @@ const Market: React.FC = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                Categories
+                {t("market.categories", languageId)}
               </SidebarToggle>
 
               {/* Overlay for mobile */}

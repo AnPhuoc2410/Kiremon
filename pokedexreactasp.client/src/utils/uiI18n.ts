@@ -265,6 +265,38 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
       "Ops! Impossibile caricare i Pokémon. Riprova per favore!",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "哎呀！获取宝可梦失败。请重试！",
   },
+
+  // Poké Mart
+  "market.title": {
+    [LANGUAGE_IDS.ENGLISH]: "Poké Mart",
+    [LANGUAGE_IDS.JAPANESE]: "フレンドリィショップ",
+    [LANGUAGE_IDS.KOREAN]: "프렌들리샵",
+    [LANGUAGE_IDS.FRENCH]: "Poké Boutique",
+    [LANGUAGE_IDS.GERMAN]: "Poké-Markt",
+    [LANGUAGE_IDS.SPANISH]: "Tienda Pokémon",
+    [LANGUAGE_IDS.ITALIAN]: "Poké Mart",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "宝可梦商店",
+  },
+  "market.subtitle": {
+    [LANGUAGE_IDS.ENGLISH]: "Stock up on items for your journey",
+    [LANGUAGE_IDS.JAPANESE]: "冒険に必要なアイテムを揃えよう",
+    [LANGUAGE_IDS.KOREAN]: "여행에 필요한 아이템을 준비하세요",
+    [LANGUAGE_IDS.FRENCH]: "Faites le plein d'objets pour votre voyage",
+    [LANGUAGE_IDS.GERMAN]: "Decke dich mit Items für deine Reise ein",
+    [LANGUAGE_IDS.SPANISH]: "Abastécete de objetos para tu viaje",
+    [LANGUAGE_IDS.ITALIAN]: "Fai scorta di strumenti per il tuo viaggio",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "为你的旅程准备道具",
+  },
+  "market.categories": {
+    [LANGUAGE_IDS.ENGLISH]: "Categories",
+    [LANGUAGE_IDS.JAPANESE]: "カテゴリー",
+    [LANGUAGE_IDS.KOREAN]: "카테고리",
+    [LANGUAGE_IDS.FRENCH]: "Catégories",
+    [LANGUAGE_IDS.GERMAN]: "Kategorien",
+    [LANGUAGE_IDS.SPANISH]: "Categorías",
+    [LANGUAGE_IDS.ITALIAN]: "Categorie",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "分类",
+  },
 };
 
 /**
