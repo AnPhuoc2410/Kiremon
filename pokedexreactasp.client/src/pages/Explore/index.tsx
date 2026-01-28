@@ -2,22 +2,16 @@ import toast from "react-hot-toast";
 import { useState, createRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { useGlobalContext, useAuth, useLanguage } from "../../contexts";
-import { IPokemon } from "../../types/pokemon";
-import {
-  Text,
-  Navbar,
-  PokeCard,
-  Header,
-  SkeletonCard,
-} from "../../components/ui";
+import { useGlobalContext, useAuth, useLanguage } from "@/contexts";
+import { IPokemon } from "@/types/pokemon";
+import { Text, Navbar, PokeCard, Header, SkeletonCard } from "@/components/ui";
 
-import { getPokemonId } from "../../components/utils";
-import { POKEMON_API } from "../../config/api.config";
-import { t } from "../../utils/uiI18n";
+import { getPokemonId } from "@/components/utils";
+import { POKEMON_API } from "@/config/api.config";
+import { t } from "@/utils/uiI18n";
 
 import * as T from "./index.style";
-import { pokemonService, pokeItemService } from "../../services";
+import { pokemonService, pokeItemService } from "@/services";
 
 const Explore = () => {
   const { state, setState, refreshPokeSummary } = useGlobalContext();

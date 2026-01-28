@@ -1,51 +1,46 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { UserConfig } from "vite";
+import { visualizer } from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
 
-// Production config
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+export default (env: Record<string, string>): UserConfig => ({
   build: {
-    target: "esnext",
+    target: "es2015",
+    outDir: "dist",
+    sourcemap: false,
     minify: "esbuild",
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
           if (id.includes("node_modules")) {
-            // React ecosystem
-            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
-              return "vendor-react";
+            if (id.includes("react") || id.includes("react-dom")) {
+              return "vendor-react"; // Tách React core ra riêng
             }
-            // Emotion
-            if (id.includes("@emotion")) {
-              return "vendor-emotion";
+            if (id.includes("lodash") || id.includes("date-fns")) {
+              return "vendor-utils";
             }
-            // Radix UI
-            if (id.includes("@radix-ui")) {
-              return "vendor-radix";
-            }
-            // Tabler icons
-            if (id.includes("@tabler/icons")) {
-              return "vendor-icons";
-            }
-            // Animation libraries
-            if (id.includes("animejs") || id.includes("lottie")) {
-              return "vendor-animation";
-            }
-            // Other vendors
-            return "vendor-others";
+            return "vendor";
           }
         },
       },
     },
-    chunkSizeWarningLimit: 600,
-    sourcemap: false,
   },
-  publicDir: "public",
+  plugins: [
+    // Gzip compression (tăng tốc tải trang)
+    viteCompression({
+      algorithm: "gzip",
+      ext: ".gz",
+    }),
+    env.VITE_ANALYZE === "true" &&
+      visualizer({
+        filename: "./dist/stats.html",
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
+  ],
+  esbuild: {
+    drop: ["console", "debugger"],
+  },
 });
