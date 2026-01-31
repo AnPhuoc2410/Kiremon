@@ -18,9 +18,9 @@ import {
   Item,
   getItemSpriteUrl,
   getItemDisplayName,
-} from "../../../types/market.types";
-import { useLanguage } from "../../../contexts";
-import { t } from "../../../utils/uiI18n";
+} from "@/types/market.types";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 interface ItemGridProps {
   items: Item[];

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { Button, Text } from "../../../components/ui";
+import { Button, Text } from "@/components/ui";
 import * as T from "./index.style";
 
 export default function NotFoundPage() {

@@ -11,11 +11,11 @@ import {
   Loading,
   Modal,
   TypeIcon,
-} from "../../components/ui";
-import { ICombatPokemon, ICombatTeam } from "../../types/pokemon";
-import { getDetailPokemon } from "../../services/pokemon";
-import { collectionService } from "../../services";
-import { useAuth } from "../../contexts";
+} from "@/components/ui";
+import { ICombatPokemon, ICombatTeam } from "@/types/pokemon";
+import { getDetailPokemon } from "@/services/pokemon";
+import { collectionService } from "@/services";
+import { useAuth } from "@/contexts";
 import * as S from "./index.style";
 
 // Maximum team size for active team

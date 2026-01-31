@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import {
   pokemonGraphQLService,
   RelatedPokemonGraphQL,
-} from "../../services/pokemon/pokemon-graphql.service";
-import { RelatedPokemonItem } from "../../types/pokemon.d";
+} from "@/services/pokemon/pokemon-graphql.service";
+import { RelatedPokemonItem } from "@/types/pokemon.d";
 import { LANGUAGE_IDS, LanguageId } from "./usePokemonCore";
 
 /**

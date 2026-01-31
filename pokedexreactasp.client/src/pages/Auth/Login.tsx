@@ -1,14 +1,14 @@
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { login, externalLogin, loginTwoFactor } from "../../config/auth.apis";
+import { useAuth } from "@/contexts/AuthContext";
+import { login, externalLogin, loginTwoFactor } from "@/config/auth.apis";
 import toast from "react-hot-toast";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
   RECAPTCHA_KEY,
   GOOGLE_CLIENT_ID,
   FACEBOOK_APP_ID,
-} from "../../config/api.config";
+} from "@/config/api.config";
 import {
   GoogleOAuthProvider,
   GoogleLogin,
@@ -34,7 +34,7 @@ import {
   AuthLink,
   Paragraph,
   FlexColumn,
-} from "../../styles";
+} from "@/styles";
 
 const LoginForm: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");

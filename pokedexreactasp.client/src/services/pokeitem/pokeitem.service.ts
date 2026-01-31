@@ -1,4 +1,4 @@
-import { GRAPHQL_ENDPOINT } from "../../config/api.config";
+import { GRAPHQL_ENDPOINT } from "@/config/api.config";
 
 interface PokeballSprite {
   default: string;

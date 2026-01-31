@@ -6,9 +6,9 @@ import {
   IName,
   INameUrlPair,
   IPokemonSpeciesDetail,
-} from "../../../types/pokemon";
+} from "@/types/pokemon";
 import { Text } from "../";
-import { getRegionTheme } from "../../utils/regionThemes";
+import { getRegionTheme } from "@/components/utils/regionThemes";
 import {
   GenerationContainer,
   GenerationContent,

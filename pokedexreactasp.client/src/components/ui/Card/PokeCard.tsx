@@ -5,14 +5,11 @@ import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
 
 import { Text } from "..";
-import { colors } from "../../utils";
-import {
-  POKEMON_IMAGE,
-  POKEMON_SHOWDOWN_IMAGE,
-} from "../../../config/api.config";
+import { colors } from "@/components/utils";
+import { POKEMON_IMAGE, POKEMON_SHOWDOWN_IMAGE } from "@/config/api.config";
 import TypeIcon from "../Card/TypeIcon";
-import { useLanguage } from "../../../contexts";
-import { usePokemonName } from "../../../hooks/usePokemonName";
+import { useLanguage } from "@/contexts";
+import { usePokemonName } from "@/hooks/usePokemonName";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 

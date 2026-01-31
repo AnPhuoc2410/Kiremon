@@ -1,7 +1,7 @@
 import React from "react";
-import { Text, EvolutionChain, Loading } from "../../../components/ui";
-import { EvolutionItem } from "../../../types/pokemon.d";
-import * as T from "../index.style";
+import { Text, EvolutionChain, Loading } from "@/components/ui";
+import { EvolutionItem } from "@/types/pokemon.d";
+import * as T from "@/pages/Detail/index.style";
 import * as S from "./EvolutionTab.style";
 
 interface EvolutionTabProps {

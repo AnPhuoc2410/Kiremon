@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors, units } from "../../../components/utils";
+import { colors, units } from "@/components/utils";
 
 export const GenerationsContainer = styled.section`
   max-width: ${units.screenSize["xl"]};

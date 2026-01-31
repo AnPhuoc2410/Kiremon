@@ -1,11 +1,7 @@
-import { ApiService } from "../api/api-client";
-import { cacheUtils } from "../cache/cache";
-import { buildEndpointUrl } from "../../config/api.config";
-import {
-  IGeneration,
-  IGenerationDetail,
-  INameUrlPair,
-} from "../../types/pokemon";
+import { ApiService } from "@/services/api/api-client";
+import { cacheUtils } from "@/services/cache/cache";
+import { buildEndpointUrl } from "@/config/api.config";
+import { IGeneration, IGenerationDetail, INameUrlPair } from "@/types/pokemon";
 
 class GenerationsService extends ApiService {
   constructor() {

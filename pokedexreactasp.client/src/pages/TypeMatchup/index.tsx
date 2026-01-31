@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, Button } from "../../components/ui";
-import TypeIcon from "../../components/ui/Card/TypeIcon";
-import { typesService } from "../../services";
-import { IPokemonType } from "../../types/pokemon";
+import { Text, Button } from "@/components/ui";
+import TypeIcon from "@/components/ui/Card/TypeIcon";
+import { typesService } from "@/services";
+import { IPokemonType } from "@/types/pokemon";
 import {
   GameContainer,
   GameCard,
@@ -10,7 +10,7 @@ import {
   OptionButton,
   ScoreBar,
 } from "./index.style";
-import { sfx } from "../../components/utils/sfx";
+import { sfx } from "@/components/utils/sfx";
 
 const EFFECT_OPTIONS = [2, 1, 0.5, 0];
 const LEADERBOARD_KEY = "pokegames@typeLeaderboard";
@@ -79,7 +79,6 @@ const TypeMatchup: React.FC = () => {
 
   useEffect(() => {
     if (!loading) nextQuestion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   useEffect(() => {

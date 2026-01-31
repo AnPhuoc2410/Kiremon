@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors } from "../components/utils";
+import { colors } from "@/components/utils";
 import { GradientPage, FlexRow, FlexColumn } from "./layout.styles";
 import { AuthCard as BaseAuthCard } from "./card.styles";
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signup } from "../../config/auth.apis";
+import { signup } from "@/config/auth.apis";
 import toast from "react-hot-toast";
 
 // Import shared styles
@@ -16,7 +16,7 @@ import {
   AuthSubmit,
   SmallText,
   FormLabel,
-} from "../../styles";
+} from "@/styles";
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState("");

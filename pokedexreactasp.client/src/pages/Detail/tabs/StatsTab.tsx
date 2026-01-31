@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Text } from "../../../components/ui";
+import { Text } from "@/components/ui";
 import * as S from "./StatsTab.style";
 
 interface StatsTabProps {

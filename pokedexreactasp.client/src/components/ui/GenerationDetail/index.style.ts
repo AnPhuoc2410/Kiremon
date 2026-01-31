@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { RegionTheme } from "../../utils/regionThemes";
+import { RegionTheme } from "@/components/utils/regionThemes";
 
 interface ThemedProps {
   theme?: RegionTheme;

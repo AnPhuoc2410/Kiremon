@@ -1,10 +1,6 @@
 import styled from "@emotion/styled";
-import { colors, units } from "../../components/utils";
-import {
-  CenteredPage,
-  GameCard as BaseGameCard,
-  FlexCenter,
-} from "../../styles";
+import { colors, units } from "@/components/utils";
+import { CenteredPage, GameCard as BaseGameCard, FlexCenter } from "@/styles";
 
 // ============ LAYOUT ============
 export const GameContainer = styled(CenteredPage)`

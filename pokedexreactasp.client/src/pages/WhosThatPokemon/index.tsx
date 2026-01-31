@@ -2,10 +2,10 @@ import React, { useState, useEffect, FormEvent } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useNavigate } from "react-router-dom";
 
-import { Text } from "../../components/ui";
-import Button from "../../components/ui/Button";
-import { pokemonService } from "../../services";
-import { IPokemon } from "../../types/pokemon";
+import { Text } from "@/components/ui";
+import Button from "@/components/ui/Button";
+import { pokemonService } from "@/services";
+import { IPokemon } from "@/types/pokemon";
 import {
   GameContainer,
   GameCard,

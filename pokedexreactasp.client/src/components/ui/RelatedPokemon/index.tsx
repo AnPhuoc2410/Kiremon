@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Text } from "..";
-import { POKEMON_IMAGE } from "../../../config/api.config";
+import { POKEMON_IMAGE } from "@/config/api.config";
 
 const RelatedPokemonContainer = styled.div`
   display: grid;

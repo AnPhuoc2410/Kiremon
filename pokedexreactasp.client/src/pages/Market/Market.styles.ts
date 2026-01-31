@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
-import { units, colors } from "../../components/utils";
+import { units, colors } from "@/components/utils";
 
 // ============ ANIMATIONS ============
 const pulse = keyframes`

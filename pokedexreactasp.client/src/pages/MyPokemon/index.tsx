@@ -2,8 +2,8 @@ import React, { createRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { useGlobalContext, useAuth } from "../../contexts";
-import { generatePokeSummary } from "../../helpers";
+import { useGlobalContext, useAuth } from "@/contexts";
+import { generatePokeSummary } from "@/helpers";
 import {
   Button,
   Navbar,
@@ -12,11 +12,11 @@ import {
   PokeCard,
   DeleteButton,
   Loading,
-} from "../../components/ui";
-import { collectionService } from "../../services";
+} from "@/components/ui";
+import { collectionService } from "@/services";
 
 import * as T from "./index.style";
-import { UserPokemonDto } from "../../types/userspokemon.types";
+import { UserPokemonDto } from "@/types/userspokemon.types";
 
 // Extended Pokemon type for API data
 interface DisplayPokemon {

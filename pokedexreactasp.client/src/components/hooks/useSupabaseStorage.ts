@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../../config/supabase.config";
+import { supabase } from "@/config/supabase.config";
 
 interface UploadResult {
   url: string | null;

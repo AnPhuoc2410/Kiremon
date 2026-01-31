@@ -12,8 +12,8 @@ import {
   TwoFactorSetupResponse,
   Enable2FARequest,
   Disable2FARequest,
-} from "../types/auth.types";
-import createAuthenticatedClient from "../services/api/api-client.auth";
+} from "@/types/auth.types";
+import createAuthenticatedClient from "@/services/api/api-client.auth";
 
 const api = createAuthenticatedClient();
 

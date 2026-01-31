@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as S from "./index.style";
-import { useAuth } from "../../../contexts/AuthContext";
-import { useLanguage } from "../../../contexts";
-import { t } from "../../../utils/uiI18n";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 interface HeaderProps {
   title: string;

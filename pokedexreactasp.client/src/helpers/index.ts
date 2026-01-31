@@ -1,4 +1,4 @@
-import { IMyPokemon, IPokeSummary } from "../types/pokemon";
+import { IMyPokemon, IPokeSummary } from "@/types/pokemon";
 
 export const generatePokeSummary = (pokemons: IMyPokemon[]): IPokeSummary[] => {
   const results: { name: string; captured: number }[] = [];

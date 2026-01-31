@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors, units } from "../components/utils";
+import { colors, units } from "@/components/utils";
 
 // ============ PAGE CONTAINERS ============
 export const PageContainer = styled.div`

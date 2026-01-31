@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { GRAPHQL_ENDPOINT } from "../config/api.config";
-import { LanguageId, LANGUAGE_IDS } from "../contexts";
-import { cacheUtils } from "../services/cache/cache";
+import { GRAPHQL_ENDPOINT } from "@/config/api.config";
+import { LanguageId, LANGUAGE_IDS } from "@/contexts";
+import { cacheUtils } from "@/services/cache/cache";
 
 interface PokemonSpeciesName {
   name: string;

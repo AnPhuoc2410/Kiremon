@@ -10,21 +10,21 @@ import {
   Button,
   Text,
   AvatarChangeModal,
-} from "../../components/ui";
-import { Divider } from "../../components/ui/Divider";
-import { useAuth } from "../../contexts/AuthContext";
-import { useGlobalContext } from "../../contexts";
-import { userService } from "../../services/user/user.service";
-import { collectionService, friendService } from "../../services";
+} from "@/components/ui";
+import { Divider } from "@/components/ui/Divider";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGlobalContext } from "@/contexts";
+import { userService } from "@/services/user/user.service";
+import { collectionService, friendService } from "@/services";
 import * as S from "./index.style";
 import toast from "react-hot-toast";
-import { UserProfile } from "../../types/users.type";
+import { UserProfile } from "@/types/users.type";
 import {
   FriendDto,
   FriendRequestDto,
   FriendsSummaryDto,
   FriendCodeDto,
-} from "../../types/friend.types";
+} from "@/types/friend.types";
 
 // Tab types
 type TabType = "profile" | "my-pokemon" | "friends";

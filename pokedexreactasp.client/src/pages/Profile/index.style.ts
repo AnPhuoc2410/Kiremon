@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { colors } from "../../components/utils";
-import { float, shimmer } from "../../styles";
+import { colors } from "@/components/utils";
+import { float, shimmer } from "@/styles";
 
 // ============ LAYOUT ============
 export const Page = styled.div`

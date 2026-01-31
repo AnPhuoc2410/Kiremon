@@ -1,4 +1,4 @@
-import { LANGUAGE_IDS, LanguageId } from "../contexts";
+import { LANGUAGE_IDS, LanguageId } from "@/contexts";
 
 /**
  * UI translations for static labels across the application

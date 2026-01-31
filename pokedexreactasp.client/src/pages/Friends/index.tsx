@@ -1,19 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import {
-  Header,
-  Loading,
-  Modal,
-  Button,
-  Text,
-  Navbar,
-} from "../../components/ui";
-import { useDebounce } from "../../components/hooks";
-import { useAuth } from "../../contexts/AuthContext";
-import { friendService } from "../../services";
-import { presenceHub } from "../../services/signalr/presence.hub";
-import { FriendDto, FriendsSummaryDto } from "../../types/friend.types";
+import { Header, Loading, Modal, Button, Text, Navbar } from "@/components/ui";
+import { useDebounce } from "@/components/hooks";
+import { useAuth } from "@/contexts/AuthContext";
+import { friendService } from "@/services";
+import { presenceHub } from "@/services/signalr/presence.hub";
+import { FriendDto, FriendsSummaryDto } from "@/types/friend.types";
 import * as S from "./index.style";
 import {
   BattleIcon,

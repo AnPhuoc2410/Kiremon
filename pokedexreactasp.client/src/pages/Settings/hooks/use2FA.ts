@@ -5,8 +5,8 @@ import {
   getTwoFactorSetup,
   enableTwoFactor,
   disableTwoFactor,
-} from "../../../config/auth.apis";
-import { useAuth } from "../../../contexts/AuthContext";
+} from "@/config/auth.apis";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface TwoFactorSetupData {
   sharedKey: string;

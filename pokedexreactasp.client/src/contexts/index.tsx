@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useCallback } from "react";
 
-import { IPokeSummary, IPokemon, IPokemonType } from "../types/pokemon";
-import { collectionService } from "../services";
+import { IPokeSummary, IPokemon, IPokemonType } from "@/types/pokemon";
+import { collectionService } from "@/services";
 
 interface IGlobalContext {
   state: IState;

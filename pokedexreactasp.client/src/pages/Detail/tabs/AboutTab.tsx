@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { Loading, RelatedPokemon, Text } from "../../../components/ui";
-import { POKEMON_IMAGE } from "../../../config/api.config";
-import { pokemonService } from "../../../services";
-import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
-import { RelatedPokemonItem, IPokemonSpecies } from "../../../types/pokemon.d";
-import * as T from "../index.style";
+import { Loading, RelatedPokemon, Text } from "@/components/ui";
+import { POKEMON_IMAGE } from "@/config/api.config";
+import { pokemonService } from "@/services";
+import { pokeItemService } from "@/services/pokeitem/pokeitem.service";
+import { RelatedPokemonItem, IPokemonSpecies } from "@/types/pokemon.d";
+import * as T from "@/pages/Detail/index.style";
 import * as S from "./AboutTab.style";
 
 interface AboutTabProps {

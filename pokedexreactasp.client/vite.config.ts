@@ -1,4 +1,3 @@
-// vite.config.ts
 import { defineConfig, loadEnv, mergeConfig } from "vite";
 import baseConfig from "./vite.config.base";
 import devConfig from "./vite.config.dev";

@@ -1,6 +1,6 @@
 import React, { HTMLAttributes } from "react";
 import styled from "@emotion/styled";
-import { colors, units, textShadow } from "../../utils";
+import { colors, units, textShadow } from "@/components/utils";
 
 interface ITextProps extends HTMLAttributes<HTMLParagraphElement> {
   variant?: "default" | "darker" | "outlined" | "error" | "light";

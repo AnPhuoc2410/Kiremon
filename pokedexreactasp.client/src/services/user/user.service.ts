@@ -1,5 +1,5 @@
-import { AuthenticatedApiService } from "../api/api-client.auth";
-import { UserProfile, UpdateProfileRequest } from "../../types/users.type";
+import { AuthenticatedApiService } from "@/services/api/api-client.auth";
+import { UserProfile, UpdateProfileRequest } from "@/types/users.type";
 
 class UserService extends AuthenticatedApiService {
   async getProfile(): Promise<UserProfile> {

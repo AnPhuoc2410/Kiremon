@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors } from "../components/utils";
+import { colors } from "@/components/utils";
 
 // ============ BASE CARD ============
 export const BaseCard = styled.div<{

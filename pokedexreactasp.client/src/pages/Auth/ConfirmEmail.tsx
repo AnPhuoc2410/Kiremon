@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { confirmEmail, resendConfirmationEmail } from "../../config/auth.apis";
+import { confirmEmail, resendConfirmationEmail } from "@/config/auth.apis";
 import toast from "react-hot-toast";
-import Loading from "../../components/ui/Loading";
+import Loading from "@/components/ui/Loading";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 
@@ -18,7 +18,7 @@ import {
   AuthInput,
   AuthSubmit,
   Paragraph,
-} from "../../styles";
+} from "@/styles";
 
 // Page-specific animations
 const successBounce = keyframes`

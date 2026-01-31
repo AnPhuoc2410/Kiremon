@@ -9,14 +9,14 @@ import {
   PokemonStat,
   PokemonAbility,
   PokemonHeldItem,
-} from "../../services/pokemon/pokemon-graphql.service";
-import { POKEMON_IMAGE } from "../../config/api.config";
+} from "@/services/pokemon/pokemon-graphql.service";
+import { POKEMON_IMAGE } from "@/config/api.config";
 import {
   PokemonSprites,
   PokemonForm,
   IPokemonDetailResponse,
   IPokemonSpecies,
-} from "../../types/pokemon.d";
+} from "@/types/pokemon.d";
 
 // Language ID constants
 export const LANGUAGE_IDS = {

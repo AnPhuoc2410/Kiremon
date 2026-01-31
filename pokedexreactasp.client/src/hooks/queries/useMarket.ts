@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
-import { marketService } from "../../services/market";
-import { useLanguage, LanguageId, LANGUAGE_IDS } from "../../contexts";
+import { marketService } from "@/services/market";
+import { useLanguage, LanguageId, LANGUAGE_IDS } from "@/contexts";
 import {
   ItemCategory,
   Item,
   PokemonBasic,
   ItemWithHeldPokemon,
-} from "../../types/market.types";
+} from "@/types/market.types";
 
 // ============ Query Keys ============
 

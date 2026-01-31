@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GenerationDetail as GenerationDetailComponent } from "../../../components/ui";
-import { Loading, NoSignal } from "../../../components/ui";
-import { useGenerationWithDetails } from "../../../components/hooks/usePokeAPI";
-import { getRegionTheme } from "../../../components/utils/regionThemes";
+import { GenerationDetail as GenerationDetailComponent } from "@/components/ui";
+import { Loading, NoSignal } from "@/components/ui";
+import { useGenerationWithDetails } from "@/components/hooks/usePokeAPI";
+import { getRegionTheme } from "@/components/utils/regionThemes";
 import * as S from "./index.style";
 
 const GenerationDetailPage: React.FC = () => {

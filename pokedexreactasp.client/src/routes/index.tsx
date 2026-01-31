@@ -1,37 +1,33 @@
 import { BrowserRouter, Routes as Switch, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
-import { StartScreen, NotFoundPage } from "../pages";
-import { AuthProvider } from "../contexts";
+import { StartScreen, NotFoundPage } from "@/pages";
+import { AuthProvider } from "@/contexts";
 
-const MyPokemon = lazy(() => import("../pages/MyPokemon"));
+const MyPokemon = lazy(() => import("@/pages/MyPokemon"));
 
-const Explore = lazy(() => import("../pages/Explore"));
-const RegionsExplore = lazy(() => import("../pages/Explore/Regions"));
-const RegionDetail = lazy(
-  () => import("../pages/Explore/Regions/RegionDetail"),
-);
-const TypesExplore = lazy(() => import("../pages/Explore/Types"));
-const GenerationsExplore = lazy(() => import("../pages/Explore/Generations"));
-const GenerationDetail = lazy(
-  () => import("../pages/Explore/GenerationDetail"),
-);
-const Detail = lazy(() => import("../pages/Detail"));
-const WhosThatPokemon = lazy(() => import("../pages/WhosThatPokemon"));
-const CombatTeam = lazy(() => import("../pages/CombatTeam"));
-const Search = lazy(() => import("../pages/Search"));
+const Explore = lazy(() => import("@/pages/Explore"));
+const RegionsExplore = lazy(() => import("@/pages/Explore/Regions"));
+const RegionDetail = lazy(() => import("@/pages/Explore/Regions/RegionDetail"));
+const TypesExplore = lazy(() => import("@/pages/Explore/Types"));
+const GenerationsExplore = lazy(() => import("@/pages/Explore/Generations"));
+const GenerationDetail = lazy(() => import("@/pages/Explore/GenerationDetail"));
+const Detail = lazy(() => import("@/pages/Detail"));
+const WhosThatPokemon = lazy(() => import("@/pages/WhosThatPokemon"));
+const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
+const Search = lazy(() => import("@/pages/Search"));
 // New games
-const TypeMatchup = lazy(() => import("../pages/TypeMatchup/index.tsx"));
-const CatchChallenge = lazy(() => import("../pages/CatchChallenge/index.tsx"));
-const Login = lazy(() => import("../pages/Auth/Login"));
-const Register = lazy(() => import("../pages/Auth/Register"));
-const Forgot = lazy(() => import("../pages/Auth/Forgot"));
-const ConfirmEmail = lazy(() => import("../pages/Auth/ConfirmEmail"));
-const ResetPassword = lazy(() => import("../pages/Auth/ResetPassword"));
-const Profile = lazy(() => import("../pages/Profile"));
-const Settings = lazy(() => import("../pages/Settings"));
-const Friends = lazy(() => import("../pages/Friends"));
-const Pokemart = lazy(() => import("../pages/Market"));
+const TypeMatchup = lazy(() => import("@/pages/TypeMatchup/index.tsx"));
+const CatchChallenge = lazy(() => import("@/pages/CatchChallenge/index.tsx"));
+const Login = lazy(() => import("@/pages/Auth/Login"));
+const Register = lazy(() => import("@/pages/Auth/Register"));
+const Forgot = lazy(() => import("@/pages/Auth/Forgot"));
+const ConfirmEmail = lazy(() => import("@/pages/Auth/ConfirmEmail"));
+const ResetPassword = lazy(() => import("@/pages/Auth/ResetPassword"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Friends = lazy(() => import("@/pages/Friends"));
+const Pokemart = lazy(() => import("@/pages/Market"));
 
 export default function Routes() {
   return (
