@@ -24,7 +24,7 @@ import {
   IconDiscFilled,
 } from "@tabler/icons-react";
 import * as S from "./MovesTab.style";
-import { MoveDetailData } from "../../../hooks/queries";
+import { MoveDetailData } from "@/hooks/queries";
 
 // Helper to get special effect badges for a move
 const getMoveEffectBadges = (move: MoveDetailData) => {

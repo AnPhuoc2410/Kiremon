@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import { Text } from "..";
-import { POKEMON_IMAGE } from "../../../config/api.config";
-import { getEvolutionIcons } from "../../utils/evolutionIcons";
+import { POKEMON_IMAGE } from "@/config/api.config";
+import { getEvolutionIcons } from "@/components/utils/evolutionIcons";
 import * as S from "./index.style";
 
 interface EvolutionPokemon {

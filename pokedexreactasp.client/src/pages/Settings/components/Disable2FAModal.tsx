@@ -1,6 +1,6 @@
 import React from "react";
-import * as S from "../index.style";
-import { ShieldIcon, CloseIcon } from "../icons";
+import * as S from "@/pages/Settings/index.style";
+import { ShieldIcon, CloseIcon } from "@/pages/Settings/icons";
 
 interface Disable2FAModalProps {
   show: boolean;

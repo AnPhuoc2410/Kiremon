@@ -2,9 +2,9 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import { NavItem } from "..";
-import { units } from "../../utils";
-import { useLanguage } from "../../../contexts";
-import { t } from "../../../utils/uiI18n";
+import { units } from "@/components/utils";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 interface INavbar {
   children?: React.ReactNode;

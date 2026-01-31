@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Loading, Text, PokeCard } from "../../../components/ui";
-import { pokemonService } from "../../../services";
+import { Loading, Text, PokeCard } from "@/components/ui";
+import { pokemonService } from "@/services";
 import * as T from "../index.style";
 import * as S from "./VarietiesTab.style";
-import { IVariety } from "../../../types/pokemon";
+import { IVariety } from "@/types/pokemon";
 
 interface VarietiesTabProps {
   varieties: IVariety[];

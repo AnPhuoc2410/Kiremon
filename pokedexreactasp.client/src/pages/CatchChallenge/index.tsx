@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { Text, Button } from "../../components/ui";
-import { pokemonService } from "../../services";
-import { IPokemon } from "../../types/pokemon";
+import { Text, Button } from "@/components/ui";
+import { pokemonService } from "@/services";
+import { IPokemon } from "@/types/pokemon";
 import {
   Field,
   GameCard,
@@ -10,7 +10,7 @@ import {
   PokemonSprite,
   ThrowArea,
 } from "./index.style";
-import { sfx } from "../../components/utils/sfx";
+import { sfx } from "@/components/utils/sfx";
 
 interface GamePokemon extends IPokemon {
   sprites?: {

@@ -1,5 +1,5 @@
-import { GRAPHQL_ENDPOINT } from "../../config/api.config";
-import { cacheUtils } from "../cache/cache";
+import { GRAPHQL_ENDPOINT } from "@/config/api.config";
+import { cacheUtils } from "@/services/cache/cache";
 
 export interface PokemonTypeSlot {
   slot: number;

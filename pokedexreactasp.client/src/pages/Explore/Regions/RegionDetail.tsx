@@ -7,15 +7,11 @@ import {
   type RefObject,
 } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Header, Navbar, Loading } from "../../../components/ui";
-import {
-  regionsService,
-  pokedexService,
-  pokemonService,
-} from "../../../services";
-import { IRegion, IPokedex, INameUrlPair } from "../../../types/pokemon";
+import { Header, Navbar, Loading } from "@/components/ui";
+import { regionsService, pokedexService, pokemonService } from "@/services";
+import { IRegion, IPokedex, INameUrlPair } from "@/types/pokemon";
 import * as S from "./regionDetail.style";
-import { getRegionTheme } from "../../../components/utils/regionThemes";
+import { getRegionTheme } from "@/components/utils/regionThemes";
 
 // Map of region names to image URLs (PokeAPI doesn't provide images)
 const regionImageMap: Record<string, string> = {

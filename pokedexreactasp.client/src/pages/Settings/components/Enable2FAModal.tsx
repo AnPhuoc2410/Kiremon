@@ -1,7 +1,7 @@
 import React from "react";
-import * as S from "../index.style";
-import { CloseIcon, CopyIcon } from "../icons";
-import { TwoFactorSetupData } from "../hooks/use2FA";
+import * as S from "@/pages/Settings/index.style";
+import { CloseIcon, CopyIcon } from "@/pages/Settings/icons";
+import { TwoFactorSetupData } from "@/pages/Settings/hooks/use2FA";
 
 interface Enable2FAModalProps {
   show: boolean;

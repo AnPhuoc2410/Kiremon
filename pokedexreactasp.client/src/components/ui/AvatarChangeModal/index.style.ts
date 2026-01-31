@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
-import { colors } from "../../utils";
+import { colors } from "@/components/utils";
 
 const fadeIn = keyframes`
   from {
@@ -242,7 +242,7 @@ export const AvatarCard = styled.button<{ selected?: boolean }>`
     selected &&
     `
     box-shadow: 0 0 0 2px ${colors["red-200"]};
-    
+
     &::after {
       content: "✓";
       position: absolute;

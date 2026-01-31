@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { Role } from "../types/roles.type";
+import { useAuth } from "@/contexts/AuthContext";
+import { Role } from "@/types/roles.type";
 
 interface Props {
   allowedRoles?: Role[]; // Array of allowed roles

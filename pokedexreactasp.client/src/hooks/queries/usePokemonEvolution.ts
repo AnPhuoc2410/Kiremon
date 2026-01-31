@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import {
   pokemonGraphQLService,
   EvolutionChainGraphQL,
-} from "../../services/pokemon/pokemon-graphql.service";
-import { EvolutionItem } from "../../types/pokemon.d";
+} from "@/services/pokemon/pokemon-graphql.service";
+import { EvolutionItem } from "@/types/pokemon.d";
 
 /**
  * Process evolution chain from GraphQL data into UI-friendly format

@@ -15,12 +15,12 @@ import {
   SidebarOverlay,
 } from "./Market.styles";
 import { CategoryTabs, ItemGrid, ItemDescriptionBox } from "./components";
-import { usePokeMartQuery, useSearchItem } from "../../hooks/queries";
-import { Header } from "../../components/ui";
-import { pokeItemService } from "../../services";
-import { Item } from "../../types/market.types";
-import { useLanguage } from "../../contexts";
-import { t } from "../../utils/uiI18n";
+import { usePokeMartQuery, useSearchItem } from "@/hooks/queries";
+import { Header } from "@/components/ui";
+import { pokeItemService } from "@/services";
+import { Item } from "@/types/market.types";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 const Market: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -13,14 +13,10 @@ import {
   WildPokemonList,
   WildPokemonItem,
 } from "../Market.styles";
-import {
-  Item,
-  PokemonBasic,
-  getItemDisplayName,
-} from "../../../types/market.types";
-import { useHeldItemDetails } from "../../../hooks/queries";
-import { useLanguage } from "../../../contexts";
-import { t } from "../../../utils/uiI18n";
+import { Item, PokemonBasic, getItemDisplayName } from "@/types/market.types";
+import { useHeldItemDetails } from "@/hooks/queries";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 interface ItemDescriptionBoxProps {
   item: Item | null;

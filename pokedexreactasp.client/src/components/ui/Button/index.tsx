@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
 import { Text } from "..";
-import { units, colors } from "../../utils";
+import { units, colors } from "@/components/utils";
 
 interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "light" | "dark" | "sky" | "primary" | "secondary";

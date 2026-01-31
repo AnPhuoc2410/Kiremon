@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { forgotPassword } from "../../config/auth.apis";
+import { forgotPassword } from "@/config/auth.apis";
 import toast from "react-hot-toast";
 
 // Import shared styles
@@ -17,7 +17,7 @@ import {
   SmallText,
   FormLabel,
   FlexCenter,
-} from "../../styles";
+} from "@/styles";
 
 const Forgot: React.FC = () => {
   const [email, setEmail] = useState("");

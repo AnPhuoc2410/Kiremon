@@ -6,7 +6,7 @@ import {
   regionsService,
   pokedexService,
   generationsService,
-} from "../../services";
+} from "@/services";
 
 // Generic hook for fetching Pokemon data
 export const usePokeAPI = <T>(

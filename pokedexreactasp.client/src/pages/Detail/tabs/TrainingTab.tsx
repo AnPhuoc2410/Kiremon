@@ -1,7 +1,7 @@
 import React from "react";
-import { Text } from "../../../components/ui";
+import { Text } from "@/components/ui";
 import * as S from "./TrainingTab.style";
-import Divider from "../../../components/ui/Divider";
+import Divider from "@/components/ui/Divider";
 
 interface TrainingTabProps {
   stats: Array<{

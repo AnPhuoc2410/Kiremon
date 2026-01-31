@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthLoginData, AuthUser } from "../types/auth.types";
+import { AuthLoginData, AuthUser } from "@/types/auth.types";
 import {
   eraseCookie,
   getCookie,
   setCookie,
-} from "../components/utils/cookieUtils";
+} from "@/components/utils/cookieUtils";
 import toast from "react-hot-toast";
 
 interface AuthContextType {

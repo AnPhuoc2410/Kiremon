@@ -8,31 +8,31 @@ import {
   getDetailPokemon,
 } from "@/services/pokemon";
 import { colors } from "@/components/utils";
-import { useGlobalContext } from "../../../contexts";
+import { useGlobalContext } from "@/contexts";
 import { IPokemonType } from "@/types/pokemon";
 import * as S from "./index.style";
 import { POKEMON_IMAGE } from "@/config/api.config";
 import { getPokemonId } from "@/components/utils";
 
-import bugIcon from "../../../assets/type-icon/bug.png";
-import darkIcon from "../../../assets/type-icon/dark.png";
+import bugIcon from "@/assets/type-icon/bug.png";
+import darkIcon from "@/assets/type-icon/dark.png";
 import dragonIcon from "@/assets/type-icon/dragon.png";
-import electricIcon from "../../../assets/type-icon/electric.png";
-import fairyIcon from "../../../assets/type-icon/fairy.png";
-import fightingIcon from "../../../assets/type-icon/fighting.png";
-import fireIcon from "../../../assets/type-icon/fire.png";
-import flyingIcon from "../../../assets/type-icon/flying.png";
-import ghostIcon from "../../../assets/type-icon/ghost.png";
-import groundIcon from "../../../assets/type-icon/ground.png";
-import grassIcon from "../../../assets/type-icon/grass.png";
-import iceIcon from "../../../assets/type-icon/ice.png";
-import normalIcon from "../../../assets/type-icon/normal.png";
-import poisonIcon from "../../../assets/type-icon/poison.png";
-import psychicIcon from "../../../assets/type-icon/psychic.png";
-import rockIcon from "../../../assets/type-icon/rock.png";
-import steelIcon from "../../../assets/type-icon/steel.png";
-import stellarIcon from "../../../assets/type-icon/stellar.png";
-import waterIcon from "../../../assets/type-icon/water.png";
+import electricIcon from "@/assets/type-icon/electric.png";
+import fairyIcon from "@/assets/type-icon/fairy.png";
+import fightingIcon from "@/assets/type-icon/fighting.png";
+import fireIcon from "@/assets/type-icon/fire.png";
+import flyingIcon from "@/assets/type-icon/flying.png";
+import ghostIcon from "@/assets/type-icon/ghost.png";
+import groundIcon from "@/assets/type-icon/ground.png";
+import grassIcon from "@/assets/type-icon/grass.png";
+import iceIcon from "@/assets/type-icon/ice.png";
+import normalIcon from "@/assets/type-icon/normal.png";
+import poisonIcon from "@/assets/type-icon/poison.png";
+import psychicIcon from "@/assets/type-icon/psychic.png";
+import rockIcon from "@/assets/type-icon/rock.png";
+import steelIcon from "@/assets/type-icon/steel.png";
+import stellarIcon from "@/assets/type-icon/stellar.png";
+import waterIcon from "@/assets/type-icon/water.png";
 
 const typeColors: Record<string, string> = {
   normal: "#A8A77A",

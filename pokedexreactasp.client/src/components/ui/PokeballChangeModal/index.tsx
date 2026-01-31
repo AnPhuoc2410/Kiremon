@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import { pokeItemService } from "../../../services/pokeitem/pokeitem.service";
-import { useDebounce } from "../../hooks/useDebounce";
+import { pokeItemService } from "@/services/pokeitem/pokeitem.service";
+import { useDebounce } from "@/components/hooks/useDebounce";
 import * as S from "./index.style";
 
 interface Pokeball {

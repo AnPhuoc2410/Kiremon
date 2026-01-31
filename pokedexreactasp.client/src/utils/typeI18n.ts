@@ -1,4 +1,4 @@
-import { LANGUAGE_IDS, LanguageId } from "../contexts";
+import { LANGUAGE_IDS, LanguageId } from "@/contexts";
 
 // Pokemon type translations for all supported languages
 // Based on PokeAPI language IDs

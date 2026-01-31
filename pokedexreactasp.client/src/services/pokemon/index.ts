@@ -7,4 +7,4 @@ export { pokedexService } from "./pokedex.service";
 export { generationsService } from "./generations.service";
 
 // Export cache utility for managing cache
-export { cacheUtils } from "../cache/cache";
+export { cacheUtils } from "@/services/cache/cache";

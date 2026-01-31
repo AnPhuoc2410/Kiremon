@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { resetPassword } from "../../config/auth.apis";
+import { resetPassword } from "@/config/auth.apis";
 import toast from "react-hot-toast";
 
 // Import shared styles
@@ -16,7 +16,7 @@ import {
   AuthSubmit,
   SmallText,
   FormLabel,
-} from "../../styles";
+} from "@/styles";
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();

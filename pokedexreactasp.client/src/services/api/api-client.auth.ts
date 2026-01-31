@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { getCookie } from "../../components/utils/cookieUtils";
+import { getCookie } from "@/components/utils/cookieUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 

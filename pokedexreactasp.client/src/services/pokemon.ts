@@ -1,7 +1,7 @@
 import axios from "axios";
 
-import { POKEMON_API, buildEndpointUrl } from "../config/api.config";
-import { IAllPokemonResponse, IPokemon } from "../types/pokemon";
+import { POKEMON_API, buildEndpointUrl } from "@/config/api.config";
+import { IAllPokemonResponse, IPokemon } from "@/types/pokemon";
 
 // Simple cache implementation
 interface Cache {

@@ -1,4 +1,4 @@
-import { AuthenticatedApiService } from "../api/api-client.auth";
+import { AuthenticatedApiService } from "@/services/api/api-client.auth";
 import {
   FriendDto,
   FriendRequestDto,
@@ -8,7 +8,7 @@ import {
   UserSearchResultDto,
   FriendsSummaryDto,
   UpdateFriendNicknameDto,
-} from "../../types/friend.types";
+} from "@/types/friend.types";
 
 class FriendService extends AuthenticatedApiService {
   // Friend Code & QR

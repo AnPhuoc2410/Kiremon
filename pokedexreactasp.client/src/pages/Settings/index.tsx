@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header, PokeballChangeModal } from "../../components/ui";
-import { useAuth } from "../../contexts/AuthContext";
-import { pokeItemService } from "../../services/pokeitem/pokeitem.service";
+import { Header, PokeballChangeModal } from "@/components/ui";
+import { useAuth } from "@/contexts/AuthContext";
+import { pokeItemService } from "@/services/pokeitem/pokeitem.service";
 import * as S from "./index.style";
 import {
   ShieldIcon,

@@ -1,4 +1,4 @@
-import { AuthenticatedApiService } from "../api/api-client.auth";
+import { AuthenticatedApiService } from "@/services/api/api-client.auth";
 import {
   CatchAttemptRequest,
   CatchAttemptResultDto,
@@ -7,7 +7,7 @@ import {
   CollectionStatsDto,
   PokeSummaryResponseDto,
   UserPokemonDto,
-} from "../../types/userspokemon.types";
+} from "@/types/userspokemon.types";
 
 class CollectionService extends AuthenticatedApiService {
   /**

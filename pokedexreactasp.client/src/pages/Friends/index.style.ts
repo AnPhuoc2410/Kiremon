@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { colors } from "../../components/utils";
+import { colors } from "@/components/utils";
 import {
   PageContainer as BasePageContainer,
   StatsHeader as BaseStatsHeader,
@@ -15,7 +15,7 @@ import {
   AddButton,
   float,
   pulse,
-} from "../../styles";
+} from "@/styles";
 
 // Re-export shared components for backward compatibility
 export { StatInfo, StatValue, StatLabel };

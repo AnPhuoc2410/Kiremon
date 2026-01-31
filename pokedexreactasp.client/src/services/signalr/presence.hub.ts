@@ -4,7 +4,7 @@ import {
   LogLevel,
   HubConnectionState,
 } from "@microsoft/signalr";
-import { getCookie } from "../../components/utils/cookieUtils";
+import { getCookie } from "@/components/utils/cookieUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 // SignalR Hub URL (Remove /api if the hub is mapped at root level, but usually mapped relative to domain)

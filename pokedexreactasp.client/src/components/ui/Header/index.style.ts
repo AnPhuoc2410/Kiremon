@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors } from "../../utils";
+import { colors } from "@/components/utils";
 
 export const HeaderContainer = styled.header`
   display: flex;

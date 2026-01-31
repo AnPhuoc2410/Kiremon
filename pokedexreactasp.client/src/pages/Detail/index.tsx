@@ -20,14 +20,14 @@ import {
   Navbar,
   Text,
   TypeIcon,
-} from "../../components/ui";
-import { useAuth, useGlobalContext, useLanguage } from "../../contexts";
-import { collectionService } from "../../services";
-import { CatchAttemptResult, PokeballType } from "../../types/pokemon.enums";
+} from "@/components/ui";
+import { useAuth, useGlobalContext, useLanguage } from "@/contexts";
+import { collectionService } from "@/services";
+import { CatchAttemptResult, PokeballType } from "@/types/pokemon.enums";
 import {
   CatchAttemptResultDto,
   CaughtPokemonDto,
-} from "../../types/userspokemon.types";
+} from "@/types/userspokemon.types";
 
 // Import tab components
 import AboutTab from "./tabs/AboutTab";
@@ -40,14 +40,14 @@ import TrainingTab from "./tabs/TrainingTab";
 import VarietiesTab from "./tabs/VarietiesTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
-import { skillColor } from "../../components/utils";
-import { POKEMON_SHOWDOWN_IMAGE } from "../../config/api.config";
+import { skillColor } from "@/components/utils";
+import { POKEMON_SHOWDOWN_IMAGE } from "@/config/api.config";
 import {
   usePokemonCore,
   usePokemonEvolution,
   useRelatedPokemon,
-} from "../../hooks/queries";
-import { getLocalizedLabel } from "../../utils/typeI18n";
+} from "@/hooks/queries";
+import { getLocalizedLabel } from "@/utils/typeI18n";
 import * as T from "./index.style";
 
 const PokemonAvatar = styled(LazyLoadImage)`
@@ -700,8 +700,8 @@ const DetailPokemon = () => {
             transparent 50%
           ),
           linear-gradient(
-            to right, 
-            ${skillColor[`${typeNames[0]}-200`] || "#A8A77A"}, 
+            to right,
+            ${skillColor[`${typeNames[0]}-200`] || "#A8A77A"},
             transparent
           )
         `
@@ -1022,7 +1022,6 @@ const DetailPokemon = () => {
           {activeTab === "sprites" && (
             <SpritesTab sprites={sprites} name={name} />
           )}
-
 
           {/* Varieties Tab */}
           {activeTab === "varieties" && (

@@ -1,7 +1,7 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Header, Navbar, Loading } from "../../../components/ui";
+import { Header, Navbar, Loading } from "@/components/ui";
 import * as S from "./index.style";
 
 const pokemonGenerations = [

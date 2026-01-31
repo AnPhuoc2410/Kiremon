@@ -11,12 +11,9 @@ import {
   ErrorText,
   RetryButton,
 } from "../Market.styles";
-import {
-  ItemCategory,
-  getCategoryDisplayName,
-} from "../../../types/market.types";
-import { useLanguage } from "../../../contexts";
-import { t } from "../../../utils/uiI18n";
+import { ItemCategory, getCategoryDisplayName } from "@/types/market.types";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 
 interface CategoryTabsProps {
   categories: ItemCategory[];

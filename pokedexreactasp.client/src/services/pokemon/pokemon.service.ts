@@ -1,10 +1,7 @@
-import { ApiService } from "../api/api-client";
-import { cacheUtils } from "../cache/cache";
-import { buildEndpointUrl, GRAPHQL_ENDPOINT } from "../../config/api.config";
-import {
-  IAllPokemonResponse,
-  IPokemonDetailResponse,
-} from "../../types/pokemon";
+import { ApiService } from "@/services/api/api-client";
+import { cacheUtils } from "@/services/cache/cache";
+import { buildEndpointUrl, GRAPHQL_ENDPOINT } from "@/config/api.config";
+import { IAllPokemonResponse, IPokemonDetailResponse } from "@/types/pokemon";
 
 interface PokemonGraphQLResult {
   id: number;

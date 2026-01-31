@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { pokemonService } from "../../../services/pokemon/pokemon.service";
-import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
-import { useDebounce } from "../../hooks/useDebounce";
+import { pokemonService } from "@/services/pokemon/pokemon.service";
+import { useSupabaseStorage } from "@/components/hooks/useSupabaseStorage";
+import { useDebounce } from "@/components/hooks/useDebounce";
 import * as S from "./index.style";
 
 interface Pokemon {

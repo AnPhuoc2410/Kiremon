@@ -1,10 +1,10 @@
 import { useState, useEffect, createRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Header, Navbar, Loading } from "../../../components/ui";
+import { Header, Navbar, Loading } from "@/components/ui";
 import * as S from "./index.style";
-import { regionsService, pokedexService } from "../../../services";
-import { getRegionTheme } from "../../../components/utils/regionThemes";
+import { regionsService, pokedexService } from "@/services";
+import { getRegionTheme } from "@/components/utils/regionThemes";
 
 type RegionCardData = {
   id?: number;

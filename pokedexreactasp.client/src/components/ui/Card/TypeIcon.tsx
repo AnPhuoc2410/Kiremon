@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { useLanguage } from "../../../contexts";
-import { getLocalizedTypeName } from "../../../utils/typeI18n";
+import { useLanguage } from "@/contexts";
+import { getLocalizedTypeName } from "@/utils/typeI18n";
 
 // Pokemon type colors
 const typeColors: Record<string, string> = {

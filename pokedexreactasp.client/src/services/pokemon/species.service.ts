@@ -1,7 +1,7 @@
-import { ApiService } from "../api/api-client";
-import { cacheUtils } from "../cache/cache";
-import { buildEndpointUrl } from "../../config/api.config";
-import { IPokemonSpecies, IEvolutionChain } from "../../types/pokemon";
+import { ApiService } from "@/services/api/api-client";
+import { cacheUtils } from "@/services/cache/cache";
+import { buildEndpointUrl } from "@/config/api.config";
+import { IPokemonSpecies, IEvolutionChain } from "@/types/pokemon";
 
 class SpeciesService extends ApiService {
   constructor() {

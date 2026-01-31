@@ -1,17 +1,11 @@
 import React, { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import {
-  Header,
-  Navbar,
-  PokeCard,
-  SkeletonCard,
-  Text,
-} from "../../components/ui";
-import * as T from "../Explore/index.style";
-import { IPokemon } from "../../types/pokemon";
-import { getPokemonId } from "../../components/utils";
-import { useAllPokemon } from "../../components/hooks/usePokeAPI";
+import { Header, Navbar, PokeCard, SkeletonCard, Text } from "@/components/ui";
+import * as T from "@/pages/Explore/index.style";
+import { IPokemon } from "@/types/pokemon";
+import { getPokemonId } from "@/components/utils";
+import { useAllPokemon } from "@/components/hooks/usePokeAPI";
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();

@@ -1,5 +1,5 @@
-import { GRAPHQL_ENDPOINT } from "../../config/api.config";
-import { LANGUAGE_IDS } from "../../contexts";
+import { GRAPHQL_ENDPOINT } from "@/config/api.config";
+import { LANGUAGE_IDS } from "@/contexts";
 import {
   CategoriesResponse,
   ItemsResponse,
@@ -7,7 +7,7 @@ import {
   ItemCategory,
   Item,
   ItemWithHeldPokemon,
-} from "../../types/market.types";
+} from "@/types/market.types";
 
 // ============ GraphQL Queries ============
 

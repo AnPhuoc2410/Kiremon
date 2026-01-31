@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Text, Button } from "../../components/ui";
+import { Text, Button } from "@/components/ui";
 
 import * as T from "./index.style";
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Text } from "../../../components/ui";
+import { Text } from "@/components/ui";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import {
   IconSparkles,

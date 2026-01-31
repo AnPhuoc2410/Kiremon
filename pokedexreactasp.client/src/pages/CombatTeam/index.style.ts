@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors } from "../../components/utils";
+import { colors } from "@/components/utils";
 import {
   Container as BaseContainer,
   FlexBetween,
@@ -10,7 +10,7 @@ import {
   EmptyState as BaseEmptyState,
   GridContainer,
   ProgressBar,
-} from "../../styles";
+} from "@/styles";
 
 // ============ LAYOUT ============
 export const Container = styled(BaseContainer)`
