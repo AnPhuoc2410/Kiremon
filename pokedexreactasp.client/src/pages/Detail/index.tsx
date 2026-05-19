@@ -38,6 +38,7 @@ import SpritesTab from "./tabs/SpritesTab";
 import StatsTab from "./tabs/StatsTab";
 import TrainingTab from "./tabs/TrainingTab";
 import VarietiesTab from "./tabs/VarietiesTab";
+import TcgTab from "./tabs/TcgTab";
 
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { skillColor } from "@/components/utils";
@@ -1027,6 +1028,9 @@ const DetailPokemon = () => {
           {activeTab === "varieties" && (
             <VarietiesTab varieties={varieties} currentPokemonName={name} />
           )}
+
+          {/* TCG Tab */}
+          {activeTab === "tcg" && <TcgTab pokemonName={name} enabled />}
         </T.Content>
       </T.Page>
 
