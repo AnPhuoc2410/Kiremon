@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Button, Loading, Text } from "@/components/ui";
 import { useTcgCardDetail, useTcgCards } from "@/hooks/queries";
-import { TcgAttack, TcgCardDetail } from "@/types/tcg.types";
+import { TcgAttack, TcgCardDetail, TcgCardListItem } from "@/types/tcg.types";
 import * as S from "./TcgTab.style";
 
 interface TcgTabProps {
@@ -14,6 +14,7 @@ const PAGE_SIZE = 12;
 const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   const [page, setPage] = useState(1);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [detailImageSrc, setDetailImageSrc] = useState("");
 
   const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, enabled);
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
@@ -30,6 +31,17 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
   const cards = cardsQuery.data?.data || [];
   const selectedCard: TcgCardDetail | undefined = detailQuery.data;
+  const selectedCardSummary: TcgCardListItem | undefined = useMemo(
+    () => cards.find((card) => card.id === selectedCardId),
+    [cards, selectedCardId],
+  );
+  const displayCard = selectedCard || selectedCardSummary;
+
+  useEffect(() => {
+    const nextImage =
+      displayCard?.images?.large || displayCard?.images?.small || "/substitute.png";
+    setDetailImageSrc(nextImage);
+  }, [displayCard]);
 
   const renderAttacks = (attacks?: TcgAttack[]) => {
     if (!attacks || attacks.length === 0) return <Text>-</Text>;
@@ -50,7 +62,8 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   if (cardsQuery.isError) {
     return (
       <S.ErrorBox>
-        <Text>Failed to load TCG cards for this Pokémon.</Text>
+        <Text>Failed to load TCG cards for this Pokemon.</Text>
+        <Text as="p">{(cardsQuery.error as Error)?.message || "Unknown error"}</Text>
         <Button
           variant="light"
           onClick={() => cardsQuery.refetch()}
@@ -70,7 +83,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
       </S.Header>
 
       {cards.length === 0 ? (
-        <S.EmptyBox>No TCG card found for this Pokémon.</S.EmptyBox>
+        <S.EmptyBox>No TCG card found for this Pokemon.</S.EmptyBox>
       ) : (
         <>
           <S.Grid>
@@ -84,11 +97,11 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                 <S.CardMeta>
                   <S.Title>{card.name}</S.Title>
                   <S.MetaLine>
-                    #{card.number} • {card.set.name}
+                    #{card.number} - {card.set.name}
                   </S.MetaLine>
                   <S.MetaLine>
                     {card.rarity || "Unknown rarity"}
-                    {card.regulationMark ? ` • Mark ${card.regulationMark}` : ""}
+                    {card.regulationMark ? ` - Mark ${card.regulationMark}` : ""}
                   </S.MetaLine>
                 </S.CardMeta>
               </S.CardItem>
@@ -122,10 +135,10 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
           <S.ModalContent onClick={(e) => e.stopPropagation()}>
             <S.ModalHeader>
               <div>
-                <Text as="h3">{selectedCard?.name || "Loading card details..."}</Text>
-                {selectedCard?.set && (
+                <Text as="h3">{displayCard?.name || "Loading card details..."}</Text>
+                {displayCard?.set && (
                   <Text as="p">
-                    {selectedCard.set.series} • {selectedCard.set.name}
+                    {displayCard.set.series} - {displayCard.set.name}
                   </Text>
                 )}
               </div>
@@ -134,9 +147,10 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
             {detailQuery.isLoading ? (
               <Loading label="Loading card detail..." />
-            ) : detailQuery.isError || !selectedCard ? (
+            ) : detailQuery.isError || !displayCard ? (
               <S.ErrorBox>
                 <Text>Failed to load card detail.</Text>
+                <Text as="p">{(detailQuery.error as Error)?.message || "Unknown error"}</Text>
                 <Button variant="light" onClick={() => detailQuery.refetch()}>
                   Retry
                 </Button>
@@ -144,26 +158,31 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
             ) : (
               <S.DetailLayout>
                 <S.DetailImage
-                  src={
-                    selectedCard.images?.large ||
-                    selectedCard.images?.small ||
-                    "/substitute.png"
-                  }
-                  alt={selectedCard.name}
+                  src={detailImageSrc}
+                  alt={displayCard.name}
+                  onError={() => {
+                    if (detailImageSrc !== displayCard.images?.small && displayCard.images?.small) {
+                      setDetailImageSrc(displayCard.images.small);
+                      return;
+                    }
+                    if (detailImageSrc !== "/substitute.png") {
+                      setDetailImageSrc("/substitute.png");
+                    }
+                  }}
                 />
 
                 <S.DetailBlock>
                   <div>
-                    <S.Label>Card</S.Label> <S.Value>{selectedCard.id}</S.Value>
+                    <S.Label>Card</S.Label> <S.Value>{displayCard.id}</S.Value>
                   </div>
                   <div>
                     <S.Label>Supertype</S.Label>{" "}
-                    <S.Value>{selectedCard.supertype || "-"}</S.Value>
+                    <S.Value>{displayCard.supertype || "-"}</S.Value>
                   </div>
                   <div>
                     <S.Label>Subtypes</S.Label>
                     <S.BadgeRow>
-                      {(selectedCard.subtypes || []).map((subtype) => (
+                      {(displayCard.subtypes || []).map((subtype) => (
                         <S.Badge key={subtype}>{subtype}</S.Badge>
                       ))}
                     </S.BadgeRow>
@@ -171,26 +190,24 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   <div>
                     <S.Label>HP / Types</S.Label>{" "}
                     <S.Value>
-                      {selectedCard.hp || "-"} / {(selectedCard.types || []).join(", ") || "-"}
+                      {selectedCard?.hp || "-"} / {(selectedCard?.types || []).join(", ") || "-"}
                     </S.Value>
                   </div>
                   <div>
                     <S.Label>Evolves From</S.Label>{" "}
-                    <S.Value>{selectedCard.evolvesFrom || "-"}</S.Value>
+                    <S.Value>{selectedCard?.evolvesFrom || "-"}</S.Value>
                   </div>
                   <div>
                     <S.Label>Rarity / Regulation</S.Label>{" "}
                     <S.Value>
-                      {selectedCard.rarity || "-"}
-                      {selectedCard.regulationMark
-                        ? ` / ${selectedCard.regulationMark}`
-                        : ""}
+                      {displayCard.rarity || "-"}
+                      {displayCard.regulationMark ? ` / ${displayCard.regulationMark}` : ""}
                     </S.Value>
                   </div>
                   <div>
                     <S.Label>Weaknesses</S.Label>{" "}
                     <S.Value>
-                      {(selectedCard.weaknesses || [])
+                      {(selectedCard?.weaknesses || [])
                         .map((item) => `${item.type} ${item.value}`)
                         .join(", ") || "-"}
                     </S.Value>
@@ -198,7 +215,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   <div>
                     <S.Label>Resistances</S.Label>{" "}
                     <S.Value>
-                      {(selectedCard.resistances || [])
+                      {(selectedCard?.resistances || [])
                         .map((item) => `${item.type} ${item.value}`)
                         .join(", ") || "-"}
                     </S.Value>
@@ -206,19 +223,19 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   <div>
                     <S.Label>Retreat Cost</S.Label>{" "}
                     <S.Value>
-                      {(selectedCard.retreatCost || []).join(", ") || "-"}
-                      {typeof selectedCard.convertedRetreatCost === "number"
+                      {(selectedCard?.retreatCost || []).join(", ") || "-"}
+                      {typeof selectedCard?.convertedRetreatCost === "number"
                         ? ` (${selectedCard.convertedRetreatCost})`
                         : ""}
                     </S.Value>
                   </div>
                   <div>
-                    <S.Label>Artist</S.Label> <S.Value>{selectedCard.artist || "-"}</S.Value>
+                    <S.Label>Artist</S.Label> <S.Value>{selectedCard?.artist || "-"}</S.Value>
                   </div>
                   <div>
                     <S.Label>Legalities</S.Label>{" "}
                     <S.Value>
-                      {selectedCard.legalities
+                      {selectedCard?.legalities
                         ? Object.entries(selectedCard.legalities)
                             .map(([format, status]) => `${format}: ${status}`)
                             .join(" • ")
@@ -227,10 +244,10 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   </div>
                   <div>
                     <S.Label>Abilities</S.Label>
-                    {(selectedCard.abilities || []).length === 0 ? (
+                    {(selectedCard?.abilities || []).length === 0 ? (
                       <Text>-</Text>
                     ) : (
-                      (selectedCard.abilities || []).map((ability) => (
+                      (selectedCard?.abilities || []).map((ability) => (
                         <div key={ability.name}>
                           <Text as="p">
                             <strong>{ability.name}</strong> ({ability.type || "Ability"})
@@ -242,9 +259,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   </div>
                   <div>
                     <S.Label>Attacks</S.Label>
-                    {renderAttacks(selectedCard.attacks)}
+                    {renderAttacks(selectedCard?.attacks)}
                   </div>
-                  {selectedCard.flavorText && (
+                  {selectedCard?.flavorText && (
                     <div>
                       <S.Label>Flavor Text</S.Label>
                       <Text as="p">{selectedCard.flavorText}</Text>

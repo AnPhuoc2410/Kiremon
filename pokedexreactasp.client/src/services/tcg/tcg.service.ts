@@ -12,6 +12,10 @@ interface RawCardSearchResponse {
   totalCount: number;
 }
 
+interface RawCardDetailResponse {
+  data: any;
+}
+
 interface SearchCardsResult {
   data: TcgCardListItem[];
   page: number;
@@ -70,6 +74,13 @@ class TcgService {
     };
   }
 
+  private unwrapCard(payload: any): any {
+    if (payload && typeof payload === "object" && "data" in payload) {
+      return payload.data;
+    }
+    return payload;
+  }
+
   async searchCardsByPokemonName(
     pokemonName: string,
     page: number = 1,
@@ -105,7 +116,8 @@ class TcgService {
   async getCardById(cardId: string): Promise<TcgCardDetail> {
     this.ensureConfigured();
 
-    const response = await fetch(`${this.baseUrl}cards/${cardId}`, {
+    const encodedId = encodeURIComponent(cardId);
+    const response = await fetch(`${this.baseUrl}cards/${encodedId}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -115,7 +127,13 @@ class TcgService {
       throw new Error(message || "Failed to fetch TCG card detail");
     }
 
-    const raw = await response.json();
+    const payload: RawCardDetailResponse | any = await response.json();
+    const raw = this.unwrapCard(payload);
+
+    if (!raw || !raw.id) {
+      throw new Error("Invalid TCG card detail response");
+    }
+
     return {
       ...this.mapCard(raw),
       hp: raw.hp,
