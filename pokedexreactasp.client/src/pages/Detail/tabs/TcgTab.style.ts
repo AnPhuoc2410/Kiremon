@@ -19,6 +19,26 @@ export const Grid = styled.div`
   gap: 16px;
 `;
 
+export const FilterRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 10px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const Select = styled.select`
+  width: 100%;
+  height: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  color: #111827;
+`;
+
 export const CardItem = styled.button`
   width: 100%;
   border: none;

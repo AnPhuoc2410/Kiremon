@@ -4,7 +4,12 @@ export type { LanguageId, MoveDetailData } from "./usePokemonCore";
 
 export { usePokemonEvolution } from "./usePokemonEvolution";
 export { useRelatedPokemon } from "./useRelatedPokemon";
-export { useTcgCards, useTcgCardDetail, tcgQueryKeys } from "./useTcgCards";
+export {
+  useTcgCards,
+  useTcgCardDetail,
+  useTcgFacets,
+  tcgQueryKeys,
+} from "./useTcgCards";
 
 // TanStack Query based hooks for Market/Poké Mart
 export {

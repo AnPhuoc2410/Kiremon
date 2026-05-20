@@ -1,7 +1,12 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Button, Loading, Text } from "@/components/ui";
-import { useTcgCardDetail, useTcgCards } from "@/hooks/queries";
-import { TcgAttack, TcgCardDetail, TcgCardListItem } from "@/types/tcg.types";
+import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
+import {
+  TcgAttack,
+  TcgCardDetail,
+  TcgCardFilters,
+  TcgCardListItem,
+} from "@/types/tcg.types";
 import * as S from "./TcgTab.style";
 
 interface TcgTabProps {
@@ -15,14 +20,25 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   const [page, setPage] = useState(1);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [detailImageSrc, setDetailImageSrc] = useState("");
+  const [filters, setFilters] = useState<TcgCardFilters>({
+    rarity: "",
+    regulationMark: "",
+    subtype: "",
+  });
 
-  const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, enabled);
+  const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, filters, enabled);
+  const facetsQuery = useTcgFacets(pokemonName, enabled);
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
 
   useEffect(() => {
     setPage(1);
     setSelectedCardId(null);
+    setFilters({ rarity: "", regulationMark: "", subtype: "" });
   }, [pokemonName]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.rarity, filters.regulationMark, filters.subtype]);
 
   const totalPages = useMemo(() => {
     const totalCount = cardsQuery.data?.totalCount || 0;
@@ -30,6 +46,10 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   }, [cardsQuery.data?.totalCount]);
 
   const cards = cardsQuery.data?.data || [];
+  const rarityOptions = facetsQuery.data?.rarities || [];
+  const subtypeOptions = facetsQuery.data?.subtypes || [];
+  const regulationOptions = facetsQuery.data?.regulationMarks || [];
+
   const selectedCard: TcgCardDetail | undefined = detailQuery.data;
   const selectedCardSummary: TcgCardListItem | undefined = useMemo(
     () => cards.find((card) => card.id === selectedCardId),
@@ -82,8 +102,50 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
         <Text as="p">Total: {cardsQuery.data?.totalCount || 0} cards</Text>
       </S.Header>
 
+      <S.FilterRow>
+        <S.Select
+          value={filters.rarity || ""}
+          onChange={(e) => setFilters((prev) => ({ ...prev, rarity: e.target.value }))}
+        >
+          <option value="">All Rarity</option>
+          {rarityOptions.map((rarity) => (
+            <option key={rarity} value={rarity}>
+              {rarity}
+            </option>
+          ))}
+        </S.Select>
+
+        <S.Select
+          value={filters.regulationMark || ""}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, regulationMark: e.target.value }))
+          }
+        >
+          <option value="">All Regulation</option>
+          {regulationOptions.map((mark) => (
+            <option key={mark} value={mark}>
+              {mark}
+            </option>
+          ))}
+        </S.Select>
+
+        <S.Select
+          value={filters.subtype || ""}
+          onChange={(e) => setFilters((prev) => ({ ...prev, subtype: e.target.value }))}
+        >
+          <option value="">All Subtypes</option>
+          {subtypeOptions.map((subtype) => (
+            <option key={subtype} value={subtype}>
+              {subtype}
+            </option>
+          ))}
+        </S.Select>
+      </S.FilterRow>
+
+      {facetsQuery.isLoading && <Text as="p">Loading filters...</Text>}
+
       {cards.length === 0 ? (
-        <S.EmptyBox>No TCG card found for this Pokemon.</S.EmptyBox>
+        <S.EmptyBox>No TCG card found for this Pokemon with current filters.</S.EmptyBox>
       ) : (
         <>
           <S.Grid>

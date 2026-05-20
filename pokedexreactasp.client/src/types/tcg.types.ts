@@ -5,6 +5,18 @@ export interface TcgPaginationMeta {
   totalPages: number;
 }
 
+export interface TcgCardFilters {
+  rarity?: string;
+  regulationMark?: string;
+  subtype?: string;
+}
+
+export interface TcgCardFacets {
+  rarities: string[];
+  regulationMarks: string[];
+  subtypes: string[];
+}
+
 export interface TcgCardSetInfo {
   id: string;
   name: string;

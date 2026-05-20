@@ -1,5 +1,7 @@
 import { TCG_API, TCG_API_KEY } from "@/config/api.config";
 import {
+  TcgCardFilters,
+  TcgCardFacets,
   TcgCardDetail,
   TcgCardListItem,
 } from "@/types/tcg.types";
@@ -24,6 +26,7 @@ interface SearchCardsResult {
 }
 
 const DEFAULT_PAGE_SIZE = 12;
+const FACET_PAGE_SIZE = 250;
 
 class TcgService {
   private readonly baseUrl: string;
@@ -85,11 +88,19 @@ class TcgService {
     pokemonName: string,
     page: number = 1,
     pageSize: number = DEFAULT_PAGE_SIZE,
+    filters?: TcgCardFilters,
   ): Promise<SearchCardsResult> {
     this.ensureConfigured();
 
     const searchTerm = pokemonName.trim().replace(/"/g, '\\"');
-    const query = encodeURIComponent(`name:"${searchTerm}"`);
+    const queryParts = [`name:"${searchTerm}"`];
+    if (filters?.rarity) queryParts.push(`rarity:"${filters.rarity}"`);
+    if (filters?.regulationMark) {
+      queryParts.push(`regulationMark:"${filters.regulationMark}"`);
+    }
+    if (filters?.subtype) queryParts.push(`subtypes:"${filters.subtype}"`);
+
+    const query = encodeURIComponent(queryParts.join(" "));
     const url = `${this.baseUrl}cards?q=${query}&page=${page}&pageSize=${pageSize}&orderBy=set.releaseDate,number`;
 
     const response = await fetch(url, {
@@ -149,6 +160,53 @@ class TcgService {
       flavorText: raw.flavorText,
       nationalPokedexNumbers: raw.nationalPokedexNumbers,
       legalities: raw.legalities,
+    };
+  }
+
+  async preloadFacetsByPokemonName(pokemonName: string): Promise<TcgCardFacets> {
+    this.ensureConfigured();
+
+    const searchTerm = pokemonName.trim().replace(/"/g, '\\"');
+    const query = encodeURIComponent(`name:"${searchTerm}"`);
+
+    let page = 1;
+    let totalCount = 0;
+    const raritySet = new Set<string>();
+    const regulationSet = new Set<string>();
+    const subtypeSet = new Set<string>();
+
+    do {
+      const url = `${this.baseUrl}cards?q=${query}&page=${page}&pageSize=${FACET_PAGE_SIZE}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to preload TCG facets");
+      }
+
+      const payload: RawCardSearchResponse = await response.json();
+      const cards = payload.data || [];
+      totalCount = payload.totalCount || 0;
+
+      cards.forEach((card) => {
+        if (card.rarity) raritySet.add(card.rarity);
+        if (card.regulationMark) regulationSet.add(card.regulationMark);
+        (card.subtypes || []).forEach((subtype: string) => {
+          if (subtype) subtypeSet.add(subtype);
+        });
+      });
+
+      page += 1;
+      if (cards.length === 0) break;
+    } while ((page - 1) * FACET_PAGE_SIZE < totalCount);
+
+    return {
+      rarities: Array.from(raritySet).sort(),
+      regulationMarks: Array.from(regulationSet).sort(),
+      subtypes: Array.from(subtypeSet).sort(),
     };
   }
 }
