@@ -102,10 +102,10 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  width: min(980px, 100%);
+  width: min(1120px, 100%);
   max-height: 90vh;
   overflow: auto;
-  background: #ffffff;
+  background: linear-gradient(145deg, #0f172a 0%, #1f2937 100%);
   border-radius: 14px;
   padding: 20px;
   display: grid;
@@ -121,8 +121,8 @@ export const ModalHeader = styled.div`
 
 export const CloseButton = styled.button`
   border: none;
-  background: #111827;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -130,32 +130,58 @@ export const CloseButton = styled.button`
 
 export const DetailLayout = styled.div`
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 18px;
+  grid-template-columns: 1fr minmax(360px, 460px);
+  gap: 22px;
+  align-items: center;
 
   @media (max-width: 860px) {
     grid-template-columns: 1fr;
   }
 `;
 
+export const CardStage = styled.div`
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  min-height: 580px;
+
+  @media (max-width: 860px) {
+    min-height: auto;
+  }
+`;
+
 export const DetailImage = styled.img`
-  width: 100%;
-  border-radius: 10px;
+  width: min(480px, 100%);
+  border-radius: 16px;
   background: #f9fafb;
+  box-shadow:
+    0 30px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+  transform: rotateY(-10deg) rotateX(4deg);
+  transition: transform 0.25s ease;
+
+  &:hover {
+    transform: rotateY(-4deg) rotateX(2deg) translateY(-4px);
+  }
 `;
 
 export const DetailBlock = styled.div`
   display: grid;
   gap: 10px;
+  background: rgba(107, 114, 128, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 16px;
 `;
 
 export const Label = styled.span`
-  color: #6b7280;
+  color: #e5e7eb;
   font-size: 0.85rem;
 `;
 
 export const Value = styled.span`
-  color: #111827;
+  color: #f9fafb;
   font-size: 0.95rem;
 `;
 
@@ -169,8 +195,8 @@ export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
   font-size: 0.75rem;
   padding: 4px 10px;
   font-weight: 600;

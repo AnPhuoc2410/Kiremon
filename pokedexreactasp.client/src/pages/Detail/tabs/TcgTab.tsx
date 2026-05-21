@@ -197,9 +197,11 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
           <S.ModalContent onClick={(e) => e.stopPropagation()}>
             <S.ModalHeader>
               <div>
-                <Text as="h3">{displayCard?.name || "Loading card details..."}</Text>
+                <Text as="h3" variant="light">
+                  {displayCard?.name || "Loading card details..."}
+                </Text>
                 {displayCard?.set && (
-                  <Text as="p">
+                  <Text as="p" variant="light">
                     {displayCard.set.series} - {displayCard.set.name}
                   </Text>
                 )}
@@ -219,19 +221,24 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
               </S.ErrorBox>
             ) : (
               <S.DetailLayout>
-                <S.DetailImage
-                  src={detailImageSrc}
-                  alt={displayCard.name}
-                  onError={() => {
-                    if (detailImageSrc !== displayCard.images?.small && displayCard.images?.small) {
-                      setDetailImageSrc(displayCard.images.small);
-                      return;
-                    }
-                    if (detailImageSrc !== "/substitute.png") {
-                      setDetailImageSrc("/substitute.png");
-                    }
-                  }}
-                />
+                <S.CardStage>
+                  <S.DetailImage
+                    src={detailImageSrc}
+                    alt={displayCard.name}
+                    onError={() => {
+                      if (
+                        detailImageSrc !== displayCard.images?.small &&
+                        displayCard.images?.small
+                      ) {
+                        setDetailImageSrc(displayCard.images.small);
+                        return;
+                      }
+                      if (detailImageSrc !== "/substitute.png") {
+                        setDetailImageSrc("/substitute.png");
+                      }
+                    }}
+                  />
+                </S.CardStage>
 
                 <S.DetailBlock>
                   <div>
@@ -307,14 +314,14 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   <div>
                     <S.Label>Abilities</S.Label>
                     {(selectedCard?.abilities || []).length === 0 ? (
-                      <Text>-</Text>
+                      <Text variant="light">-</Text>
                     ) : (
                       (selectedCard?.abilities || []).map((ability) => (
                         <div key={ability.name}>
-                          <Text as="p">
+                          <Text as="p" variant="light">
                             <strong>{ability.name}</strong> ({ability.type || "Ability"})
                           </Text>
-                          <Text as="p">{ability.text || "-"}</Text>
+                          <Text as="p" variant="light">{ability.text || "-"}</Text>
                         </div>
                       ))
                     )}
@@ -326,7 +333,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   {selectedCard?.flavorText && (
                     <div>
                       <S.Label>Flavor Text</S.Label>
-                      <Text as="p">{selectedCard.flavorText}</Text>
+                      <Text as="p" variant="light">{selectedCard.flavorText}</Text>
                     </div>
                   )}
                 </S.DetailBlock>
