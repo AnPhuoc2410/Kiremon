@@ -123,6 +123,13 @@ export const ModalContent = styled.div`
     sans-serif;
 
   * {
+    font-family:
+      "Inter",
+      "Plus Jakarta Sans",
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif !important;
     text-shadow: none !important;
   }
 `;
@@ -302,9 +309,9 @@ export const AttackRow = styled.div`
   border: 1px solid rgba(30, 41, 59, 0.6);
   background: rgba(15, 23, 42, 0.45);
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px 10px 10px;
   display: grid;
-  gap: 6px;
+  gap: 4px;
 `;
 
 export const AttackHeader = styled.div`
@@ -315,23 +322,42 @@ export const AttackHeader = styled.div`
 `;
 
 export const AttackName = styled.span`
-  color: #f8fafc;
+  color: #ffffff;
+  font-size: 1rem;
   font-weight: 700;
 `;
 
 export const AttackDamage = styled.span`
-  color: #86efac;
-  font-weight: 700;
+  color: #fbbf24;
+  font-size: 1rem;
+  font-weight: 800;
+`;
+
+export const AttackDescription = styled.p`
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  margin-top: 0.375rem;
+  font-family:
+    "Inter",
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 `;
 
 export const Label = styled.span`
   color: #64748b;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 `;
 
 export const Value = styled.span`
-  color: #e2e8f0;
+  color: #f1f5f9;
   font-size: 0.875rem;
   font-weight: 600;
 `;
@@ -345,14 +371,14 @@ export const BadgeRow = styled.div`
 export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
   background: rgba(30, 41, 59, 0.8);
   color: #cbd5e1;
   border: 1px solid rgba(51, 65, 85, 0.5);
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 11px;
   padding: 2px 8px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 `;
 
 export const LegalBadge = styled.span`
@@ -383,6 +409,20 @@ export const HeaderSub = styled.p`
   margin: 0;
   color: #34d399;
   font-size: 0.85rem;
+`;
+
+export const DetailText = styled.p`
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-family:
+    "Inter",
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
 `;
 
 export const EmptyBox = styled.div`

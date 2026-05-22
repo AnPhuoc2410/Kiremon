@@ -79,16 +79,14 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   }, [selectedCardId]);
 
   const renderAttacks = (attacks?: TcgAttack[]) => {
-    if (!attacks || attacks.length === 0) return <Text>-</Text>;
+    if (!attacks || attacks.length === 0) return <S.DetailText>-</S.DetailText>;
     return attacks.map((attack) => (
       <S.AttackRow key={attack.name}>
         <S.AttackHeader>
           <S.AttackName>{attack.name}</S.AttackName>
           <S.AttackDamage>{attack.damage || "-"}</S.AttackDamage>
         </S.AttackHeader>
-        <Text as="p" variant="light">
-          {attack.text || "-"}
-        </Text>
+        <S.AttackDescription>{attack.text || "-"}</S.AttackDescription>
       </S.AttackRow>
     ));
   };
@@ -383,7 +381,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                     <S.InfoChunk>
                       <S.ChunkTitle>Abilities</S.ChunkTitle>
                       {(selectedCard?.abilities || []).length === 0 ? (
-                        <Text variant="light">-</Text>
+                        <S.DetailText>-</S.DetailText>
                       ) : (
                         (selectedCard?.abilities || []).map((ability) => (
                           <S.AttackRow key={ability.name}>
@@ -391,9 +389,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                               <S.AttackName>{ability.name}</S.AttackName>
                               <S.AttackDamage>{ability.type || "Ability"}</S.AttackDamage>
                             </S.AttackHeader>
-                            <Text as="p" variant="light">
-                              {ability.text || "-"}
-                            </Text>
+                            <S.AttackDescription>{ability.text || "-"}</S.AttackDescription>
                           </S.AttackRow>
                         ))
                       )}
@@ -407,9 +403,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                     {selectedCard?.flavorText && (
                       <S.InfoChunk>
                         <S.ChunkTitle>Flavor Text</S.ChunkTitle>
-                        <Text as="p" variant="light">
-                          {selectedCard.flavorText}
-                        </Text>
+                        <S.DetailText>{selectedCard.flavorText}</S.DetailText>
                       </S.InfoChunk>
                     )}
                   </S.ScrollArea>
