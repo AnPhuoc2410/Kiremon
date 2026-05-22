@@ -3,53 +3,48 @@ import { colors } from "@/components/utils";
 
 export const TooltipWrapper = styled("div")({
   fontFamily: '"VT323", monospace',
-  fontSize: "18px",
-  lineHeight: "1.3",
+  fontSize: "20px",
+  lineHeight: "1.4",
   color: "#212529",
-  maxWidth: "480px",
-  width: "90vw",
-  zIndex: 10000,
+  zIndex: 10001,
+  width: "100%",
 });
 
-export const DialogueBubble = styled("div")({
-  backgroundColor: "#ffffff",
-  border: "4px solid #212529", // Thick black outline
-  borderRadius: "20px",
-  padding: "16px 20px",
-  boxShadow: "0 6px 0px rgba(0, 0, 0, 0.15)", // Retro shadow
+export const RPGDialogueBox = styled("div")({
+  backgroundColor: "#ffffff", // Light mode background matching the web theme
+  borderTop: "4px solid #212529", // Thick black top border
+  borderBottom: "none",
+  borderLeft: "none",
+  borderRight: "none",
+  padding: "20px 24px",
+  boxShadow: "0 -4px 15px rgba(0, 0, 0, 0.08)", // Soft upward shadow
   position: "relative",
-  minHeight: "100px",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
+  minHeight: "140px",
+  width: "100%",
 });
 
-export const BubbleTailContainer = styled("div")({
+export const DialogueContainer = styled("div")({
+  display: "flex",
+  gap: "24px",
+  alignItems: "flex-start",
+  width: "100%",
+  maxWidth: "1000px",
+  margin: "0 auto",
   position: "relative",
-  marginLeft: "50px", // Align with avatar position
-  marginTop: "-4px", // Overlap bubble border (4px border)
-  zIndex: 2, // Render above the bubble's border
-});
-
-export const AvatarRow = styled("div")({
-  display: "flex",
-  justifyContent: "flex-start",
-  paddingLeft: "30px", // Put avatar directly under the tail tip
-  zIndex: 1,
 });
 
 export const AvatarContainer = styled("div")({
   flexShrink: 0,
-  width: "76px",
-  height: "76px",
-  border: "3px solid #212529",
-  borderRadius: "12px",
-  backgroundColor: "#e8e8e0",
+  width: "96px",
+  height: "96px",
+  border: "3px solid #212529", // Black border
+  borderRadius: "6px",
+  backgroundColor: "#e8e8e0", // Retro beige avatar background
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   overflow: "hidden",
-  boxShadow: "3px 3px 0px rgba(0, 0, 0, 0.1), inset -2px -2px 0px #c0c0b8",
+  boxShadow: "inset 0 0 10px rgba(0, 0, 0, 0.1)",
   img: {
     width: "100%",
     height: "100%",
@@ -63,22 +58,24 @@ export const DialogueContent = styled("div")({
   display: "flex",
   flexDirection: "column",
   justifyContent: "space-between",
+  minHeight: "96px",
 });
 
 export const SpeakerTitle = styled("div")({
-  fontSize: "20px",
+  fontSize: "24px",
   fontWeight: "bold",
-  color: "#e3350d", // Pokémon red
-  marginBottom: "4px",
+  color: "#e3350d", // Pokémon red title
+  marginBottom: "6px",
   textTransform: "uppercase",
   letterSpacing: "0.5px",
 });
 
 export const DialogueText = styled("p")({
-  margin: "0 0 16px 0",
-  fontSize: "19px",
-  color: "#333333",
+  margin: "0 0 12px 0",
+  fontSize: "20px",
+  color: "#212529", // Dark text matching site theme
   whiteSpace: "pre-line",
+  lineHeight: "1.4",
 });
 
 export const DialogueFooter = styled("div")({
@@ -92,66 +89,43 @@ export const DialogueFooter = styled("div")({
 export const SkipButton = styled("button")({
   background: "transparent",
   border: "none",
-  color: "#888888",
-  fontSize: "16px",
+  color: "#777777", // Gray text
+  fontSize: "18px",
   cursor: "pointer",
   fontFamily: '"VT323", monospace',
   padding: "4px 8px",
   "&:hover": {
-    color: "#e3350d",
+    color: "#e3350d", // Red on hover
     textDecoration: "underline",
   },
 });
 
 export const ButtonGroup = styled("div")({
   display: "flex",
-  gap: "8px",
+  gap: "12px",
 });
 
 export const RetroButton = styled("button")<{
   variant?: "primary" | "secondary";
 }>(({ variant = "primary" }) => ({
   fontFamily: '"VT323", monospace',
-  fontSize: "18px",
-  padding: "6px 14px",
+  fontSize: "19px",
+  padding: "6px 16px",
   cursor: "pointer",
-  border: "3px solid #212529",
-  borderRadius: "6px",
+  border: "2px solid #212529", // Black border
+  borderRadius: "4px",
   outline: "none",
-  backgroundColor: variant === "primary" ? "#4dad5b" : "#f8f9fa", // Green or White
+  backgroundColor: variant === "primary" ? "#212529" : "#ffffff",
   color: variant === "primary" ? "#ffffff" : "#212529",
-  boxShadow:
-    variant === "primary"
-      ? "0 4px 0px #2a6a33, inset -2px -2px 0px #3c8f49, inset 2px 2px 0px #82cf8d"
-      : "0 4px 0px #888888, inset -2px -2px 0px #d0d0d0, inset 2px 2px 0px #ffffff",
-  transition: "transform 0.1s ease",
+  transition: "all 0.1s ease",
+  boxShadow: "0 3px 0px rgba(0, 0, 0, 0.15)",
   "&:hover": {
-    transform: "translateY(-2px)",
-    backgroundColor: variant === "primary" ? "#5cb86a" : "#ffffff",
+    backgroundColor: variant === "primary" ? "#e3350d" : "#212529", // Red for primary, Black for secondary
+    borderColor: variant === "primary" ? "#e3350d" : "#212529",
+    color: "#ffffff",
   },
   "&:active": {
     transform: "translateY(2px)",
-    boxShadow: "0 0px 0px, inset -2px -2px 0px rgba(0,0,0,0.1)",
+    boxShadow: "0 1px 0px rgba(0, 0, 0, 0.15)",
   },
 }));
-
-// Pulsing red indicator for clicking next
-export const NextIndicator = styled("div")({
-  width: "0",
-  height: "0",
-  borderLeft: "6px solid transparent",
-  borderRight: "6px solid transparent",
-  borderTop: "8px solid #e3350d",
-  position: "absolute",
-  bottom: "8px",
-  right: "12px",
-  animation: "pulse 0.8s infinite alternate",
-  "@keyframes pulse": {
-    from: {
-      transform: "translateY(0)",
-    },
-    to: {
-      transform: "translateY(4px)",
-    },
-  },
-});

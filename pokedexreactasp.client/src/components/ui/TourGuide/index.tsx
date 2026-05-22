@@ -8,6 +8,7 @@ import {
   ACTIONS,
 } from "react-joyride";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Global, css } from "@emotion/react";
 import { useLanguage } from "@/contexts";
 import * as S from "./index.style";
 
@@ -228,76 +229,64 @@ const TourGuide: React.FC = () => {
     skipProps,
     tooltipProps,
   }: any) => {
+    const { title: primaryTitle, ...cleanPrimaryProps } = primaryProps;
+    const { title: backTitle, ...cleanBackProps } = backProps;
+    const { title: skipTitle, ...cleanSkipProps } = skipProps;
+
     return (
       <S.TooltipWrapper {...tooltipProps}>
-        <S.DialogueBubble>
-          <S.SpeakerTitle>Prof. Oak</S.SpeakerTitle>
-          <S.DialogueText>{step.content}</S.DialogueText>
-          <S.DialogueFooter>
-            <S.SkipButton
-              {...skipProps}
-              onClick={(e) => {
-                setRun(false);
-                setStepIndex(0);
-                localStorage.setItem("hasCompletedTour", "true");
-                if (skipProps.onClick) {
-                  skipProps.onClick(e);
-                }
-              }}
-            >
-              {getTourTranslation("skip", languageId)}
-            </S.SkipButton>
-            <S.ButtonGroup>
-              {index > 0 && (
-                <S.RetroButton variant="secondary" {...backProps}>
-                  {getTourTranslation("back", languageId)}
-                </S.RetroButton>
-              )}
-              <S.RetroButton
-                variant="primary"
-                {...primaryProps}
-                onClick={(e) => {
-                  if (isLastStep) {
+        <S.RPGDialogueBox>
+          <S.DialogueContainer>
+            <S.AvatarContainer>
+              <img src="/images/professor_guide.png" alt="Professor Oak" />
+            </S.AvatarContainer>
+
+            <S.DialogueContent>
+              <S.SpeakerTitle>Prof. Oak</S.SpeakerTitle>
+              <S.DialogueText>{step.content}</S.DialogueText>
+              <S.DialogueFooter>
+                <S.SkipButton
+                  {...cleanSkipProps}
+                  onClick={(e) => {
                     setRun(false);
                     setStepIndex(0);
                     localStorage.setItem("hasCompletedTour", "true");
-                  }
-                  if (primaryProps.onClick) {
-                    primaryProps.onClick(e);
-                  }
-                }}
-              >
-                {isLastStep
-                  ? getTourTranslation("finish", languageId)
-                  : getTourTranslation("next", languageId)}
-              </S.RetroButton>
-            </S.ButtonGroup>
-          </S.DialogueFooter>
-          {!isLastStep && <S.NextIndicator />}
-        </S.DialogueBubble>
-
-        {/* Diagonal speech bubble tail pointing to the avatar */}
-        <S.BubbleTailContainer>
-          <svg
-            width="40"
-            height="28"
-            viewBox="0 0 40 28"
-            fill="none"
-            style={{ display: "block" }}
-          >
-            {/* Outer border of tail (black) */}
-            <path d="M 15 0 L 5 28 L 35 0 Z" fill="#212529" />
-            {/* Inner fill of tail (white) */}
-            <path d="M 18 0 L 8 24 L 32 0 Z" fill="#ffffff" />
-          </svg>
-        </S.BubbleTailContainer>
-
-        {/* Professor Oak Avatar Row */}
-        <S.AvatarRow>
-          <S.AvatarContainer>
-            <img src="/images/professor_guide.png" alt="Professor Oak" />
-          </S.AvatarContainer>
-        </S.AvatarRow>
+                    if (skipProps.onClick) {
+                      skipProps.onClick(e);
+                    }
+                  }}
+                >
+                  {getTourTranslation("skip", languageId)}
+                </S.SkipButton>
+                <S.ButtonGroup>
+                  {index > 0 && (
+                    <S.RetroButton variant="secondary" {...cleanBackProps}>
+                      {getTourTranslation("back", languageId)}
+                    </S.RetroButton>
+                  )}
+                  <S.RetroButton
+                    variant="primary"
+                    {...cleanPrimaryProps}
+                    onClick={(e) => {
+                      if (isLastStep) {
+                        setRun(false);
+                        setStepIndex(0);
+                        localStorage.setItem("hasCompletedTour", "true");
+                      }
+                      if (primaryProps.onClick) {
+                        primaryProps.onClick(e);
+                      }
+                    }}
+                  >
+                    {isLastStep
+                      ? getTourTranslation("finish", languageId)
+                      : getTourTranslation("next", languageId)}
+                  </S.RetroButton>
+                </S.ButtonGroup>
+              </S.DialogueFooter>
+            </S.DialogueContent>
+          </S.DialogueContainer>
+        </S.RPGDialogueBox>
       </S.TooltipWrapper>
     );
   };
@@ -305,25 +294,47 @@ const TourGuide: React.FC = () => {
   return (
     <>
       {run && (
-        <Joyride
-          steps={steps}
-          run={run}
-          stepIndex={stepIndex}
-          onEvent={handleJoyrideCallback}
-          continuous={true}
-          tooltipComponent={PokemonTooltip}
-          options={{
-            overlayClickAction: false,
-            dismissKeyAction: false,
-            blockTargetInteraction: true,
-            buttons: ["back", "close", "primary", "skip"],
-          }}
-          styles={{
-            overlay: {
-              backgroundColor: "rgba(0, 0, 0, 0.65)",
-            },
-          }}
-        />
+        <>
+          <Global
+            styles={css`
+              .react-joyride__floater,
+              .react-joyride__tooltip {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: none !important;
+                height: auto !important;
+                box-shadow: none !important;
+                background-color: transparent !important;
+                padding: 0 !important;
+                z-index: 10001 !important;
+              }
+            `}
+          />
+          <Joyride
+            steps={steps}
+            run={run}
+            stepIndex={stepIndex}
+            onEvent={handleJoyrideCallback}
+            continuous={true}
+            tooltipComponent={PokemonTooltip}
+            options={{
+              overlayClickAction: false,
+              dismissKeyAction: false,
+              blockTargetInteraction: true,
+              buttons: ["back", "close", "primary", "skip"],
+            }}
+            styles={{
+              overlay: {
+                backgroundColor: "rgba(0, 0, 0, 0.65)",
+              },
+            }}
+          />
+        </>
       )}
     </>
   );
