@@ -25,6 +25,11 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
     regulationMark: "",
     subtype: "",
   });
+  const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({
+    ["--tiltX" as any]: "0deg",
+    ["--tiltY" as any]: "0deg",
+    ["--scale" as any]: 1,
+  });
 
   const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, filters, enabled);
   const facetsQuery = useTcgFacets(pokemonName, enabled);
@@ -63,15 +68,28 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
     setDetailImageSrc(nextImage);
   }, [displayCard]);
 
+  useEffect(() => {
+    if (selectedCardId) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedCardId]);
+
   const renderAttacks = (attacks?: TcgAttack[]) => {
     if (!attacks || attacks.length === 0) return <Text>-</Text>;
     return attacks.map((attack) => (
-      <div key={attack.name}>
-        <Text as="p">
-          <strong>{attack.name}</strong> {attack.damage || ""}
+      <S.AttackRow key={attack.name}>
+        <S.AttackHeader>
+          <S.AttackName>{attack.name}</S.AttackName>
+          <S.AttackDamage>{attack.damage || "-"}</S.AttackDamage>
+        </S.AttackHeader>
+        <Text as="p" variant="light">
+          {attack.text || "-"}
         </Text>
-        <Text as="p">{attack.text || "-"}</Text>
-      </div>
+      </S.AttackRow>
     ));
   };
 
@@ -206,7 +224,13 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   </Text>
                 )}
               </div>
-              <S.CloseButton onClick={() => setSelectedCardId(null)}>Close</S.CloseButton>
+              <S.CloseButton
+                onClick={() => setSelectedCardId(null)}
+                aria-label="Close modal"
+                title="Close"
+              >
+                ×
+              </S.CloseButton>
             </S.ModalHeader>
 
             {detailQuery.isLoading ? (
@@ -222,9 +246,30 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
             ) : (
               <S.DetailLayout>
                 <S.CardStage>
+                  <S.CardGlow />
                   <S.DetailImage
                     src={detailImageSrc}
                     alt={displayCard.name}
+                    style={tiltStyle}
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const px = (e.clientX - rect.left) / rect.width;
+                      const py = (e.clientY - rect.top) / rect.height;
+                      const tiltY = (px - 0.5) * 10;
+                      const tiltX = (0.5 - py) * 10;
+                      setTiltStyle({
+                        ["--tiltX" as any]: `${tiltX}deg`,
+                        ["--tiltY" as any]: `${tiltY}deg`,
+                        ["--scale" as any]: 1.03,
+                      });
+                    }}
+                    onMouseLeave={() =>
+                      setTiltStyle({
+                        ["--tiltX" as any]: "0deg",
+                        ["--tiltY" as any]: "0deg",
+                        ["--scale" as any]: 1,
+                      })
+                    }
                     onError={() => {
                       if (
                         detailImageSrc !== displayCard.images?.small &&
@@ -241,101 +286,138 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                 </S.CardStage>
 
                 <S.DetailBlock>
-                  <div>
-                    <S.Label>Card</S.Label> <S.Value>{displayCard.id}</S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Supertype</S.Label>{" "}
-                    <S.Value>{displayCard.supertype || "-"}</S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Subtypes</S.Label>
-                    <S.BadgeRow>
-                      {(displayCard.subtypes || []).map((subtype) => (
-                        <S.Badge key={subtype}>{subtype}</S.Badge>
-                      ))}
-                    </S.BadgeRow>
-                  </div>
-                  <div>
-                    <S.Label>HP / Types</S.Label>{" "}
-                    <S.Value>
-                      {selectedCard?.hp || "-"} / {(selectedCard?.types || []).join(", ") || "-"}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Evolves From</S.Label>{" "}
-                    <S.Value>{selectedCard?.evolvesFrom || "-"}</S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Rarity / Regulation</S.Label>{" "}
-                    <S.Value>
-                      {displayCard.rarity || "-"}
-                      {displayCard.regulationMark ? ` / ${displayCard.regulationMark}` : ""}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Weaknesses</S.Label>{" "}
-                    <S.Value>
-                      {(selectedCard?.weaknesses || [])
-                        .map((item) => `${item.type} ${item.value}`)
-                        .join(", ") || "-"}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Resistances</S.Label>{" "}
-                    <S.Value>
-                      {(selectedCard?.resistances || [])
-                        .map((item) => `${item.type} ${item.value}`)
-                        .join(", ") || "-"}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Retreat Cost</S.Label>{" "}
-                    <S.Value>
-                      {(selectedCard?.retreatCost || []).join(", ") || "-"}
-                      {typeof selectedCard?.convertedRetreatCost === "number"
-                        ? ` (${selectedCard.convertedRetreatCost})`
-                        : ""}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Artist</S.Label> <S.Value>{selectedCard?.artist || "-"}</S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Legalities</S.Label>{" "}
-                    <S.Value>
-                      {selectedCard?.legalities
-                        ? Object.entries(selectedCard.legalities)
-                            .map(([format, status]) => `${format}: ${status}`)
-                            .join(" • ")
-                        : "-"}
-                    </S.Value>
-                  </div>
-                  <div>
-                    <S.Label>Abilities</S.Label>
-                    {(selectedCard?.abilities || []).length === 0 ? (
-                      <Text variant="light">-</Text>
-                    ) : (
-                      (selectedCard?.abilities || []).map((ability) => (
-                        <div key={ability.name}>
-                          <Text as="p" variant="light">
-                            <strong>{ability.name}</strong> ({ability.type || "Ability"})
-                          </Text>
-                          <Text as="p" variant="light">{ability.text || "-"}</Text>
-                        </div>
-                      ))
+                  <S.ScrollArea>
+                    <S.InfoChunk>
+                      <Text as="h3" variant="light" size="xl">
+                        {displayCard.name}
+                      </Text>
+                      <Text as="p" variant="light" size="sm">
+                        {displayCard.set.series} - {displayCard.set.name}
+                      </Text>
+                      <S.BadgeRow>
+                        <S.Badge>{displayCard.id}</S.Badge>
+                        {displayCard.rarity && <S.Badge>{displayCard.rarity}</S.Badge>}
+                      </S.BadgeRow>
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.StatsRow>
+                        <S.HpValue>{selectedCard?.hp || "-"} HP</S.HpValue>
+                        <S.TypePill>
+                          {(selectedCard?.types || [])[0] || "Unknown"}
+                        </S.TypePill>
+                      </S.StatsRow>
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.ChunkTitle>Basic Information</S.ChunkTitle>
+                      <S.InfoGrid>
+                        <S.DataRow>
+                          <S.Label>Rarity</S.Label>
+                          <S.Value>{displayCard.rarity || "-"}</S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Artist</S.Label>
+                          <S.Value>{selectedCard?.artist || "-"}</S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Set</S.Label>
+                          <S.Value>{displayCard.set.name}</S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Subtypes</S.Label>
+                          <S.BadgeRow>
+                            {(displayCard.subtypes || []).map((subtype) => (
+                              <S.Badge key={subtype}>{subtype}</S.Badge>
+                            ))}
+                          </S.BadgeRow>
+                        </S.DataRow>
+                      </S.InfoGrid>
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.ChunkTitle>Combat Stats</S.ChunkTitle>
+                      <S.InfoGrid>
+                        <S.DataRow>
+                          <S.Label>Weakness</S.Label>
+                          <S.Value>
+                            {(selectedCard?.weaknesses || [])
+                              .map((item) => `${item.type} ${item.value}`)
+                              .join(", ") || "-"}
+                          </S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Resistance</S.Label>
+                          <S.Value>
+                            {(selectedCard?.resistances || [])
+                              .map((item) => `${item.type} ${item.value}`)
+                              .join(", ") || "-"}
+                          </S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Retreat</S.Label>
+                          <S.Value>
+                            {(selectedCard?.retreatCost || []).join(", ") || "-"}
+                            {typeof selectedCard?.convertedRetreatCost === "number"
+                              ? ` (${selectedCard.convertedRetreatCost})`
+                              : ""}
+                          </S.Value>
+                        </S.DataRow>
+                        <S.DataRow>
+                          <S.Label>Evolves From</S.Label>
+                          <S.Value>{selectedCard?.evolvesFrom || "-"}</S.Value>
+                        </S.DataRow>
+                      </S.InfoGrid>
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.ChunkTitle>Tournament Legalities</S.ChunkTitle>
+                      <S.BadgeRow>
+                        {selectedCard?.legalities
+                          ? Object.entries(selectedCard.legalities).map(
+                              ([format, status]) => (
+                                <S.Badge key={format}>
+                                  {format}: {status}
+                                </S.Badge>
+                              ),
+                            )
+                          : "-"}
+                      </S.BadgeRow>
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.ChunkTitle>Abilities</S.ChunkTitle>
+                      {(selectedCard?.abilities || []).length === 0 ? (
+                        <Text variant="light">-</Text>
+                      ) : (
+                        (selectedCard?.abilities || []).map((ability) => (
+                          <S.AttackRow key={ability.name}>
+                            <S.AttackHeader>
+                              <S.AttackName>{ability.name}</S.AttackName>
+                              <S.AttackDamage>{ability.type || "Ability"}</S.AttackDamage>
+                            </S.AttackHeader>
+                            <Text as="p" variant="light">
+                              {ability.text || "-"}
+                            </Text>
+                          </S.AttackRow>
+                        ))
+                      )}
+                    </S.InfoChunk>
+
+                    <S.InfoChunk>
+                      <S.ChunkTitle>Attacks</S.ChunkTitle>
+                      {renderAttacks(selectedCard?.attacks)}
+                    </S.InfoChunk>
+
+                    {selectedCard?.flavorText && (
+                      <S.InfoChunk>
+                        <S.ChunkTitle>Flavor Text</S.ChunkTitle>
+                        <Text as="p" variant="light">
+                          {selectedCard.flavorText}
+                        </Text>
+                      </S.InfoChunk>
                     )}
-                  </div>
-                  <div>
-                    <S.Label>Attacks</S.Label>
-                    {renderAttacks(selectedCard?.attacks)}
-                  </div>
-                  {selectedCard?.flavorText && (
-                    <div>
-                      <S.Label>Flavor Text</S.Label>
-                      <Text as="p" variant="light">{selectedCard.flavorText}</Text>
-                    </div>
-                  )}
+                  </S.ScrollArea>
                 </S.DetailBlock>
               </S.DetailLayout>
             )}
