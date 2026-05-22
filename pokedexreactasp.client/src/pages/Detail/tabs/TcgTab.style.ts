@@ -220,9 +220,11 @@ export const DetailImage = styled.img`
 export const DetailBlock = styled.div`
   display: grid;
   gap: 8px;
-  max-height: 75vh;
+  max-height: calc(85vh - 110px);
   overflow-y: auto;
   padding-right: 8px;
+  padding-bottom: 2.5rem;
+  min-height: 0;
 `;
 
 export const ScrollArea = styled.div`
@@ -232,7 +234,7 @@ export const ScrollArea = styled.div`
   border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(10px);
   border-radius: 14px;
-  padding: 14px;
+  padding: 14px 14px 2.5rem;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -253,6 +255,11 @@ export const InfoChunk = styled.div`
   padding: 10px 12px;
   display: grid;
   gap: 6px;
+`;
+
+export const AbilityChunk = styled(InfoChunk)`
+  margin-top: 1.25rem;
+  padding: 1rem;
 `;
 
 export const ChunkTitle = styled.h4`
@@ -331,6 +338,20 @@ export const AttackDamage = styled.span`
   color: #fbbf24;
   font-size: 1rem;
   font-weight: 800;
+`;
+
+export const AbilityTypeBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 `;
 
 export const AttackDescription = styled.p`

@@ -378,7 +378,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                       </S.BadgeRow>
                     </S.InfoChunk>
 
-                    <S.InfoChunk>
+                    <S.AbilityChunk>
                       <S.ChunkTitle>Abilities</S.ChunkTitle>
                       {(selectedCard?.abilities || []).length === 0 ? (
                         <S.DetailText>-</S.DetailText>
@@ -387,13 +387,15 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                           <S.AttackRow key={ability.name}>
                             <S.AttackHeader>
                               <S.AttackName>{ability.name}</S.AttackName>
-                              <S.AttackDamage>{ability.type || "Ability"}</S.AttackDamage>
+                              <S.AbilityTypeBadge>
+                                {ability.type || "Ability"}
+                              </S.AbilityTypeBadge>
                             </S.AttackHeader>
                             <S.AttackDescription>{ability.text || "-"}</S.AttackDescription>
                           </S.AttackRow>
                         ))
                       )}
-                    </S.InfoChunk>
+                    </S.AbilityChunk>
 
                     <S.InfoChunk>
                       <S.ChunkTitle>Attacks</S.ChunkTitle>
