@@ -11,45 +11,45 @@ export const TooltipWrapper = styled("div")({
   zIndex: 10000,
 });
 
-export const DialogueBox = styled("div")({
-  backgroundColor: "#f5f5f0", // Gameboy/DS dialog background
-  border: "6px solid #4b3d30", // Dark wooden/metallic outer bezel
-  borderRadius: "12px",
-  padding: "4px",
-  boxShadow:
-    "0 8px 16px rgba(0,0,0,0.3), inset -4px -4px 0px #352a20, inset 4px 4px 0px #6d5b4a",
+export const DialogueBubble = styled("div")({
+  backgroundColor: "#ffffff",
+  border: "4px solid #212529", // Thick black outline
+  borderRadius: "20px",
+  padding: "16px 20px",
+  boxShadow: "0 6px 0px rgba(0, 0, 0, 0.15)", // Retro shadow
   position: "relative",
+  minHeight: "100px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
 });
 
-export const DialogueInner = styled("div")({
-  backgroundColor: "#ffffff",
-  border: "4px solid #212529", // Double border outline
-  borderRadius: "8px",
-  padding: "16px",
+export const BubbleTailContainer = styled("div")({
+  position: "relative",
+  marginLeft: "50px", // Align with avatar position
+  marginTop: "-4px", // Overlap bubble border (4px border)
+  zIndex: 2, // Render above the bubble's border
+});
+
+export const AvatarRow = styled("div")({
   display: "flex",
-  gap: "16px",
-  minHeight: "120px",
-  boxShadow: "inset -3px -3px 0px #e0e0d8",
-  "@media (max-width: 480px)": {
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
-    gap: "10px",
-  },
+  justifyContent: "flex-start",
+  paddingLeft: "30px", // Put avatar directly under the tail tip
+  zIndex: 1,
 });
 
 export const AvatarContainer = styled("div")({
   flexShrink: 0,
-  width: "80px",
-  height: "80px",
+  width: "76px",
+  height: "76px",
   border: "3px solid #212529",
-  borderRadius: "8px",
+  borderRadius: "12px",
   backgroundColor: "#e8e8e0",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   overflow: "hidden",
-  boxShadow: "2px 2px 0px #888880, inset -2px -2px 0px #c0c0b8",
+  boxShadow: "3px 3px 0px rgba(0, 0, 0, 0.1), inset -2px -2px 0px #c0c0b8",
   img: {
     width: "100%",
     height: "100%",

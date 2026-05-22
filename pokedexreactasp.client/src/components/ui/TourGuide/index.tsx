@@ -230,60 +230,74 @@ const TourGuide: React.FC = () => {
   }: any) => {
     return (
       <S.TooltipWrapper {...tooltipProps}>
-        <S.DialogueBox>
-          <S.DialogueInner>
-            <S.AvatarContainer>
-              <img src="/images/professor_guide.png" alt="Professor Oak" />
-            </S.AvatarContainer>
-            <S.DialogueContent>
-              <div>
-                <S.SpeakerTitle>Prof. Oak</S.SpeakerTitle>
-                <S.DialogueText>{step.content}</S.DialogueText>
-              </div>
-              <S.DialogueFooter>
-                <S.SkipButton
-                  {...skipProps}
-                  onClick={(e) => {
+        <S.DialogueBubble>
+          <S.SpeakerTitle>Prof. Oak</S.SpeakerTitle>
+          <S.DialogueText>{step.content}</S.DialogueText>
+          <S.DialogueFooter>
+            <S.SkipButton
+              {...skipProps}
+              onClick={(e) => {
+                setRun(false);
+                setStepIndex(0);
+                localStorage.setItem("hasCompletedTour", "true");
+                if (skipProps.onClick) {
+                  skipProps.onClick(e);
+                }
+              }}
+            >
+              {getTourTranslation("skip", languageId)}
+            </S.SkipButton>
+            <S.ButtonGroup>
+              {index > 0 && (
+                <S.RetroButton variant="secondary" {...backProps}>
+                  {getTourTranslation("back", languageId)}
+                </S.RetroButton>
+              )}
+              <S.RetroButton
+                variant="primary"
+                {...primaryProps}
+                onClick={(e) => {
+                  if (isLastStep) {
                     setRun(false);
                     setStepIndex(0);
                     localStorage.setItem("hasCompletedTour", "true");
-                    if (skipProps.onClick) {
-                      skipProps.onClick(e);
-                    }
-                  }}
-                >
-                  {getTourTranslation("skip", languageId)}
-                </S.SkipButton>
-                <S.ButtonGroup>
-                  {index > 0 && (
-                    <S.RetroButton variant="secondary" {...backProps}>
-                      {getTourTranslation("back", languageId)}
-                    </S.RetroButton>
-                  )}
-                  <S.RetroButton
-                    variant="primary"
-                    {...primaryProps}
-                    onClick={(e) => {
-                      if (isLastStep) {
-                        setRun(false);
-                        setStepIndex(0);
-                        localStorage.setItem("hasCompletedTour", "true");
-                      }
-                      if (primaryProps.onClick) {
-                        primaryProps.onClick(e);
-                      }
-                    }}
-                  >
-                    {isLastStep
-                      ? getTourTranslation("finish", languageId)
-                      : getTourTranslation("next", languageId)}
-                  </S.RetroButton>
-                </S.ButtonGroup>
-              </S.DialogueFooter>
-            </S.DialogueContent>
-          </S.DialogueInner>
+                  }
+                  if (primaryProps.onClick) {
+                    primaryProps.onClick(e);
+                  }
+                }}
+              >
+                {isLastStep
+                  ? getTourTranslation("finish", languageId)
+                  : getTourTranslation("next", languageId)}
+              </S.RetroButton>
+            </S.ButtonGroup>
+          </S.DialogueFooter>
           {!isLastStep && <S.NextIndicator />}
-        </S.DialogueBox>
+        </S.DialogueBubble>
+
+        {/* Diagonal speech bubble tail pointing to the avatar */}
+        <S.BubbleTailContainer>
+          <svg
+            width="40"
+            height="28"
+            viewBox="0 0 40 28"
+            fill="none"
+            style={{ display: "block" }}
+          >
+            {/* Outer border of tail (black) */}
+            <path d="M 15 0 L 5 28 L 35 0 Z" fill="#212529" />
+            {/* Inner fill of tail (white) */}
+            <path d="M 18 0 L 8 24 L 32 0 Z" fill="#ffffff" />
+          </svg>
+        </S.BubbleTailContainer>
+
+        {/* Professor Oak Avatar Row */}
+        <S.AvatarRow>
+          <S.AvatarContainer>
+            <img src="/images/professor_guide.png" alt="Professor Oak" />
+          </S.AvatarContainer>
+        </S.AvatarRow>
       </S.TooltipWrapper>
     );
   };
