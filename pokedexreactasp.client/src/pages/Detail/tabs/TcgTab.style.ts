@@ -114,22 +114,8 @@ export const ModalContent = styled.div`
   display: grid;
   gap: 14px;
   position: relative;
-  font-family:
-    "Inter",
-    "Plus Jakarta Sans",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
 
   * {
-    font-family:
-      "Inter",
-      "Plus Jakarta Sans",
-      system-ui,
-      -apple-system,
-      "Segoe UI",
-      sans-serif !important;
     text-shadow: none !important;
   }
 `;
@@ -360,13 +346,6 @@ export const AttackDescription = styled.p`
   font-size: 0.875rem;
   line-height: 1.625;
   margin-top: 0.375rem;
-  font-family:
-    "Inter",
-    "Plus Jakarta Sans",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
 `;
 
 export const Label = styled.span`
@@ -437,13 +416,6 @@ export const DetailText = styled.p`
   color: #94a3b8;
   font-size: 0.875rem;
   line-height: 1.6;
-  font-family:
-    "Inter",
-    "Plus Jakarta Sans",
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
 `;
 
 export const EmptyBox = styled.div`
