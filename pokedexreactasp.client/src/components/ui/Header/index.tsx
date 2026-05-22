@@ -107,11 +107,13 @@ const GlobeIcon = () => (
 interface NavItemWithDropdownProps {
   title: string;
   children: React.ReactNode;
+  id?: string;
 }
 
 const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({
   title,
   children,
+  id,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLLIElement>(null);
@@ -133,7 +135,7 @@ const NavItemWithDropdown: React.FC<NavItemWithDropdownProps> = ({
   }, [dropdownRef]);
 
   return (
-    <S.NavItem ref={dropdownRef}>
+    <S.NavItem ref={dropdownRef} id={id}>
       <S.NavLink
         onClick={() => setIsOpen(!isOpen)}
         className={isOpen ? "active" : ""}
@@ -350,7 +352,10 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </NavItemWithDropdown>
 
-          <NavItemWithDropdown title={t("nav.explore", languageId)}>
+          <NavItemWithDropdown
+            title={t("nav.explore", languageId)}
+            id="tour-nav-explore"
+          >
             <Link to="/explore/regions">
               <S.DropdownItem>
                 {t("explore.regions", languageId)}
@@ -366,7 +371,7 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </NavItemWithDropdown>
 
-          <S.NavItem>
+          <S.NavItem id="tour-nav-market">
             <Link to="/poke-mart">
               <S.NavLink as="span">{t("nav.pokeMart", languageId)}</S.NavLink>
             </Link>

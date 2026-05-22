@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 
 import { StartScreen, NotFoundPage } from "@/pages";
 import { AuthProvider } from "@/contexts";
+import { TourGuide } from "@/components/ui";
 
 const MyPokemon = lazy(() => import("@/pages/MyPokemon"));
 
@@ -33,6 +34,7 @@ export default function Routes() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <TourGuide />
         <Switch>
           <Route path="/" element={<StartScreen />} />
           <Route

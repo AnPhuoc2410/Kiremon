@@ -229,7 +229,7 @@ const TypesExplore = () => {
               ) : error ? (
                 <S.ErrorMessage>{error}</S.ErrorMessage>
               ) : (
-                <S.TypesGrid>
+                <S.TypesGrid id="tour-types-grid">
                   {types.map((type: IPokemonType) => (
                     <S.TypeCard
                       key={type.id}
