@@ -5,6 +5,9 @@ const GOOGLE_CLIENT_ID_KEY = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const FACEBOOK_APP_ID_KEY = import.meta.env.VITE_FACEBOOK_APP_ID;
 const GRAPHQL_ENDPOINT_URL = import.meta.env.VITE_GRAPHQL_ENDPOINT;
 const POKEMON_SHOWDOWN_IMAGE_URL = import.meta.env.VITE_POKEMON_SHOWDOWN_IMAGE;
+const TCG_API_URL = import.meta.env.VITE_TCG_API;
+const TCG_API_KEY_VALUE =
+  import.meta.env.VITE_TCG_API_KEY || import.meta.env.VITE_TCG_IMAGE;
 const normalizeUrl = (url: string): string => {
   return url.endsWith("/") ? url : `${url}/`;
 };
@@ -46,3 +49,5 @@ export const RECAPTCHA_KEY = RECAPTCHA_SITE_KEY;
 export const GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID_KEY;
 export const FACEBOOK_APP_ID = FACEBOOK_APP_ID_KEY;
 export const GRAPHQL_ENDPOINT = GRAPHQL_ENDPOINT_URL;
+export const TCG_API = TCG_API_URL ? normalizeUrl(TCG_API_URL) : "";
+export const TCG_API_KEY = TCG_API_KEY_VALUE || "";
