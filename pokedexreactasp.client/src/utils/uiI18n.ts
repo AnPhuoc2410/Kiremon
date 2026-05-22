@@ -231,6 +231,18 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "返回",
   },
 
+  // Guide button
+  "common.guide": {
+    [LANGUAGE_IDS.ENGLISH]: "Guide Book",
+    [LANGUAGE_IDS.JAPANESE]: "ガイドブック",
+    [LANGUAGE_IDS.KOREAN]: "가이드북",
+    [LANGUAGE_IDS.FRENCH]: "Livre Guide",
+    [LANGUAGE_IDS.GERMAN]: "Anleitung",
+    [LANGUAGE_IDS.SPANISH]: "Libro de Guía",
+    [LANGUAGE_IDS.ITALIAN]: "Guida",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "指南手册",
+  },
+
   // End message for infinite scroll
   "explore.endMessage": {
     [LANGUAGE_IDS.ENGLISH]:

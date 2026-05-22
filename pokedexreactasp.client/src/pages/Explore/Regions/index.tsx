@@ -141,7 +141,7 @@ const RegionsExplore = () => {
             <button onClick={() => window.location.reload()}>Try Again</button>
           </S.ErrorWrapper>
         ) : (
-          <S.RegionGrid>
+          <S.RegionGrid id="tour-regions-grid">
             {regions.map((region) => {
               const theme = getRegionTheme(region.name);
               return (
