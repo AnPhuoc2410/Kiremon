@@ -104,6 +104,39 @@ const GlobeIcon = () => (
   </svg>
 );
 
+const GuideBookIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ imageRendering: "pixelated" }}
+  >
+    {/* Outer black outline */}
+    <rect x="1" y="1" width="12" height="14" fill="#212529" />
+    {/* Page edge outline */}
+    <rect x="13" y="2" width="2" height="12" fill="#212529" />
+
+    {/* Red book cover */}
+    <rect x="2" y="2" width="10" height="12" fill="#e3350d" />
+    {/* Gold/yellow decoration strip on spine */}
+    <rect x="2" y="2" width="2" height="12" fill="#b02508" />
+
+    {/* Page edges (white) */}
+    <rect x="13" y="3" width="1" height="10" fill="#f8f9fa" />
+
+    {/* Pokédex large blue sensor (lens) */}
+    <rect x="5" y="4" width="4" height="4" fill="#212529" />
+    <rect x="6" y="5" width="2" height="2" fill="#5bc0de" />
+    <rect x="6" y="5" width="1" height="1" fill="#ffffff" />
+
+    {/* Pokédex small lights */}
+    <rect x="10" y="4" width="1" height="1" fill="#ffcc00" />
+    <rect x="10" y="6" width="1" height="1" fill="#2ad33a" />
+  </svg>
+);
+
 interface NavItemWithDropdownProps {
   title: string;
   children: React.ReactNode;
@@ -169,6 +202,10 @@ const Header: React.FC<HeaderProps> = ({
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
     }
+  };
+
+  const handleStartTour = () => {
+    window.dispatchEvent(new Event("start-tour-guide"));
   };
 
   useEffect(() => {
@@ -265,6 +302,11 @@ const Header: React.FC<HeaderProps> = ({
               ))}
             </S.LanguageDropdown>
           </S.LanguageMenuContainer>
+
+          <S.GuideButton onClick={handleStartTour} title="Help Tour">
+            <GuideBookIcon />
+            <span>{t("common.guide", languageId)}</span>
+          </S.GuideButton>
 
           {!isAuthenticated ? (
             <S.LoginButton onClick={() => navigate("/login")}>

@@ -138,6 +138,17 @@ const TourGuide: React.FC = () => {
     }
   }, [location.pathname]);
 
+  // Listen for the custom "start-tour-guide" event dispatched from the Header
+  useEffect(() => {
+    const handleStartTourEvent = () => {
+      handleStartTour();
+    };
+    window.addEventListener("start-tour-guide", handleStartTourEvent);
+    return () => {
+      window.removeEventListener("start-tour-guide", handleStartTourEvent);
+    };
+  }, [location.pathname, navigate]);
+
   // Handle cross-page transitions
   useEffect(() => {
     if (pendingIndex !== null) {
@@ -277,11 +288,6 @@ const TourGuide: React.FC = () => {
     );
   };
 
-  // Hide the floating trigger button on the splash start screen
-  if (location.pathname === "/") {
-    return null;
-  }
-
   return (
     <>
       {run && (
@@ -305,9 +311,6 @@ const TourGuide: React.FC = () => {
           }}
         />
       )}
-      <S.FloatingTourButton onClick={handleStartTour} aria-label="Start Tour">
-        <S.FloatingTourText>HELP TOUR</S.FloatingTourText>
-      </S.FloatingTourButton>
     </>
   );
 };
