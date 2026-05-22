@@ -112,8 +112,19 @@ export const ModalContent = styled.div`
   backdrop-filter: blur(12px);
   padding: 22px;
   display: grid;
-  gap: 18px;
+  gap: 14px;
   position: relative;
+  font-family:
+    "Inter",
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+
+  * {
+    text-shadow: none !important;
+  }
 `;
 
 export const ModalHeader = styled.div`
@@ -176,9 +187,9 @@ export const CardGlow = styled.div`
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(34, 197, 94, 0.36) 0%,
-    rgba(34, 197, 94, 0.18) 42%,
-    rgba(34, 197, 94, 0) 72%
+    rgba(249, 115, 22, 0.22) 0%,
+    rgba(251, 146, 60, 0.14) 40%,
+    rgba(249, 115, 22, 0) 72%
   );
   filter: blur(18px);
   z-index: 0;
@@ -190,6 +201,7 @@ export const DetailImage = styled.img`
   background: #f9fafb;
   box-shadow:
     0 30px 40px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(249, 115, 22, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.15);
   transform: rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg))
     scale(var(--scale, 1));
@@ -200,7 +212,7 @@ export const DetailImage = styled.img`
 
 export const DetailBlock = styled.div`
   display: grid;
-  gap: 12px;
+  gap: 8px;
   max-height: 75vh;
   overflow-y: auto;
   padding-right: 8px;
@@ -208,12 +220,12 @@ export const DetailBlock = styled.div`
 
 export const ScrollArea = styled.div`
   display: grid;
-  gap: 12px;
+  gap: 8px;
   background: rgba(107, 114, 128, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(10px);
   border-radius: 14px;
-  padding: 16px;
+  padding: 14px;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -231,16 +243,21 @@ export const InfoChunk = styled.div`
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid rgba(30, 41, 59, 0.6);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 `;
 
 export const ChunkTitle = styled.h4`
   margin: 0;
-  color: #dcfce7;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
 `;
 
 export const DataRow = styled.div`
@@ -257,7 +274,7 @@ export const StatsRow = styled.div`
 `;
 
 export const HpValue = styled.span`
-  color: #4ade80;
+  color: #f43f5e;
   font-size: 1.25rem;
   font-weight: 800;
 `;
@@ -268,9 +285,9 @@ export const TypePill = styled.span`
   gap: 6px;
   border-radius: 999px;
   padding: 6px 12px;
-  background: rgba(34, 197, 94, 0.14);
-  color: #86efac;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(249, 115, 22, 0.16);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.35);
   font-size: 0.8rem;
   font-weight: 600;
 `;
@@ -308,13 +325,15 @@ export const AttackDamage = styled.span`
 `;
 
 export const Label = styled.span`
-  color: #e5e7eb;
-  font-size: 0.85rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 500;
 `;
 
 export const Value = styled.span`
-  color: #f9fafb;
-  font-size: 0.95rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-weight: 600;
 `;
 
 export const BadgeRow = styled.div`
@@ -327,11 +346,43 @@ export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: rgba(34, 197, 94, 0.22);
-  color: #dcfce7;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 6px;
   font-size: 0.75rem;
-  padding: 4px 10px;
+  padding: 2px 8px;
   font-weight: 600;
+`;
+
+export const LegalBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
+export const PremiumTitle = styled.h2`
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(to bottom, #ffffff, #fed7aa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+`;
+
+export const HeaderSub = styled.p`
+  margin: 0;
+  color: #34d399;
+  font-size: 0.85rem;
 `;
 
 export const EmptyBox = styled.div`

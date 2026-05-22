@@ -287,26 +287,21 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
                 <S.DetailBlock>
                   <S.ScrollArea>
-                    <S.InfoChunk>
-                      <Text as="h3" variant="light" size="xl">
-                        {displayCard.name}
-                      </Text>
-                      <Text as="p" variant="light" size="sm">
+                  <S.InfoChunk>
+                      <S.PremiumTitle>{displayCard.name}</S.PremiumTitle>
+                      <S.HeaderSub>
                         {displayCard.set.series} - {displayCard.set.name}
-                      </Text>
-                      <S.BadgeRow>
-                        <S.Badge>{displayCard.id}</S.Badge>
-                        {displayCard.rarity && <S.Badge>{displayCard.rarity}</S.Badge>}
-                      </S.BadgeRow>
-                    </S.InfoChunk>
-
-                    <S.InfoChunk>
+                      </S.HeaderSub>
                       <S.StatsRow>
                         <S.HpValue>{selectedCard?.hp || "-"} HP</S.HpValue>
                         <S.TypePill>
                           {(selectedCard?.types || [])[0] || "Unknown"}
                         </S.TypePill>
                       </S.StatsRow>
+                      <S.BadgeRow>
+                        <S.Badge>{displayCard.id}</S.Badge>
+                        {displayCard.rarity && <S.Badge>{displayCard.rarity}</S.Badge>}
+                      </S.BadgeRow>
                     </S.InfoChunk>
 
                     <S.InfoChunk>
@@ -376,9 +371,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                         {selectedCard?.legalities
                           ? Object.entries(selectedCard.legalities).map(
                               ([format, status]) => (
-                                <S.Badge key={format}>
+                                <S.LegalBadge key={format}>
                                   {format}: {status}
-                                </S.Badge>
+                                </S.LegalBadge>
                               ),
                             )
                           : "-"}
