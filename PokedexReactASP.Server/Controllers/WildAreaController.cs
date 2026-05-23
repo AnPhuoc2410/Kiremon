@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using PokedexReactASP.Application.Exceptions;
 using PokedexReactASP.Application.DTOs.WildArea;
 using PokedexReactASP.Application.Interfaces;
 using System.Security.Claims;
@@ -29,6 +31,32 @@ namespace PokedexReactASP.Server.Controllers
 
             var result = await _wildAreaService.GetCurrentWildAreaAsync(userId);
             return Ok(result);
+        }
+
+        [HttpPost("spawns/{spawnId:int}/attempt-catch")]
+        [EnableRateLimiting("WildCatchPolicy")]
+        public async Task<ActionResult<WildCatchResultDto>> AttemptCatch(int spawnId, [FromBody] WildCatchAttemptDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _wildAreaService.AttemptCatchAsync(userId, spawnId, dto);
+                return Ok(result);
+            }
+            catch (WildAreaCatchException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
         }
     }
 }

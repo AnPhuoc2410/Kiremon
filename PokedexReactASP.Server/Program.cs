@@ -136,6 +136,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWildAreaService, WildAreaService>();
+            builder.Services.AddScoped<ICardRewardService, CardRewardService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
@@ -154,6 +155,7 @@ namespace PokedexReactASP.Server
             builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
             builder.Services.Configure<ItemSystemSettings>(builder.Configuration.GetSection(ItemSystemSettings.SectionName));
             builder.Services.Configure<WildAreaSettings>(builder.Configuration.GetSection(WildAreaSettings.SectionName));
+            builder.Services.Configure<CardRewardSettings>(builder.Configuration.GetSection(CardRewardSettings.SectionName));
             builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
             {
                 client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
@@ -269,6 +271,15 @@ namespace PokedexReactASP.Server
                     limiterOptions.Window = TimeSpan.FromMinutes(1);
                     limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     limiterOptions.QueueLimit = 20;
+                });
+
+                // Wild catch policy: stricter anti-abuse for spawn catch endpoint
+                options.AddFixedWindowLimiter("WildCatchPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 20;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 0;
                 });
             });
 

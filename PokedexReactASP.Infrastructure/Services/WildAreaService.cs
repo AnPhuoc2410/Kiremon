@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.WildArea;
+using PokedexReactASP.Application.Exceptions;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Options;
 using PokedexReactASP.Domain.Entities;
@@ -27,6 +30,8 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly PokemonDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPokemonCacheService _pokemonCacheService;
+        private readonly IUserService _userService;
+        private readonly ICardRewardService _cardRewardService;
         private readonly WildAreaSettings _settings;
         private readonly ILogger<WildAreaService> _logger;
         private readonly Random _random = new();
@@ -35,12 +40,16 @@ namespace PokedexReactASP.Infrastructure.Services
             PokemonDbContext context,
             UserManager<ApplicationUser> userManager,
             IPokemonCacheService pokemonCacheService,
+            IUserService userService,
+            ICardRewardService cardRewardService,
             IOptions<WildAreaSettings> settings,
             ILogger<WildAreaService> logger)
         {
             _context = context;
             _userManager = userManager;
             _pokemonCacheService = pokemonCacheService;
+            _userService = userService;
+            _cardRewardService = cardRewardService;
             _settings = settings.Value;
             _logger = logger;
         }
@@ -65,6 +74,86 @@ namespace PokedexReactASP.Infrastructure.Services
             }
 
             return await MapToWildAreaDto(spawns, now);
+        }
+
+        public async Task<WildCatchResultDto> AttemptCatchAsync(string userId, int spawnId, WildCatchAttemptDto dto)
+        {
+            var spawn = await _context.WildAreaSpawns.FirstOrDefaultAsync(x => x.Id == spawnId);
+            if (spawn == null)
+            {
+                throw new WildAreaCatchException(StatusCodes.Status404NotFound, "Spawn not found.");
+            }
+
+            if (!string.Equals(spawn.UserId, userId, StringComparison.Ordinal))
+            {
+                throw new WildAreaCatchException(StatusCodes.Status403Forbidden, "Spawn does not belong to current user.");
+            }
+
+            ValidateSpawnState(spawn, DateTime.UtcNow);
+
+            var catchAttempt = new CatchAttemptDto
+            {
+                PokemonApiId = spawn.PokemonApiId,
+                PokeballType = dto.PokeballType,
+                CaughtLocation = spawn.AreaCode,
+                Nickname = dto.Nickname
+            };
+
+            var catchResult = await _userService.AttemptCatchPokemonAsync(userId, catchAttempt);
+            var success = catchResult.Result == CatchAttemptResult.Success;
+            var attemptsUsedAfter = Math.Min(spawn.MaxAttempts, spawn.AttemptsUsed + 1);
+            spawn.AttemptsUsed = attemptsUsedAfter;
+
+            if (!success)
+            {
+                var exhausted = spawn.AttemptsUsed >= spawn.MaxAttempts;
+                if (exhausted)
+                {
+                    spawn.IsConsumed = true;
+                    spawn.IsActive = false;
+                }
+
+                await _context.SaveChangesAsync();
+                return new WildCatchResultDto
+                {
+                    Success = false,
+                    PokemonCaught = false,
+                    ShakeCount = catchResult.ShakeCount,
+                    Message = catchResult.Message,
+                    AttemptsLeft = Math.Max(0, spawn.MaxAttempts - spawn.AttemptsUsed),
+                    SpawnConsumed = spawn.IsConsumed,
+                    CardReward = null
+                };
+            }
+
+            spawn.IsCaught = true;
+            spawn.IsConsumed = true;
+            spawn.IsActive = false;
+
+            var reward = await _cardRewardService.RollAndGrantCardAsync(userId, spawn.PokemonApiId, CardRewardSource.WildAreaCatch);
+            await _context.SaveChangesAsync();
+
+            return new WildCatchResultDto
+            {
+                Success = true,
+                PokemonCaught = true,
+                ShakeCount = catchResult.ShakeCount,
+                Message = catchResult.Message,
+                AttemptsLeft = Math.Max(0, spawn.MaxAttempts - spawn.AttemptsUsed),
+                SpawnConsumed = true,
+                UserPokemon = catchResult.CaughtPokemon == null
+                    ? null
+                    : new WildCaughtPokemonDto
+                    {
+                        Id = catchResult.CaughtPokemon.Id,
+                        PokemonApiId = catchResult.CaughtPokemon.PokemonApiId,
+                        Nickname = catchResult.CaughtPokemon.Nickname,
+                        IsShiny = catchResult.CaughtPokemon.IsShiny,
+                        Nature = catchResult.CaughtPokemon.Nature.ToString(),
+                        CaughtLevel = catchResult.CaughtPokemon.Level
+                    },
+                CardReward = reward
+            };
         }
 
         private async Task<List<WildAreaSpawn>> GenerateSpawnsAsync(string userId, DateTime now)
@@ -255,6 +344,29 @@ namespace PokedexReactASP.Infrastructure.Services
             }
 
             return char.ToUpperInvariant(input[0]) + input[1..];
+        }
+
+        private static void ValidateSpawnState(WildAreaSpawn spawn, DateTime now)
+        {
+            if (!spawn.IsActive)
+            {
+                throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn is not active.");
+            }
+
+            if (spawn.IsConsumed)
+            {
+                throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn is already consumed.");
+            }
+
+            if (spawn.ExpiresAt <= now)
+            {
+                throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn has expired.");
+            }
+
+            if (spawn.AttemptsUsed >= spawn.MaxAttempts)
+            {
+                throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn has no attempts left.");
+            }
         }
     }
 }
