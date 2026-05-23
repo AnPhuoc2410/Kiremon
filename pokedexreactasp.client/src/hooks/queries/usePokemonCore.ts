@@ -11,6 +11,7 @@ import {
   PokemonHeldItem,
 } from "@/services/pokemon/pokemon-graphql.service";
 import { POKEMON_IMAGE } from "@/config/api.config";
+import { pokemonService, speciesService } from "@/services";
 import {
   PokemonSprites,
   PokemonForm,
@@ -448,6 +449,110 @@ function transformSpeciesData(
   };
 }
 
+function transformPokemonDetailFromRest(
+  data: IPokemonDetailResponse,
+  languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
+) {
+  const transformedTypes = data.types.map((t) => t.type.name);
+  const transformedMoves = data.moves.map((m) => m.move.name);
+
+  const transformedMoveDetails: MoveDetailData[] = data.moves.map((m) => ({
+    name: m.move.name,
+    localizedName: m.move.name,
+    type: "normal",
+    power: null,
+    accuracy: null,
+    pp: null,
+    priority: 0,
+    damageClass: "status",
+    learnMethod: m.version_group_details?.[0]?.move_learn_method?.name || "unknown",
+    level: m.version_group_details?.[0]?.level_learned_at ?? null,
+    generation: null,
+    description: null,
+    meta: null,
+    effectChance: null,
+    statChanges: [],
+  }));
+
+  const transformedAbilities = data.abilities.map((a) => ({
+    ability: { name: a.ability.name, url: a.ability.url },
+    is_hidden: a.is_hidden,
+    slot: a.slot,
+  }));
+
+  const transformedForms: PokemonForm[] = data.forms.map((f, idx) => ({
+    name: f.name,
+    url: f.url,
+    id: idx + 1,
+    is_default: idx === 0,
+  }));
+
+  const spriteUrl = `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${data.id}.gif`;
+
+  return {
+    pokemonId: data.id,
+    types: transformedTypes,
+    typeNames: transformedTypes,
+    moves: transformedMoves,
+    moveDetails: transformedMoveDetails,
+    stats: data.stats,
+    abilities: transformedAbilities,
+    sprite: spriteUrl,
+    sprites: data.sprites as unknown as PokemonSprites,
+    height: data.height,
+    weight: data.weight,
+    baseExperience: data.base_experience,
+    heldItems: data.held_items,
+    specialForms: transformedForms.length > 1 ? transformedForms : [],
+    speciesId: parseInt(data.species.url.split("/").filter(Boolean).pop() || "0", 10),
+    generationId: 0,
+  };
+}
+
+function transformSpeciesDataFromRest(
+  data: IPokemonSpecies,
+  languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
+) {
+  const flavorTexts = data.flavor_text_entries.filter(
+    (f) => f.language?.name === "en",
+  );
+  const randomFlavorText =
+    flavorTexts.length > 0
+      ? flavorTexts[Math.floor(Math.random() * flavorTexts.length)].flavor_text
+      : "";
+
+  const localizedNameEntry = data.names.find((n) => n.language?.name === "en");
+  const localizedGenusEntry = data.genera.find((g) => g.language?.name === "en");
+
+  return {
+    species: data,
+    captureRate: data.capture_rate,
+    baseHappiness: data.base_happiness,
+    flavorText: randomFlavorText,
+    varieties: data.varieties,
+    eggGroups: data.egg_groups.map((g) => g.name),
+    habitat: data.habitat?.name || "",
+    growthRate: data.growth_rate?.name || "",
+    generation: data.generation?.name || "",
+    generationId: parseInt(
+      data.generation?.url?.split("/").filter(Boolean).pop() || "0",
+      10,
+    ),
+    isLegendary: data.is_legendary,
+    isMythical: data.is_mythical,
+    shape: data.shape?.name || "",
+    color: data.color?.name || "",
+    hatchCounter: data.hatch_counter,
+    genderRate: data.gender_rate,
+    evolutionChainId: parseInt(
+      data.evolution_chain?.url?.split("/").filter(Boolean).pop() || "0",
+      10,
+    ),
+    localizedName: localizedNameEntry?.name || data.name,
+    localizedGenus: localizedGenusEntry?.genus || "",
+  };
+}
+
 /**
  * Core Pokemon data hook using TanStack Query
  * Fetches detail and species data in parallel where possible
@@ -463,6 +568,12 @@ export function usePokemonCore(
     enabled: !!name,
   });
 
+  const restDetailQuery = useQuery({
+    queryKey: ["pokemon", "detail-rest", name],
+    queryFn: () => pokemonService.getPokemonDetail(name),
+    enabled: !!name && !detailQuery.data,
+  });
+
   // Extract speciesId from detail data
   const speciesId = detailQuery.data?.pokemonspecy?.id;
 
@@ -474,16 +585,26 @@ export function usePokemonCore(
     enabled: !!speciesId,
   });
 
+  const restSpeciesQuery = useQuery({
+    queryKey: ["pokemon", "species-rest", name],
+    queryFn: () => speciesService.getPokemonSpecies(name),
+    enabled: !!name && !speciesQuery.data,
+  });
+
   // Transform data using memoization
   const transformedDetail = useMemo(() => {
-    if (!detailQuery.data) return null;
-    return transformPokemonDetail(detailQuery.data, languageId);
-  }, [detailQuery.data, languageId]);
+    if (detailQuery.data) return transformPokemonDetail(detailQuery.data, languageId);
+    if (restDetailQuery.data)
+      return transformPokemonDetailFromRest(restDetailQuery.data, languageId);
+    return null;
+  }, [detailQuery.data, restDetailQuery.data, languageId]);
 
   const transformedSpecies = useMemo(() => {
-    if (!speciesQuery.data) return null;
-    return transformSpeciesData(speciesQuery.data, languageId);
-  }, [speciesQuery.data, languageId]);
+    if (speciesQuery.data) return transformSpeciesData(speciesQuery.data, languageId);
+    if (restSpeciesQuery.data)
+      return transformSpeciesDataFromRest(restSpeciesQuery.data, languageId);
+    return null;
+  }, [speciesQuery.data, restSpeciesQuery.data, languageId]);
 
   // Preload main sprite as soon as we have pokemonId
   useEffect(() => {
@@ -494,7 +615,9 @@ export function usePokemonCore(
   }, [transformedDetail?.pokemonId]);
 
   // Combine loading states
-  const isLoading = detailQuery.isLoading || speciesQuery.isLoading;
+  const isLoading =
+    (detailQuery.isLoading && restDetailQuery.isLoading) ||
+    (speciesQuery.isLoading && restSpeciesQuery.isLoading);
   const isDetailLoading = detailQuery.isLoading;
   const isSpeciesLoading = speciesQuery.isLoading;
 

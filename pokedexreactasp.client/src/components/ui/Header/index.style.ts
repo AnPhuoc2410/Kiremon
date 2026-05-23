@@ -257,6 +257,37 @@ export const LanguageDropdown = styled.div<{ isOpen: boolean }>`
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
+export const GuideButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid ${colors["gray-200"]};
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: ${colors["gray-700"]};
+
+  &:hover {
+    border-color: ${colors["blue-400"]};
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    color: ${colors["blue-600"]};
+
+    svg {
+      transform: scale(1.15) rotate(-5deg);
+    }
+  }
+
+  svg {
+    transition: transform 0.25s ease;
+  }
+`;
+
 export const LanguageOption = styled.button<{ isActive?: boolean }>`
   display: flex;
   align-items: center;

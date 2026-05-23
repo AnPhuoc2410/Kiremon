@@ -17,3 +17,4 @@ export { default as RelatedPokemon } from "./RelatedPokemon";
 export { default as GenerationDetail } from "./GenerationDetail";
 export { default as AvatarChangeModal } from "./AvatarChangeModal";
 export { default as PokeballChangeModal } from "./PokeballChangeModal";
+export { default as TourGuide } from "./TourGuide";

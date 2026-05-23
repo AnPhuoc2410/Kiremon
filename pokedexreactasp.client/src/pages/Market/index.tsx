@@ -111,7 +111,7 @@ const Market: React.FC = () => {
         <ShopInner>
           {/* Main Content: Sidebar + Items */}
           <MainContent>
-            <SidebarContainer>
+            <SidebarContainer id="tour-market-sidebar">
               {/* Mobile sidebar toggle */}
               <SidebarToggle onClick={() => setSidebarOpen(!sidebarOpen)}>
                 <svg viewBox="0 0 20 20" fill="currentColor">

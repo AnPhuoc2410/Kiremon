@@ -11,5 +11,6 @@ export { marketService } from "./market/market.service";
 export { userService } from "./user/user.service";
 export { collectionService } from "./collection/collection.service";
 export { friendService } from "./friend/friend.service";
+export { tcgService } from "./tcg/tcg.service";
 // Export cache utility
 export { cacheUtils as pokeApiCache } from "./cache/cache";

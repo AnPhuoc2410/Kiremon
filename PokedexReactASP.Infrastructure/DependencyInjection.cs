@@ -21,7 +21,7 @@ namespace PokedexReactASP.Infrastructure
                 throw new InvalidOperationException("DefaultConnection is not configured.");
             }
 
-            services.AddDbContext<PokemonDbContext>(options =>
+            services.AddDbContextPool<PokemonDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
