@@ -15,6 +15,9 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<UserItem> UserItems { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; }
+        public DbSet<UserTcgCard> UserTcgCards { get; set; }
+        public DbSet<TcgCardCache> TcgCardCaches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -159,6 +162,63 @@ namespace PokedexReactASP.Infrastructure.Persistence
 
                 // String length constraints
                 entity.Property(e => e.Message).HasMaxLength(200);
+            });
+
+            // Configure WildAreaSpawn entity
+            modelBuilder.Entity<WildAreaSpawn>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.IsActive, e.ExpiresAt });
+
+                entity.Property(e => e.AreaCode).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.UserId).IsRequired();
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.WildAreaSpawns)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure UserTcgCard entity
+            modelBuilder.Entity<UserTcgCard>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.TcgCardId }).IsUnique();
+                entity.HasIndex(e => e.PokemonApiId);
+
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.TcgCardId).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Supertype).HasMaxLength(50);
+                entity.Property(e => e.Rarity).HasMaxLength(100);
+                entity.Property(e => e.SetId).HasMaxLength(50);
+                entity.Property(e => e.SetName).HasMaxLength(150);
+                entity.Property(e => e.ImageSmall).HasMaxLength(500);
+                entity.Property(e => e.ImageLarge).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserTcgCards)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure TcgCardCache entity
+            modelBuilder.Entity<TcgCardCache>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.PokemonApiId, e.TcgCardId }).IsUnique();
+
+                entity.Property(e => e.TcgCardId).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Supertype).HasMaxLength(50);
+                entity.Property(e => e.Rarity).HasMaxLength(100);
+                entity.Property(e => e.SetId).HasMaxLength(50);
+                entity.Property(e => e.SetName).HasMaxLength(150);
+                entity.Property(e => e.ImageSmall).HasMaxLength(500);
+                entity.Property(e => e.ImageLarge).HasMaxLength(500);
             });
         }
     }
