@@ -51,6 +51,7 @@ namespace PokedexReactASP.Infrastructure
                 }
             });
             services.AddScoped<ITcgCardService, TcgCardService>();
+            services.AddScoped<ITcgCardCollectionService, TcgCardCollectionService>();
 
             return services;
         }
