@@ -135,6 +135,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
             builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IWildAreaService, WildAreaService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
@@ -152,6 +153,7 @@ namespace PokedexReactASP.Server
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
             builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
             builder.Services.Configure<ItemSystemSettings>(builder.Configuration.GetSection(ItemSystemSettings.SectionName));
+            builder.Services.Configure<WildAreaSettings>(builder.Configuration.GetSection(WildAreaSettings.SectionName));
             builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
             {
                 client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
