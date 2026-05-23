@@ -186,6 +186,7 @@ namespace PokedexReactASP.Infrastructure.Services
         public async Task<IEnumerable<FriendRequestDto>> GetReceivedFriendRequestsAsync(string userId)
         {
             var requests = await _context.FriendRequests
+                .AsNoTracking()
                 .Include(fr => fr.Sender)
                 .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
                 .OrderByDescending(fr => fr.SentAt)
@@ -208,6 +209,7 @@ namespace PokedexReactASP.Infrastructure.Services
         public async Task<IEnumerable<FriendRequestDto>> GetSentFriendRequestsAsync(string userId)
         {
             var requests = await _context.FriendRequests
+                .AsNoTracking()
                 .Include(fr => fr.Receiver)
                 .Where(fr => fr.SenderId == userId && fr.Status == FriendRequestStatus.Pending)
                 .OrderByDescending(fr => fr.SentAt)
@@ -371,6 +373,7 @@ namespace PokedexReactASP.Infrastructure.Services
         public async Task<IEnumerable<FriendDto>> GetFriendsAsync(string userId)
         {
             var friendships = await _context.Friendships
+                .AsNoTracking()
                 .Include(f => f.User1)
                 .Include(f => f.User2)
                 .Where(f => f.User1Id == userId || f.User2Id == userId)
@@ -412,6 +415,7 @@ namespace PokedexReactASP.Infrastructure.Services
         public async Task<IEnumerable<string>> GetFriendIdsAsync(string userId)
         {
             var friendships = await _context.Friendships
+                .AsNoTracking()
                 .Where(f => f.User1Id == userId || f.User2Id == userId)
                 .ToListAsync();
             return friendships.Select(f => f.User1Id == userId ? f.User2Id : f.User1Id).ToList();
@@ -423,6 +427,7 @@ namespace PokedexReactASP.Infrastructure.Services
             var onlineThreshold = DateTime.UtcNow.AddMinutes(-15);
 
             var friendships = await _context.Friendships
+                .AsNoTracking()
                 .Include(f => f.User1)
                 .Include(f => f.User2)
                 .Where(f => f.User1Id == userId || f.User2Id == userId)
@@ -521,6 +526,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
             // Single query to search both username and friend code
             var users = await _context.Users
+                .AsNoTracking()
                 .Where(u => u.Id != userId &&
                     (u.UserName!.ToUpper().Contains(normalizedSearch) ||
                      u.FriendCode.Replace("-", "").Contains(normalizedSearch)))
@@ -536,6 +542,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
             // Bulk load friendships for all found users
             var friendUserIds = await _context.Friendships
+                .AsNoTracking()
                 .Where(f => (f.User1Id == userId && userIds.Contains(f.User2Id)) ||
                             (f.User2Id == userId && userIds.Contains(f.User1Id)))
                 .Select(f => f.User1Id == userId ? f.User2Id : f.User1Id)
@@ -545,6 +552,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
             // Bulk load pending requests for all found users
             var pendingRequestUserIds = await _context.FriendRequests
+                .AsNoTracking()
                 .Where(fr => fr.Status == FriendRequestStatus.Pending &&
                     ((fr.SenderId == userId && userIds.Contains(fr.ReceiverId)) ||
                      (fr.ReceiverId == userId && userIds.Contains(fr.SenderId))))
@@ -570,6 +578,7 @@ namespace PokedexReactASP.Infrastructure.Services
             var normalizedCode = friendCode.ToUpper().Replace(" ", "");
 
             var user = await _context.Users
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.FriendCode == normalizedCode && u.Id != userId);
 
             if (user == null) return null;

@@ -150,7 +150,6 @@ const TourGuide: React.FC = () => {
     };
   }, [location.pathname, navigate]);
 
-  // Handle cross-page transitions
   useEffect(() => {
     if (pendingIndex !== null) {
       const targetStep = steps[pendingIndex];
@@ -159,14 +158,12 @@ const TourGuide: React.FC = () => {
           setStepIndex(pendingIndex);
           setPendingIndex(null);
           setRun(true);
-        }, 500); // Allow 500ms for components and DOM selectors to be loaded
+        }, 500);
         return () => clearTimeout(timer);
       }
     }
   }, [location.pathname, pendingIndex, steps]);
 
-  // Safety check: if the user manually navigates to a different page while the tour is running,
-  // we stop the tour to avoid locking the overlay.
   useEffect(() => {
     if (run && pendingIndex === null) {
       const currentStep = steps[stepIndex];

@@ -50,7 +50,7 @@ namespace PokedexReactASP.Application.Services
                     up.Nickname == null ||
                     up.Nickname.ToLower() == baseNameLower ||
                     up.Nickname.ToLower().StartsWith(baseNameLower + "_")
-                ));
+                ), disableTracking: true);
 
             var allUserPokemon = userPokemonQuery.ToList();
             var distinctApiIds = allUserPokemon.Where(p => p.Nickname == null).Select(p => p.PokemonApiId).Distinct();
@@ -126,7 +126,7 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<IEnumerable<UserPokemonDto>> GetUserPokemonAsync(string userId)
         {
-            var userPokemonList = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
+            var userPokemonList = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId, disableTracking: true);
             var enrichedList = await _pokemonEnricher.EnrichBatchAsync(userPokemonList);
             return enrichedList.OrderByDescending(p => p.CaughtDate);
         }
@@ -134,7 +134,7 @@ namespace PokedexReactASP.Application.Services
         public async Task<UserPokemonDto?> GetUserPokemonByIdAsync(string userId, int userPokemonId)
         {
             var userPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.Id == userPokemonId);
+                up => up.UserId == userId && up.Id == userPokemonId, disableTracking: true);
 
             if (userPokemon == null) return null;
             return await _pokemonEnricher.EnrichAsync(userPokemon);
@@ -142,7 +142,7 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<CollectionStatsDto> GetCollectionStatsAsync(string userId)
         {
-            var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
+            var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId, disableTracking: true);
             var pokemonList = allPokemon.ToList();
             var typeDistribution = await GetTypeDistributionBatchAsync(pokemonList);
 
@@ -184,7 +184,7 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<PokeSummaryResponseDto> GetPokeSummaryAsync(string userId)
         {
-            var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId);
+            var allPokemon = await _unitOfWork.UserPokemon.FindAsync(up => up.UserId == userId, disableTracking: true);
             var pokemonList = allPokemon.ToList();
 
             if (pokemonList.Count == 0)
@@ -274,7 +274,7 @@ namespace PokedexReactASP.Application.Services
 
             // 6. Calculate catch rate and attempt catch
             var existingCatch = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId);
+                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId, disableTracking: true);
             var hasCaughtBefore = existingCatch != null;
 
             var catchContext = new CatchCalculationContext(
@@ -313,7 +313,7 @@ namespace PokedexReactASP.Application.Services
 
             // 9. CATCH SUCCESS! Create Pokemon using factory (all server-determined)
             var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId);
+                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId, disableTracking: true);
             var isNewSpecies = existingOfSameSpecies == null;
 
             var creationContext = new PokemonCreationContext(
@@ -421,7 +421,7 @@ namespace PokedexReactASP.Application.Services
 
             // 5. Check if this is a new species
             var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.PokemonApiId == dto.PokemonApiId);
+                up => up.UserId == userId && up.PokemonApiId == dto.PokemonApiId, disableTracking: true);
             var isNewSpecies = existingOfSameSpecies == null;
 
             // 6. Create Pokemon using factory (ALL VALUES SERVER-DETERMINED)
@@ -538,7 +538,7 @@ namespace PokedexReactASP.Application.Services
             if (userPokemon == null) return false;
 
             var remainingPokemon = await _unitOfWork.UserPokemon
-                .FindAsync(up => up.UserId == userId && up.Id != userPokemonId);
+                .FindAsync(up => up.UserId == userId && up.Id != userPokemonId, disableTracking: true);
             var newUniqueCount = remainingPokemon.Select(up => up.PokemonApiId).Distinct().Count();
 
             _unitOfWork.UserPokemon.Remove(userPokemon);
