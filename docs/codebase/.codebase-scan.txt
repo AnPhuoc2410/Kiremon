@@ -1,0 +1,372 @@
+
+=== DIRECTORY TREE (max depth 3, source files only) ===
+.agents
+.agents\skills
+.agents\skills\acquire-codebase-knowledge
+.agents\skills\acquire-codebase-knowledge\assets
+.agents\skills\acquire-codebase-knowledge\references
+.agents\skills\acquire-codebase-knowledge\scripts
+.agents\skills\acquire-codebase-knowledge\SKILL.md
+.agents\skills\add-educational-comments
+.agents\skills\add-educational-comments\SKILL.md
+.agents\skills\brainstorming
+.agents\skills\brainstorming\scripts
+.agents\skills\brainstorming\SKILL.md
+.agents\skills\brainstorming\spec-document-reviewer-prompt.md
+.agents\skills\brainstorming\visual-companion.md
+.agents\skills\csharp-async
+.agents\skills\csharp-async\SKILL.md
+.agents\skills\deploy-to-vercel
+.agents\skills\deploy-to-vercel\resources
+.agents\skills\deploy-to-vercel\SKILL.md
+.agents\skills\DESIGN.md
+.agents\skills\dotnet-best-practices
+.agents\skills\dotnet-best-practices\SKILL.md
+.agents\skills\dotnet-design-pattern-review
+.agents\skills\dotnet-design-pattern-review\SKILL.md
+.agents\skills\dotnet-timezone
+.agents\skills\dotnet-timezone\references
+.agents\skills\dotnet-timezone\SKILL.md
+.agents\skills\dotnet-upgrade
+.agents\skills\dotnet-upgrade\SKILL.md
+.agents\skills\ef-core
+.agents\skills\ef-core\SKILL.md
+.agents\skills\find-skills
+.agents\skills\find-skills\SKILL.md
+.agents\skills\frontend-design
+.agents\skills\frontend-design\LICENSE.txt
+.agents\skills\frontend-design\SKILL.md
+.agents\skills\nuget-manager
+.agents\skills\nuget-manager\SKILL.md
+.agents\skills\refactor
+.agents\skills\refactor\SKILL.md
+.agents\skills\refactor-method-complexity-reduce
+.agents\skills\refactor-method-complexity-reduce\SKILL.md
+.agents\skills\refactor-plan
+.agents\skills\refactor-plan\SKILL.md
+.agents\skills\shadcn
+.agents\skills\shadcn\agents
+.agents\skills\shadcn\assets
+.agents\skills\shadcn\cli.md
+.agents\skills\shadcn\customization.md
+.agents\skills\shadcn\evals
+.agents\skills\shadcn\mcp.md
+.agents\skills\shadcn\rules
+.agents\skills\shadcn\SKILL.md
+.agents\skills\supabase
+.agents\skills\supabase\assets
+.agents\skills\supabase\references
+.agents\skills\supabase\SKILL.md
+.agents\skills\supabase-postgres-best-practices
+.agents\skills\supabase-postgres-best-practices\references
+.agents\skills\supabase-postgres-best-practices\SKILL.md
+.agents\skills\vercel-composition-patterns
+.agents\skills\vercel-composition-patterns\AGENTS.md
+.agents\skills\vercel-composition-patterns\metadata.json
+.agents\skills\vercel-composition-patterns\README.md
+.agents\skills\vercel-composition-patterns\rules
+.agents\skills\vercel-composition-patterns\SKILL.md
+.agents\skills\vercel-react-best-practices
+.agents\skills\vercel-react-best-practices\AGENTS.md
+.agents\skills\vercel-react-best-practices\metadata.json
+.agents\skills\vercel-react-best-practices\README.md
+.agents\skills\vercel-react-best-practices\rules
+.agents\skills\vercel-react-best-practices\SKILL.md
+.agents\skills\vercel-react-view-transitions
+.agents\skills\vercel-react-view-transitions\AGENTS.md
+.agents\skills\vercel-react-view-transitions\metadata.json
+.agents\skills\vercel-react-view-transitions\README.md
+.agents\skills\vercel-react-view-transitions\references
+.agents\skills\vercel-react-view-transitions\SKILL.md
+.agents\skills\web-design-guidelines
+.agents\skills\web-design-guidelines\SKILL.md
+.agents\skills\web-design-reviewer
+.agents\skills\web-design-reviewer\references
+.agents\skills\web-design-reviewer\SKILL.md
+.dockerignore
+.github
+.github\workflows
+.github\workflows\build-image.yml
+.github\workflows\deploy.yml
+.gitignore
+.vs
+.vs\Kiremon
+.vs\Kiremon\v17
+.vs\Kiremon\v17\.wsuo
+.vs\Kiremon\v17\DocumentLayout.json
+.vs\PokedexReactASP
+.vs\PokedexReactASP\copilot-chat
+.vs\PokedexReactASP\copilot-chat\28cc1d14
+.vs\PokedexReactASP\CopilotIndices
+.vs\PokedexReactASP\CopilotIndices\17.14.1091.29919
+.vs\PokedexReactASP\DesignTimeBuild
+.vs\PokedexReactASP\DesignTimeBuild\.dtbcache.v2
+.vs\PokedexReactASP\FileContentIndex
+.vs\PokedexReactASP\FileContentIndex\5be00dd0-cf71-4ec5-a92e-2d185fd07854.vsidx
+.vs\PokedexReactASP\v17
+.vs\PokedexReactASP\v17\.futdcache.v2
+.vs\PokedexReactASP\v17\.suo
+.vs\PokedexReactASP\v17\DocumentLayout.json
+.vs\ProjectEvaluation
+.vs\ProjectEvaluation\pokedexreactasp.metadata.v9.bin
+.vs\ProjectEvaluation\pokedexreactasp.projects.v9.bin
+.vs\ProjectEvaluation\pokedexreactasp.strings.v9.bin
+.vs\VSWorkspaceState.json
+CLAUDE.md
+docker-compose.dev.yml
+docker-compose.override.yml
+docker-compose.prod.yml
+Dockerfile
+docs
+docs\codebase
+docs\codebase\.codebase-scan.txt
+docs\Feature.md
+docs\tcgdex-rest-api-endpoints.md
+env.production.example
+LICENSE
+PokedexReactASP.Application
+PokedexReactASP.Application\Common
+PokedexReactASP.Application\Common\Enum
+PokedexReactASP.Application\Common\Enum\AuthProvider.cs
+PokedexReactASP.Application\Common\Helpers
+PokedexReactASP.Application\Common\Helpers\PokeItemMapper.cs
+PokedexReactASP.Application\DTOs
+PokedexReactASP.Application\DTOs\Auth
+PokedexReactASP.Application\DTOs\Auth\AuthResponseDto.cs
+PokedexReactASP.Application\DTOs\Auth\ChangePasswordDto.cs
+PokedexReactASP.Application\DTOs\Auth\ConfirmEmailDto.cs
+PokedexReactASP.Application\DTOs\Auth\ExternalLoginDto.cs
+PokedexReactASP.Application\DTOs\Auth\ForgotPasswordDto.cs
+PokedexReactASP.Application\DTOs\Auth\LoginDto.cs
+PokedexReactASP.Application\DTOs\Auth\RegisterDto.cs
+PokedexReactASP.Application\DTOs\Auth\ResetPasswordDto.cs
+PokedexReactASP.Application\DTOs\Auth\SocialUserDto.cs
+PokedexReactASP.Application\DTOs\Auth\TwoFactorDtos.cs
+PokedexReactASP.Application\DTOs\Friend
+PokedexReactASP.Application\DTOs\Friend\FriendDtos.cs
+PokedexReactASP.Application\DTOs\Pokemon
+PokedexReactASP.Application\DTOs\Pokemon\CatchAttemptDto.cs
+PokedexReactASP.Application\DTOs\Pokemon\CatchPokemonDto.cs
+PokedexReactASP.Application\DTOs\Pokemon\CreatePokemonDto.cs
+PokedexReactASP.Application\DTOs\Pokemon\PokemonDto.cs
+PokedexReactASP.Application\DTOs\Pokemon\UserPokemonDto.cs
+PokedexReactASP.Application\DTOs\User
+PokedexReactASP.Application\DTOs\User\TrainerDto.cs
+PokedexReactASP.Application\DTOs\User\UpdateProfileDto.cs
+PokedexReactASP.Application\DTOs\User\UserProfileDto.cs
+PokedexReactASP.Application\Interfaces
+PokedexReactASP.Application\Interfaces\IAuthService.cs
+PokedexReactASP.Application\Interfaces\IEmailService.cs
+PokedexReactASP.Application\Interfaces\IFriendService.cs
+PokedexReactASP.Application\Interfaces\IGameMechanics
+PokedexReactASP.Application\Interfaces\IGameMechanics\ICatchRateCalculatorService.cs
+PokedexReactASP.Application\Interfaces\IGameMechanics\IIVGeneratorService.cs
+PokedexReactASP.Application\Interfaces\IGameMechanics\INatureGeneratorService.cs
+PokedexReactASP.Application\Interfaces\IGameMechanics\IPokemonFactoryService.cs
+PokedexReactASP.Application\Interfaces\IGameMechanics\IShinyRollerService.cs
+PokedexReactASP.Application\Interfaces\IPokemonCacheService.cs
+PokedexReactASP.Application\Interfaces\IPokemonEnricherService.cs
+PokedexReactASP.Application\Interfaces\IPokemonService.cs
+PokedexReactASP.Application\Interfaces\IPresenceTracker.cs
+PokedexReactASP.Application\Interfaces\IRecaptchaService.cs
+PokedexReactASP.Application\Interfaces\IRepository.cs
+PokedexReactASP.Application\Interfaces\ISocialAuthService.cs
+PokedexReactASP.Application\Interfaces\ITokenService.cs
+PokedexReactASP.Application\Interfaces\IUserService.cs
+PokedexReactASP.Application\Mappings
+PokedexReactASP.Application\Mappings\MappingProfile.cs
+PokedexReactASP.Application\Models
+PokedexReactASP.Application\Models\GameMechanics
+PokedexReactASP.Application\Models\GameMechanics\CatchCalculationContext.cs
+PokedexReactASP.Application\Models\GameMechanics\CatchCalculationResult.cs
+PokedexReactASP.Application\Models\GameMechanics\IVGenerationContext.cs
+PokedexReactASP.Application\Models\GameMechanics\IVSet.cs
+PokedexReactASP.Application\Models\GameMechanics\NatureGenerationContext.cs
+PokedexReactASP.Application\Models\GameMechanics\NatureModifiers.cs
+PokedexReactASP.Application\Models\GameMechanics\PokemonCreationContext.cs
+PokedexReactASP.Application\Models\GameMechanics\PokemonCreationResult.cs
+PokedexReactASP.Application\Models\GameMechanics\ShinyRollContext.cs
+PokedexReactASP.Application\Options
+PokedexReactASP.Application\Options\EmailSettings.cs
+PokedexReactASP.Application\Options\ItemSystemSettings.cs
+PokedexReactASP.Application\Options\OAuth2Settings.cs
+PokedexReactASP.Application\Options\RecaptchaSettings.cs
+PokedexReactASP.Application\PokedexReactASP.Application.csproj
+PokedexReactASP.Application\Services
+PokedexReactASP.Application\Services\AuthService.AuthenticateExternal.cs
+PokedexReactASP.Application\Services\AuthService.cs
+PokedexReactASP.Application\Services\AuthService.TwoFactorAuthentication.cs
+PokedexReactASP.Application\Services\GameMechanics
+PokedexReactASP.Application\Services\GameMechanics\CatchRateCalculatorService.cs
+PokedexReactASP.Application\Services\GameMechanics\IVGeneratorService.cs
+PokedexReactASP.Application\Services\GameMechanics\NatureGeneratorService.cs
+
+=== STACK DETECTION (manifest files) ===
+
+--- PokedexReactASP.sln ---
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokedexReactASP.Server", "PokedexReactASP.Server\PokedexReactASP.Server.csproj", "{9F9591C1-4902-46F8-B69A-FB9B0482AA2C}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "pokedexreactasp.client", "pokedexreactasp.client\pokedexreactasp.client.esproj", "{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokedexReactASP.Domain", "PokedexReactASP.Domain\PokedexReactASP.Domain.csproj", "{4F0CA38A-7783-492A-814F-A45592D68DAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokedexReactASP.Application", "PokedexReactASP.Application\PokedexReactASP.Application.csproj", "{923E81AB-3B36-4BC5-97CB-B2F95E7CA633}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokedexReactASP.Infrastructure", "PokedexReactASP.Infrastructure\PokedexReactASP.Infrastructure.csproj", "{80385B2A-6F65-4A25-A2D6-712A4708066D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F9591C1-4902-46F8-B69A-FB9B0482AA2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F9591C1-4902-46F8-B69A-FB9B0482AA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F9591C1-4902-46F8-B69A-FB9B0482AA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F9591C1-4902-46F8-B69A-FB9B0482AA2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0623DD7C-962D-4DB6-95AA-3F7CF50364CE}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4F0CA38A-7783-492A-814F-A45592D68DAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F0CA38A-7783-492A-814F-A45592D68DAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F0CA38A-7783-492A-814F-A45592D68DAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F0CA38A-7783-492A-814F-A45592D68DAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{923E81AB-3B36-4BC5-97CB-B2F95E7CA633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{923E81AB-3B36-4BC5-97CB-B2F95E7CA633}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{923E81AB-3B36-4BC5-97CB-B2F95E7CA633}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{923E81AB-3B36-4BC5-97CB-B2F95E7CA633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80385B2A-6F65-4A25-A2D6-712A4708066D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80385B2A-6F65-4A25-A2D6-712A4708066D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80385B2A-6F65-4A25-A2D6-712A4708066D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80385B2A-6F65-4A25-A2D6-712A4708066D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
+
+
+=== ENTRY POINTS ===
+No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
+
+=== LINTING AND FORMATTING CONFIG ===
+No linting or formatting config files found in project root.
+
+=== ENVIRONMENT VARIABLE TEMPLATES ===
+No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+
+=== TODO / FIXME / HACK (production code only, test dirs excluded) ===
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:28: TODO_LIMIT = 60
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:291: """Search for TODO/FIXME/HACK comments."""
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:291: """Search for TODO/FIXME/HACK comments."""
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:291: """Search for TODO/FIXME/HACK comments."""
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:293: patterns = ["TODO", "FIXME", "HACK"]
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:293: patterns = ["TODO", "FIXME", "HACK"]
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:293: patterns = ["TODO", "FIXME", "HACK"]
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:320: return todos[:TODO_LIMIT]
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:617: # TODOs
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:620: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", todos, output_file)
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:620: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", todos, output_file)
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:620: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", todos, output_file)
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:622: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", ["None found."], output_file)
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:622: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", ["None found."], output_file)
+.agents\skills\acquire-codebase-knowledge\scripts\scan.py:622: print_section("TODO / FIXME / HACK (production code only, test dirs excluded)", ["None found."], output_file)
+PokedexReactASP.Application\Services\UserService.cs:328: CatchStreak: 0, // TODO: Track catch streak per species
+PokedexReactASP.Application\Services\UserService.cs:329: HasShinyCharm: false, // TODO: Check inventory
+PokedexReactASP.Application\Services\UserService.cs:438: HasShinyCharm: false, // TODO: Check inventory
+pokedexreactasp.client\src\guards\AuthGuard.tsx:24: // TODO: Add role to AuthResponseDto on backend to enable role-based access
+pokedexreactasp.client\src\pages\Friends\index.tsx:147: // TODO: Implement gift sending API
+pokedexreactasp.client\src\pages\Friends\index.tsx:156: // TODO: Replace with actual API call to get friend's Pokemon
+
+=== GIT RECENT COMMITS (last 20) ===
+8c3bed5 Merge pull request #56 from AnPhuoc2410/feat/tour-guide-ui
+c69877e feat: implement user service, repository pattern, and supporting services for Pokedex management and game mechanics
+9611742 Merge pull request #55 from AnPhuoc2410/feat/tour-guide-ui
+ac54b52 feat: implement TourGuide component with retro RPG-style dialogue UI
+4b535cf Merge pull request #54 from AnPhuoc2410/feat/implement-tgc-card
+7e226ff feat: implement retro-styled TourGuide UI component with styled-components
+1a2dd98 feat: implement header and tour guide UI components with i18n support
+db088de feat: implement routing updates, Header component, TourGuide UI, and additional pages
+f3308f5 feat: remove redundant font-family declarations from styled components in TcgTab
+af365cd feat: enhance TCG tab with ability display and improved styling for ability types
+b12a91c feat: enhance TCG tab styling with new text components and improved layout for attacks and abilities
+31243e9 feat: enhance TCG card detail layout with new premium title and header styling
+553d0b9 feat: enhance TCG card modal with improved styling, tilt effect, and detailed information layout
+4d4d3ad feat: implement REST transformation functions for Pokemon detail and species data in usePokemonCore hook
+75e4081 feat: enhance TCG card modal styling and layout with improved responsiveness and visual effects
+22e700c feat: implement TCG card filtering functionality with facets and enhanced query support
+5e25207 feat: enhance TCG card functionality with improved error handling and detail image management
+8ea8f68 feat: implement TCG card functionality including service, hooks, and UI components
+8fd7320 Merge branch 'dev' of https://github.com/AnPhuoc2410/Kiremon into feat/implement-tgc-card
+465a2cb feat: add codebase discovery skill including documentation templates, EF Core best practices, and automated repository scanning tools.
+
+=== HIGH-CHURN FILES (last 90 days, top 20) ===
+   8 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.style.ts
+   8 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.tsx
+   5 pokedexreactasp.client/src/components/ui/TourGuide/index.tsx
+   4 pokedexreactasp.client/src/components/ui/TourGuide/index.style.ts
+   4 skills-lock.json
+   3 pokedexreactasp.client/src/services/tcg/tcg.service.ts
+   2 pokedexreactasp.client/src/components/ui/Header/index.tsx
+   2 pokedexreactasp.client/src/hooks/queries/index.ts
+   2 pokedexreactasp.client/src/hooks/queries/useTcgCards.ts
+   2 pokedexreactasp.client/src/types/tcg.types.ts
+   2 docs/tcgdex-rest-api-endpoints.md
+   1 PokedexReactASP.Application/Interfaces/IRepository.cs
+   1 PokedexReactASP.Application/Services/UserService.cs
+   1 PokedexReactASP.Infrastructure/DependencyInjection.cs
+   1 PokedexReactASP.Infrastructure/Repositories/Repository.cs
+   1 PokedexReactASP.Infrastructure/Services/FriendService.cs
+   1 PokedexReactASP.Server/PokedexReactASP.Server.csproj
+   1 PokedexReactASP.Server/Program.cs
+   1 PokedexReactASP.Server/Properties/launchSettings.json
+   1 pokedexreactasp.client/src/components/ui/Header/index.style.ts
+
+=== MONOREPO SIGNALS ===
+No monorepo signals detected.
+
+=== CODE METRICS ===
+Total files scanned: 616
+Total lines of code: 65211
+
+Files by language:
+  Other: 320
+  TypeScript: 115
+  C#: 106
+  TypeScript/React: 71
+  JavaScript: 3
+  Python: 1
+
+Top 10 largest files:
+pokedexreactasp.client\public\static\background\monastiraki_square.gif: 12128.9KB
+pokedexreactasp.client\public\region\Kanto_Map.png: 3029.9KB
+pokedexreactasp.client\public\region\Paldea_Map.png: 1952.9KB
+.vs\PokedexReactASP\CopilotIndices\17.14.1091.29919\CodeChunks.db: 1792.0KB
+pokedexreactasp.client\public\region\Hisui_Map.png: 1644.5KB
+pokedexreactasp.client\public\static\background\slateport_market.gif: 1478.2KB
+pokedexreactasp.client\public\static\background\petalburg_woods.gif: 1351.6KB
+.vs\PokedexReactASP\FileContentIndex\5be00dd0-cf71-4ec5-a92e-2d185fd07854.vsidx: 1257.3KB
+pokedexreactasp.client\public\static\background\violet_city_4.gif: 907.6KB
+pokedexreactasp.client\public\static\background\pokemon_school.gif: 646.7KB
+
+=== CI/CD PIPELINES ===
+CI/CD: GitHub Actions
+
+=== CONTAINERS & ORCHESTRATION ===
+Container: Docker found
+
+=== SECURITY & COMPLIANCE ===
+No security configs detected.
+
+=== PERFORMANCE & TESTING ===
+No performance testing configs detected.
+
+=== SCAN COMPLETE ===
