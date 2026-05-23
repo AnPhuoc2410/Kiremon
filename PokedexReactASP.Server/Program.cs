@@ -20,6 +20,8 @@ using System.Text;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using PokedexReactASP.Application.Common.Helpers;
+using Serilog;
+using Masking.Serilog;
 
 namespace PokedexReactASP.Server
 {
@@ -27,9 +29,30 @@ namespace PokedexReactASP.Server
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            try
+            {
+                var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+                builder.Host.UseSerilog((context, services, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithMachineName()
+                    .Enrich.WithEnvironmentName()
+                    .Destructure.ByMaskingProperties(opts =>
+                    {
+                        opts.PropertyNames.Add("Password");
+                        opts.PropertyNames.Add("ConfirmPassword");
+                        opts.PropertyNames.Add("Token");
+                        opts.PropertyNames.Add("Secret");
+                        opts.PropertyNames.Add("ClientSecret");
+                        opts.PropertyNames.Add("SecretKey");
+                        opts.Mask = "******";
+                    })
+                    .WriteTo.Async(a => a.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
+                    .WriteTo.Async(a => a.File("Logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj}{NewLine}{Exception}")));
+
+                builder.Services.AddControllers();
 
             builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -293,6 +316,15 @@ namespace PokedexReactASP.Server
             app.MapFallbackToFile("/index.html");
 
             app.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application start-up failed");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
     }
