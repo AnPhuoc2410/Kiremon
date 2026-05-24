@@ -76,6 +76,36 @@ namespace PokedexReactASP.Infrastructure.Services
             return await MapToWildAreaDto(spawns, now);
         }
 
+        public async Task<WildAreaDto> RefreshWildAreaAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            var now = DateTime.UtcNow;
+
+            var activeSpawns = await _context.WildAreaSpawns
+                .Where(x => x.UserId == userId && x.IsActive && !x.IsConsumed)
+                .ToListAsync();
+
+            if (activeSpawns.Count > 0)
+            {
+                foreach (var spawn in activeSpawns)
+                {
+                    spawn.IsActive = false;
+                    spawn.IsConsumed = true;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            var newSpawns = await GenerateSpawnsAsync(userId, now);
+            _logger.LogInformation("Force refreshed Wild Area for user {UserId}", userId);
+            return await MapToWildAreaDto(newSpawns, now);
+        }
+
         public async Task<WildCatchResultDto> AttemptCatchAsync(string userId, int spawnId, WildCatchAttemptDto dto)
         {
             var spawn = await _context.WildAreaSpawns.FirstOrDefaultAsync(x => x.Id == spawnId);

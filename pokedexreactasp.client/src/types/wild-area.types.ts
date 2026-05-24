@@ -56,6 +56,6 @@ export interface WildAreaResponse {
 }
 
 export interface WildCatchAttemptRequest {
-  pokeballType: string;
+  pokeballType: number;
   nickname?: string;
 }

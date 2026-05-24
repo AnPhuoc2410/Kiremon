@@ -6,6 +6,8 @@ import { Button, Header, Loading, Modal, Navbar, Text } from "@/components/ui";
 import { useAuth } from "@/contexts";
 import { useWildArea } from "@/hooks/queries";
 import { useAttemptWildCatch } from "@/hooks/mutations";
+import { wildAreaService } from "@/services/wild-area/wild-area.service";
+import { PokeballType } from "@/types/pokemon.enums";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
 
 import * as S from "./index.style";
@@ -24,11 +26,17 @@ const WildArea = () => {
   const [selectedSpawn, setSelectedSpawn] = useState<WildPokemonSpawn | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [result, setResult] = useState<WildCatchResult | null>(null);
-  const [pokeballType, setPokeballType] = useState("Pokeball");
+  const [pokeballType, setPokeballType] = useState<PokeballType>(
+    PokeballType.Pokeball,
+  );
   const { isAuthenticated, isInitialized } = useAuth();
 
   const wildAreaQuery = useWildArea(isAuthenticated);
   const catchMutation = useAttemptWildCatch();
+  const isLocalEnv =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
 
   const secondsLeft = wildAreaQuery.data?.secondsUntilReset ?? 0;
   const timerDisplay = useMemo(() => {
@@ -55,6 +63,25 @@ const WildArea = () => {
     } catch (error) {
       console.error(error);
       toast.error("Catch attempt failed. Please try again.");
+    }
+  };
+
+  const handleResetEncounter = async () => {
+    if (!isAuthenticated) return;
+
+    setSelectedSpawn(null);
+    setResultOpen(false);
+    setResult(null);
+    setPokeballType(PokeballType.Pokeball);
+
+    try {
+      await wildAreaService.refreshCurrent();
+      await wildAreaQuery.refetch();
+      toast.success("Encounter reset with refresh endpoint.");
+    } catch {
+      // Fallback for local environments where refresh endpoint is not implemented yet.
+      await wildAreaQuery.refetch();
+      toast("Encounter state reset locally. Spawn refresh API is not available yet.");
     }
   };
 
@@ -119,7 +146,18 @@ const WildArea = () => {
 
         <S.TopRow>
           <Text as="h3">{wildAreaQuery.data?.areaName || "Viridian Field"}</Text>
-          <Text>Reset in {timerDisplay}</Text>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Text>Reset in {timerDisplay}</Text>
+            {isLocalEnv && isAuthenticated && (
+              <Button
+                variant="light"
+                onClick={handleResetEncounter}
+                disabled={wildAreaQuery.isFetching || catchMutation.isPending}
+              >
+                Reset Encounter
+              </Button>
+            )}
+          </div>
         </S.TopRow>
 
         <S.MapShell>
@@ -154,11 +192,13 @@ const WildArea = () => {
             <S.FormRow>
               <S.Select
                 value={pokeballType}
-                onChange={(e) => setPokeballType(e.target.value)}
+                onChange={(e) =>
+                  setPokeballType(Number(e.target.value) as PokeballType)
+                }
               >
-                <option value="Pokeball">Pokeball</option>
-                <option value="Greatball">Great Ball</option>
-                <option value="Ultraball">Ultra Ball</option>
+                <option value={PokeballType.Pokeball}>Pokeball</option>
+                <option value={PokeballType.GreatBall}>Great Ball</option>
+                <option value={PokeballType.UltraBall}>Ultra Ball</option>
               </S.Select>
             </S.FormRow>
 

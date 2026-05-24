@@ -33,6 +33,19 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(result);
         }
 
+        [HttpPost("refresh")]
+        public async Task<ActionResult<WildAreaDto>> Refresh()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _wildAreaService.RefreshWildAreaAsync(userId);
+            return Ok(result);
+        }
+
         [HttpPost("spawns/{spawnId:int}/attempt-catch")]
         [EnableRateLimiting("WildCatchPolicy")]
         public async Task<ActionResult<WildCatchResultDto>> AttemptCatch(int spawnId, [FromBody] WildCatchAttemptDto dto)

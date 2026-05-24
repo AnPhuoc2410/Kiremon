@@ -10,6 +10,10 @@ class WildAreaService extends AuthenticatedApiService {
     return this.get<WildAreaResponse>("/wild-area/current");
   }
 
+  async refreshCurrent(): Promise<WildAreaResponse> {
+    return this.post<WildAreaResponse>("/wild-area/refresh");
+  }
+
   async attemptCatch(
     spawnId: number,
     payload: WildCatchAttemptRequest,
