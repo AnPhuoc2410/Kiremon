@@ -2,7 +2,7 @@ import { UserConfig } from "vite";
 
 export default (env: Record<string, string>): UserConfig => ({
   server: {
-    port: 2405,
+    port: 3000,
     open: true,
     cors: true,
     strictPort: true,
