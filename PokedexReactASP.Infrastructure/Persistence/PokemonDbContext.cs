@@ -18,6 +18,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; }
         public DbSet<UserTcgCard> UserTcgCards { get; set; }
         public DbSet<TcgCardCache> TcgCardCaches { get; set; }
+        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -219,6 +220,23 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.SetName).HasMaxLength(150);
                 entity.Property(e => e.ImageSmall).HasMaxLength(500);
                 entity.Property(e => e.ImageLarge).HasMaxLength(500);
+            });
+
+            // Configure PokemonSpawnMetadata entity
+            modelBuilder.Entity<PokemonSpawnMetadata>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => e.PokemonApiId).IsUnique();
+                entity.HasIndex(e => new { e.SpawnRarity, e.Generation, e.IsDefaultForm });
+                entity.HasIndex(e => e.PrimaryType);
+                entity.HasIndex(e => e.SecondaryType);
+
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.PrimaryType).HasMaxLength(30).IsRequired();
+                entity.Property(e => e.SecondaryType).HasMaxLength(30);
+                entity.Property(e => e.Habitat).HasMaxLength(50);
+                entity.Property(e => e.SpawnWeight).HasPrecision(10, 4);
             });
         }
     }

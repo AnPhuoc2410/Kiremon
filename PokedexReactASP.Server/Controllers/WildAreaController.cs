@@ -29,8 +29,15 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _wildAreaService.GetCurrentWildAreaAsync(userId);
-            return Ok(result);
+            try
+            {
+                var result = await _wildAreaService.GetCurrentWildAreaAsync(userId);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = ex.Message });
+            }
         }
 
         [HttpPost("refresh")]
@@ -42,8 +49,15 @@ namespace PokedexReactASP.Server.Controllers
                 return Unauthorized();
             }
 
-            var result = await _wildAreaService.RefreshWildAreaAsync(userId);
-            return Ok(result);
+            try
+            {
+                var result = await _wildAreaService.RefreshWildAreaAsync(userId);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = ex.Message });
+            }
         }
 
         [HttpPost("spawns/{spawnId:int}/attempt-catch")]

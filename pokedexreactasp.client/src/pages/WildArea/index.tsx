@@ -1,4 +1,4 @@
-﻿import { createRef, useMemo, useState } from "react";
+﻿import { createRef, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
@@ -29,6 +29,7 @@ const WildArea = () => {
   const [pokeballType, setPokeballType] = useState<PokeballType>(
     PokeballType.Pokeball,
   );
+  const [secondsUntilReset, setSecondsUntilReset] = useState(0);
   const { isAuthenticated, isInitialized } = useAuth();
 
   const wildAreaQuery = useWildArea(isAuthenticated);
@@ -38,7 +39,27 @@ const WildArea = () => {
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
 
-  const secondsLeft = wildAreaQuery.data?.secondsUntilReset ?? 0;
+  useEffect(() => {
+    if (!wildAreaQuery.data?.resetAt) {
+      setSecondsUntilReset(0);
+      return;
+    }
+
+    const calculateSecondsLeft = () => {
+      const resetAtMs = new Date(wildAreaQuery.data!.resetAt).getTime();
+      return Math.max(0, Math.ceil((resetAtMs - Date.now()) / 1000));
+    };
+
+    setSecondsUntilReset(calculateSecondsLeft());
+
+    const timerId = window.setInterval(() => {
+      setSecondsUntilReset(calculateSecondsLeft());
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [wildAreaQuery.data?.resetAt]);
+
+  const secondsLeft = secondsUntilReset;
   const timerDisplay = useMemo(() => {
     const mins = Math.floor(Math.max(secondsLeft, 0) / 60)
       .toString()
@@ -265,3 +286,5 @@ const WildArea = () => {
 };
 
 export default WildArea;
+
+

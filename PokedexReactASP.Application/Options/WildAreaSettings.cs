@@ -9,6 +9,8 @@ namespace PokedexReactASP.Application.Options
         public int ResetIntervalMinutes { get; set; } = 60;
         public int SpawnCount { get; set; } = 6;
         public int MaxAttemptsPerSpawn { get; set; } = 3;
+        public int MaxGeneration { get; set; } = 9;
+        public bool AllowLegendarySpawn { get; set; } = false;
         public Dictionary<string, double> SpawnWeights { get; set; } = new();
         public List<WildAreaConfig> WildAreas { get; set; } = new();
 
