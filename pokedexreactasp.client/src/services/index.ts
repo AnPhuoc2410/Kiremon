@@ -12,5 +12,7 @@ export { userService } from "./user/user.service";
 export { collectionService } from "./collection/collection.service";
 export { friendService } from "./friend/friend.service";
 export { tcgService } from "./tcg/tcg.service";
+export { wildAreaService } from "./wild-area/wild-area.service";
+export { tcgCardCollectionService } from "./tcg-card-collection/tcg-card-collection.service";
 // Export cache utility
 export { cacheUtils as pokeApiCache } from "./cache/cache";

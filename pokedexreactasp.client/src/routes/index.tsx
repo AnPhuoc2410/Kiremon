@@ -17,6 +17,8 @@ const Detail = lazy(() => import("@/pages/Detail"));
 const WhosThatPokemon = lazy(() => import("@/pages/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
 const Search = lazy(() => import("@/pages/Search"));
+const WildArea = lazy(() => import("@/pages/WildArea"));
+const MyCards = lazy(() => import("@/pages/MyCards"));
 // New games
 const TypeMatchup = lazy(() => import("@/pages/TypeMatchup/index.tsx"));
 const CatchChallenge = lazy(() => import("@/pages/CatchChallenge/index.tsx"));
@@ -150,6 +152,22 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <Search />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/wild-area"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <WildArea />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/my-cards"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <MyCards />
               </Suspense>
             }
           />

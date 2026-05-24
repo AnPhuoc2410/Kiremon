@@ -78,7 +78,7 @@ const getStyle = ({ variant = "sky", matched }: IStyleProps) => {
 };
 
 const ALink = styled("a")({
-  flexBasis: "50%",
+  flex: "1 1 0",
   display: "flex",
 });
 

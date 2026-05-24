@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Button, Loading, Text } from "@/components/ui";
 import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
+import { usePokemonTcgPreview } from "@/hooks/queries/usePokemonTcgPreview";
 import {
   TcgAttack,
   TcgCardDetail,
@@ -11,12 +12,13 @@ import * as S from "./TcgTab.style";
 
 interface TcgTabProps {
   pokemonName: string;
+  pokemonApiId?: number;
   enabled: boolean;
 }
 
 const PAGE_SIZE = 12;
 
-const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
+const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, pokemonApiId, enabled }) => {
   const [page, setPage] = useState(1);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [detailImageSrc, setDetailImageSrc] = useState("");
@@ -34,6 +36,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
   const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, filters, enabled);
   const facetsQuery = useTcgFacets(pokemonName, enabled);
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
+  const previewQuery = usePokemonTcgPreview(pokemonApiId, enabled);
 
   useEffect(() => {
     setPage(1);
@@ -116,6 +119,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
       <S.Header>
         <Text as="h3">TCG cards for {pokemonName.toUpperCase()}</Text>
         <Text as="p">Total: {cardsQuery.data?.totalCount || 0} cards</Text>
+        {previewQuery.data && previewQuery.data.length > 0 && (
+          <Text as="p">Cached reward preview cards: {previewQuery.data.length}</Text>
+        )}
       </S.Header>
 
       <S.FilterRow>
@@ -420,3 +426,6 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 };
 
 export default TcgTab;
+
+
+
