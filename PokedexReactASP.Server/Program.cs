@@ -222,10 +222,21 @@ namespace PokedexReactASP.Server
                 {
                     options.AddPolicy("AllowReactApp", policy =>
                     {
-                        policy.WithOrigins(allowedOrigins ?? [])
-                              .AllowAnyHeader()
-                              .AllowAnyMethod()
-                              .AllowCredentials();
+                        policy
+                            .SetIsOriginAllowed(origin =>
+                            {
+                                if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+                                    uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return true;
+                                }
+
+                                return Array.Exists(allowedOrigins ?? [], o =>
+                                    string.Equals(o, origin, StringComparison.OrdinalIgnoreCase));
+                            })
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
                     });
                 })
                 .ConfigureApplicationCookie(options =>
