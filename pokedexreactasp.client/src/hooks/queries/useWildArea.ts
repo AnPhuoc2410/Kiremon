@@ -6,10 +6,11 @@ export const wildAreaQueryKeys = {
   current: () => [...wildAreaQueryKeys.all, "current"] as const,
 };
 
-export const useWildArea = () => {
+export const useWildArea = (enabled = true) => {
   return useQuery({
     queryKey: wildAreaQueryKeys.current(),
     queryFn: () => wildAreaService.getCurrent(),
+    enabled,
     staleTime: 30_000,
   });
 };

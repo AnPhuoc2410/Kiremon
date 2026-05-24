@@ -1,7 +1,9 @@
 ﻿import { createRef, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 import { Button, Header, Loading, Modal, Navbar, Text } from "@/components/ui";
+import { useAuth } from "@/contexts";
 import { useWildArea } from "@/hooks/queries";
 import { useAttemptWildCatch } from "@/hooks/mutations";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
@@ -23,8 +25,9 @@ const WildArea = () => {
   const [resultOpen, setResultOpen] = useState(false);
   const [result, setResult] = useState<WildCatchResult | null>(null);
   const [pokeballType, setPokeballType] = useState("Pokeball");
+  const { isAuthenticated, isInitialized } = useAuth();
 
-  const wildAreaQuery = useWildArea();
+  const wildAreaQuery = useWildArea(isAuthenticated);
   const catchMutation = useAttemptWildCatch();
 
   const secondsLeft = wildAreaQuery.data?.secondsUntilReset ?? 0;
@@ -39,7 +42,7 @@ const WildArea = () => {
   }, [secondsLeft]);
 
   const handleAttemptCatch = async () => {
-    if (!selectedSpawn) return;
+    if (!isAuthenticated || !selectedSpawn) return;
 
     try {
       const response = await catchMutation.mutateAsync({
@@ -56,6 +59,23 @@ const WildArea = () => {
   };
 
   const renderContent = () => {
+    if (!isInitialized) {
+      return <Loading label="Checking session..." />;
+    }
+
+    if (!isAuthenticated) {
+      return (
+        <S.CenterHint>
+          <div style={{ display: "grid", gap: 10, textAlign: "center" }}>
+            <Text variant="light">Please login to access Wild Area.</Text>
+            <Link to="/login">
+              <Button variant="light">Go to Login</Button>
+            </Link>
+          </div>
+        </S.CenterHint>
+      );
+    }
+
     if (wildAreaQuery.isLoading) {
       return <Loading label="Loading wild area..." />;
     }
@@ -107,10 +127,14 @@ const WildArea = () => {
           {renderContent()}
         </S.MapShell>
 
-        <S.Tip>Tip: Click a wild Pokemon sprite to start an encounter.</S.Tip>
+        <S.Tip>
+          {isAuthenticated
+            ? "Tip: Click a wild Pokemon sprite to start an encounter."
+            : "Tip: Login is required before you can catch from Wild Area."}
+        </S.Tip>
       </S.Page>
 
-      <Modal open={!!selectedSpawn}>
+      <Modal open={!!selectedSpawn && isAuthenticated}>
         {selectedSpawn && (
           <S.ModalCard>
             <Text as="h3">Encounter</Text>
