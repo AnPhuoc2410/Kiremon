@@ -12,6 +12,12 @@ namespace PokedexReactASP.Application.DTOs.WildArea
         public List<WildPokemonSpawnDto> Spawns { get; set; } = new();
     }
 
+    public class WildAreaOptionDto
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
+
     public class WildPokemonSpawnDto
     {
         public int SpawnId { get; set; }

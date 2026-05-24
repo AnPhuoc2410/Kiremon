@@ -20,8 +20,15 @@ namespace PokedexReactASP.Server.Controllers
             _wildAreaService = wildAreaService;
         }
 
+        [HttpGet("areas")]
+        public async Task<ActionResult<IReadOnlyList<WildAreaOptionDto>>> GetAreas()
+        {
+            var result = await _wildAreaService.GetAvailableAreasAsync();
+            return Ok(result);
+        }
+
         [HttpGet("current")]
-        public async Task<ActionResult<WildAreaDto>> GetCurrent()
+        public async Task<ActionResult<WildAreaDto>> GetCurrent([FromQuery] string? areaCode = null)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrWhiteSpace(userId))
@@ -31,8 +38,12 @@ namespace PokedexReactASP.Server.Controllers
 
             try
             {
-                var result = await _wildAreaService.GetCurrentWildAreaAsync(userId);
+                var result = await _wildAreaService.GetCurrentWildAreaAsync(userId, areaCode);
                 return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -41,7 +52,7 @@ namespace PokedexReactASP.Server.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<WildAreaDto>> Refresh()
+        public async Task<ActionResult<WildAreaDto>> Refresh([FromQuery] string? areaCode = null)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrWhiteSpace(userId))
@@ -51,8 +62,12 @@ namespace PokedexReactASP.Server.Controllers
 
             try
             {
-                var result = await _wildAreaService.RefreshWildAreaAsync(userId);
+                var result = await _wildAreaService.RefreshWildAreaAsync(userId, areaCode);
                 return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
