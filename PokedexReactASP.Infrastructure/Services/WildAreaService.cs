@@ -54,7 +54,21 @@ namespace PokedexReactASP.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<WildAreaDto> GetCurrentWildAreaAsync(string userId)
+        public Task<IReadOnlyList<WildAreaOptionDto>> GetAvailableAreasAsync()
+        {
+            var areas = GetConfiguredAreas()
+                .Select(x => new WildAreaOptionDto
+                {
+                    Code = x.Code,
+                    Name = x.ResolveName()
+                })
+                .ToList()
+                .AsReadOnly();
+
+            return Task.FromResult<IReadOnlyList<WildAreaOptionDto>>(areas);
+        }
+
+        public async Task<WildAreaDto> GetCurrentWildAreaAsync(string userId, string? areaCode = null)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -62,27 +76,28 @@ namespace PokedexReactASP.Infrastructure.Services
                 throw new InvalidOperationException("User not found");
             }
 
-            var hasMetadata = await _context.PokemonSpawnMetadata.AnyAsync(x => x.IsDefaultForm);
-            if (!hasMetadata)
-            {
-                throw new InvalidOperationException("Spawn metadata is empty. Run /api/admin/wild-area/sync-spawn-metadata first.");
-            }
+            await EnsureSpawnMetadataAvailableAsync();
 
             var now = DateTime.UtcNow;
+            var area = ResolveArea(areaCode);
             var spawns = await _context.WildAreaSpawns
-                .Where(x => x.UserId == userId && x.IsActive && !x.IsConsumed && x.ExpiresAt > now)
+                .Where(x => x.UserId == userId &&
+                            x.AreaCode == area.Code &&
+                            x.IsActive &&
+                            !x.IsConsumed &&
+                            x.ExpiresAt > now)
                 .OrderBy(x => x.SlotIndex)
                 .ToListAsync();
 
             if (spawns.Count == 0)
             {
-                spawns = await GenerateSpawnsAsync(userId, now);
+                spawns = await GenerateSpawnsAsync(userId, area, now);
             }
 
-            return await MapToWildAreaDto(spawns, now);
+            return await MapToWildAreaDto(spawns, area, now);
         }
 
-        public async Task<WildAreaDto> RefreshWildAreaAsync(string userId)
+        public async Task<WildAreaDto> RefreshWildAreaAsync(string userId, string? areaCode = null)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -90,10 +105,16 @@ namespace PokedexReactASP.Infrastructure.Services
                 throw new InvalidOperationException("User not found");
             }
 
+            await EnsureSpawnMetadataAvailableAsync();
+
             var now = DateTime.UtcNow;
+            var area = ResolveArea(areaCode);
 
             var activeSpawns = await _context.WildAreaSpawns
-                .Where(x => x.UserId == userId && x.IsActive && !x.IsConsumed)
+                .Where(x => x.UserId == userId &&
+                            x.AreaCode == area.Code &&
+                            x.IsActive &&
+                            !x.IsConsumed)
                 .ToListAsync();
 
             if (activeSpawns.Count > 0)
@@ -107,9 +128,9 @@ namespace PokedexReactASP.Infrastructure.Services
                 await _context.SaveChangesAsync();
             }
 
-            var newSpawns = await GenerateSpawnsAsync(userId, now);
-            _logger.LogInformation("Force refreshed Wild Area for user {UserId}", userId);
-            return await MapToWildAreaDto(newSpawns, now);
+            var newSpawns = await GenerateSpawnsAsync(userId, area, now);
+            _logger.LogInformation("Force refreshed Wild Area for user {UserId} in area {AreaCode}", userId, area.Code);
+            return await MapToWildAreaDto(newSpawns, area, now);
         }
 
         public async Task<WildCatchResultDto> AttemptCatchAsync(string userId, int spawnId, WildCatchAttemptDto dto)
@@ -192,13 +213,13 @@ namespace PokedexReactASP.Infrastructure.Services
             };
         }
 
-        private async Task<List<WildAreaSpawn>> GenerateSpawnsAsync(string userId, DateTime now)
+        private async Task<List<WildAreaSpawn>> GenerateSpawnsAsync(string userId, WildAreaConfig area, DateTime now)
         {
-            var interval = Math.Max(1, _settings.ResetIntervalMinutes);
-            var spawnCount = Math.Max(1, _settings.SpawnCount);
+            var interval = area.ResolveResetIntervalMinutes(_settings);
+            var spawnCount = area.ResolveSpawnCount(_settings);
             var maxAttempts = Math.Max(1, _settings.MaxAttemptsPerSpawn);
             var expiresAt = now.AddMinutes(interval);
-            var weights = _settings.BuildWeights();
+            var weights = area.BuildWeights(_settings.BuildWeights());
 
             var created = new List<WildAreaSpawn>(spawnCount);
 
@@ -206,19 +227,19 @@ namespace PokedexReactASP.Infrastructure.Services
             {
                 var rarity = RollRarity(weights);
 
-                if (rarity == WildSpawnRarity.Legendary && !_settings.AllowLegendarySpawn)
+                if (rarity == WildSpawnRarity.Legendary && !area.ResolveAllowLegendary(_settings))
                 {
                     rarity = WildSpawnRarity.Epic;
                 }
 
-                var selectedMetadata = await PickCandidateAsync(rarity);
+                var selectedMetadata = await PickCandidateAsync(area, rarity);
                 var pokemonApiId = selectedMetadata.PokemonApiId;
 
                 var spawn = new WildAreaSpawn
                 {
                     UserId = userId,
                     PokemonApiId = pokemonApiId,
-                    AreaCode = DefaultAreaCode,
+                    AreaCode = area.Code,
                     SlotIndex = i,
                     SpawnRarity = selectedMetadata.SpawnRarity,
                     SpawnedAt = now,
@@ -235,17 +256,17 @@ namespace PokedexReactASP.Infrastructure.Services
 
             await _context.WildAreaSpawns.AddRangeAsync(created);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Generated {SpawnCount} wild area spawns for user {UserId} in area {AreaCode}", created.Count, userId, DefaultAreaCode);
+            _logger.LogInformation("Generated {SpawnCount} wild area spawns for user {UserId} in area {AreaCode}", created.Count, userId, area.Code);
 
             return created.OrderBy(x => x.SlotIndex).ToList();
         }
 
-        private async Task<WildAreaDto> MapToWildAreaDto(IReadOnlyCollection<WildAreaSpawn> spawns, DateTime now)
+        private async Task<WildAreaDto> MapToWildAreaDto(IReadOnlyCollection<WildAreaSpawn> spawns, WildAreaConfig area, DateTime now)
         {
-            var areaCode = spawns.FirstOrDefault()?.AreaCode ?? DefaultAreaCode;
+            var areaCode = spawns.FirstOrDefault()?.AreaCode ?? area.Code;
             var resetAt = spawns.Min(x => x.ExpiresAt);
             var secondsUntilReset = Math.Max(0, (int)Math.Ceiling((resetAt - now).TotalSeconds));
-            var areaName = ResolveAreaName(areaCode);
+            var areaName = area.ResolveName();
 
             var pokemonIds = spawns.Select(x => x.PokemonApiId).Distinct().ToList();
             var pokemonData = await _pokemonCacheService.GetPokemonBatchAsync(pokemonIds);
@@ -283,20 +304,6 @@ namespace PokedexReactASP.Infrastructure.Services
             };
         }
 
-        private string ResolveAreaName(string areaCode)
-        {
-            var configured = _settings.WildAreas
-                .FirstOrDefault(x => string.Equals(x.Code, areaCode, StringComparison.OrdinalIgnoreCase))
-                ?? _settings.WildAreas.FirstOrDefault();
-
-            if (configured == null || string.IsNullOrWhiteSpace(configured.Name))
-            {
-                return "Viridian Field";
-            }
-
-            return configured.Name;
-        }
-
         private WildSpawnRarity RollRarity(IReadOnlyDictionary<WildSpawnRarity, double> weights)
         {
             var totalWeight = weights.Values.Where(x => x > 0).Sum();
@@ -325,22 +332,18 @@ namespace PokedexReactASP.Infrastructure.Services
             return WildSpawnRarity.Common;
         }
 
-        private async Task<PokemonSpawnMetadata> PickCandidateAsync(WildSpawnRarity rolledRarity)
+        private async Task<PokemonSpawnMetadata> PickCandidateAsync(WildAreaConfig area, WildSpawnRarity rolledRarity)
         {
             var ordered = GetFallbackOrder(rolledRarity);
 
             foreach (var rarity in ordered)
             {
-                if (rarity == WildSpawnRarity.Legendary && !_settings.AllowLegendarySpawn)
+                if (rarity == WildSpawnRarity.Legendary && !area.ResolveAllowLegendary(_settings))
                 {
                     continue;
                 }
 
-                var candidates = await _context.PokemonSpawnMetadata
-                    .Where(p => p.IsDefaultForm)
-                    .Where(p => p.Generation <= Math.Max(1, _settings.MaxGeneration))
-                    .Where(p => p.SpawnRarity == rarity)
-                    .ToListAsync();
+                var candidates = await GetScoredCandidatesAsync(area, rarity);
 
                 if (candidates.Count == 0)
                 {
@@ -352,38 +355,132 @@ namespace PokedexReactASP.Infrastructure.Services
 
             var fallback = await _context.PokemonSpawnMetadata
                 .Where(p => p.IsDefaultForm)
-                .Where(p => p.Generation <= Math.Max(1, _settings.MaxGeneration))
-                .Where(p => _settings.AllowLegendarySpawn || (!p.IsLegendary && !p.IsMythical))
+                .Where(p => p.Generation >= area.ResolveMinGeneration())
+                .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
+                .Where(p => area.ResolveAllowLegendary(_settings) || !p.IsLegendary)
+                .Where(p => area.ResolveAllowMythical() || !p.IsMythical)
+                .Where(p => area.ResolveAllowBaby() || !p.IsBaby)
                 .ToListAsync();
+
+            fallback = fallback
+                .Where(p => !HasBannedType(p, area.NormalizedBannedTypes))
+                .ToList();
+
+            if (fallback.Count == 0)
+            {
+                fallback = await _context.PokemonSpawnMetadata
+                    .Where(p => p.IsDefaultForm)
+                    .Where(p => p.Generation >= area.ResolveMinGeneration())
+                    .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
+                    .Where(p => !p.IsLegendary)
+                    .Where(p => !p.IsMythical)
+                    .ToListAsync();
+            }
 
             if (fallback.Count == 0)
             {
                 throw new InvalidOperationException("No eligible spawn metadata found. Please run sync and verify settings.");
             }
 
-            return WeightedPick(fallback);
+            return WeightedPick(fallback.Select(p => new PokemonSpawnCandidate(p, Math.Max(p.SpawnWeight, 0.01))).ToList());
         }
 
-        private PokemonSpawnMetadata WeightedPick(IReadOnlyList<PokemonSpawnMetadata> candidates)
+        private async Task<List<PokemonSpawnCandidate>> GetScoredCandidatesAsync(WildAreaConfig area, WildSpawnRarity rarity)
         {
-            var totalWeight = candidates.Sum(x => x.SpawnWeight > 0 ? x.SpawnWeight : 0.01);
+            var raw = await _context.PokemonSpawnMetadata
+                .Where(p => p.IsDefaultForm)
+                .Where(p => p.SpawnRarity == rarity)
+                .Where(p => p.Generation >= area.ResolveMinGeneration())
+                .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
+                .Where(p => area.ResolveAllowLegendary(_settings) || !p.IsLegendary)
+                .Where(p => area.ResolveAllowMythical() || !p.IsMythical)
+                .Where(p => area.ResolveAllowBaby() || !p.IsBaby)
+                .ToListAsync();
+
+            var bannedTypes = area.NormalizedBannedTypes;
+
+            return raw
+                .Where(p => !HasBannedType(p, bannedTypes))
+                .Select(p => new PokemonSpawnCandidate(p, CalculateBiomeScore(p, area)))
+                .Where(x => x.Score > 0)
+                .ToList();
+        }
+
+        private double CalculateBiomeScore(PokemonSpawnMetadata pokemon, WildAreaConfig area)
+        {
+            var score = Math.Max(pokemon.SpawnWeight, 0.01);
+            var types = GetPokemonTypes(pokemon);
+            var allowedTypes = area.NormalizedAllowedTypes;
+            var preferredTypes = area.NormalizedPreferredTypes;
+            var allowedHabitats = area.NormalizedAllowedHabitats;
+            var preferredHabitats = area.NormalizedPreferredHabitats;
+            var habitat = pokemon.Habitat?.Trim().ToLowerInvariant();
+
+            if (allowedTypes.Count > 0 && types.Any(t => allowedTypes.Contains(t)))
+            {
+                score += 3.0;
+            }
+
+            if (preferredTypes.Count > 0 && types.Any(t => preferredTypes.Contains(t)))
+            {
+                score += 2.0;
+            }
+
+            if (!string.IsNullOrWhiteSpace(habitat) && allowedHabitats.Contains(habitat))
+            {
+                score += 1.5;
+            }
+
+            if (!string.IsNullOrWhiteSpace(habitat) && preferredHabitats.Contains(habitat))
+            {
+                score += 1.0;
+            }
+
+            return Math.Max(score, 0);
+        }
+
+        private PokemonSpawnMetadata WeightedPick(IReadOnlyList<PokemonSpawnCandidate> candidates)
+        {
+            var totalWeight = candidates.Sum(x => x.Score > 0 ? x.Score : 0.01);
             if (totalWeight <= 0)
             {
-                return candidates[_random.Next(candidates.Count)];
+                return candidates[_random.Next(candidates.Count)].Pokemon;
             }
 
             var roll = _random.NextDouble() * totalWeight;
             var running = 0d;
             foreach (var candidate in candidates)
             {
-                running += candidate.SpawnWeight > 0 ? candidate.SpawnWeight : 0.01;
+                running += candidate.Score > 0 ? candidate.Score : 0.01;
                 if (roll <= running)
                 {
-                    return candidate;
+                    return candidate.Pokemon;
                 }
             }
 
-            return candidates[^1];
+            return candidates[^1].Pokemon;
+        }
+
+        private static bool HasBannedType(PokemonSpawnMetadata pokemon, IReadOnlyCollection<string> bannedTypes)
+        {
+            return bannedTypes.Count > 0 && GetPokemonTypes(pokemon).Any(bannedTypes.Contains);
+        }
+
+        private static List<string> GetPokemonTypes(PokemonSpawnMetadata pokemon)
+        {
+            var types = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(pokemon.PrimaryType))
+            {
+                types.Add(pokemon.PrimaryType.Trim().ToLowerInvariant());
+            }
+
+            if (!string.IsNullOrWhiteSpace(pokemon.SecondaryType))
+            {
+                types.Add(pokemon.SecondaryType.Trim().ToLowerInvariant());
+            }
+
+            return types;
         }
 
         private static List<WildSpawnRarity> GetFallbackOrder(WildSpawnRarity rarity)
@@ -407,6 +504,62 @@ namespace PokedexReactASP.Infrastructure.Services
             }
 
             return order;
+        }
+
+        private async Task EnsureSpawnMetadataAvailableAsync()
+        {
+            var hasMetadata = await _context.PokemonSpawnMetadata.AnyAsync(x => x.IsDefaultForm);
+            if (!hasMetadata)
+            {
+                throw new InvalidOperationException("Spawn metadata is empty. Run /api/admin/wild-area/sync-spawn-metadata first.");
+            }
+        }
+
+        private List<WildAreaConfig> GetConfiguredAreas()
+        {
+            var areas = _settings.WildAreas
+                .Where(x => !string.IsNullOrWhiteSpace(x.Code))
+                .Select(x =>
+                {
+                    x.Code = x.Code.Trim().ToLowerInvariant();
+                    return x;
+                })
+                .ToList();
+
+            if (areas.Count > 0)
+            {
+                return areas;
+            }
+
+            return
+            [
+                new WildAreaConfig
+                {
+                    Code = DefaultAreaCode,
+                    Name = "Viridian Field"
+                }
+            ];
+        }
+
+        private WildAreaConfig ResolveArea(string? areaCode)
+        {
+            var areas = GetConfiguredAreas();
+            var requestedCode = string.IsNullOrWhiteSpace(areaCode)
+                ? DefaultAreaCode
+                : areaCode.Trim().ToLowerInvariant();
+
+            var area = areas.FirstOrDefault(x => string.Equals(x.Code, requestedCode, StringComparison.OrdinalIgnoreCase));
+            if (area != null)
+            {
+                return area;
+            }
+
+            if (string.IsNullOrWhiteSpace(areaCode))
+            {
+                return areas[0];
+            }
+
+            throw new ArgumentException($"Unknown wild area code '{areaCode}'.", nameof(areaCode));
         }
 
         private static string CapitalizeFirst(string input)
@@ -441,5 +594,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn has no attempts left.");
             }
         }
+
+        private sealed record PokemonSpawnCandidate(PokemonSpawnMetadata Pokemon, double Score);
     }
 }

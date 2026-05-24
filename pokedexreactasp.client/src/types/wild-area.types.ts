@@ -55,6 +55,11 @@ export interface WildAreaResponse {
   spawns: WildPokemonSpawn[];
 }
 
+export interface WildAreaOption {
+  code: string;
+  name: string;
+}
+
 export interface WildCatchAttemptRequest {
   pokeballType: number;
   nickname?: string;

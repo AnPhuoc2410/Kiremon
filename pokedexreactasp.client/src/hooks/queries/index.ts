@@ -10,7 +10,7 @@ export {
   useTcgFacets,
   tcgQueryKeys,
 } from "./useTcgCards";
-export { useWildArea, wildAreaQueryKeys } from "./useWildArea";
+export { useWildArea, useWildAreas, wildAreaQueryKeys } from "./useWildArea";
 export { useMyTcgCards, myTcgCardsQueryKeys } from "./useMyTcgCards";
 export {
   usePokemonTcgPreview,

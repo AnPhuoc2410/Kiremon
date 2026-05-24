@@ -15,7 +15,7 @@ export const useAttemptWildCatch = () => {
       wildAreaService.attemptCatch(spawnId, payload),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["wild-area", "current"] }),
+        queryClient.invalidateQueries({ queryKey: ["wild-area"] }),
         queryClient.invalidateQueries({ queryKey: ["collection"] }),
         queryClient.invalidateQueries({ queryKey: ["tcg-cards", "my-cards"] }),
       ]);

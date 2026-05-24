@@ -1,16 +1,18 @@
 ﻿import { createRef, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { Button, Header, Loading, Modal, Navbar, Text } from "@/components/ui";
 import { useAuth } from "@/contexts";
-import { useWildArea } from "@/hooks/queries";
+import { useWildArea, useWildAreas } from "@/hooks/queries";
 import { useAttemptWildCatch } from "@/hooks/mutations";
 import { wildAreaService } from "@/services/wild-area/wild-area.service";
 import { PokeballType } from "@/types/pokemon.enums";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
 
 import * as S from "./index.style";
+
+const DEFAULT_AREA_CODE = "viridian_field";
 
 const spawnPositions = [
   { x: 80, y: 98 },
@@ -23,6 +25,7 @@ const spawnPositions = [
 
 const WildArea = () => {
   const navRef = createRef<HTMLDivElement>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedSpawn, setSelectedSpawn] = useState<WildPokemonSpawn | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [result, setResult] = useState<WildCatchResult | null>(null);
@@ -31,13 +34,30 @@ const WildArea = () => {
   );
   const [secondsUntilReset, setSecondsUntilReset] = useState(0);
   const { isAuthenticated, isInitialized } = useAuth();
+  const selectedAreaCode = searchParams.get("areaCode") || DEFAULT_AREA_CODE;
 
-  const wildAreaQuery = useWildArea(isAuthenticated);
+  const wildAreasQuery = useWildAreas(isAuthenticated);
+  const wildAreaQuery = useWildArea(selectedAreaCode, isAuthenticated);
   const catchMutation = useAttemptWildCatch();
   const isLocalEnv =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
+
+  useEffect(() => {
+    if (searchParams.get("areaCode")) return;
+
+    const next = new URLSearchParams(searchParams);
+    next.set("areaCode", DEFAULT_AREA_CODE);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    setSelectedSpawn(null);
+    setResultOpen(false);
+    setResult(null);
+    setPokeballType(PokeballType.Pokeball);
+  }, [selectedAreaCode]);
 
   useEffect(() => {
     if (!wildAreaQuery.data?.resetAt) {
@@ -87,6 +107,12 @@ const WildArea = () => {
     }
   };
 
+  const handleAreaChange = (areaCode: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("areaCode", areaCode);
+    setSearchParams(next);
+  };
+
   const handleResetEncounter = async () => {
     if (!isAuthenticated) return;
 
@@ -96,7 +122,7 @@ const WildArea = () => {
     setPokeballType(PokeballType.Pokeball);
 
     try {
-      await wildAreaService.refreshCurrent();
+      await wildAreaService.refreshCurrent(selectedAreaCode);
       await wildAreaQuery.refetch();
       toast.success("Encounter reset with refresh endpoint.");
     } catch {
@@ -124,11 +150,11 @@ const WildArea = () => {
       );
     }
 
-    if (wildAreaQuery.isLoading) {
+    if (wildAreasQuery.isLoading || wildAreaQuery.isLoading) {
       return <Loading label="Loading wild area..." />;
     }
 
-    if (wildAreaQuery.isError) {
+    if (wildAreasQuery.isError || wildAreaQuery.isError) {
       return (
         <S.CenterHint>
           <Text variant="light">Failed to load Wild Area.</Text>
@@ -166,7 +192,26 @@ const WildArea = () => {
         <Header title="Wild Area" subtitle="Encounter and catch limited spawns" />
 
         <S.TopRow>
-          <Text as="h3">{wildAreaQuery.data?.areaName || "Viridian Field"}</Text>
+          <S.AreaControls>
+            <Text as="h3">{wildAreaQuery.data?.areaName || "Viridian Field"}</Text>
+            {isAuthenticated && (
+              <S.AreaSelect
+                value={selectedAreaCode}
+                onChange={(event) => handleAreaChange(event.target.value)}
+                disabled={wildAreasQuery.isLoading || wildAreaQuery.isFetching}
+                aria-label="Select wild area biome"
+              >
+                {(wildAreasQuery.data?.length
+                  ? wildAreasQuery.data
+                  : [{ code: DEFAULT_AREA_CODE, name: "Viridian Field" }]
+                ).map((area) => (
+                  <option key={area.code} value={area.code}>
+                    {area.name}
+                  </option>
+                ))}
+              </S.AreaSelect>
+            )}
+          </S.AreaControls>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Text>Reset in {timerDisplay}</Text>
             {isLocalEnv && isAuthenticated && (

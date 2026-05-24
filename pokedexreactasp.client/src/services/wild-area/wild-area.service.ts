@@ -1,17 +1,26 @@
 ﻿import { AuthenticatedApiService } from "@/services/api/api-client.auth";
 import {
+  WildAreaOption,
   WildAreaResponse,
   WildCatchAttemptRequest,
   WildCatchResult,
 } from "@/types/wild-area.types";
 
 class WildAreaService extends AuthenticatedApiService {
-  async getCurrent(): Promise<WildAreaResponse> {
-    return this.get<WildAreaResponse>("/wild-area/current");
+  async getAreas(): Promise<WildAreaOption[]> {
+    return this.get<WildAreaOption[]>("/wild-area/areas");
   }
 
-  async refreshCurrent(): Promise<WildAreaResponse> {
-    return this.post<WildAreaResponse>("/wild-area/refresh");
+  async getCurrent(areaCode?: string): Promise<WildAreaResponse> {
+    return this.get<WildAreaResponse>("/wild-area/current", {
+      params: { areaCode },
+    });
+  }
+
+  async refreshCurrent(areaCode?: string): Promise<WildAreaResponse> {
+    return this.post<WildAreaResponse>("/wild-area/refresh", undefined, {
+      params: { areaCode },
+    });
   }
 
   async attemptCatch(

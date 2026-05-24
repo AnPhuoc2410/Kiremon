@@ -15,6 +15,24 @@ export const TopRow = styled.div`
   flex-wrap: wrap;
 `;
 
+export const AreaControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+export const AreaSelect = styled.select`
+  border: 2px solid #1f2937;
+  border-radius: 10px;
+  background: #fefce8;
+  color: #111827;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 190px;
+`;
+
 export const MapShell = styled.div`
   position: relative;
   width: 100%;
