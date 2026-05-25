@@ -138,6 +138,8 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IWildAreaService, WildAreaService>();
             builder.Services.AddScoped<ICardRewardService, CardRewardService>();
             builder.Services.AddScoped<IPokemonSpawnMetadataSyncService, PokemonSpawnMetadataSyncService>();
+            builder.Services.AddScoped<BiomeSpawnCandidateService>();
+            builder.Services.AddScoped<IPokemonBiomeTagService, PokemonBiomeTagService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();

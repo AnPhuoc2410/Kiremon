@@ -32,6 +32,7 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly IPokemonCacheService _pokemonCacheService;
         private readonly IUserService _userService;
         private readonly ICardRewardService _cardRewardService;
+        private readonly BiomeSpawnCandidateService _candidateService;
         private readonly WildAreaSettings _settings;
         private readonly ILogger<WildAreaService> _logger;
         private readonly Random _random = new();
@@ -42,6 +43,7 @@ namespace PokedexReactASP.Infrastructure.Services
             IPokemonCacheService pokemonCacheService,
             IUserService userService,
             ICardRewardService cardRewardService,
+            BiomeSpawnCandidateService candidateService,
             IOptions<WildAreaSettings> settings,
             ILogger<WildAreaService> logger)
         {
@@ -50,6 +52,7 @@ namespace PokedexReactASP.Infrastructure.Services
             _pokemonCacheService = pokemonCacheService;
             _userService = userService;
             _cardRewardService = cardRewardService;
+            _candidateService = candidateService;
             _settings = settings.Value;
             _logger = logger;
         }
@@ -334,117 +337,21 @@ namespace PokedexReactASP.Infrastructure.Services
 
         private async Task<PokemonSpawnMetadata> PickCandidateAsync(WildAreaConfig area, WildSpawnRarity rolledRarity)
         {
-            var ordered = GetFallbackOrder(rolledRarity);
-
-            foreach (var rarity in ordered)
-            {
-                if (rarity == WildSpawnRarity.Legendary && !area.ResolveAllowLegendary(_settings))
-                {
-                    continue;
-                }
-
-                var candidates = await GetScoredCandidatesAsync(area, rarity);
-
-                if (candidates.Count == 0)
-                {
-                    continue;
-                }
-
-                return WeightedPick(candidates);
-            }
-
-            var fallback = await _context.PokemonSpawnMetadata
-                .Where(p => p.IsDefaultForm)
-                .Where(p => p.Generation >= area.ResolveMinGeneration())
-                .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
-                .Where(p => area.ResolveAllowLegendary(_settings) || !p.IsLegendary)
-                .Where(p => area.ResolveAllowMythical() || !p.IsMythical)
-                .Where(p => area.ResolveAllowBaby() || !p.IsBaby)
-                .ToListAsync();
-
-            fallback = fallback
-                .Where(p => !HasBannedType(p, area.NormalizedBannedTypes))
-                .ToList();
-
-            if (fallback.Count == 0)
-            {
-                fallback = await _context.PokemonSpawnMetadata
-                    .Where(p => p.IsDefaultForm)
-                    .Where(p => p.Generation >= area.ResolveMinGeneration())
-                    .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
-                    .Where(p => !p.IsLegendary)
-                    .Where(p => !p.IsMythical)
-                    .ToListAsync();
-            }
-
-            if (fallback.Count == 0)
+            var candidates = await _candidateService.GetCandidatesWithFallbackAsync(area, _settings, rolledRarity);
+            if (candidates.Count == 0)
             {
                 throw new InvalidOperationException("No eligible spawn metadata found. Please run sync and verify settings.");
             }
 
-            return WeightedPick(fallback.Select(p => new PokemonSpawnCandidate(p, Math.Max(p.SpawnWeight, 0.01))).ToList());
+            return WeightedPick(candidates).Pokemon;
         }
 
-        private async Task<List<PokemonSpawnCandidate>> GetScoredCandidatesAsync(WildAreaConfig area, WildSpawnRarity rarity)
-        {
-            var raw = await _context.PokemonSpawnMetadata
-                .Where(p => p.IsDefaultForm)
-                .Where(p => p.SpawnRarity == rarity)
-                .Where(p => p.Generation >= area.ResolveMinGeneration())
-                .Where(p => p.Generation <= area.ResolveMaxGeneration(_settings))
-                .Where(p => area.ResolveAllowLegendary(_settings) || !p.IsLegendary)
-                .Where(p => area.ResolveAllowMythical() || !p.IsMythical)
-                .Where(p => area.ResolveAllowBaby() || !p.IsBaby)
-                .ToListAsync();
-
-            var bannedTypes = area.NormalizedBannedTypes;
-
-            return raw
-                .Where(p => !HasBannedType(p, bannedTypes))
-                .Select(p => new PokemonSpawnCandidate(p, CalculateBiomeScore(p, area)))
-                .Where(x => x.Score > 0)
-                .ToList();
-        }
-
-        private double CalculateBiomeScore(PokemonSpawnMetadata pokemon, WildAreaConfig area)
-        {
-            var score = Math.Max(pokemon.SpawnWeight, 0.01);
-            var types = GetPokemonTypes(pokemon);
-            var allowedTypes = area.NormalizedAllowedTypes;
-            var preferredTypes = area.NormalizedPreferredTypes;
-            var allowedHabitats = area.NormalizedAllowedHabitats;
-            var preferredHabitats = area.NormalizedPreferredHabitats;
-            var habitat = pokemon.Habitat?.Trim().ToLowerInvariant();
-
-            if (allowedTypes.Count > 0 && types.Any(t => allowedTypes.Contains(t)))
-            {
-                score += 3.0;
-            }
-
-            if (preferredTypes.Count > 0 && types.Any(t => preferredTypes.Contains(t)))
-            {
-                score += 2.0;
-            }
-
-            if (!string.IsNullOrWhiteSpace(habitat) && allowedHabitats.Contains(habitat))
-            {
-                score += 1.5;
-            }
-
-            if (!string.IsNullOrWhiteSpace(habitat) && preferredHabitats.Contains(habitat))
-            {
-                score += 1.0;
-            }
-
-            return Math.Max(score, 0);
-        }
-
-        private PokemonSpawnMetadata WeightedPick(IReadOnlyList<PokemonSpawnCandidate> candidates)
+        private BiomeSpawnCandidate WeightedPick(IReadOnlyList<BiomeSpawnCandidate> candidates)
         {
             var totalWeight = candidates.Sum(x => x.Score > 0 ? x.Score : 0.01);
             if (totalWeight <= 0)
             {
-                return candidates[_random.Next(candidates.Count)].Pokemon;
+                return candidates[_random.Next(candidates.Count)];
             }
 
             var roll = _random.NextDouble() * totalWeight;
@@ -454,56 +361,11 @@ namespace PokedexReactASP.Infrastructure.Services
                 running += candidate.Score > 0 ? candidate.Score : 0.01;
                 if (roll <= running)
                 {
-                    return candidate.Pokemon;
+                    return candidate;
                 }
             }
 
-            return candidates[^1].Pokemon;
-        }
-
-        private static bool HasBannedType(PokemonSpawnMetadata pokemon, IReadOnlyCollection<string> bannedTypes)
-        {
-            return bannedTypes.Count > 0 && GetPokemonTypes(pokemon).Any(bannedTypes.Contains);
-        }
-
-        private static List<string> GetPokemonTypes(PokemonSpawnMetadata pokemon)
-        {
-            var types = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(pokemon.PrimaryType))
-            {
-                types.Add(pokemon.PrimaryType.Trim().ToLowerInvariant());
-            }
-
-            if (!string.IsNullOrWhiteSpace(pokemon.SecondaryType))
-            {
-                types.Add(pokemon.SecondaryType.Trim().ToLowerInvariant());
-            }
-
-            return types;
-        }
-
-        private static List<WildSpawnRarity> GetFallbackOrder(WildSpawnRarity rarity)
-        {
-            var index = Array.IndexOf(RarityOrder, rarity);
-            if (index < 0)
-            {
-                return RarityOrder.ToList();
-            }
-
-            var order = new List<WildSpawnRarity> { rarity };
-
-            for (var i = index - 1; i >= 0; i--)
-            {
-                order.Add(RarityOrder[i]);
-            }
-
-            for (var i = index + 1; i < RarityOrder.Length; i++)
-            {
-                order.Add(RarityOrder[i]);
-            }
-
-            return order;
+            return candidates[^1];
         }
 
         private async Task EnsureSpawnMetadataAvailableAsync()
@@ -594,7 +456,5 @@ namespace PokedexReactASP.Infrastructure.Services
                 throw new WildAreaCatchException(StatusCodes.Status409Conflict, "Spawn has no attempts left.");
             }
         }
-
-        private sealed record PokemonSpawnCandidate(PokemonSpawnMetadata Pokemon, double Score);
     }
 }

@@ -46,6 +46,13 @@ namespace PokedexReactASP.Application.Options
         public List<string> BannedTypes { get; set; } = new();
         public List<string> AllowedHabitats { get; set; } = new();
         public List<string> PreferredHabitats { get; set; } = new();
+        public List<string> RequiredAnyTags { get; set; } = new();
+        public List<string> PreferredTags { get; set; } = new();
+        public List<string> AllowedTags { get; set; } = new();
+        public List<string> BannedTags { get; set; } = new();
+        public List<string> RequiredAnyTypes { get; set; } = new();
+        public List<string> SecondaryAllowedTypes { get; set; } = new();
+        public List<int> SafeFallbackPokemonIds { get; set; } = new();
         public int? MinGeneration { get; set; }
         public int? MaxGeneration { get; set; }
         public bool? AllowLegendary { get; set; }
@@ -121,6 +128,12 @@ namespace PokedexReactASP.Application.Options
         public List<string> NormalizedBannedTypes => Normalize(BannedTypes);
         public List<string> NormalizedAllowedHabitats => Normalize(AllowedHabitats);
         public List<string> NormalizedPreferredHabitats => Normalize(PreferredHabitats);
+        public List<string> NormalizedRequiredAnyTags => Normalize(RequiredAnyTags);
+        public List<string> NormalizedPreferredTags => Normalize(PreferredTags);
+        public List<string> NormalizedAllowedTags => Normalize(AllowedTags);
+        public List<string> NormalizedBannedTags => Normalize(BannedTags);
+        public List<string> NormalizedRequiredAnyTypes => Normalize(RequiredAnyTypes);
+        public List<string> NormalizedSecondaryAllowedTypes => Normalize(SecondaryAllowedTypes);
 
         private static List<string> Normalize(IEnumerable<string> values)
         {

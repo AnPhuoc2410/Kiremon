@@ -19,6 +19,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<UserTcgCard> UserTcgCards { get; set; }
         public DbSet<TcgCardCache> TcgCardCaches { get; set; }
         public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; }
+        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -237,6 +238,19 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.SecondaryType).HasMaxLength(30);
                 entity.Property(e => e.Habitat).HasMaxLength(50);
                 entity.Property(e => e.SpawnWeight).HasPrecision(10, 4);
+            });
+
+            // Configure PokemonBiomeTag entity
+            modelBuilder.Entity<PokemonBiomeTag>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.PokemonApiId, e.Tag }).IsUnique();
+                entity.HasIndex(e => e.Tag);
+
+                entity.Property(e => e.Tag).HasMaxLength(60).IsRequired();
+                entity.Property(e => e.Source).HasMaxLength(100);
+                entity.Property(e => e.Weight).HasPrecision(10, 4);
             });
         }
     }
