@@ -1,4 +1,4 @@
-﻿import styled from "@emotion/styled";
+import styled from "@emotion/styled";
 import { units } from "@/components/utils";
 
 const Page = styled("div")({
@@ -44,12 +44,44 @@ const Grid = styled("div")({
 });
 
 const EmptyState = styled("div")({
-  height: "50vh",
+  minHeight: 300,
+  width: "100%",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  gap: units.spacing.base,
+  gap: 16,
+});
+
+const EmptyStateText = styled("p")({
+  margin: 0,
+  color: "#000",
+  fontSize: 13,
+  fontWeight: 700,
+});
+
+const ShowAllButton = styled("button")({
+  width: 160,
+  height: 40,
+  minWidth: 160,
+  minHeight: 40,
+  maxHeight: 40,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "2px solid #000",
+  background: "#93c5fd",
+  color: "#000",
+  fontWeight: 700,
+  fontSize: 12,
+  boxShadow: "2px 2px 0 0 rgba(0,0,0,1)",
+  padding: 0,
+  cursor: "pointer",
+  alignSelf: "center",
+  flex: "0 0 auto",
+  "&:hover": {
+    background: "#bfdbfe",
+  },
 });
 
 const DeleteConfirmationModal = styled("div")({
@@ -57,15 +89,75 @@ const DeleteConfirmationModal = styled("div")({
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  gap: 32,
+  width: "100%",
   padding: "0 16px",
-  "div:last-child": {
+});
+
+const DialogContainer = styled("div")({
+  width: "100%",
+  maxWidth: "480px",
+  margin: "0 auto",
+  "&.pxl-border": {
+    padding: "28px 36px !important",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
+    gap: "12px",
+    backgroundColor: "#F3F4F6",
   },
+});
+
+const DialogButtonGroup = styled("div")({
+  display: "flex",
+  flexDirection: "row",
+  gap: "12px",
+  marginTop: "8px",
+  justifyContent: "center",
+  width: "100%",
+});
+
+const RetroActionButton = styled("button")<{ isDanger?: boolean; isActive?: boolean }>(
+  ({ isDanger, isActive }) => ({
+    width: "112px",
+    height: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 0,
+    fontSize: "12px",
+    fontWeight: "bold",
+    fontFamily: '"Press Start 2P", "Courier New", monospace',
+    cursor: "pointer",
+    border: "2px solid #000000",
+    position: "relative",
+    outline: isActive ? "3px double #000000" : "none",
+    outlineOffset: isActive ? "2px" : "none",
+    ...(isDanger
+      ? {
+          background: isActive ? "#dc2626" : "#000000",
+          color: isActive ? "#ffffff" : "#fef08a",
+          "&:hover": {
+            background: "#dc2626",
+            color: "#ffffff",
+          },
+        }
+      : {
+          background: isActive ? "#e0f2fe" : "#bae6fd",
+          color: "#000000",
+          "&:hover": {
+            background: "#e0f2fe",
+          },
+        }),
+  })
+);
+
+const RetroArrow = styled("span")({
+  position: "absolute",
+  left: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  fontSize: "10px",
+  lineHeight: 1,
+  pointerEvents: "none",
 });
 
 const WrapperCardList = styled("div")({
@@ -75,6 +167,7 @@ const WrapperCardList = styled("div")({
 const SlotCard = styled("button")({
   width: "100%",
   aspectRatio: "1 / 0.92",
+  maxHeight: 150,
   background: "#F0F8F8",
   border: "2px solid #000000",
   borderRadius: 0,
@@ -156,15 +249,17 @@ const SpriteWrap = styled("div")({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  marginBottom: 5,
+  marginBottom: 2,
 });
 
 const SpriteImage = styled("img")({
-  width: 88,
-  height: 88,
+  width: 64,
+  height: 64,
   objectFit: "contain",
   imageRendering: "pixelated",
   msInterpolationMode: "nearest-neighbor",
+  transform: "scale(1.4)",
+  transformOrigin: "center",
 });
 
 const SlotName = styled("div")({
@@ -178,13 +273,14 @@ const SlotName = styled("div")({
   textTransform: "capitalize",
   border: "1px solid #000000",
   background: "#ffffff",
-  padding: "3px 4px",
+  padding: "2px 4px",
   fontWeight: 700,
-  width: "calc(100% - 4px)",
-  margin: "0 2px 2px",
+  width: "calc(100% - 8px)",
+  margin: "0 4px 2px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  borderTop: "2px solid #000000",
 });
 
 export {
@@ -192,7 +288,13 @@ export {
   Header,
   Grid,
   EmptyState,
+  EmptyStateText,
+  ShowAllButton,
   DeleteConfirmationModal,
+  DialogContainer,
+  DialogButtonGroup,
+  RetroActionButton,
+  RetroArrow,
   WrapperCardList,
   SlotCard,
   SlotTop,

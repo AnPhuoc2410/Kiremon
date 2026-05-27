@@ -5,7 +5,7 @@ import { colors } from "@/components/utils";
 
 interface IModal extends HTMLAttributes<HTMLDivElement> {
   open: boolean;
-  overlay?: "dark" | "light" | "error";
+  overlay?: "dark" | "light" | "error" | "dark-translucent";
   solid?: boolean;
 }
 
@@ -20,8 +20,10 @@ const Overlay = styled.div<IModal>(
         ? colors["gray-800"]
         : overlay === "light"
           ? colors["gray-100"]
-          : colors["red-500"],
-    opacity: solid ? 1 : 0.9,
+          : overlay === "dark-translucent"
+            ? "rgba(0, 0, 0, 0.4)"
+            : colors["red-500"],
+    opacity: overlay === "dark-translucent" ? 1 : (solid ? 1 : 0.9),
     zIndex: open ? 50 : 0,
   }),
 );

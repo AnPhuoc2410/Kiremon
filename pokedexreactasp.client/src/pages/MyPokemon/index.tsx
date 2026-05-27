@@ -1,4 +1,4 @@
-﻿import React, { createRef, useEffect, useState } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -30,6 +30,7 @@ const MyPokemon: React.FC = () => {
   );
   const [navHeight, setNavHeight] = useState<number>(0);
   const [filter, setFilter] = useState<"all" | "favorites">("all");
+  const [activeConfirmOption, setActiveConfirmOption] = useState<"release" | "back">("back");
 
   const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
@@ -70,6 +71,39 @@ const MyPokemon: React.FC = () => {
     setNavHeight(navRef.current?.clientHeight as number);
     loadMyPokemon();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (deleteConfirmation) {
+      setActiveConfirmOption("back");
+    }
+  }, [deleteConfirmation]);
+
+  useEffect(() => {
+    if (!deleteConfirmation) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveConfirmOption((prev) => (prev === "back" ? "release" : "back"));
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (activeConfirmOption === "release") {
+          if (selectedPokemon) {
+            releasePokemon(selectedPokemon);
+          }
+        }
+        setDeleteConfirmation(false);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setDeleteConfirmation(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [deleteConfirmation, activeConfirmOption, selectedPokemon]);
 
   async function releasePokemon(pokemon: DisplayPokemon) {
     try {
@@ -122,32 +156,41 @@ const MyPokemon: React.FC = () => {
 
   return (
     <>
-      <Modal open={deleteConfirmation} overlay="light">
+      <Modal open={deleteConfirmation} overlay="dark-translucent">
         <T.DeleteConfirmationModal>
-          <div className="pxl-border" style={{ textAlign: "left" }}>
-            <Text>
-              Are you sure you want to release {selectedPokemon?.nickname}?
+          <T.DialogContainer className="pxl-border" style={{ textAlign: "center" }}>
+            <Text style={{ color: "#000", fontSize: "14px", lineHeight: "1.5" }}>
+              ARE YOU SURE YOU WANT TO RELEASE {selectedPokemon?.nickname?.toUpperCase()}?
             </Text>
-            <br />
-            <Text>
-              You'll have to catch another one and cannot undo this action
+            <Text style={{ color: "#4b5563", fontSize: "11px", lineHeight: "1.5" }}>
+              YOU'LL HAVE TO CATCH ANOTHER ONE AND CANNOT UNDO THIS ACTION
             </Text>
-          </div>
 
-          <div>
-            <Button
-              variant="light"
-              onClick={() => {
-                if (selectedPokemon) {
-                  releasePokemon(selectedPokemon);
-                }
-                setDeleteConfirmation(false);
-              }}
-            >
-              Release
-            </Button>
-            <Button onClick={() => setDeleteConfirmation(false)}>Back</Button>
-          </div>
+            <T.DialogButtonGroup>
+              <T.RetroActionButton
+                isDanger
+                isActive={activeConfirmOption === "release"}
+                onMouseEnter={() => setActiveConfirmOption("release")}
+                onClick={() => {
+                  if (selectedPokemon) {
+                    releasePokemon(selectedPokemon);
+                  }
+                  setDeleteConfirmation(false);
+                }}
+              >
+                {activeConfirmOption === "release" && <T.RetroArrow>▶</T.RetroArrow>}
+                RELEASE
+              </T.RetroActionButton>
+              <T.RetroActionButton
+                isActive={activeConfirmOption === "back"}
+                onMouseEnter={() => setActiveConfirmOption("back")}
+                onClick={() => setDeleteConfirmation(false)}
+              >
+                {activeConfirmOption === "back" && <T.RetroArrow>▶</T.RetroArrow>}
+                BACK
+              </T.RetroActionButton>
+            </T.DialogButtonGroup>
+          </T.DialogContainer>
         </T.DeleteConfirmationModal>
       </Modal>
 
@@ -246,8 +289,10 @@ const MyPokemon: React.FC = () => {
           <T.EmptyState>
             {filter === "favorites" ? (
               <>
-                <Text style={{ color: "#000" }}>No favorite Pokémon yet</Text>
-                <Button onClick={() => setFilter("all")}>Show All</Button>
+                <T.EmptyStateText>No favorite Pokémon yet</T.EmptyStateText>
+                <T.ShowAllButton type="button" onClick={() => setFilter("all")}>
+                  SHOW ALL
+                </T.ShowAllButton>
               </>
             ) : (
               <>
