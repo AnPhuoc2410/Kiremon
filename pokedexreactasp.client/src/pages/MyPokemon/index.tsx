@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { IconStar, IconStarFilled } from "@tabler/icons-react";
 
 import { useAuth } from "@/contexts";
 import {
@@ -252,7 +253,20 @@ const MyPokemon: React.FC = () => {
                                 : "Add to favorites"
                             }
                           >
-                            {pokemon.isFavorite ? "⭐" : "☆"}
+                            {pokemon.isFavorite ? (
+                              <IconStarFilled
+                                size={22}
+                                color="#f59e0b"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <IconStar
+                                size={22}
+                                color="#475569"
+                                stroke={2}
+                                aria-hidden="true"
+                              />
+                            )}
                           </T.FavoriteButton>
                         ) : (
                           <span />
