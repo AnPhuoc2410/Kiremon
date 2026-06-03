@@ -80,6 +80,16 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.ITALIAN]: "Poké Mart",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "宝可梦商店",
   },
+  "nav.pokeTcg": {
+    [LANGUAGE_IDS.ENGLISH]: "Poké TCG",
+    [LANGUAGE_IDS.JAPANESE]: "ポケモンカードゲーム",
+    [LANGUAGE_IDS.KOREAN]: "포켓몬 카드 게임",
+    [LANGUAGE_IDS.FRENCH]: "Poké TCG",
+    [LANGUAGE_IDS.GERMAN]: "Poké TCG",
+    [LANGUAGE_IDS.SPANISH]: "Poké TCG",
+    [LANGUAGE_IDS.ITALIAN]: "Poké TCG",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "宝可梦卡牌游戏",
+  },
 
   // Mini Games dropdown
   "games.combatTeam": {
