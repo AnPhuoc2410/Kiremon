@@ -1,9 +1,8 @@
-import React, { createRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { useGlobalContext, useAuth } from "@/contexts";
-import { generatePokeSummary } from "@/helpers";
+import { useAuth } from "@/contexts";
 import {
   Button,
   Navbar,
@@ -18,9 +17,8 @@ import { collectionService } from "@/services";
 import * as T from "./index.style";
 import { UserPokemonDto } from "@/types/userspokemon.types";
 
-// Extended Pokemon type for API data
 interface DisplayPokemon {
-  id?: number; // UserPokemon ID from backend
+  id?: number;
   name: string;
   nickname: string;
   sprite?: string;
@@ -41,16 +39,14 @@ const MyPokemon: React.FC = () => {
   const [navHeight, setNavHeight] = useState<number>(0);
   const [filter, setFilter] = useState<"all" | "favorites">("all");
 
-  const { setState } = useGlobalContext();
   const { isAuthenticated } = useAuth();
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
 
   async function loadMyPokemon() {
     setIsLoading(true);
 
     try {
       if (isAuthenticated) {
-        // Load from API
         const apiPokemon = await collectionService.getCollection();
         const displayPokemon: DisplayPokemon[] = apiPokemon.map(
           (p: UserPokemonDto) => ({
@@ -67,7 +63,6 @@ const MyPokemon: React.FC = () => {
         );
         setPokemons(displayPokemon);
       } else {
-        // Require authentication - no localStorage fallback
         setPokemons([]);
       }
     } catch (error) {
@@ -80,7 +75,7 @@ const MyPokemon: React.FC = () => {
   }
 
   useEffect(() => {
-    setNavHeight(navRef.current?.clientHeight as number);
+    setNavHeight(navRef.current?.clientHeight ?? 0);
     loadMyPokemon();
   }, [isAuthenticated]);
 
@@ -93,8 +88,6 @@ const MyPokemon: React.FC = () => {
 
       await collectionService.releasePokemon(pokemon.id);
       toast.success(`${pokemon.nickname} was released!`);
-
-      // Reload collection from API
       loadMyPokemon();
     } catch (error) {
       console.error("Error releasing Pokemon:", error);
@@ -126,6 +119,7 @@ const MyPokemon: React.FC = () => {
 
   const filteredPokemon =
     filter === "favorites" ? pokemons.filter((p) => p.isFavorite) : pokemons;
+  const favoriteCount = pokemons.filter((pokemon) => pokemon.isFavorite).length;
 
   return (
     <>
@@ -160,39 +154,42 @@ const MyPokemon: React.FC = () => {
 
       <T.Page style={{ marginBottom: navHeight }}>
         <T.Header>
-          <div>
+          <T.HeaderCopy>
             <Text as="h1" variant="darker" size="lg">
               My Pokémon
             </Text>
             <Text as="span" variant="darker" size="sm">
-              Total: {pokemons.length}
-              {isAuthenticated &&
-                pokemons.filter((p) => p.isFavorite).length > 0 && (
-                  <>
-                    {" "}
-                    • Favorites: {pokemons.filter((p) => p.isFavorite).length}
-                  </>
-                )}
+              A cleaner collection view for the Pokémon you have actually
+              caught.
             </Text>
-          </div>
+            <T.StatsRow>
+              <T.StatChip>Total: {pokemons.length}</T.StatChip>
+              {isAuthenticated && favoriteCount > 0 && (
+                <T.StatChip>Favorites: {favoriteCount}</T.StatChip>
+              )}
+              {isAuthenticated && pokemons.length > 0 && (
+                <T.StatChip>Showing: {filteredPokemon.length}</T.StatChip>
+              )}
+            </T.StatsRow>
+          </T.HeaderCopy>
 
           {isAuthenticated && pokemons.length > 0 && (
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button
-                variant={filter === "all" ? "dark" : "light"}
-                size="sm"
+            <T.FilterBar aria-label="Collection filters">
+              <T.FilterButton
+                type="button"
+                active={filter === "all"}
                 onClick={() => setFilter("all")}
               >
                 All
-              </Button>
-              <Button
-                variant={filter === "favorites" ? "dark" : "light"}
-                size="sm"
+              </T.FilterButton>
+              <T.FilterButton
+                type="button"
+                active={filter === "favorites"}
                 onClick={() => setFilter("favorites")}
               >
-                ⭐ Favorites
-              </Button>
-            </div>
+                Favorites
+              </T.FilterButton>
+            </T.FilterBar>
           )}
         </T.Header>
 
@@ -213,137 +210,108 @@ const MyPokemon: React.FC = () => {
                     nickname={pokemon.nickname}
                     sprite={pokemon.sprite}
                   >
-                    {/* Extra info badges */}
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 4,
-                        position: "absolute",
-                        top: 4,
-                        left: 4,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {pokemon.isShiny && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            padding: "2px 6px",
-                            background: "#FBBF24",
-                            borderRadius: 4,
-                            color: "#000",
-                          }}
-                        >
-                          ✨ Shiny
-                        </span>
-                      )}
-                      {pokemon.currentLevel && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            padding: "2px 6px",
-                            background: "#60A5FA",
-                            borderRadius: 4,
-                            color: "#fff",
-                          }}
-                        >
-                          Lv.{pokemon.currentLevel}
-                        </span>
-                      )}
-                      {pokemon.ivRating && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            padding: "2px 6px",
-                            background:
+                    <T.CardChrome>
+                      <T.CardMeta>
+                        {pokemon.isShiny && (
+                          <T.Badge tone="gold">Shiny</T.Badge>
+                        )}
+                        {pokemon.currentLevel && (
+                          <T.Badge tone="blue">
+                            Lv. {pokemon.currentLevel}
+                          </T.Badge>
+                        )}
+                        {pokemon.ivRating && (
+                          <T.Badge
+                            tone={
                               pokemon.ivRating === "Perfect"
-                                ? "#34D399"
-                                : "#818CF8",
-                            borderRadius: 4,
-                            color: "#fff",
-                          }}
-                        >
-                          {pokemon.ivRating}
-                        </span>
-                      )}
-                    </div>
+                                ? "green"
+                                : "violet"
+                            }
+                          >
+                            {pokemon.ivRating}
+                          </T.Badge>
+                        )}
+                      </T.CardMeta>
 
-                    {/* Action buttons */}
-                    <div style={{ display: "flex", gap: 4 }}>
-                      {pokemon.isFromApi && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(pokemon);
-                          }}
+                      <T.CardActions>
+                        {pokemon.isFromApi ? (
+                          <T.FavoriteButton
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(pokemon);
+                            }}
+                            style={{
+                              position: "relative",
+                              top: "auto",
+                              right: "auto",
+                            }}
+                            title={
+                              pokemon.isFavorite
+                                ? "Remove from favorites"
+                                : "Add to favorites"
+                            }
+                          >
+                            {pokemon.isFavorite ? "⭐" : "☆"}
+                          </T.FavoriteButton>
+                        ) : (
+                          <span />
+                        )}
+
+                        <DeleteButton
                           style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: 20,
-                            padding: 4,
+                            position: "relative",
+                            top: "auto",
+                            right: "auto",
                           }}
-                          title={
-                            pokemon.isFavorite
-                              ? "Remove from favorites"
-                              : "Add to favorites"
-                          }
-                        >
-                          {pokemon.isFavorite ? "⭐" : "☆"}
-                        </button>
-                      )}
-                      <DeleteButton
-                        onClick={() => {
-                          setSelectedPokemon(pokemon);
-                          setDeleteConfirmation(true);
-                        }}
-                      />
-                    </div>
+                          onClick={() => {
+                            setSelectedPokemon(pokemon);
+                            setDeleteConfirmation(true);
+                          }}
+                        />
+                      </T.CardActions>
+                    </T.CardChrome>
                   </PokeCard>
                 </T.WrapperCardList>
               ))}
           </T.Grid>
         ) : (
           <T.EmptyState>
-            {filter === "favorites" ? (
-              <>
-                <Text>No favorite Pokémon yet</Text>
-                <Button onClick={() => setFilter("all")}>Show All</Button>
-              </>
-            ) : (
-              <>
-                <Text>You haven't caught any Pokémon</Text>
-                <Link to="/pokemons">
-                  <Button>Explore</Button>
-                </Link>
-              </>
-            )}
-          </T.EmptyState>
-        )}
+            <T.EmptyPanel>
+              <T.EmptyStateInner>
+                {filter === "favorites" ? (
+                  <>
+                    <Text as="h2" variant="darker" size="lg">
+                      No favorite Pokémon yet
+                    </Text>
+                    <Text variant="darker" size="sm">
+                      Favorite a few Pokémon to bring them into this view.
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text as="h2" variant="darker" size="lg">
+                      You have not caught any Pokémon yet
+                    </Text>
+                    <Text variant="darker" size="sm">
+                      Explore the Pokédex, catch your first Pokémon, and come
+                      back here to manage the collection.
+                    </Text>
+                  </>
+                )}
+              </T.EmptyStateInner>
 
-        {!isAuthenticated && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: 24,
-              background: "rgba(96, 165, 250, 0.1)",
-              borderRadius: 8,
-              marginTop: 16,
-            }}
-          >
-            <Text size="lg" style={{ marginBottom: 12 }}>
-              🔒 Login Required
-            </Text>
-            <Text size="sm">
-              You need to log in to view and manage your Pokémon collection.
-            </Text>
-            <Link
-              to="/login"
-              style={{ display: "inline-block", marginTop: 12 }}
-            >
-              <Button variant="sky">Log In</Button>
-            </Link>
-          </div>
+              <T.EmptyActions>
+                {filter === "favorites" ? (
+                  <Button onClick={() => setFilter("all")}>Show all</Button>
+                ) : (
+                  <Link to="/pokemons">
+                    <Button>Explore Pokédex</Button>
+                  </Link>
+                )}
+              </T.EmptyActions>
+            </T.EmptyPanel>
+          </T.EmptyState>
         )}
       </T.Page>
 
