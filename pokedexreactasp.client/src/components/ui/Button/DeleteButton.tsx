@@ -4,14 +4,31 @@ import styled from "@emotion/styled";
 import { units, colors } from "@/components/utils";
 
 const StyledDeleteButton = styled("button")({
-  padding: units.spacing.sm,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "fit-content",
+  minWidth: "32px",
+  minHeight: "32px",
+  padding: units.spacing.xs,
   zIndex: 1,
   cursor: "pointer",
+  flexGrow: 0,
+  transition:
+    "transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease",
   "&:hover": {
     backgroundColor: colors["gray-200"],
+    transform: "translateY(-1px)",
   },
   "&:active::after": {
     boxShadow: `inset 4px 4px ${colors["gray-400"]}`,
+  },
+  "&:active": {
+    transform: "translateY(1px)",
+  },
+  "&:focus-visible": {
+    outline: `2px solid ${colors["gray-900"]}`,
+    outlineOffset: "2px",
   },
 });
 

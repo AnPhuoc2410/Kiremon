@@ -152,6 +152,11 @@ const DetailPokemon = () => {
   const { refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated } = useAuth();
   const navRef = createRef<HTMLDivElement>();
+  const navActionLinkStyle = {
+    display: "flex",
+    width: "100%",
+    justifyContent: "center",
+  };
 
   async function attemptCatchPokemon(): Promise<CatchAttemptResultDto | null> {
     if (!isAuthenticated) {
@@ -1038,7 +1043,7 @@ const DetailPokemon = () => {
         {!isLoading && (
           <>
             {!isAuthenticated ? (
-              <Link to="/login">
+              <Link to="/login" style={navActionLinkStyle}>
                 <Button variant="dark" size="xl" icon="/static/pokeball.png">
                   Login to Catch
                 </Button>
@@ -1053,7 +1058,7 @@ const DetailPokemon = () => {
                 Pokémon Fled
               </Button>
             ) : isSaved ? (
-              <Link to="/pokemons">
+              <Link to="/pokemons" style={navActionLinkStyle}>
                 <Button variant="dark" size="xl" icon="/static/pokeball.png">
                   Find Another
                 </Button>
