@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { IconSearch } from "@tabler/icons-react";
-import { Header, Loading } from "@/components/ui";
+import { useAllPokemon } from "@/components/hooks/usePokeAPI";
+import { Header } from "@/components/ui";
 import { useDebounce } from "@/components/hooks";
 import { useLanguage } from "@/contexts";
 import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
@@ -11,19 +12,39 @@ import * as S from "./index.style";
 
 const PAGE_SIZE = 12;
 const DEFAULT_POKEMON = "pikachu";
+const AUTOCOMPLETE_MIN_CHARS = 2;
+const AUTOCOMPLETE_LIMIT = 8;
+const POPULAR_POKEMON = [
+  "pikachu",
+  "charizard",
+  "mew",
+  "eevee",
+  "lucario",
+  "greninja",
+  "gardevoir",
+  "snorlax",
+  "bulbasaur",
+  "squirtle",
+  "charmander",
+  "rayquaza",
+];
 
 const PokeTcg: React.FC = () => {
   const pageRef = useRef<HTMLElement | null>(null);
+  const searchSuggestionsRef = useRef<HTMLDivElement | null>(null);
+  const modalContentRef = useRef<HTMLDivElement | null>(null);
   const [draftSearch, setDraftSearch] = useState(DEFAULT_POKEMON);
   const [pokemonName, setPokemonName] = useState(DEFAULT_POKEMON);
   const [page, setPage] = useState(1);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [filters, setFilters] = useState<TcgCardFilters>({
     rarity: "",
     regulationMark: "",
     subtype: "",
   });
   const { languageId } = useLanguage();
+  const allPokemonQuery = useAllPokemon(2000, 0);
 
   const debouncedPokemonName = useDebounce(pokemonName.trim(), 300);
   const cardsQuery = useTcgCards(
@@ -51,6 +72,64 @@ const PokeTcg: React.FC = () => {
   const rarityOptions = facetsQuery.data?.rarities || [];
   const regulationOptions = facetsQuery.data?.regulationMarks || [];
   const subtypeOptions = facetsQuery.data?.subtypes || [];
+  const allPokemonNames = useMemo(
+    () =>
+      (allPokemonQuery.data?.results || [])
+        .map((pokemon) => pokemon.name.trim().toLowerCase())
+        .filter(Boolean),
+    [allPokemonQuery.data],
+  );
+
+  const autocompleteTerm = draftSearch.trim().toLowerCase();
+  const autocompleteSuggestions = useMemo(() => {
+    const hasQuery = autocompleteTerm.length >= AUTOCOMPLETE_MIN_CHARS;
+    const seedNames = [...POPULAR_POKEMON, ...allPokemonNames];
+    const uniqueNames = Array.from(new Set(seedNames));
+
+    const source = hasQuery
+      ? uniqueNames.filter((name) => name.includes(autocompleteTerm))
+      : POPULAR_POKEMON;
+
+    return source
+      .map((name) => ({
+        name,
+        isPopular: POPULAR_POKEMON.includes(name),
+        startsWith: hasQuery ? name.startsWith(autocompleteTerm) : true,
+        lengthDelta: hasQuery
+          ? Math.abs(name.length - autocompleteTerm.length)
+          : 0,
+      }))
+      .sort((left, right) => {
+        if (left.startsWith !== right.startsWith) {
+          return left.startsWith ? -1 : 1;
+        }
+
+        if (left.isPopular !== right.isPopular) {
+          return left.isPopular ? -1 : 1;
+        }
+
+        if (left.lengthDelta !== right.lengthDelta) {
+          return left.lengthDelta - right.lengthDelta;
+        }
+
+        return left.name.localeCompare(right.name);
+      })
+      .slice(0, AUTOCOMPLETE_LIMIT)
+      .map((item) => item.name);
+  }, [allPokemonNames, autocompleteTerm]);
+
+  const showAutocomplete =
+    isSearchFocused &&
+    (autocompleteTerm.length === 0 ||
+      autocompleteTerm.length >= AUTOCOMPLETE_MIN_CHARS);
+  const autocompleteLabel =
+    autocompleteTerm.length >= AUTOCOMPLETE_MIN_CHARS
+      ? "Suggested matches"
+      : "Popular picks";
+  const autocompleteHint =
+    autocompleteTerm.length >= AUTOCOMPLETE_MIN_CHARS
+      ? "Chọn một gợi ý để tìm nhanh hơn, hoặc nhấn Enter để tìm đúng từ bạn đang gõ."
+      : "Gõ ít nhất 2 ký tự để lọc gợi ý, hoặc chọn một Pokémon phổ biến bên dưới.";
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -108,6 +187,46 @@ const PokeTcg: React.FC = () => {
   }, [filters.rarity, filters.regulationMark, filters.subtype]);
 
   useEffect(() => {
+    if (!showAutocomplete || !searchSuggestionsRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".tcg-suggestion-item",
+        { y: 10, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.25,
+          ease: "power2.out",
+          stagger: 0.03,
+        },
+      );
+    }, searchSuggestionsRef);
+
+    return () => ctx.revert();
+  }, [showAutocomplete, autocompleteSuggestions]);
+
+  useEffect(() => {
+    if (!selectedCardId || !modalContentRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".tcg-modal",
+        { y: 14, scale: 0.985, opacity: 0 },
+        {
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          duration: 0.3,
+          ease: "power2.out",
+        },
+      );
+    }, modalContentRef);
+
+    return () => ctx.revert();
+  }, [selectedCardId, detailQuery.isLoading]);
+
+  useEffect(() => {
     if (!selectedCardId) return;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -120,7 +239,14 @@ const PokeTcg: React.FC = () => {
     event.preventDefault();
     const nextName = draftSearch.trim().toLowerCase();
     if (!nextName) return;
+    setIsSearchFocused(false);
     setPokemonName(nextName);
+  };
+
+  const selectSuggestion = (pokemon: string) => {
+    setDraftSearch(pokemon);
+    setPokemonName(pokemon);
+    setIsSearchFocused(false);
   };
 
   const renderCard = (card: TcgCardListItem) => (
@@ -147,6 +273,15 @@ const PokeTcg: React.FC = () => {
     </S.CardButton>
   );
 
+  const renderCardSkeleton = (_: unknown, index: number) => (
+    <S.CardSkeleton key={`tcg-skeleton-${index}`}>
+      <S.CardSkeletonImage />
+      <S.CardSkeletonLine $width="72%" />
+      <S.CardSkeletonLine $width="54%" />
+      <S.CardSkeletonBadge />
+    </S.CardSkeleton>
+  );
+
   return (
     <S.Page ref={pageRef}>
       <Header
@@ -160,22 +295,59 @@ const PokeTcg: React.FC = () => {
           <S.IntroTitle>Search cards by Pokemon name</S.IntroTitle>
           <S.IntroText>
             Browse TCG cards with the same trainer-friendly visual language as
-            the rest of the Pokedex: clean panels, pixel accents, and readable
-            item-style controls.
+            the rest of the Pokedex.
           </S.IntroText>
 
-          <S.SearchForm onSubmit={submitSearch}>
-            <S.SearchInput
-              value={draftSearch}
-              onChange={(event) => setDraftSearch(event.target.value)}
-              placeholder="pikachu, charizard, mew..."
-              aria-label="Search Pokemon TCG by Pokemon name"
-            />
-            <S.SearchButton type="submit">
-              <IconSearch size={18} stroke={2.5} />
-              Search
-            </S.SearchButton>
-          </S.SearchForm>
+          <S.SearchArea>
+            <S.SearchForm onSubmit={submitSearch}>
+              <S.SearchInput
+                value={draftSearch}
+                onChange={(event) => setDraftSearch(event.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+                placeholder="pikachu, charizard, mew..."
+                aria-label="Search Pokemon TCG by Pokemon name"
+                aria-autocomplete="list"
+                aria-expanded={showAutocomplete}
+              />
+              <S.SearchButton type="submit">
+                <IconSearch size={18} stroke={2.5} />
+                Search
+              </S.SearchButton>
+            </S.SearchForm>
+
+            {showAutocomplete && (
+              <S.SearchAssist
+                ref={searchSuggestionsRef}
+                className="tcg-suggestion"
+              >
+                <S.SuggestionPanel>
+                  <S.SuggestionHeader>
+                    <span>{autocompleteLabel}</span>
+                  </S.SuggestionHeader>
+                  <S.SuggestionHint>{autocompleteHint}</S.SuggestionHint>
+
+                  <S.SuggestionList
+                    role="listbox"
+                    aria-label="Pokemon suggestions"
+                  >
+                    {autocompleteSuggestions.map((pokemon) => (
+                      <S.SuggestionItem
+                        key={pokemon}
+                        type="button"
+                        className="tcg-suggestion-item"
+                        role="option"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => selectSuggestion(pokemon)}
+                      >
+                        {pokemon}
+                      </S.SuggestionItem>
+                    ))}
+                  </S.SuggestionList>
+                </S.SuggestionPanel>
+              </S.SearchAssist>
+            )}
+          </S.SearchArea>
         </S.IntroCopy>
 
         <S.PreviewStack aria-hidden="true">
@@ -249,9 +421,9 @@ const PokeTcg: React.FC = () => {
       {facetsQuery.isLoading && <S.HelperText>Loading filters...</S.HelperText>}
 
       {cardsQuery.isLoading ? (
-        <S.StatePanel>
-          <Loading label="Loading Poke TCG cards..." />
-        </S.StatePanel>
+        <S.CardGrid aria-busy="true" aria-label="Loading Pokemon TCG cards">
+          {Array.from({ length: PAGE_SIZE }, renderCardSkeleton)}
+        </S.CardGrid>
       ) : cardsQuery.isError ? (
         <S.StatePanel>
           Failed to load Poke TCG cards.{" "}
@@ -286,38 +458,76 @@ const PokeTcg: React.FC = () => {
         </>
       )}
 
-      {selectedCardId && selectedCard && (
+      {selectedCardId && (selectedCard || detailQuery.isLoading) && (
         <S.ModalOverlay onClick={() => setSelectedCardId(null)}>
-          <S.ModalContent onClick={(event) => event.stopPropagation()}>
-            <S.ModalImage
-              src={
-                selectedCard.images?.large ||
-                selectedCard.images?.small ||
-                "/substitute.png"
-              }
-              alt={selectedCard.name}
-            />
-            <S.ModalInfo>
-              <S.ModalHeader>
-                <div>
-                  <S.ModalTitle>{selectedCard.name}</S.ModalTitle>
-                  <S.HelperText>
-                    {selectedCard.set.series} - {selectedCard.set.name}
-                  </S.HelperText>
-                </div>
-                <S.CloseButton
-                  type="button"
-                  onClick={() => setSelectedCardId(null)}
-                  aria-label="Close card detail"
-                >
-                  x
-                </S.CloseButton>
-              </S.ModalHeader>
+          <S.ModalContent
+            className="tcg-modal"
+            ref={modalContentRef}
+            onClick={(event: React.MouseEvent<HTMLDivElement>) =>
+              event.stopPropagation()
+            }
+          >
+            {detailQuery.isLoading ? (
+              <S.ModalSkeleton>
+                <S.ModalSkeletonImage />
+                <S.ModalSkeletonHeader>
+                  <S.ModalSkeletonLine $width="68%" $height="28px" />
+                  <S.ModalSkeletonLine $width="42%" />
+                </S.ModalSkeletonHeader>
+                <S.DetailGrid>
+                  <S.DetailCell>
+                    <S.ModalSkeletonLine $width="30%" $height="12px" />
+                    <S.ModalSkeletonLine $width="72%" $height="18px" />
+                  </S.DetailCell>
+                  <S.DetailCell>
+                    <S.ModalSkeletonLine $width="28%" $height="12px" />
+                    <S.ModalSkeletonLine $width="58%" $height="18px" />
+                  </S.DetailCell>
+                  <S.DetailCell>
+                    <S.ModalSkeletonLine $width="34%" $height="12px" />
+                    <S.ModalSkeletonLine $width="46%" $height="18px" />
+                  </S.DetailCell>
+                  <S.DetailCell>
+                    <S.ModalSkeletonLine $width="32%" $height="12px" />
+                    <S.ModalSkeletonLine $width="52%" $height="18px" />
+                  </S.DetailCell>
+                </S.DetailGrid>
+                <S.DetailCell>
+                  <S.ModalSkeletonLine $width="24%" $height="12px" />
+                  <S.ModalSkeletonBlock />
+                </S.DetailCell>
+                <S.DetailCell>
+                  <S.ModalSkeletonLine $width="24%" $height="12px" />
+                  <S.ModalSkeletonBlock />
+                </S.DetailCell>
+              </S.ModalSkeleton>
+            ) : (
+              <>
+                <S.ModalImage
+                  src={
+                    selectedCard?.images?.large ||
+                    selectedCard?.images?.small ||
+                    "/substitute.png"
+                  }
+                  alt={selectedCard?.name || "Pokemon card"}
+                />
+                <S.ModalInfo>
+                  <S.ModalHeader>
+                    <div>
+                      <S.ModalTitle>{selectedCard?.name}</S.ModalTitle>
+                      <S.HelperText>
+                        {selectedCard?.set.series} - {selectedCard?.set.name}
+                      </S.HelperText>
+                    </div>
+                    <S.CloseButton
+                      type="button"
+                      onClick={() => setSelectedCardId(null)}
+                      aria-label="Close card detail"
+                    >
+                      x
+                    </S.CloseButton>
+                  </S.ModalHeader>
 
-              {detailQuery.isLoading ? (
-                <Loading label="Loading card detail..." />
-              ) : (
-                <>
                   <S.DetailGrid>
                     <S.DetailCell>
                       <span>HP</span>
@@ -329,7 +539,7 @@ const PokeTcg: React.FC = () => {
                     </S.DetailCell>
                     <S.DetailCell>
                       <span>Rarity</span>
-                      <strong>{selectedCard.rarity || "-"}</strong>
+                      <strong>{selectedCard?.rarity || "-"}</strong>
                     </S.DetailCell>
                     <S.DetailCell>
                       <span>Artist</span>
@@ -359,9 +569,9 @@ const PokeTcg: React.FC = () => {
                       <p>{detailCard.flavorText}</p>
                     </S.DetailCell>
                   )}
-                </>
-              )}
-            </S.ModalInfo>
+                </S.ModalInfo>
+              </>
+            )}
           </S.ModalContent>
         </S.ModalOverlay>
       )}

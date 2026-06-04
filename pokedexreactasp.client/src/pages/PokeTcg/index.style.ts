@@ -89,6 +89,79 @@ export const SearchForm = styled.form`
   }
 `;
 
+export const SearchArea = styled.div`
+  position: relative;
+  display: grid;
+  gap: 10px;
+  max-width: 560px;
+`;
+
+export const SearchAssist = styled.div`
+  display: grid;
+  gap: 8px;
+`;
+
+export const SuggestionPanel = styled.div`
+  border: 1px solid ${colors["gray-200"]};
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 28px rgba(16, 24, 40, 0.12);
+`;
+
+export const SuggestionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  span {
+    color: ${colors["gray-600"]};
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+`;
+
+export const SuggestionHint = styled.p`
+  margin: 0;
+  color: ${colors["gray-500"]};
+  font-size: 12px;
+  line-height: 1.4;
+`;
+
+export const SuggestionList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const SuggestionItem = styled.button`
+  min-height: 34px;
+  border: 1px solid ${colors["gray-200"]};
+  border-radius: 999px;
+  padding: 0 12px;
+  background: ${colors["gray-100"]};
+  color: ${colors["gray-800"]};
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: ${colors["blue-400"]};
+    background: ${colors["blue-100"]};
+    box-shadow: 0 8px 18px rgba(59, 130, 246, 0.12);
+  }
+`;
+
 export const SearchInput = styled.input`
   min-height: 44px;
   width: 100%;
@@ -236,6 +309,49 @@ export const CardGrid = styled.section`
   gap: 16px;
 `;
 
+export const CardSkeleton = styled.div`
+  display: grid;
+  gap: 10px;
+  border: 1px solid ${colors["gray-200"]};
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: ${panelShadow};
+`;
+
+const shimmer = `
+  background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+  background-size: 200% 100%;
+  animation: shine 1.4s linear infinite;
+`;
+
+export const CardSkeletonImage = styled.div`
+  min-height: 230px;
+  border-radius: 10px;
+  ${shimmer}
+`;
+const shineKeyframes = `
+  @keyframes shine {
+    to {
+      background-position-x: -200%;
+    }
+  }
+`;
+
+export const CardSkeletonLine = styled.div<{ $width: string }>`
+  height: 14px;
+  width: ${(props) => props.$width};
+  border-radius: 999px;
+  ${shimmer}
+`;
+
+export const CardSkeletonBadge = styled.div`
+  width: 92px;
+  height: 22px;
+  border-radius: 999px;
+  ${shimmer}
+`;
+
 export const CardButton = styled.button`
   border: 1px solid ${colors["gray-200"]};
   border-radius: 12px;
@@ -381,6 +497,42 @@ export const ModalInfo = styled.div`
   display: grid;
   align-content: start;
   gap: 12px;
+`;
+
+export const ModalSkeleton = styled.div`
+  display: grid;
+  gap: 14px;
+  ${shineKeyframes}
+`;
+
+export const ModalSkeletonImage = styled.div`
+  width: min(100%, 360px);
+  min-height: 420px;
+  justify-self: center;
+  border-radius: 12px;
+  ${shimmer}
+  ${shineKeyframes}
+`;
+
+export const ModalSkeletonHeader = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+export const ModalSkeletonLine = styled.div<{
+  $width: string;
+  $height?: string;
+}>`
+  width: ${(props) => props.$width};
+  height: ${(props) => props.$height || "16px"};
+  border-radius: 999px;
+  ${shimmer}
+`;
+
+export const ModalSkeletonBlock = styled.div`
+  min-height: 94px;
+  border-radius: 12px;
+  ${shimmer}
 `;
 
 export const ModalHeader = styled.div`
