@@ -11,13 +11,57 @@ interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: string;
 }
 
-const getStyle = ({ variant = "sky" }: IButtonProps) => {
+const getSizeStyle = (size: NonNullable<IButtonProps["size"]>) => {
+  switch (size) {
+    case "sm":
+      return {
+        minHeight: "32px",
+        padding: "4px 8px",
+      };
+    case "lg":
+      return {
+        minHeight: "40px",
+        padding: "8px 12px",
+      };
+    case "xl":
+      return {
+        minHeight: "48px",
+        padding: "10px 14px",
+      };
+    case "md":
+    default:
+      return {
+        minHeight: "36px",
+        padding: "6px 10px",
+      };
+  }
+};
+
+const getStyle = ({ variant = "sky", size = "md" }: IButtonProps) => {
   const style = {
+    ...getSizeStyle(size),
     display: "flex",
+    width: "fit-content",
+    minWidth: "fit-content",
     gap: units.spacing.sm,
     justifyContent: "center",
     alignItems: "center",
     cursor: "pointer",
+    flexGrow: 0,
+    whiteSpace: "nowrap",
+    lineHeight: 1,
+    transition:
+      "transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease",
+    "&:hover": {
+      transform: "translateY(-1px)",
+    },
+    "&:active": {
+      transform: "translateY(1px)",
+    },
+    "&:focus-visible": {
+      outline: `2px solid ${colors["gray-900"]}`,
+      outlineOffset: "2px",
+    },
   };
 
   switch (variant) {
@@ -101,10 +145,10 @@ const PixelatedButton = styled("button")((props: IButtonProps) =>
 // Map Button sizes to Text sizes
 const getTextSize = (
   buttonSize: "sm" | "md" | "lg" | "xl",
-): "base" | "lg" | "xl" => {
+): "sm" | "base" | "lg" | "xl" => {
   switch (buttonSize) {
     case "sm":
-      return "base";
+      return "sm";
     case "md":
       return "base";
     case "lg":
@@ -122,19 +166,19 @@ const getIconSize = (buttonSize: "sm" | "md" | "lg" | "xl"): number => {
     case "sm":
       return 12;
     case "md":
-      return 16;
+      return 14;
     case "lg":
-      return 20;
+      return 18;
     case "xl":
-      return 40;
+      return 24;
     default:
-      return 20;
+      return 18;
   }
 };
 
 const Button: React.FC<IButtonProps> = ({
   children,
-  size = "lg",
+  size = "md",
   icon,
   ...props
 }) => {

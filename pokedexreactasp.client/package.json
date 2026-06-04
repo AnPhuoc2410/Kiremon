@@ -32,6 +32,7 @@
     "colorcrafts": "^1.0.4",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.24.12",
+    "gsap": "^3.15.0",
     "pokedexreactasp.client": "file:",
     "prettier": "^3.5.3",
     "qrcode": "^1.5.4",

@@ -29,6 +29,7 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Friends = lazy(() => import("@/pages/Friends"));
 const Pokemart = lazy(() => import("@/pages/Market"));
+const PokeTcg = lazy(() => import("@/pages/PokeTcg"));
 
 export default function Routes() {
   return (
@@ -223,6 +224,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <Pokemart />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/poke-tcg"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <PokeTcg />
               </Suspense>
             }
           />

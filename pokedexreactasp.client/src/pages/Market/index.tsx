@@ -35,24 +35,20 @@ const Market: React.FC = () => {
     categoriesLoading,
     categoriesError,
     refetchCategories,
-
     selectedCategory,
     setSelectedCategory,
-
     items,
     itemsLoading,
     itemsError,
     refetchItems,
   } = usePokeMartQuery();
 
-  // Handle URL search params for item navigation using TanStack Query
   const itemNameFromUrl = searchParams.get("item");
   const { searchResult, isLoading: isSearchingItem } = useSearchItem(
     itemNameFromUrl,
     !!itemNameFromUrl && categories.length > 0,
   );
 
-  // Navigate to item from URL search result
   useEffect(() => {
     if (searchResult && !isSearchingItem) {
       setSelectedCategory(searchResult.categoryId);
@@ -63,7 +59,6 @@ const Market: React.FC = () => {
     }
   }, [searchResult, isSearchingItem, setSelectedCategory, setSearchParams]);
 
-  // Scroll to top functionality
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
@@ -73,7 +68,6 @@ const Market: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch pokeball sprite
   useEffect(() => {
     const fetchPokeballSprite = async () => {
       const sprite = await pokeItemService.getPokeballSprite();
@@ -82,7 +76,6 @@ const Market: React.FC = () => {
     fetchPokeballSprite();
   }, []);
 
-  // Close sidebar when category changes on mobile
   useEffect(() => {
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -109,10 +102,8 @@ const Market: React.FC = () => {
         />
 
         <ShopInner>
-          {/* Main Content: Sidebar + Items */}
           <MainContent>
             <SidebarContainer id="tour-market-sidebar">
-              {/* Mobile sidebar toggle */}
               <SidebarToggle onClick={() => setSidebarOpen(!sidebarOpen)}>
                 <svg viewBox="0 0 20 20" fill="currentColor">
                   <path
@@ -124,13 +115,11 @@ const Market: React.FC = () => {
                 {t("market.categories", languageId)}
               </SidebarToggle>
 
-              {/* Overlay for mobile */}
               <SidebarOverlay
                 $isOpen={sidebarOpen}
                 onClick={() => setSidebarOpen(false)}
               />
 
-              {/* Left: Category Sidebar */}
               <CategoryTabs
                 categories={categories}
                 loading={categoriesLoading}
@@ -142,9 +131,7 @@ const Market: React.FC = () => {
               />
             </SidebarContainer>
 
-            {/* Right: Content Area */}
             <ContentArea>
-              {/* Items Grid */}
               <ItemsContainer>
                 <ItemGrid
                   items={items}
@@ -156,7 +143,6 @@ const Market: React.FC = () => {
                 />
               </ItemsContainer>
 
-              {/* Description Panel (Desktop Sidebar / Mobile Modal) */}
               <DescriptionPanel>
                 <ItemDescriptionBox
                   item={selectedItem}
