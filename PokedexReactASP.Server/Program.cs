@@ -126,6 +126,12 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddMemoryCache();
 
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                options.InstanceName = "Kiremon_";
+            });
+
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
             // Add Application Services
