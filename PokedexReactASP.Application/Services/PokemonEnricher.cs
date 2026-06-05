@@ -1,4 +1,5 @@
 using AutoMapper;
+using PokedexReactASP.Application.Common.Helpers;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
@@ -259,9 +260,8 @@ namespace PokedexReactASP.Application.Services
             _ => "Not bad"
         };
 
-        private static int GetExpForNextLevel(int currentLevel) => 1000 + (currentLevel * 100);
+        private static int GetExpForNextLevel(int currentLevel) => TrainerLevelCalculator.GetExpForNextLevel(currentLevel);
 
-        private static string CapitalizeFirst(string input) =>
-            string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
+        private static string CapitalizeFirst(string input) => PokemonNameHelper.CapitalizeFirst(input);
     }
 }
