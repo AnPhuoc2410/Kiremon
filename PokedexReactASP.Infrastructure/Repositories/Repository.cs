@@ -44,10 +44,29 @@ namespace PokedexReactASP.Infrastructure.Repositories
         public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, bool disableTracking = false)
         {
             IQueryable<T> query = _dbSet;
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
+            if (disableTracking) query = query.AsNoTracking();
+            return await query.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IQueryable<T>>? includes,
+            bool disableTracking = false)
+        {
+            IQueryable<T> query = _dbSet;
+            if (disableTracking) query = query.AsNoTracking();
+            if (includes != null)  query = includes(query);
+            return await query.Where(predicate).ToListAsync();
+        }
+
+        public async Task<T?> FirstOrDefaultAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IQueryable<T>>? includes,
+            bool disableTracking = false)
+        {
+            IQueryable<T> query = _dbSet;
+            if (disableTracking) query = query.AsNoTracking();
+            if (includes != null)  query = includes(query);
             return await query.FirstOrDefaultAsync(predicate);
         }
 

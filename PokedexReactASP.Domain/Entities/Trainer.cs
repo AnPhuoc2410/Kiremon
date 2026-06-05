@@ -17,9 +17,9 @@ namespace PokedexReactASP.Domain.Entities
 
         /// <summary>
         /// Unique friend code for adding friends (like Pokemon GO)
-        /// Format: XXXX-XXXX-XXXX (12 alphanumeric characters)
+        /// Format: XXXX-XXXX-XXXX (12 alphanumeric characters).
         /// </summary>
-        public string FriendCode { get; set; } = GenerateFriendCode();
+        public string FriendCode { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether to allow friend requests
@@ -64,8 +64,7 @@ namespace PokedexReactASP.Domain.Entities
         
         // Activity tracking
         public DateTime LastActiveDate { get; set; } = DateTime.UtcNow;
-        public int DaysPlayed { get; set; } = 0;
-        public int HoursPlayed { get; set; } = 0;
+        // Note: DaysPlayed and HoursPlayed were removed — never written to, use LastActiveDate instead.
         
         // Preferences
         public bool ShowOnlineStatus { get; set; } = true;
@@ -88,26 +87,5 @@ namespace PokedexReactASP.Domain.Entities
         
         // Friend requests received by this user
         public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
-
-        private static readonly Random _friendCodeRandom = new Random();
-        private static readonly object _friendCodeRandomLock = new object();
-
-
-        /// <summary>
-        /// Generate a unique friend code
-        /// </summary>
-        private static string GenerateFriendCode()
-        {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded confusing chars: I, O, 0, 1
-            var code = new char[12];
-            lock (_friendCodeRandomLock)
-            {
-                for (int i = 0; i < 12; i++)
-                {
-                    code[i] = chars[_friendCodeRandom.Next(chars.Length)];
-                }
-            }
-            return $"{new string(code, 0, 4)}-{new string(code, 4, 4)}-{new string(code, 8, 4)}";
-        }
     }
 }
