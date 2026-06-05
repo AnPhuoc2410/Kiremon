@@ -1,6 +1,7 @@
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -9,41 +10,35 @@ namespace PokedexReactASP.Infrastructure.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _configuration;
+        private readonly JwtSettings _jwtSettings;
+        private readonly SymmetricSecurityKey _signingKey;
+        private readonly SigningCredentials _signingCredentials;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService(IOptions<JwtSettings> jwtOptions)
         {
-            _configuration = configuration;
+            _jwtSettings        = jwtOptions.Value;
+            _signingKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            _signingCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
         }
 
         public string GenerateJwtToken(string userId, string username, string email)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
-            var issuer = jwtSettings["Issuer"] ?? "PokedexAPI";
-            var audience = jwtSettings["Audience"] ?? "PokedexClient";
-            var expirationDays = int.Parse(jwtSettings["ExpirationDays"] ?? "7");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.Sub,        userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, username),
-                new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Name, username)
+                new Claim(JwtRegisteredClaimNames.Email,      email),
+                new Claim(JwtRegisteredClaimNames.Jti,        Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier,          userId),
+                new Claim(ClaimTypes.Name,                    username)
             };
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(expirationDays),
-                signingCredentials: credentials
-            );
+                issuer:             _jwtSettings.Issuer,
+                audience:           _jwtSettings.Audience,
+                claims:             claims,
+                expires:            DateTime.UtcNow.AddDays(_jwtSettings.ExpirationDays),
+                signingCredentials: _signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -52,30 +47,22 @@ namespace PokedexReactASP.Infrastructure.Services
         {
             try
             {
-                var jwtSettings = _configuration.GetSection("JwtSettings");
-                var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
-                var issuer = jwtSettings["Issuer"] ?? "PokedexAPI";
-                var audience = jwtSettings["Audience"] ?? "PokedexClient";
-
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(secretKey);
 
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = issuer,
-                    ValidateAudience = true,
-                    ValidAudience = audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
+                    IssuerSigningKey        = _signingKey,
+                    ValidateIssuer          = true,
+                    ValidIssuer             = _jwtSettings.Issuer,
+                    ValidateAudience        = true,
+                    ValidAudience           = _jwtSettings.Audience,
+                    ValidateLifetime        = true,
+                    ClockSkew               = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value;
-
-                return userId;
+                return jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value;
             }
             catch
             {

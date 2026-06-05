@@ -2,25 +2,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokedexReactASP.Application.DTOs.Friend;
 using PokedexReactASP.Application.Interfaces;
-using System.Security.Claims;
 
 namespace PokedexReactASP.Server.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     [Authorize]
-    public class FriendController : ControllerBase
+    public class FriendController : ApiControllerBase
     {
         private readonly IFriendService _friendService;
 
         public FriendController(IFriendService friendService)
         {
             _friendService = friendService;
-        }
-
-        private string GetCurrentUserId()
-        {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         }
 
         #region Friend Code & QR
@@ -31,7 +23,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("code")]
         public async Task<ActionResult<FriendCodeDto>> GetMyFriendCode()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -45,7 +37,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("code/regenerate")]
         public async Task<ActionResult<FriendCodeDto>> RegenerateFriendCode()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -63,7 +55,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("request")]
         public async Task<ActionResult<FriendOperationResultDto>> SendFriendRequest([FromBody] SendFriendRequestDto request)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -83,7 +75,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("requests/received")]
         public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetReceivedRequests()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -97,7 +89,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("requests/sent")]
         public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetSentRequests()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -111,7 +103,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("request/{requestId}/accept")]
         public async Task<ActionResult<FriendOperationResultDto>> AcceptRequest(int requestId)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -128,7 +120,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("request/{requestId}/decline")]
         public async Task<ActionResult<FriendOperationResultDto>> DeclineRequest(int requestId)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -145,7 +137,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpDelete("request/{requestId}")]
         public async Task<ActionResult<FriendOperationResultDto>> CancelRequest(int requestId)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -166,7 +158,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FriendDto>>> GetFriends()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -180,7 +172,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("summary")]
         public async Task<ActionResult<FriendsSummaryDto>> GetFriendsSummary()
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -194,7 +186,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpDelete("{friendUserId}")]
         public async Task<ActionResult<FriendOperationResultDto>> RemoveFriend(string friendUserId)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -211,7 +203,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPut("nickname")]
         public async Task<ActionResult> UpdateFriendNickname([FromBody] UpdateFriendNicknameDto request)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -232,7 +224,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<UserSearchResultDto>>> SearchUsers([FromQuery] string q)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -249,7 +241,7 @@ namespace PokedexReactASP.Server.Controllers
         [HttpGet("find/{friendCode}")]
         public async Task<ActionResult<UserSearchResultDto>> FindByFriendCode(string friendCode)
         {
-            var userId = GetCurrentUserId();
+            var userId = CurrentUserId;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 

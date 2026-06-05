@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
@@ -127,15 +126,20 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddMemoryCache();
 
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
             // Add Application Services
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
 
-
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
-            builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
-            builder.Services.AddScoped<IUserService, UserService>();
+
+            builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricher>();
+
+            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+            builder.Services.AddScoped<IPokemonCollectionService, PokemonCollectionService>();
+            builder.Services.AddScoped<IPokemonCatchService, PokemonCatchService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
@@ -277,7 +281,8 @@ namespace PokedexReactASP.Server
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseRateLimiter();
-
+            // Configure the HTTP request pipeline.
+            // Enable Swagger with authentication protection
             if (!app.Environment.IsDevelopment())
             {
                 app.UseMiddleware<SwaggerAuthMiddleware>();

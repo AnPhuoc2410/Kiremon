@@ -7,9 +7,8 @@ using System.Security.Claims;
 
 namespace PokedexReactASP.Server.Controllers
 {
-    [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
