@@ -23,6 +23,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getBadgeIndex = (iconName: string): number | null => {
+  if (iconName && iconName.startsWith("badge-")) {
+    const num = parseInt(iconName.substring(6), 10);
+    return isNaN(num) ? null : num;
+  }
+  return null;
+};
+
 const AchievementToast = ({ t, achievement }: { t: any; achievement: any }) => {
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
@@ -55,6 +63,11 @@ const AchievementToast = ({ t, achievement }: { t: any; achievement: any }) => {
   };
 
   const style = getRarityColor(achievement.rarity || "bronze");
+  const badgeIndex = getBadgeIndex(achievement.icon || "");
+  const badgeUrl =
+    badgeIndex !== null
+      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/${badgeIndex}.png`
+      : null;
 
   return (
     <div
@@ -90,7 +103,19 @@ const AchievementToast = ({ t, achievement }: { t: any; achievement: any }) => {
           flexShrink: 0,
         }}
       >
-        <IconTrophy size={24} />
+        {badgeUrl ? (
+          <img
+            src={badgeUrl}
+            alt={achievement.name}
+            style={{
+              width: "32px",
+              height: "32px",
+              imageRendering: "pixelated",
+            }}
+          />
+        ) : (
+          <IconTrophy size={24} />
+        )}
       </div>
       <div style={{ flex: 1, color: "#111827" }}>
         <div
