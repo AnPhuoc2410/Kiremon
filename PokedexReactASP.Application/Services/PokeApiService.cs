@@ -209,6 +209,7 @@ namespace PokedexReactASP.Application.Services
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public bool Is_Default { get; set; }
         public int Height { get; set; } // in decimetres
         public int Weight { get; set; } // in hectograms
         public int Base_Experience { get; set; }

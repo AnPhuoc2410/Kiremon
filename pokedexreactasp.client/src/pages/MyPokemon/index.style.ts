@@ -164,15 +164,76 @@ const DeleteConfirmationModal = styled("div")({
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  gap: 32,
+  width: "100%",
   padding: "0 16px",
-  "div:last-child": {
+});
+
+const DialogContainer = styled("div")({
+  width: "100%",
+  maxWidth: "480px",
+  margin: "0 auto",
+  "&.pxl-border": {
+    padding: "28px 36px !important",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
+    gap: "12px",
+    backgroundColor: "#F3F4F6",
   },
+});
+
+const DialogButtonGroup = styled("div")({
+  display: "flex",
+  flexDirection: "row",
+  gap: "12px",
+  marginTop: "8px",
+  justifyContent: "center",
+  width: "100%",
+});
+
+const RetroActionButton = styled("button")<{
+  isDanger?: boolean;
+  isActive?: boolean;
+}>(({ isDanger, isActive }) => ({
+  width: "112px",
+  height: "32px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 0,
+  fontSize: "12px",
+  fontWeight: "bold",
+  fontFamily: '"Press Start 2P", "Courier New", monospace',
+  cursor: "pointer",
+  border: "2px solid #000000",
+  position: "relative",
+  outline: isActive ? "3px double #000000" : "none",
+  outlineOffset: isActive ? "2px" : "none",
+  ...(isDanger
+    ? {
+        background: isActive ? "#dc2626" : "#000000",
+        color: isActive ? "#ffffff" : "#fef08a",
+        "&:hover": {
+          background: "#dc2626",
+          color: "#ffffff",
+        },
+      }
+    : {
+        background: isActive ? "#e0f2fe" : "#bae6fd",
+        color: "#000000",
+        "&:hover": {
+          background: "#e0f2fe",
+        },
+      }),
+}));
+
+const RetroArrow = styled("span")({
+  position: "absolute",
+  left: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  fontSize: "10px",
+  lineHeight: 1,
+  pointerEvents: "none",
 });
 
 const WrapperCardList = styled("div")({
@@ -292,6 +353,10 @@ export {
   AuthPanel,
   AuthActions,
   DeleteConfirmationModal,
+  DialogContainer,
+  DialogButtonGroup,
+  RetroActionButton,
+  RetroArrow,
   WrapperCardList,
   CardChrome,
   CardMeta,

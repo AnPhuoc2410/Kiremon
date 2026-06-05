@@ -15,6 +15,11 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<UserItem> UserItems { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; }
+        public DbSet<UserTcgCard> UserTcgCards { get; set; }
+        public DbSet<TcgCardCache> TcgCardCaches { get; set; }
+        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; }
+        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; }
         public DbSet<Achievement> Achievements { get; set; }
         public DbSet<UserAchievement> UserAchievements { get; set; }
 
@@ -192,6 +197,93 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     .WithMany(a => a.UserAchievements)
                     .HasForeignKey(e => e.AchievementId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure WildAreaSpawn entity
+            modelBuilder.Entity<WildAreaSpawn>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.IsActive, e.ExpiresAt });
+
+                entity.Property(e => e.AreaCode).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.UserId).IsRequired();
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.WildAreaSpawns)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure UserTcgCard entity
+            modelBuilder.Entity<UserTcgCard>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.TcgCardId }).IsUnique();
+                entity.HasIndex(e => e.PokemonApiId);
+
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.TcgCardId).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Supertype).HasMaxLength(50);
+                entity.Property(e => e.Rarity).HasMaxLength(100);
+                entity.Property(e => e.SetId).HasMaxLength(50);
+                entity.Property(e => e.SetName).HasMaxLength(150);
+                entity.Property(e => e.ImageSmall).HasMaxLength(500);
+                entity.Property(e => e.ImageLarge).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserTcgCards)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure TcgCardCache entity
+            modelBuilder.Entity<TcgCardCache>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.PokemonApiId, e.TcgCardId }).IsUnique();
+
+                entity.Property(e => e.TcgCardId).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Supertype).HasMaxLength(50);
+                entity.Property(e => e.Rarity).HasMaxLength(100);
+                entity.Property(e => e.SetId).HasMaxLength(50);
+                entity.Property(e => e.SetName).HasMaxLength(150);
+                entity.Property(e => e.ImageSmall).HasMaxLength(500);
+                entity.Property(e => e.ImageLarge).HasMaxLength(500);
+            });
+
+            // Configure PokemonSpawnMetadata entity
+            modelBuilder.Entity<PokemonSpawnMetadata>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => e.PokemonApiId).IsUnique();
+                entity.HasIndex(e => new { e.SpawnRarity, e.Generation, e.IsDefaultForm });
+                entity.HasIndex(e => e.PrimaryType);
+                entity.HasIndex(e => e.SecondaryType);
+
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.PrimaryType).HasMaxLength(30).IsRequired();
+                entity.Property(e => e.SecondaryType).HasMaxLength(30);
+                entity.Property(e => e.Habitat).HasMaxLength(50);
+                entity.Property(e => e.SpawnWeight).HasPrecision(10, 4);
+            });
+
+            // Configure PokemonBiomeTag entity
+            modelBuilder.Entity<PokemonBiomeTag>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.PokemonApiId, e.Tag }).IsUnique();
+                entity.HasIndex(e => e.Tag);
+
+                entity.Property(e => e.Tag).HasMaxLength(60).IsRequired();
+                entity.Property(e => e.Source).HasMaxLength(100);
+                entity.Property(e => e.Weight).HasPrecision(10, 4);
             });
         }
     }

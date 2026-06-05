@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { login, externalLogin, loginTwoFactor } from "@/config/auth.apis";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/utils/apiError";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
   RECAPTCHA_KEY,
@@ -99,11 +100,13 @@ const LoginForm: React.FC = () => {
       } else {
         toast.error(`${provider} login failed. Please try again.`);
       }
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        `${provider} login failed. Please try again.`;
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          `${provider} login failed. Please try again.`,
+        ),
+      );
     } finally {
       setSocialLoading(null);
     }
@@ -175,10 +178,10 @@ const LoginForm: React.FC = () => {
       } else {
         toast.error("2FA verification failed.");
       }
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message || "Invalid 2FA code. Please try again.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Invalid 2FA code. Please try again."),
+      );
       setTwoFactorCode("");
     } finally {
       setLoading(false);
@@ -245,11 +248,13 @@ const LoginForm: React.FC = () => {
       } else {
         toast.error("Login failed. Please check your credentials.");
       }
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        "Login failed. Please check your credentials.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "Login failed. Please check your credentials.",
+        ),
+      );
       recaptchaRef.current?.reset();
       setRecaptchaToken(null);
     } finally {

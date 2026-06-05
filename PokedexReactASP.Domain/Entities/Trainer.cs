@@ -75,6 +75,8 @@ namespace PokedexReactASP.Domain.Entities
         public ICollection<UserPokemon> UserPokemons { get; set; } = new List<UserPokemon>();
         public ICollection<UserBox> Boxes { get; set; } = new List<UserBox>();
         public ICollection<UserItem> Inventory { get; set; } = new List<UserItem>();
+        public ICollection<WildAreaSpawn> WildAreaSpawns { get; set; } = new List<WildAreaSpawn>();
+        public ICollection<UserTcgCard> UserTcgCards { get; set; } = new List<UserTcgCard>();
         public ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 
         // Friendships where this user is User1

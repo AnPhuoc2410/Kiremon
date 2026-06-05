@@ -479,6 +479,185 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.ToTable("Friendships");
                 });
 
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.PokemonBiomeTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsManual")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PokemonApiId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Tag")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<double>("Weight")
+                        .HasPrecision(10, 4)
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Tag");
+
+                    b.HasIndex("PokemonApiId", "Tag")
+                        .IsUnique();
+
+                    b.ToTable("PokemonBiomeTags");
+                });
+
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.PokemonSpawnMetadata", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BaseExperience")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BaseStatTotal")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CaptureRate")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("EvolvesFromSpecies")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Habitat")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsBaby")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefaultForm")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsLegendary")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsMythical")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PokemonApiId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PrimaryType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("SecondaryType")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("SpawnRarity")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("SpawnWeight")
+                        .HasPrecision(10, 4)
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("SyncedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PokemonApiId")
+                        .IsUnique();
+
+                    b.HasIndex("PrimaryType");
+
+                    b.HasIndex("SecondaryType");
+
+                    b.HasIndex("SpawnRarity", "Generation", "IsDefaultForm");
+
+                    b.ToTable("PokemonSpawnMetadata");
+                });
+
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.TcgCardCache", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CachedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageLarge")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ImageSmall")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("PokemonApiId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("RarityTier")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SetId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SetName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Supertype")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TcgCardId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PokemonApiId", "TcgCardId")
+                        .IsUnique();
+
+                    b.ToTable("TcgCardCaches");
+                });
+
             modelBuilder.Entity("PokedexReactASP.Domain.Entities.UserAchievement", b =>
                 {
                     b.Property<int>("Id")
@@ -775,6 +954,131 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.ToTable("UserPokemon");
                 });
 
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.UserTcgCard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageLarge")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ImageSmall")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("ObtainedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PokemonApiId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Rarity")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("RarityTier")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SetId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SetName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Supertype")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TcgCardId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PokemonApiId");
+
+                    b.HasIndex("UserId", "TcgCardId")
+                        .IsUnique();
+
+                    b.ToTable("UserTcgCards");
+                });
+
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.WildAreaSpawn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AreaCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("AttemptsUsed")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsCaught")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsConsumed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PokemonApiId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SlotIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SpawnRarity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SpawnedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "IsActive", "ExpiresAt");
+
+                    b.ToTable("WildAreaSpawns");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -923,6 +1227,28 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.UserTcgCard", b =>
+                {
+                    b.HasOne("PokedexReactASP.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("UserTcgCards")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PokedexReactASP.Domain.Entities.WildAreaSpawn", b =>
+                {
+                    b.HasOne("PokedexReactASP.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("WildAreaSpawns")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PokedexReactASP.Domain.Entities.Achievement", b =>
                 {
                     b.Navigation("UserAchievements");
@@ -945,6 +1271,10 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.Navigation("UserAchievements");
 
                     b.Navigation("UserPokemons");
+
+                    b.Navigation("UserTcgCards");
+
+                    b.Navigation("WildAreaSpawns");
                 });
 
             modelBuilder.Entity("PokedexReactASP.Domain.Entities.UserBox", b =>
