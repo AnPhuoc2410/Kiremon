@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
+using PokedexReactASP.Application.DTOs.Achievement;
 using PokedexReactASP.Application.Interfaces;
 
 namespace PokedexReactASP.Server.Controllers
@@ -12,15 +13,18 @@ namespace PokedexReactASP.Server.Controllers
         private readonly IUserProfileService _profileService;
         private readonly IPokemonCollectionService _collectionService;
         private readonly IPokemonCatchService _catchService;
+        private readonly IAchievementService _achievementService;
 
         public UserController(
             IUserProfileService profileService,
             IPokemonCollectionService collectionService,
-            IPokemonCatchService catchService)
+            IPokemonCatchService catchService,
+            IAchievementService achievementService)
         {
             _profileService    = profileService;
             _collectionService = collectionService;
             _catchService      = catchService;
+            _achievementService = achievementService;
         }
 
         [HttpGet("profile")]
@@ -133,6 +137,26 @@ namespace PokedexReactASP.Server.Controllers
             if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
             var result = await _catchService.UpdatePokemonNotesAsync(CurrentUserId, userPokemonId, dto.Notes);
             return result ? Ok(new { message = "Notes updated successfully" }) : NotFound(new { message = "Pokemon not found in your collection" });
+        }
+
+        /// <summary>Get user's achievements with progress</summary>
+        [HttpGet("achievements")]
+        public async Task<ActionResult<IEnumerable<UserAchievementStatusDto>>> GetAchievements()
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            var achievements = await _achievementService.GetUserAchievementsAsync(CurrentUserId);
+            return Ok(achievements);
+        }
+
+        /// <summary>Unlock a specific achievement (e.g., gym badge) manually or simulate battle</summary>
+        [HttpPost("achievements/unlock/{achievementId}")]
+        public async Task<ActionResult> UnlockAchievement(string achievementId)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            var success = await _achievementService.UnlockAchievementManuallyAsync(CurrentUserId, achievementId);
+            return success 
+                ? Ok(new { message = "Achievement unlocked successfully" }) 
+                : BadRequest(new { message = "Failed to unlock achievement. Make sure the ID is correct and not already unlocked." });
         }
 
         #endregion

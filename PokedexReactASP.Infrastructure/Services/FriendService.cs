@@ -17,15 +17,18 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly PokemonDbContext _context;
+        private readonly IAchievementService _achievementService;
 
         public FriendService(
             IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
-            PokemonDbContext context)
+            PokemonDbContext context,
+            IAchievementService achievementService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _context = context;
+            _achievementService = achievementService;
         }
 
         #region Friend Code & QR
@@ -291,6 +294,10 @@ namespace PokedexReactASP.Infrastructure.Services
             // Persist counter changes to the Identity store
             if (currentUser != null) await _userManager.UpdateAsync(currentUser);
             if (otherUser != null) await _userManager.UpdateAsync(otherUser);
+
+            // Check achievements for both users
+            if (currentUser != null) await _achievementService.CheckAndUnlockAchievementsAsync(currentUser.Id);
+            if (otherUser != null) await _achievementService.CheckAndUnlockAchievementsAsync(otherUser.Id);
 
             var friendDto = await CreateFriendDto(userId, request.SenderId, friendship);
 

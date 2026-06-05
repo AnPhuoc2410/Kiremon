@@ -26,6 +26,7 @@ namespace PokedexReactASP.Server.Seed
 
                 await SeedRoles(roleManager);
                 await SeedAdminUser(configuration, userManager, roleManager, logger);
+                await SeedAchievements(context, logger);
             }
             catch (Exception ex)
             {
@@ -104,6 +105,46 @@ namespace PokedexReactASP.Server.Seed
             if (!await userManager.IsInRoleAsync(user, "Admin"))
             {
                 await userManager.AddToRoleAsync(user, "Admin");
+            }
+        }
+
+        private static async Task SeedAchievements(PokemonDbContext context, ILogger logger)
+        {
+            try
+            {
+                var defaultAchievements = PokedexReactASP.Application.Services.AchievementService.DefaultAchievements;
+                bool changes = false;
+                
+                foreach (var achievement in defaultAchievements)
+                {
+                    var existing = await context.Achievements.AnyAsync(a => a.Id == achievement.Id);
+                    if (!existing)
+                    {
+                        await context.Achievements.AddAsync(new Achievement
+                        {
+                            Id = achievement.Id,
+                            Name = achievement.Name,
+                            Description = achievement.Description,
+                            Category = achievement.Category,
+                            Rarity = achievement.Rarity,
+                            TargetValue = achievement.TargetValue,
+                            RewardCoins = achievement.RewardCoins,
+                            Icon = achievement.Icon,
+                            Region = achievement.Region
+                        });
+                        changes = true;
+                    }
+                }
+                
+                if (changes)
+                {
+                    await context.SaveChangesAsync();
+                    logger.LogInformation("Achievements and region badges seeded successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred while seeding achievements.");
             }
         }
     }

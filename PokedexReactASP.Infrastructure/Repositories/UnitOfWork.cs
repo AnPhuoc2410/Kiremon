@@ -13,6 +13,8 @@ namespace PokedexReactASP.Infrastructure.Repositories
         private IRepository<FriendRequest>? _friendRequestRepository;
         private IRepository<UserItem>?      _userItemRepository;
         private IRepository<UserBox>?       _userBoxRepository;
+        private IRepository<Achievement>?    _achievementRepository;
+        private IRepository<UserAchievement>? _userAchievementRepository;
 
         public UnitOfWork(PokemonDbContext context)
         {
@@ -35,6 +37,12 @@ namespace PokedexReactASP.Infrastructure.Repositories
         /// <inheritdoc/>
         public IRepository<UserBox> UserBox =>
             _userBoxRepository ??= new Repository<UserBox>(_context);
+
+        public IRepository<Achievement> Achievement =>
+            _achievementRepository ??= new Repository<Achievement>(_context);
+
+        public IRepository<UserAchievement> UserAchievement =>
+            _userAchievementRepository ??= new Repository<UserAchievement>(_context);
 
         public async Task<int> SaveChangesAsync()
         {
