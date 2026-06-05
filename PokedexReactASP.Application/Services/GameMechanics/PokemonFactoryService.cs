@@ -1,3 +1,4 @@
+using PokedexReactASP.Application.Common.Helpers;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
 using PokedexReactASP.Application.Models.GameMechanics;
@@ -105,7 +106,7 @@ namespace PokedexReactASP.Application.Services.GameMechanics
                 Id = pokemon.Id, // Will be set after save
                 PokemonApiId = ctx.PokemonApiId,
                 Name = ctx.PokemonName,
-                DisplayName = ctx.Nickname ?? CapitalizeFirst(ctx.PokemonName),
+                DisplayName = ctx.Nickname ?? PokemonNameHelper.CapitalizeFirst(ctx.PokemonName),
                 Nickname = ctx.Nickname,
                 SpriteUrl = isShiny ? (ctx.ShinySpriteUrl ?? ctx.SpriteUrl) : ctx.SpriteUrl,
                 Type1 = ctx.Type1,
@@ -220,8 +221,7 @@ namespace PokedexReactASP.Application.Services.GameMechanics
             _ => "D Rank"
         };
 
-        private static string CapitalizeFirst(string input) =>
-            string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
+        private static string CapitalizeFirst(string input) => PokemonNameHelper.CapitalizeFirst(input);
     }
 }
 

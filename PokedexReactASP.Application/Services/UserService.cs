@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using PokedexReactASP.Application.Common.Helpers;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
 using PokedexReactASP.Application.Interfaces;
@@ -260,17 +261,12 @@ namespace PokedexReactASP.Application.Services
             // 5. Determine effective nickname (handle duplicates)
             string effectiveNickname = request.Nickname;
             if (string.IsNullOrEmpty(effectiveNickname))
-            {
-                effectiveNickname = CapitalizeFirst(pokeApiData.Name);
-            }
+                effectiveNickname = PokemonNameHelper.CapitalizeFirst(pokeApiData.Name);
 
             string finalNickname = await GetUniqueNicknameAsync(userId, effectiveNickname);
-
-
-            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
+            string? nicknameToSave = finalNickname.Equals(PokemonNameHelper.CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
                 ? null
                 : finalNickname;
-
 
             // 6. Calculate catch rate and attempt catch
             var existingCatch = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
@@ -311,32 +307,12 @@ namespace PokedexReactASP.Application.Services
                 return result;
             }
 
-            // 9. CATCH SUCCESS! Create Pokemon using factory (all server-determined)
-            var existingOfSameSpecies = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.PokemonApiId == request.PokemonApiId, disableTracking: true);
-            var isNewSpecies = existingOfSameSpecies == null;
-
-            var creationContext = new PokemonCreationContext(
-                UserId: userId,
-                PokemonApiId: request.PokemonApiId,
-                PokemonName: pokeApiData.Name,
-                Nickname: nicknameToSave,
-                CaughtLocation: request.CaughtLocation,
-                CaughtBall: request.PokeballType,
-                TrainerLevel: user.TrainerLevel,
-                TotalPokemonCaught: user.PokemonCaught,
-                CatchStreak: 0, // TODO: Track catch streak per species
-                HasShinyCharm: false, // TODO: Check inventory
-                IsLegendary: isLegendary,
-                IsMythical: isMythical,
-                IsBaby: isBaby,
-                BaseCaptureRate: captureRate,
-                BaseExperience: pokeApiData.Base_Experience,
-                Type1: pokeApiData.Type1,
-                Type2: pokeApiData.Type2,
-                SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
-                ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
-                GenderRate: genderRate);
+            // 9. CATCH SUCCESS! Build shared context and save Pokemon
+            var isNewSpecies = existingCatch == null;
+            var creationContext = BuildCreationContext(
+                userId, request.PokemonApiId, pokeApiData, nicknameToSave,
+                request.CaughtLocation, request.PokeballType, user,
+                captureRate, isLegendary, isMythical, isBaby, genderRate);
 
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
             var userPokemon = creationResult.Pokemon;
@@ -361,8 +337,8 @@ namespace PokedexReactASP.Application.Services
             // 13. Build success response
             result.Result = CatchAttemptResult.Success;
             result.Message = userPokemon.IsShiny
-                ? $"✨ Wow! A shiny {CapitalizeFirst(pokeApiData.Name)} was caught!"
-                : $"{CapitalizeFirst(pokeApiData.Name)} was caught!";
+                ? $"✨ Wow! A shiny {PokemonNameHelper.CapitalizeFirst(pokeApiData.Name)} was caught!"
+                : $"{PokemonNameHelper.CapitalizeFirst(pokeApiData.Name)} was caught!";
 
             // Update ID after save
             creationResult.DisplayDto.Id = userPokemon.Id;
@@ -405,17 +381,12 @@ namespace PokedexReactASP.Application.Services
             var captureRate = speciesData?.Capture_Rate ?? 45;
 
             // 4. Determine effective nickname (handle duplicates)
-            string effectiveNickname = dto.Nickname;
-            if (string.IsNullOrEmpty(effectiveNickname))
-            {
-                effectiveNickname = CapitalizeFirst(pokeApiData.Name);
-            }
+            string effectiveNickname = string.IsNullOrEmpty(dto.Nickname)
+                ? PokemonNameHelper.CapitalizeFirst(pokeApiData.Name)
+                : dto.Nickname;
 
-            // Calculate unique name
             string finalNickname = await GetUniqueNicknameAsync(userId, effectiveNickname);
-
-            // Store NULL if it matches default, otherwise store the unique variant
-            string? nicknameToSave = finalNickname.Equals(CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
+            string? nicknameToSave = finalNickname.Equals(PokemonNameHelper.CapitalizeFirst(pokeApiData.Name), StringComparison.Ordinal)
                 ? null
                 : finalNickname;
 
@@ -424,28 +395,11 @@ namespace PokedexReactASP.Application.Services
                 up => up.UserId == userId && up.PokemonApiId == dto.PokemonApiId, disableTracking: true);
             var isNewSpecies = existingOfSameSpecies == null;
 
-            // 6. Create Pokemon using factory (ALL VALUES SERVER-DETERMINED)
-            var creationContext = new PokemonCreationContext(
-                UserId: userId,
-                PokemonApiId: dto.PokemonApiId,
-                PokemonName: pokeApiData.Name,
-                Nickname: nicknameToSave,
-                CaughtLocation: dto.CaughtLocation ?? "Wild",
-                CaughtBall: PokeballType.Pokeball,
-                TrainerLevel: user.TrainerLevel,
-                TotalPokemonCaught: user.PokemonCaught,
-                CatchStreak: 0,
-                HasShinyCharm: false, // TODO: Check inventory
-                IsLegendary: isLegendary,
-                IsMythical: isMythical,
-                IsBaby: isBaby,
-                BaseCaptureRate: captureRate,
-                BaseExperience: pokeApiData.Base_Experience,
-                Type1: pokeApiData.Type1,
-                Type2: pokeApiData.Type2,
-                SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
-                ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
-                GenderRate: genderRate);
+            // 6. Create Pokemon using shared context builder
+            var creationContext = BuildCreationContext(
+                userId, dto.PokemonApiId, pokeApiData, nicknameToSave,
+                dto.CaughtLocation ?? "Wild", PokeballType.Pokeball, user,
+                captureRate, isLegendary, isMythical, isBaby, genderRate);
 
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
             var userPokemon = creationResult.Pokemon;
@@ -465,9 +419,9 @@ namespace PokedexReactASP.Application.Services
             user.CurrentLevelExperience += expGain;
             var oldLevel = user.TrainerLevel;
 
-            while (user.CurrentLevelExperience >= GetExpForNextLevel(user.TrainerLevel))
+            while (user.CurrentLevelExperience >= TrainerLevelCalculator.GetExpForNextLevel(user.TrainerLevel))
             {
-                user.CurrentLevelExperience -= GetExpForNextLevel(user.TrainerLevel);
+                user.CurrentLevelExperience -= TrainerLevelCalculator.GetExpForNextLevel(user.TrainerLevel);
                 user.TrainerLevel++;
             }
 
@@ -477,10 +431,9 @@ namespace PokedexReactASP.Application.Services
             // 10. Build response
             result.Success = true;
             result.Message = userPokemon.IsShiny
-                ? $"✨ Wow! A shiny {CapitalizeFirst(pokeApiData.Name)} was caught!"
-                : $"{CapitalizeFirst(pokeApiData.Name)} was caught!";
+                ? $"✨ Wow! A shiny {PokemonNameHelper.CapitalizeFirst(pokeApiData.Name)} was caught!"
+                : $"{PokemonNameHelper.CapitalizeFirst(pokeApiData.Name)} was caught!";
 
-            // Update ID after save
             creationResult.DisplayDto.Id = userPokemon.Id;
             result.CaughtPokemon = await _pokemonEnricher.EnrichAsync(userPokemon);
             result.IvTotal = creationResult.DisplayDto.IvTotal;
@@ -493,14 +446,56 @@ namespace PokedexReactASP.Application.Services
             return result;
         }
 
+        /// <summary>
+        /// Builds a <see cref="PokemonCreationContext"/> from the common parameters shared by both catch methods.
+        /// Centralizes the construction that was previously duplicated in
+        /// <see cref="AttemptCatchPokemonAsync"/> and <see cref="CatchPokemonAsync"/>.
+        /// </summary>
+        private PokemonCreationContext BuildCreationContext(
+            string userId,
+            int pokemonApiId,
+            PokeApiPokemon pokeApiData,
+            string? nickname,
+            string caughtLocation,
+            PokeballType caughtBall,
+            ApplicationUser user,
+            int captureRate,
+            bool isLegendary,
+            bool isMythical,
+            bool isBaby,
+            int genderRate)
+        {
+            return new PokemonCreationContext(
+                UserId: userId,
+                PokemonApiId: pokemonApiId,
+                PokemonName: pokeApiData.Name,
+                Nickname: nickname,
+                CaughtLocation: caughtLocation,
+                CaughtBall: caughtBall,
+                TrainerLevel: user.TrainerLevel,
+                TotalPokemonCaught: user.PokemonCaught,
+                CatchStreak: 0, // TODO: Track catch streak per species
+                HasShinyCharm: false, // TODO: Check inventory
+                IsLegendary: isLegendary,
+                IsMythical: isMythical,
+                IsBaby: isBaby,
+                BaseCaptureRate: captureRate,
+                BaseExperience: pokeApiData.Base_Experience,
+                Type1: pokeApiData.Type1,
+                Type2: pokeApiData.Type2,
+                SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
+                ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
+                GenderRate: genderRate);
+        }
+
         private async Task UpdateTrainerExp(ApplicationUser user, int expGain, CatchAttemptResultDto result)
         {
             user.TotalExperience += expGain;
             user.CurrentLevelExperience += expGain;
 
-            while (user.CurrentLevelExperience >= GetExpForNextLevel(user.TrainerLevel))
+            while (user.CurrentLevelExperience >= TrainerLevelCalculator.GetExpForNextLevel(user.TrainerLevel))
             {
-                user.CurrentLevelExperience -= GetExpForNextLevel(user.TrainerLevel);
+                user.CurrentLevelExperience -= TrainerLevelCalculator.GetExpForNextLevel(user.TrainerLevel);
                 user.TrainerLevel++;
                 result.TrainerLeveledUp = true;
             }
@@ -521,10 +516,9 @@ namespace PokedexReactASP.Application.Services
             };
         }
 
-        private static int GetExpForNextLevel(int currentLevel) => 1000 + (currentLevel * 100);
+        private static int GetExpForNextLevel(int currentLevel) => TrainerLevelCalculator.GetExpForNextLevel(currentLevel);
 
-        private static string CapitalizeFirst(string input) =>
-            string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
+        private static string CapitalizeFirst(string input) => PokemonNameHelper.CapitalizeFirst(input);
 
         #endregion
 

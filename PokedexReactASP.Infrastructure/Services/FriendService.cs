@@ -288,6 +288,10 @@ namespace PokedexReactASP.Infrastructure.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            // Persist counter changes to the Identity store
+            if (currentUser != null) await _userManager.UpdateAsync(currentUser);
+            if (otherUser != null) await _userManager.UpdateAsync(otherUser);
+
             var friendDto = await CreateFriendDto(userId, request.SenderId, friendship);
 
             return new FriendOperationResultDto
@@ -481,6 +485,10 @@ namespace PokedexReactASP.Infrastructure.Services
             if (otherUser != null && otherUser.FriendsCount > 0) otherUser.FriendsCount--;
 
             await _unitOfWork.SaveChangesAsync();
+
+            // Persist counter changes to the Identity store
+            if (currentUser != null) await _userManager.UpdateAsync(currentUser);
+            if (otherUser != null) await _userManager.UpdateAsync(otherUser);
 
             return new FriendOperationResultDto
             {

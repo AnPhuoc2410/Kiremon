@@ -35,15 +35,8 @@ namespace PokedexReactASP.Server.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            try
-            {
-                var result = await _friendService.GetMyFriendCodeAsync(userId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var result = await _friendService.GetMyFriendCodeAsync(userId);
+            return Ok(result);
         }
 
         /// <summary>
@@ -56,15 +49,8 @@ namespace PokedexReactASP.Server.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            try
-            {
-                var result = await _friendService.RegenerateFriendCodeAsync(userId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var result = await _friendService.RegenerateFriendCodeAsync(userId);
+            return Ok(result);
         }
 
         #endregion

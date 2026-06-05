@@ -22,6 +22,7 @@ using System.Threading.RateLimiting;
 using PokedexReactASP.Application.Common.Helpers;
 using Serilog;
 using Masking.Serilog;
+using Prometheus;
 
 namespace PokedexReactASP.Server
 {
@@ -231,14 +232,9 @@ namespace PokedexReactASP.Server
                     if (builder.Environment.IsDevelopment())
                     {
                         options.Cookie.SameSite = SameSiteMode.Lax;
-
                         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     }
                     else
-                    {
-                        options.Cookie.SameSite = SameSiteMode.None;
-                        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    }
                     {
                         options.Cookie.SameSite = SameSiteMode.None;
                         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -278,9 +274,10 @@ namespace PokedexReactASP.Server
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+
             app.UseRateLimiter();
-            // Configure the HTTP request pipeline.
-            // Enable Swagger with authentication protection
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseMiddleware<SwaggerAuthMiddleware>();
@@ -312,6 +309,20 @@ namespace PokedexReactASP.Server
 
             // Health check endpoint for Docker/Load Balancer
             app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+            app.MapGet("/version", () => Results.Ok(new
+            {
+                Version = typeof(Program).Assembly.GetName().Version?.ToString(),
+                Environment = app.Environment.EnvironmentName,
+                DotNetVersion = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                ServerTime = DateTime.UtcNow
+            }));
+
+            app.UseHttpMetrics();
+            // Expose endpoint /metrics cho Prometheus server crawl data
+            app.MapMetrics();
+
 
             app.MapFallbackToFile("/index.html");
 

@@ -4,22 +4,9 @@ using Microsoft.Extensions.Logging;
 namespace PokedexReactASP.Application.Services
 {
     /// <summary>
-    /// Service for interacting with PokeAPI (https://pokeapi.co/)
-    /// This replaces the need to store Pokemon data in the database.
-    /// Consider adding caching to reduce API calls.
+    /// Implementation of <see cref="IPokeApiService"/> — fetches live data from PokeAPI.
+    /// Interface definition lives in <c>Application/Interfaces/IPokeApiService.cs</c>.
     /// </summary>
-    public interface IPokeApiService
-    {
-        Task<PokeApiPokemon?> GetPokemonAsync(int id);
-        Task<PokeApiPokemon?> GetPokemonAsync(string name);
-        Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(int id);
-        Task<PokeApiSpeciesDetail?> GetPokemonSpeciesAsync(string name);
-        Task<PokeApiMove?> GetMoveAsync(int id);
-        Task<PokeApiItem?> GetItemAsync(int id);
-        Task<PokeApiType?> GetTypeAsync(string typeName);
-        Task<List<PokeApiPokemonListItem>> GetPokemonListAsync(int limit = 151, int offset = 0);
-    }
-
     public class PokeApiService : IPokeApiService
     {
         private readonly HttpClient _httpClient;
