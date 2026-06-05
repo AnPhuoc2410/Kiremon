@@ -1,4 +1,5 @@
 using AutoMapper;
+using PokedexReactASP.Application.Common.Helpers;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
@@ -12,8 +13,9 @@ namespace PokedexReactASP.Application.Mappings
         {
             // Auth mappings
             CreateMap<RegisterDto, ApplicationUser>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
-                .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow));
+                .ForMember(dest => dest.UserName,    opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.DateJoined,  opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.FriendCode,  opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
 
             CreateMap<ApplicationUser, AuthResponseDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -28,8 +30,9 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.PokemonCaught, opt => opt.MapFrom(src => src.PokemonCaught));
 
             CreateMap<SocialUserDto, ApplicationUser>()
-                .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.LastActiveDate, opt => opt.MapFrom(src => DateTime.UtcNow));
+                .ForMember(dest => dest.DateJoined,  opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.LastActiveDate, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.FriendCode,  opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
 
             // UserPokemon → UserPokemonDto
             CreateMap<UserPokemon, UserPokemonDto>()
