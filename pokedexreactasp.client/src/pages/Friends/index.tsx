@@ -124,7 +124,6 @@ const FriendsPage: React.FC = () => {
       return () => {
         unsubOnline();
         unsubOffline();
-        presenceHub.stop();
       };
     }
   }, [isAuthenticated, isInitialized, navigate, loadData]);

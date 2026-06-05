@@ -7,6 +7,8 @@ import {
   setCookie,
 } from "@/components/utils/cookieUtils";
 import toast from "react-hot-toast";
+import { presenceHub } from "@/services/signalr/presence.hub";
+import { IconTrophy, IconCoin } from "@tabler/icons-react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -20,6 +22,128 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const AchievementToast = ({ t, achievement }: { t: any; achievement: any }) => {
+  const getRarityColor = (rarity: string) => {
+    switch (rarity.toLowerCase()) {
+      case "gold":
+        return {
+          border: "4px double #D4AF37",
+          bg: "#FFFBEB",
+          text: "#854D0E",
+          shadow: "0 0 15px rgba(212, 175, 55, 0.4)",
+          iconBg: "#FEF3C7",
+        };
+      case "silver":
+        return {
+          border: "4px double #9CA3AF",
+          bg: "#F9FAFB",
+          text: "#374151",
+          shadow: "0 0 15px rgba(156, 163, 175, 0.3)",
+          iconBg: "#F3F4F6",
+        };
+      case "bronze":
+      default:
+        return {
+          border: "4px double #B45309",
+          bg: "#FFFDF5",
+          text: "#78350F",
+          shadow: "0 0 15px rgba(180, 83, 9, 0.2)",
+          iconBg: "#FEF3C7",
+        };
+    }
+  };
+
+  const style = getRarityColor(achievement.rarity || "bronze");
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "12px 16px",
+        background: style.bg,
+        border: style.border,
+        boxShadow: `0 8px 20px rgba(0,0,0,0.15), ${style.shadow}`,
+        borderRadius: "4px",
+        maxWidth: "320px",
+        position: "relative",
+        opacity: t.visible ? 1 : 0,
+        transform: t.visible ? "scale(1)" : "scale(0.9)",
+        transition: "all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+        fontFamily: "'VT323', monospace",
+        imageRendering: "pixelated",
+      }}
+    >
+      <div
+        style={{
+          width: "40px",
+          height: "40px",
+          background: style.iconBg,
+          border: "2px solid currentColor",
+          color: style.text,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "4px",
+          flexShrink: 0,
+        }}
+      >
+        <IconTrophy size={24} />
+      </div>
+      <div style={{ flex: 1, color: "#111827" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            fontWeight: "bold",
+            textTransform: "uppercase",
+            color: style.text,
+            letterSpacing: "0.5px",
+          }}
+        >
+          ! Achievement Unlocked !
+        </div>
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            lineHeight: "1.1",
+            marginTop: "2px",
+          }}
+        >
+          {achievement.name}
+        </div>
+        <div
+          style={{
+            fontSize: "14px",
+            color: "#4B5563",
+            marginTop: "2px",
+            lineHeight: "1.2",
+          }}
+        >
+          {achievement.description}
+        </div>
+        {achievement.rewardCoins > 0 && (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              color: "#D97706",
+              marginTop: "4px",
+            }}
+          >
+            <IconCoin size={14} fill="#F59E0B" color="#D97706" />+
+            {achievement.rewardCoins} COINS
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -97,6 +221,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       clearInterval(expirationCheckInterval);
     };
+  }, [isAuthenticated]);
+
+  // Global PresenceHub & Real-time Achievement Notifications
+  useEffect(() => {
+    if (isAuthenticated) {
+      presenceHub.start();
+
+      const unsubscribe = presenceHub.onAchievementUnlocked((achievement) => {
+        toast.custom(
+          (t) => <AchievementToast t={t} achievement={achievement} />,
+          {
+            position: "top-right",
+            duration: 5000,
+          },
+        );
+      });
+
+      return () => {
+        unsubscribe();
+        presenceHub.stop();
+      };
+    }
   }, [isAuthenticated]);
 
   const authLogin = async (loginData: AuthLoginData): Promise<void> => {
