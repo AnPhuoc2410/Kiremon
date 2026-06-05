@@ -1378,3 +1378,463 @@ export const AddFriendInput = styled.input`
     letter-spacing: normal;
   }
 `;
+
+// ============ ACHIEVEMENTS SYSTEM ============
+export const AchievementsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+`;
+
+export const AchievementsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+`;
+
+export const StatsDashboard = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+`;
+
+export const AchievementStatCard = styled.div`
+  background: white;
+  border: 4px double ${colors["gray-800"]};
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    content: "";
+    box-shadow: inset -4px -4px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+  }
+`;
+
+export const CircularProgressWrapper = styled.div`
+  position: relative;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+export const CircularProgressSvg = styled.svg`
+  transform: rotate(-90deg);
+  width: 70px;
+  height: 70px;
+`;
+
+export const CircularProgressBgCircle = styled.circle`
+  fill: none;
+  stroke: ${colors["gray-200"]};
+  stroke-width: 8;
+`;
+
+export const CircularProgressCircle = styled.circle<{ percentage: number }>`
+  fill: none;
+  stroke: ${colors["red-500"]};
+  stroke-width: 8;
+  stroke-dasharray: 188.4;
+  stroke-dashoffset: ${({ percentage }) => 188.4 - (188.4 * percentage) / 100};
+  stroke-linecap: square;
+  transition: stroke-dashoffset 0.5s ease-in-out;
+`;
+
+export const CircularProgressText = styled.span`
+  position: absolute;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors["gray-800"]};
+`;
+
+export const StatCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const AchievementStatLabel = styled.span`
+  font-size: 0.85rem;
+  color: ${colors["gray-500"]};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+export const AchievementStatValue = styled.h3`
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: ${colors["gray-900"]};
+  margin: 0;
+  line-height: 1;
+`;
+
+export const AchievementsSubTabContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  border-bottom: 4px solid ${colors["gray-300"]};
+  padding-bottom: 2px;
+  margin-top: 12px;
+  width: 100%;
+  overflow-x: auto;
+
+  /* hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const AchievementsSubTab = styled.button<{ $active: boolean }>`
+  background: ${({ $active }) => ($active ? colors["red-500"] : "transparent")};
+  color: ${({ $active }) => ($active ? "white" : colors["gray-600"])};
+  border: 4px double
+    ${({ $active }) => ($active ? colors["red-700"] : "transparent")};
+  border-bottom: none;
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  white-space: nowrap;
+  image-rendering: pixelated;
+
+  &:hover {
+    background: ${({ $active }) =>
+      $active ? colors["red-500"] : colors["gray-100"]};
+    color: ${({ $active }) => ($active ? "white" : colors["gray-900"])};
+  }
+`;
+
+export const BadgesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  width: 100%;
+`;
+
+export const BadgeCard = styled.div<{ $unlocked: boolean; $rarity: string }>`
+  background: ${({ $unlocked }) => ($unlocked ? "#FFFDF5" : "#F3F4F6")};
+  border: 4px double
+    ${({ $unlocked, $rarity }) => {
+      if (!$unlocked) return colors["gray-400"];
+      switch ($rarity.toLowerCase()) {
+        case "gold":
+          return "#D4AF37";
+        case "silver":
+          return "#9CA3AF";
+        default:
+          return "#B45309";
+      }
+    }};
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: ${({ $unlocked, $rarity }) => {
+    if (!$unlocked) return "2px 2px 0px rgba(0,0,0,0.05)";
+    switch ($rarity.toLowerCase()) {
+      case "gold":
+        return "0 0 10px rgba(212, 175, 55, 0.2), 3px 3px 0px rgba(0,0,0,0.1)";
+      case "silver":
+        return "0 0 10px rgba(156, 163, 175, 0.15), 3px 3px 0px rgba(0,0,0,0.1)";
+      default:
+        return "0 0 10px rgba(180, 83, 9, 0.1), 3px 3px 0px rgba(0,0,0,0.1)";
+    }
+  }};
+
+  &:hover {
+    transform: ${({ $unlocked }) => ($unlocked ? "translateY(-4px)" : "none")};
+    box-shadow: ${({ $unlocked, $rarity }) => {
+      if (!$unlocked) return "2px 2px 0px rgba(0,0,0,0.05)";
+      switch ($rarity.toLowerCase()) {
+        case "gold":
+          return "0 0 15px rgba(212, 175, 55, 0.45), 4px 6px 0px rgba(0,0,0,0.15)";
+        case "silver":
+          return "0 0 15px rgba(156, 163, 175, 0.35), 4px 6px 0px rgba(0,0,0,0.15)";
+        default:
+          return "0 0 15px rgba(180, 83, 9, 0.3), 4px 6px 0px rgba(0,0,0,0.15)";
+      }
+    }};
+  }
+`;
+
+export const BadgeIconWrapper = styled.div<{ $unlocked: boolean }>`
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  filter: ${({ $unlocked }) =>
+    $unlocked ? "none" : "brightness(0.25) contrast(0.5)"};
+  opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.45)};
+  transition: all 0.3s ease;
+`;
+
+export const BadgeName = styled.h4`
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  color: ${colors["gray-900"]};
+  line-height: 1.2;
+`;
+
+export const BadgeLeaderInfo = styled.p`
+  font-size: 0.8rem;
+  color: ${colors["gray-500"]};
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+`;
+
+export const BadgeStatusText = styled.span<{ $unlocked: boolean }>`
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: ${({ $unlocked }) =>
+    $unlocked ? colors["green-600"] : colors["gray-400"]};
+  margin-top: auto;
+  letter-spacing: 0.5px;
+`;
+
+export const SimulateBattleBtn = styled.button`
+  margin-top: 12px;
+  width: 100%;
+  padding: 6px 8px;
+  background-color: ${colors["yellow-400"]};
+  border: 3px double ${colors["yellow-700"]};
+  border-radius: 4px;
+  color: ${colors["gray-900"]};
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s ease;
+  text-transform: uppercase;
+
+  &:hover:not(:disabled) {
+    background-color: ${colors["yellow-300"]};
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    background-color: ${colors["gray-200"]};
+    border-color: ${colors["gray-400"]};
+    color: ${colors["gray-400"]};
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+`;
+
+export const AchievementsBentoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+`;
+
+export const AchievementBentoCard = styled.div<{ $unlocked: boolean }>`
+  background: white;
+  border: 4px double
+    ${({ $unlocked }) => ($unlocked ? colors["green-500"] : colors["gray-800"])};
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.08);
+  opacity: ${({ $unlocked }) => ($unlocked ? 1 : 0.85)};
+  position: relative;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 5px 0px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+export const AchievementBentoIcon = styled.div<{
+  $unlocked: boolean;
+  $rarity: string;
+}>`
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  border: 2px solid
+    ${({ $unlocked, $rarity }) => {
+      if (!$unlocked) return colors["gray-400"];
+      switch ($rarity.toLowerCase()) {
+        case "gold":
+          return "#D4AF37";
+        case "silver":
+          return "#9CA3AF";
+        default:
+          return "#B45309";
+      }
+    }};
+  background: ${({ $unlocked, $rarity }) => {
+    if (!$unlocked) return colors["gray-100"];
+    switch ($rarity.toLowerCase()) {
+      case "gold":
+        return "#FFFBEB";
+      case "silver":
+        return "#F9FAFB";
+      default:
+        return "#FFFDF5";
+    }
+  }};
+  color: ${({ $unlocked, $rarity }) => {
+    if (!$unlocked) return colors["gray-400"];
+    switch ($rarity.toLowerCase()) {
+      case "gold":
+        return "#854D0E";
+      case "silver":
+        return "#374151";
+      default:
+        return "#78350F";
+    }
+  }};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: ${({ $unlocked }) => ($unlocked ? "none" : "grayscale(100%)")};
+`;
+
+export const AchievementBentoContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+`;
+
+export const AchievementBentoHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+`;
+
+export const AchievementTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+  color: ${colors["gray-900"]};
+  line-height: 1.2;
+`;
+
+export const AchievementRarityBadge = styled.span<{ $rarity: string }>`
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  color: ${({ $rarity }) => {
+    switch ($rarity.toLowerCase()) {
+      case "gold":
+        return "#D97706";
+      case "silver":
+        return "#4B5563";
+      default:
+        return "#B45309";
+    }
+  }};
+  background: ${({ $rarity }) => {
+    switch ($rarity.toLowerCase()) {
+      case "gold":
+        return "#FEF3C7";
+      case "silver":
+        return "#F3F4F6";
+      default:
+        return "#FEF3C7";
+    }
+  }};
+  letter-spacing: 0.5px;
+`;
+
+export const AchievementDesc = styled.p`
+  font-size: 0.8rem;
+  color: ${colors["gray-500"]};
+  margin: 4px 0 8px 0;
+  line-height: 1.2;
+`;
+
+export const AchievementFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 12px;
+`;
+
+export const AchievementProgressBarWrapper = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+export const AchievementProgressTrack = styled.div`
+  height: 8px;
+  background-color: ${colors["gray-100"]};
+  border: 2px solid ${colors["gray-400"]};
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+`;
+
+export const AchievementProgressFill = styled.div<{
+  $percent: number;
+  $unlocked: boolean;
+}>`
+  height: 100%;
+  width: ${({ $percent }) => Math.min(100, Math.max(0, $percent))}%;
+  background-color: ${({ $unlocked }) =>
+    $unlocked ? colors["green-500"] : colors["blue-500"]};
+  transition: width 0.3s ease;
+`;
+
+export const AchievementProgressText = styled.span`
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: ${colors["gray-600"]};
+  align-self: flex-end;
+`;
+
+export const RewardCoinsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #d97706;
+  flex-shrink: 0;
+`;

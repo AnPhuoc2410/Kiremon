@@ -73,3 +73,28 @@ export interface UpdateProfileRequest {
   lastName?: string | null;
   avatarUrl?: string | null;
 }
+
+export interface UserAchievement {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  rarity: string;
+  currentProgress: number;
+  targetValue: number;
+  isUnlocked: boolean;
+  unlockedAt: string | null;
+  rewardCoins: number;
+  icon: string;
+  region?: string | null;
+}
+
+export interface AchievementNotification {
+  id: string;
+  name: string;
+  description: string;
+  rarity: string;
+  rewardCoins: number;
+  icon: string;
+  region?: string | null;
+}

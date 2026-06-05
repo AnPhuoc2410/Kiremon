@@ -15,6 +15,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<UserItem> UserItems { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<Achievement> Achievements { get; set; }
+        public DbSet<UserAchievement> UserAchievements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -159,6 +161,37 @@ namespace PokedexReactASP.Infrastructure.Persistence
 
                 // String length constraints
                 entity.Property(e => e.Message).HasMaxLength(200);
+            });
+
+            // Configure Achievement entity
+            modelBuilder.Entity<Achievement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasMaxLength(100);
+                entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Rarity).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Icon).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Region).HasMaxLength(50);
+            });
+
+            // Configure UserAchievement entity
+            modelBuilder.Entity<UserAchievement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.AchievementId }).IsUnique();
+                entity.HasIndex(e => e.UserId);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserAchievements)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Achievement)
+                    .WithMany(a => a.UserAchievements)
+                    .HasForeignKey(e => e.AchievementId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

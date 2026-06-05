@@ -126,6 +126,12 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddMemoryCache();
 
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                options.InstanceName = "Kiremon_";
+            });
+
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
             // Add Application Services
@@ -140,6 +146,8 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<IPokemonCollectionService, PokemonCollectionService>();
             builder.Services.AddScoped<IPokemonCatchService, PokemonCatchService>();
+            builder.Services.AddScoped<IAchievementService, AchievementService>();
+            builder.Services.AddScoped<IAchievementNotificationService, AchievementNotificationService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();

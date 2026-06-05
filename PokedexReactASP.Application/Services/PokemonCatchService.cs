@@ -22,6 +22,7 @@ namespace PokedexReactASP.Application.Services
         private readonly IPokeApiService _pokeApiService;
         private readonly IPokemonFactoryService _pokemonFactory;
         private readonly ICatchRateCalculatorService _catchRateCalculator;
+        private readonly IAchievementService _achievementService;
 
         public PokemonCatchService(
             IUnitOfWork unitOfWork,
@@ -30,7 +31,8 @@ namespace PokedexReactASP.Application.Services
             IPokemonEnricherService pokemonEnricher,
             IPokeApiService pokeApiService,
             IPokemonFactoryService pokemonFactory,
-            ICatchRateCalculatorService catchRateCalculator)
+            ICatchRateCalculatorService catchRateCalculator,
+            IAchievementService achievementService)
         {
             _unitOfWork          = unitOfWork;
             _userManager         = userManager;
@@ -39,6 +41,7 @@ namespace PokedexReactASP.Application.Services
             _pokeApiService      = pokeApiService;
             _pokemonFactory      = pokemonFactory;
             _catchRateCalculator = catchRateCalculator;
+            _achievementService  = achievementService;
         }
 
         // ── Catch Operations ──────────────────────────────────────────────────
@@ -138,6 +141,7 @@ namespace PokedexReactASP.Application.Services
             user.PokemonCaught++;
             if (isNewSpecies)         user.UniquePokemonCaught++;
             if (userPokemon.IsShiny)  user.ShinyPokemonCaught++;
+            if (isLegendary)          user.LegendaryPokemonCaught++;
 
             int totalExpGain        = creationResult.ExpGained;
             result.TrainerExpGained = totalExpGain;
@@ -146,6 +150,9 @@ namespace PokedexReactASP.Application.Services
             await UpdateTrainerExpAsync(user, totalExpGain, result);
 
             await _unitOfWork.SaveChangesAsync();
+
+            // Check for achievements
+            await _achievementService.CheckAndUnlockAchievementsAsync(userId);
 
             // 11. Build success response
             result.Result  = CatchAttemptResult.Success;
@@ -216,6 +223,7 @@ namespace PokedexReactASP.Application.Services
             user.PokemonCaught++;
             if (isNewSpecies)        user.UniquePokemonCaught++;
             if (userPokemon.IsShiny) user.ShinyPokemonCaught++;
+            if (isLegendary)         user.LegendaryPokemonCaught++;
 
             int expGain = creationResult.ExpGained;
 
@@ -232,6 +240,9 @@ namespace PokedexReactASP.Application.Services
 
             await _userManager.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();
+
+            // Check for achievements
+            await _achievementService.CheckAndUnlockAchievementsAsync(userId);
 
             // 9. Build response
             result.Success = true;

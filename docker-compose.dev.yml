@@ -1,1 +1,15 @@
-﻿
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: kiremon_redis_dev
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+
+volumes:
+  redis_dev_data:
