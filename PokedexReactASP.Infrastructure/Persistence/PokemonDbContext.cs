@@ -34,6 +34,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.Badges).HasColumnType("text");
                 entity.Property(e => e.FriendCode).HasMaxLength(14).IsRequired();
                 entity.HasIndex(e => e.FriendCode).IsUnique();
+                entity.HasIndex(e => e.LastActiveDate);
             });
 
             // Configure UserPokemon entity
@@ -49,14 +50,12 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.HasIndex(e => new { e.UserId, e.IsFavorite });
                 entity.HasIndex(e => new { e.UserId, e.IsInParty, e.SlotIndex });
                 entity.HasIndex(e => e.BoxId);
-
-                // Configure relationship with User
+                entity.HasIndex(e => new { e.UserId, e.IsShiny });
+                entity.HasIndex(e => new { e.UserId, e.CaughtDate });
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.UserPokemons)
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
-
-                // Cấu hình quan hệ Box - Pokemon
                 entity.HasOne(p => p.Box)
                     .WithMany(b => b.Pokemons)
                     .HasForeignKey(p => p.BoxId)
@@ -83,6 +82,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.BackgroundImage).HasMaxLength(200);
+                entity.HasIndex(e => e.UserId);
 
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.Boxes)
