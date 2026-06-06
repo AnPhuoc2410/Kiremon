@@ -266,7 +266,7 @@ const Header: React.FC<HeaderProps> = ({
 
         <S.HeaderActions>
           <form onSubmit={handleSearch}>
-            <S.SearchContainer>
+            <S.SearchContainer id="tour-search-container">
               <SearchIcon />
               <input
                 type="text"
@@ -303,7 +303,7 @@ const Header: React.FC<HeaderProps> = ({
             </S.LanguageDropdown>
           </S.LanguageMenuContainer>
 
-          <S.GuideButton onClick={handleStartTour} title="Help Tour">
+          <S.GuideButton onClick={handleStartTour} title="Help Tour" id="tour-nav-guide">
             <GuideBookIcon />
             <span>{t("common.guide", languageId)}</span>
           </S.GuideButton>
@@ -359,19 +359,19 @@ const Header: React.FC<HeaderProps> = ({
 
       <S.NavContainer>
         <S.NavList>
-          <S.NavItem>
+          <S.NavItem id="tour-nav-pokedex">
             <Link to="/pokemons">
               <S.NavLink as="span">{t("nav.pokedex", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
 
-          <S.NavItem>
+          <S.NavItem id="tour-nav-mypokemon">
             <Link to="/my-pokemon">
               <S.NavLink as="span">{t("nav.myPokemon", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
 
-          <NavItemWithDropdown title={t("nav.miniGames", languageId)}>
+          <NavItemWithDropdown title={t("nav.miniGames", languageId)} id="tour-nav-games">
             <Link to="/games/combat-team">
               <S.DropdownItem>
                 {t("games.combatTeam", languageId)}
@@ -419,7 +419,7 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </S.NavItem>
 
-          <S.NavItem>
+          <S.NavItem id="tour-nav-tcg">
             <Link to="/poke-tcg">
               <S.NavLink as="span">{t("nav.pokeTcg", languageId)}</S.NavLink>
             </Link>
