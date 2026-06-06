@@ -1,14 +1,22 @@
 using Microsoft.Extensions.Caching.Distributed;
 using PokedexReactASP.Application.Interfaces;
+using System;
 using System.Collections.Concurrent;
-using System.Text.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PokedexReactASP.Application.Services
 {
+    /// <summary>
+    /// Caches Pokémon data from PokéAPI to reduce external network calls.
+    /// Utilizes ICacheService for serialization and resilient caching.
+    /// </summary>
     public class PokemonCacheService : IPokemonCacheService, IDisposable
     {
         private readonly IPokeApiService _pokeApiService;
-        private readonly IDistributedCache _cache;
+        private readonly ICacheService _cache;
 
         /// <summary>Per-key semaphores to prevent thundering-herd for single fetches.</summary>
         private readonly ConcurrentDictionary<int, SemaphoreSlim> _keyLocks = new();
@@ -19,7 +27,7 @@ namespace PokedexReactASP.Application.Services
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(24);
         private bool _disposed;
 
-        public PokemonCacheService(IPokeApiService pokeApiService, IDistributedCache cache)
+        public PokemonCacheService(IPokeApiService pokeApiService, ICacheService cache)
         {
             _pokeApiService = pokeApiService;
             _cache = cache;
@@ -34,17 +42,10 @@ namespace PokedexReactASP.Application.Services
             var cacheKey = $"pokemon_{pokemonApiId}";
 
             // Check cache (fast path without locking)
-            var cachedJson = await _cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedJson))
+            var pokemon = await _cache.GetAsync<PokeApiPokemon>(cacheKey);
+            if (pokemon != null)
             {
-                try
-                {
-                    return JsonSerializer.Deserialize<PokeApiPokemon>(cachedJson);
-                }
-                catch (JsonException)
-                {
-                    // Fall through if serialization failed
-                }
+                return pokemon;
             }
 
             // Acquire the per-key lock for this specific Pokémon ID
@@ -53,28 +54,16 @@ namespace PokedexReactASP.Application.Services
             try
             {
                 // Double-check after acquiring lock
-                cachedJson = await _cache.GetStringAsync(cacheKey);
-                if (!string.IsNullOrEmpty(cachedJson))
-                {
-                    try
-                    {
-                        return JsonSerializer.Deserialize<PokeApiPokemon>(cachedJson);
-                    }
-                    catch (JsonException)
-                    {
-                        // Fall through
-                    }
-                }
-
-                var pokemon = await _pokeApiService.GetPokemonAsync(pokemonApiId);
+                pokemon = await _cache.GetAsync<PokeApiPokemon>(cacheKey);
                 if (pokemon != null)
                 {
-                    var options = new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = CacheDuration
-                    };
-                    var serialized = JsonSerializer.Serialize(pokemon);
-                    await _cache.SetStringAsync(cacheKey, serialized, options);
+                    return pokemon;
+                }
+
+                pokemon = await _pokeApiService.GetPokemonAsync(pokemonApiId);
+                if (pokemon != null)
+                {
+                    await _cache.SetAsync(cacheKey, pokemon, CacheDuration);
                 }
 
                 return pokemon;
@@ -90,31 +79,18 @@ namespace PokedexReactASP.Application.Services
         {
             var cacheKey = $"pokemon_name_{name.ToLower()}";
 
-            var cachedJson = await _cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cachedJson))
-            {
-                try
-                {
-                    return JsonSerializer.Deserialize<PokeApiPokemon>(cachedJson);
-                }
-                catch (JsonException)
-                {
-                    // Fall through
-                }
-            }
-
-            var pokemon = await _pokeApiService.GetPokemonAsync(name);
+            var pokemon = await _cache.GetAsync<PokeApiPokemon>(cacheKey);
             if (pokemon != null)
             {
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = CacheDuration
-                };
-                var serialized = JsonSerializer.Serialize(pokemon);
+                return pokemon;
+            }
 
+            pokemon = await _pokeApiService.GetPokemonAsync(name);
+            if (pokemon != null)
+            {
                 // Cache by both name key and numeric ID key for future ID lookups
-                await _cache.SetStringAsync(cacheKey, serialized, options);
-                await _cache.SetStringAsync($"pokemon_{pokemon.Id}", serialized, options);
+                await _cache.SetAsync(cacheKey, pokemon, CacheDuration);
+                await _cache.SetAsync($"pokemon_{pokemon.Id}", pokemon, CacheDuration);
             }
 
             return pokemon;
@@ -133,25 +109,10 @@ namespace PokedexReactASP.Application.Services
             // First pass: cache hits
             foreach (var id in uniqueIds)
             {
-                var cachedJson = await _cache.GetStringAsync($"pokemon_{id}");
-                if (!string.IsNullOrEmpty(cachedJson))
+                var pokemon = await _cache.GetAsync<PokeApiPokemon>($"pokemon_{id}");
+                if (pokemon != null)
                 {
-                    try
-                    {
-                        var pokemon = JsonSerializer.Deserialize<PokeApiPokemon>(cachedJson);
-                        if (pokemon != null)
-                        {
-                            result[id] = pokemon;
-                        }
-                        else
-                        {
-                            missingIds.Add(id);
-                        }
-                    }
-                    catch (JsonException)
-                    {
-                        missingIds.Add(id);
-                    }
+                    result[id] = pokemon;
                 }
                 else
                 {
@@ -168,30 +129,16 @@ namespace PokedexReactASP.Application.Services
                 try
                 {
                     // Check per-key cache one more time (another request may have populated it)
-                    var cachedJson = await _cache.GetStringAsync($"pokemon_{id}");
-                    if (!string.IsNullOrEmpty(cachedJson))
+                    var cachedPokemon = await _cache.GetAsync<PokeApiPokemon>($"pokemon_{id}");
+                    if (cachedPokemon != null)
                     {
-                        try
-                        {
-                            var cachedPokemon = JsonSerializer.Deserialize<PokeApiPokemon>(cachedJson);
-                            if (cachedPokemon != null)
-                                return (id, cachedPokemon);
-                        }
-                        catch (JsonException)
-                        {
-                            // Fall through
-                        }
+                        return (id, cachedPokemon);
                     }
 
                     var pokemon = await _pokeApiService.GetPokemonAsync(id);
                     if (pokemon != null)
                     {
-                        var options = new DistributedCacheEntryOptions
-                        {
-                            AbsoluteExpirationRelativeToNow = CacheDuration
-                        };
-                        var serialized = JsonSerializer.Serialize(pokemon);
-                        await _cache.SetStringAsync($"pokemon_{id}", serialized, options);
+                        await _cache.SetAsync($"pokemon_{id}", pokemon, CacheDuration);
                     }
 
                     return (id, pokemon);

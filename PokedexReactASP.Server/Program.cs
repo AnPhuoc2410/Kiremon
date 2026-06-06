@@ -132,6 +132,8 @@ namespace PokedexReactASP.Server
                 options.InstanceName = "Kiremon_";
             });
 
+            builder.Services.AddSingleton<ICacheService, ResilientCacheService>();
+
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
             // Add Application Services

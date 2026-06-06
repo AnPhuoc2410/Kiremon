@@ -12,7 +12,7 @@ namespace PokedexReactASP.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IDistributedCache _cache;
+        private readonly ICacheService _cache;
         private readonly IAchievementNotificationService _notificationService;
         private readonly ILogger<AchievementService> _logger;
 
@@ -145,7 +145,7 @@ namespace PokedexReactASP.Application.Services
         public AchievementService(
             IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
-            IDistributedCache cache,
+            ICacheService cache,
             IAchievementNotificationService notificationService,
             ILogger<AchievementService> logger)
         {
@@ -162,26 +162,10 @@ namespace PokedexReactASP.Application.Services
             var cacheKey = $"achievements:{userId}";
 
             // 1. Try cache lookup
-            string? cachedJson = null;
-            try
+            var cached = await _cache.GetAsync<List<UserAchievementStatusDto>>(cacheKey);
+            if (cached != null)
             {
-                cachedJson = await _cache.GetStringAsync(cacheKey);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to read achievements cache for user {UserId} from Redis. Falling back to DB.", userId);
-            }
-
-            if (!string.IsNullOrEmpty(cachedJson))
-            {
-                try
-                {
-                    return JsonSerializer.Deserialize<List<UserAchievementStatusDto>>(cachedJson) ?? new List<UserAchievementStatusDto>();
-                }
-                catch (JsonException)
-                {
-                    // Fallback to database query on corrupted cache
-                }
+                return cached;
             }
 
             // 2. Fetch from DB
@@ -235,19 +219,8 @@ namespace PokedexReactASP.Application.Services
                 });
             }
 
-            // 3. Save to Redis
-            try
-            {
-                var cacheOptions = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = CacheDuration
-                };
-                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to save achievements cache for user {UserId} to Redis.", userId);
-            }
+            // 3. Save to Cache
+            await _cache.SetAsync(cacheKey, result, CacheDuration);
 
             return result;
         }
@@ -321,15 +294,8 @@ namespace PokedexReactASP.Application.Services
                 await _userManager.UpdateAsync(user);
                 // Save database records
                 await _unitOfWork.SaveChangesAsync();
-                // Invalidate Redis cache
-                try
-                {
-                    await _cache.RemoveAsync($"achievements:{userId}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to invalidate achievements cache for user {UserId} in Redis.", userId);
-                }
+                // Invalidate Cache
+                await _cache.RemoveAsync($"achievements:{userId}");
             }
         }
 
@@ -376,14 +342,7 @@ namespace PokedexReactASP.Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Clear cache
-            try
-            {
-                await _cache.RemoveAsync($"achievements:{userId}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to invalidate achievements cache for user {UserId} in Redis.", userId);
-            }
+            await _cache.RemoveAsync($"achievements:{userId}");
 
             // Notify SignalR
             var notification = new AchievementNotificationDto
