@@ -103,6 +103,12 @@
       "skillPath": "skills/nuget-manager/SKILL.md",
       "computedHash": "9081279ef0313a18766c8f03422de9ef31765212d31b13a513e66f39427b4e38"
     },
+    "react-joyride": {
+      "source": "gilbarbara/react-joyride",
+      "sourceType": "github",
+      "skillPath": "skills/react-joyride/SKILL.md",
+      "computedHash": "824724c51142bb67d7dfc5aee3cbabb4a28195fe429cc00a19d0b062fa3c1f60"
+    },
     "redesign-existing-projects": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
