@@ -22,6 +22,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
         private static readonly TimeSpan RedisRetryDelay = TimeSpan.FromMinutes(1);
         private long _redisErrorTicks = 0;
+        private int _isCheckingConnection = 0;
 
         public ResilientCacheService(
             IDistributedCache distributedCache,
@@ -35,7 +36,49 @@ namespace PokedexReactASP.Infrastructure.Services
 
         private bool IsRedisAvailable()
         {
-            return DateTime.UtcNow.Ticks > Interlocked.Read(ref _redisErrorTicks);
+            var errorTicks = Interlocked.Read(ref _redisErrorTicks);
+            var nowTicks = DateTime.UtcNow.Ticks;
+
+            if (nowTicks > errorTicks)
+            {
+                if (errorTicks != 0)
+                {
+                    // Redis was down and the cooldown has expired.
+                    // Start checking the connection in the background without blocking the request.
+                    if (Interlocked.CompareExchange(ref _isCheckingConnection, 1, 0) == 0)
+                    {
+                        _ = CheckRedisConnectionAsync();
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task CheckRedisConnectionAsync()
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                await _distributedCache.GetStringAsync("redis_health_ping", cts.Token);
+
+                Interlocked.Exchange(ref _redisErrorTicks, 0);
+                _logger.LogInformation("Redis distributed cache connection recovered successfully.");
+            }
+            catch (Exception ex)
+            {
+                var resumeTicks = DateTime.UtcNow.Add(RedisRetryDelay).Ticks;
+                Interlocked.Exchange(ref _redisErrorTicks, resumeTicks);
+                _logger.LogWarning("Redis distributed cache connection check failed. Cooldown extended for {DelaySeconds} seconds. Error: {ErrorMessage}", RedisRetryDelay.TotalSeconds, ex.Message);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isCheckingConnection, 0);
+            }
         }
 
         private void HandleRedisException(Exception ex, string operation)
