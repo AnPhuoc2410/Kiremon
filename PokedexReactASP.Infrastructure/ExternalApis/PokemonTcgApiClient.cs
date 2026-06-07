@@ -37,27 +37,79 @@ namespace PokedexReactASP.Infrastructure.ExternalApis
                     var encodedSelect = Uri.EscapeDataString(SelectFields);
                     var url = $"cards?q={encodedQuery}&page={page}&pageSize={PageSize}&select={encodedSelect}";
 
-                    using var response = await _httpClient.GetAsync(url, cancellationToken);
-                    if (!response.IsSuccessStatusCode)
+                    HttpResponseMessage? response = null;
+                    const int maxRetries = 3;
+                    var retryCount = 0;
+                    var delay = TimeSpan.FromSeconds(2);
+
+                    while (true)
                     {
-                        _logger.LogWarning("Pokemon TCG API returned status code {StatusCode} for pokemonApiId {PokemonApiId}", response.StatusCode, pokemonApiId);
-                        return Array.Empty<PokemonTcgCardApiModel>();
+                        try
+                        {
+                            response = await _httpClient.GetAsync(url, cancellationToken);
+
+                            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests || 
+                                ((int)response.StatusCode >= 500 && (int)response.StatusCode <= 599))
+                            {
+                                if (retryCount < maxRetries)
+                                {
+                                    retryCount++;
+                                    _logger.LogWarning("Pokemon TCG API returned status code {StatusCode}. Retrying {RetryCount}/{MaxRetries} after {Delay}ms...", 
+                                        response.StatusCode, retryCount, maxRetries, delay.TotalMilliseconds);
+                                    
+                                    response.Dispose();
+                                    await Task.Delay(delay, cancellationToken);
+                                    delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 10)); // Exponential backoff
+                                    continue;
+                                }
+                            }
+                            break;
+                        }
+                        catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException)
+                        {
+                            // If user requested cancellation, propagate it immediately
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                throw;
+                            }
+
+                            if (retryCount < maxRetries)
+                            {
+                                retryCount++;
+                                _logger.LogWarning(ex, "Transient error or timeout querying Pokemon TCG API. Retrying {RetryCount}/{MaxRetries} after {Delay}ms...", 
+                                    retryCount, maxRetries, delay.TotalMilliseconds);
+                                
+                                await Task.Delay(delay, cancellationToken);
+                                delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 10)); // Exponential backoff
+                                continue;
+                            }
+                            throw;
+                        }
                     }
 
-                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-                    var payload = await JsonSerializer.DeserializeAsync<PokemonTcgSearchResponse>(stream, new JsonSerializerOptions
+                    using (response)
                     {
-                        PropertyNameCaseInsensitive = true
-                    }, cancellationToken);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            _logger.LogWarning("Pokemon TCG API returned status code {StatusCode} for pokemonApiId {PokemonApiId}", response.StatusCode, pokemonApiId);
+                            return Array.Empty<PokemonTcgCardApiModel>();
+                        }
 
-                    if (payload?.Data == null || payload.Data.Count == 0)
-                    {
-                        break;
+                        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                        var payload = await JsonSerializer.DeserializeAsync<PokemonTcgSearchResponse>(stream, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        }, cancellationToken);
+
+                        if (payload?.Data == null || payload.Data.Count == 0)
+                        {
+                            break;
+                        }
+
+                        cards.AddRange(payload.Data.Where(c => !string.IsNullOrWhiteSpace(c.Id)));
+                        totalCount = payload.TotalCount <= 0 ? cards.Count : payload.TotalCount;
+                        page++;
                     }
-
-                    cards.AddRange(payload.Data.Where(c => !string.IsNullOrWhiteSpace(c.Id)));
-                    totalCount = payload.TotalCount <= 0 ? cards.Count : payload.TotalCount;
-                    page++;
                 }
             }
             catch (Exception ex)

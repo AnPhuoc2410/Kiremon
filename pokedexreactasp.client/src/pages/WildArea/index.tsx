@@ -1,4 +1,4 @@
-﻿import { createRef, useEffect, useMemo, useState } from "react";
+import { createRef, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -35,6 +35,8 @@ const WildArea = () => {
     PokeballType.Pokeball,
   );
   const [secondsUntilReset, setSecondsUntilReset] = useState(0);
+  const [isCatching, setIsCatching] = useState(false);
+  const catchingRef = useRef(false);
   const { isAuthenticated, isInitialized } = useAuth();
   const selectedAreaCode = searchParams.get("areaCode") || DEFAULT_AREA_CODE;
 
@@ -93,7 +95,9 @@ const WildArea = () => {
   }, [secondsLeft]);
 
   const handleAttemptCatch = async () => {
-    if (!isAuthenticated || !selectedSpawn) return;
+    if (!isAuthenticated || !selectedSpawn || catchingRef.current) return;
+    catchingRef.current = true;
+    setIsCatching(true);
 
     try {
       const response = await catchMutation.mutateAsync({
@@ -106,6 +110,9 @@ const WildArea = () => {
     } catch (error) {
       console.error(error);
       toast.error("Catch attempt failed. Please try again.");
+    } finally {
+      catchingRef.current = false;
+      setIsCatching(false);
     }
   };
 
@@ -275,6 +282,7 @@ const WildArea = () => {
                 onChange={(e) =>
                   setPokeballType(Number(e.target.value) as PokeballType)
                 }
+                disabled={catchMutation.isPending || isCatching}
               >
                 <option value={PokeballType.Pokeball}>Pokeball</option>
                 <option value={PokeballType.GreatBall}>Great Ball</option>
@@ -283,15 +291,21 @@ const WildArea = () => {
             </S.FormRow>
 
             <S.Actions>
-              <Button variant="light" onClick={() => setSelectedSpawn(null)}>
+              <Button
+                variant="light"
+                onClick={() => setSelectedSpawn(null)}
+                disabled={catchMutation.isPending || isCatching}
+              >
                 Cancel
               </Button>
               <Button
                 variant="dark"
                 onClick={handleAttemptCatch}
-                disabled={catchMutation.isPending}
+                disabled={catchMutation.isPending || isCatching}
               >
-                {catchMutation.isPending ? "Catching..." : "Attempt Catch"}
+                {catchMutation.isPending || isCatching
+                  ? "Catching..."
+                  : "Attempt Catch"}
               </Button>
             </S.Actions>
           </S.ModalCard>

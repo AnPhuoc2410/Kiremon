@@ -62,6 +62,7 @@ const DetailPokemon = () => {
   const { languageId } = useLanguage();
 
   const throwBallTimeout = useRef<NodeJS.Timeout | number>(0);
+  const catchingRef = useRef<boolean>(false);
 
   // Track active tab for lazy loading
   const [activeTab, setActiveTab] = useState<string>("about");
@@ -203,6 +204,8 @@ const DetailPokemon = () => {
       return;
     }
 
+    if (catchingRef.current) return;
+    catchingRef.current = true;
     setIsCatching(true);
     setShakeCount(0);
     setIsPokemonFled(false);
@@ -214,6 +217,7 @@ const DetailPokemon = () => {
 
     if (!result) {
       setIsCatching(false);
+      catchingRef.current = false;
       return;
     }
 
@@ -224,6 +228,7 @@ const DetailPokemon = () => {
     await animateShakes(result.shakeCount);
 
     setIsCatching(false);
+    catchingRef.current = false;
     setIsEndPhase(true);
 
     if (result.result === CatchAttemptResult.Success) {
