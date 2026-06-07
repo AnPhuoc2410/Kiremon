@@ -160,7 +160,7 @@ const DetailPokemon = () => {
 
   async function attemptCatchPokemon(): Promise<CatchAttemptResultDto | null> {
     if (!isAuthenticated) {
-      toast.error("Please log in to catch PokÃ©mon!");
+      toast.error("Please log in to catch Pokémon!");
       return null;
     }
 
@@ -199,7 +199,7 @@ const DetailPokemon = () => {
 
   async function throwPokeball() {
     if (!isAuthenticated) {
-      toast.error("Please log in to catch PokÃ©mon!");
+      toast.error("Please log in to catch Pokémon!");
       return;
     }
 
@@ -245,7 +245,7 @@ const DetailPokemon = () => {
       if (result.trainerExpGained > 0) {
         toast(`+${result.trainerExpGained} XP for trying!`, {
           duration: 2000,
-          icon: "ðŸ’ª",
+          icon: "💪",
         });
       }
     }
@@ -268,7 +268,7 @@ const DetailPokemon = () => {
         // Pokemon fled - cannot try again
         toast.error(`${name?.toUpperCase()} fled!`, {
           duration: 3000,
-          icon: "ðŸ’¨",
+          icon: "💨",
         });
       }
       // Escaped - user can try again
@@ -280,7 +280,7 @@ const DetailPokemon = () => {
 
     // Pokemon is already caught from server, we just update nickname if provided
     if (!catchAttemptResult || !caughtPokemonData) {
-      toast.error("No caught PokÃ©mon data available");
+      toast.error("No caught Pokémon data available");
       return;
     }
 
@@ -303,7 +303,7 @@ const DetailPokemon = () => {
         } catch (error: unknown) {
           console.error("Error updating nickname:", error);
           // Don't fail the whole process, just show warning
-          toast.error("Failed to update nickname, but PokÃ©mon was saved!");
+          toast.error("Failed to update nickname, but Pokémon was saved!");
         }
       }
 
@@ -317,20 +317,20 @@ const DetailPokemon = () => {
 
       toast.success(
         isShiny
-          ? `âœ¨ Shiny ${pokemon?.displayName} caught! ${rank}`
+          ? `✨ Shiny ${pokemon?.displayName} caught! ${rank}`
           : `${pokemon?.displayName} was caught! ${rank}`,
         { duration: 4000 },
       );
 
       if (catchAttemptResult.isNewSpecies) {
-        toast.success("ðŸ“– New species registered in PokÃ©dex!", {
+        toast.success("📖 New species registered in Pokédex!", {
           duration: 3000,
         });
       }
 
       if (catchAttemptResult.trainerLeveledUp) {
         toast.success(
-          `ðŸŽ‰ Trainer leveled up to ${catchAttemptResult.newTrainerLevel}!`,
+          `🎉 Trainer leveled up to ${catchAttemptResult.newTrainerLevel}!`,
           { duration: 3000 },
         );
       }
@@ -394,7 +394,7 @@ const DetailPokemon = () => {
     document.title = `#${pokemonId} - ${name?.toUpperCase()}`;
 
     return () => {
-      document.title = "PokÃ©mon - Catch 'em all!";
+      document.title = "Pokémon - Catch 'em all!";
     };
   }, [pokemonId, name]);
 
@@ -547,13 +547,13 @@ const DetailPokemon = () => {
                 height={128}
               />
               <Text variant="outlined" size="xl">
-                {caughtPokemonData?.isShiny ? "âœ¨ " : ""}
+                {caughtPokemonData?.isShiny ? "✨ " : ""}
                 Gotcha! {name?.toUpperCase()} was caught!
               </Text>
               {caughtPokemonData && (
                 <div style={{ marginTop: "12px", textAlign: "center" }}>
                   <Text size="sm" style={{ color: "#60A5FA" }}>
-                    Level {caughtPokemonData.level} â€¢{" "}
+                    Level {caughtPokemonData.level} •{" "}
                     {caughtPokemonData.rankDisplay}
                   </Text>
                 </div>
@@ -581,7 +581,7 @@ const DetailPokemon = () => {
             />
             {caughtPokemonData?.isShiny && (
               <Text size="sm" style={{ color: "#FBBF24", marginTop: "8px" }}>
-                âœ¨ SHINY! âœ¨
+                ✨ SHINY! ✨
               </Text>
             )}
           </T.ImageContainer>
@@ -605,7 +605,7 @@ const DetailPokemon = () => {
                     }}
                   >
                     <Text size="sm" style={{ color: "#9CA3AF" }}>
-                      Level {caughtPokemonData.level} â€¢{" "}
+                      Level {caughtPokemonData.level} •{" "}
                       {caughtPokemonData.rankDisplay}
                     </Text>
                     <Text size="sm" style={{ color: "#60A5FA", marginTop: 4 }}>
@@ -645,13 +645,13 @@ const DetailPokemon = () => {
               <div className="pxl-border" style={{ textAlign: "left" }}>
                 <Text>
                   Whoosh! {nickname || caughtPokemonData?.displayName} is now in
-                  your PokÃ©mon list!
+                  your Pokémon list!
                 </Text>
 
                 {caughtPokemonData && (
                   <div style={{ marginTop: 12, padding: "8px 0" }}>
                     <Text size="sm" style={{ color: "#60A5FA" }}>
-                      â­ {caughtPokemonData.rankDisplay} (
+                      ⭐ {caughtPokemonData.rankDisplay} (
                       {caughtPokemonData.ivTotal}/186 IV)
                     </Text>
                     {catchResult?.experienceGained &&
@@ -668,7 +668,7 @@ const DetailPokemon = () => {
                         size="sm"
                         style={{ color: "#FBBF24", marginTop: 4 }}
                       >
-                        ðŸ†• New species registered!
+                        🆕 New species registered!
                       </Text>
                     )}
                   </div>
@@ -676,7 +676,7 @@ const DetailPokemon = () => {
               </div>
 
               <Link to="/my-pokemon">
-                <Button variant="light">See My PokÃ©mon</Button>
+                <Button variant="light">See My Pokémon</Button>
               </Link>
               <Link to="/pokemons">
                 <Button>Catch Another</Button>
@@ -1035,9 +1035,7 @@ const DetailPokemon = () => {
           )}
 
           {/* TCG Tab */}
-          {activeTab === "tcg" && (
-            <TcgTab pokemonName={name} pokemonApiId={pokemonId} enabled />
-          )}
+          {activeTab === "tcg" && <TcgTab pokemonName={name} enabled />}
         </T.Content>
       </T.Page>
 
@@ -1047,15 +1045,34 @@ const DetailPokemon = () => {
             {!isAuthenticated ? (
               <Link to="/login" style={navActionLinkStyle}>
                 <Button variant="dark" size="xl" icon="/static/pokeball.png">
-                  Login to Find in Wild Area
+                  Login to Catch
+                </Button>
+              </Link>
+            ) : isPokemonFled ? (
+              <Button
+                variant="dark"
+                size="xl"
+                disabled
+                icon="/static/pokeball.png"
+              >
+                Pokémon Fled
+              </Button>
+            ) : isSaved ? (
+              <Link to="/pokemons" style={navActionLinkStyle}>
+                <Button variant="dark" size="xl" icon="/static/pokeball.png">
+                  Find Another
                 </Button>
               </Link>
             ) : (
-              <Link to="/wild-area">
-                <Button variant="dark" size="xl" icon="/static/pokeball.png">
-                  Find in Wild Area
-                </Button>
-              </Link>
+              <Button
+                variant="dark"
+                onClick={() => throwPokeball()}
+                size="xl"
+                disabled={isCatching}
+                icon="/static/pokeball.png"
+              >
+                {isCatching ? "Catching..." : "Catch"}
+              </Button>
             )}
           </>
         )}
