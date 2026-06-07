@@ -337,6 +337,49 @@ const FavoriteButton = styled("button")({
   },
 });
 
+const CardsModalContainer = styled("div")({
+  width: "100%",
+  maxWidth: "768px",
+  margin: "0 auto",
+  "&.pxl-border": {
+    padding: "24px 28px !important",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    backgroundColor: "#F3F4F6",
+  },
+  maxHeight: "85vh",
+  display: "flex",
+  flexDirection: "column",
+});
+
+const ModalHeader = styled("div")({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  borderBottom: "2px solid #000000",
+  paddingBottom: "12px",
+  marginBottom: "8px",
+  width: "100%",
+});
+
+const CloseButton = styled("button")({
+  background: "transparent",
+  border: "none",
+  fontSize: "24px",
+  lineHeight: 1,
+  cursor: "pointer",
+  color: "#000000",
+  fontWeight: "bold",
+  padding: "0 4px",
+  fontFamily: '"Press Start 2P", "Courier New", monospace',
+  transition: "color 160ms ease, transform 160ms ease",
+  "&:hover": {
+    color: "#dc2626",
+    transform: "scale(1.1)",
+  },
+});
+
 export {
   Page,
   Header,
@@ -363,4 +406,7 @@ export {
   Badge,
   CardActions,
   FavoriteButton,
+  CardsModalContainer,
+  ModalHeader,
+  CloseButton,
 };

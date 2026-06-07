@@ -56,13 +56,11 @@ const Navbar = React.forwardRef<HTMLDivElement, INavbar>(
           {children}
           <InnerNav>
             <NavItem href="/pokemons" label={t("nav.explore", languageId)} />
-            <NavItem href="/wild-area" label="Wild Area" variant="sky" />
             <NavItem
               href="/my-pokemon"
               label={t("nav.myPokemon", languageId)}
               variant="light"
             />
-            <NavItem href="/my-cards" label="My Cards" variant="light" />
           </InnerNav>
         </OuterNav>
       </GradientBakcdrop>

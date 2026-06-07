@@ -42,7 +42,7 @@ namespace PokedexReactASP.Infrastructure
                     .Value;
 
                 client.BaseAddress = new Uri(settings.BaseUrl);
-                client.Timeout = TimeSpan.FromSeconds(15);
+                client.Timeout = TimeSpan.FromSeconds(30);
 
                 if (!string.IsNullOrWhiteSpace(settings.ApiKey))
                 {

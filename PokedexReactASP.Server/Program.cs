@@ -128,7 +128,13 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                var connectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(connectionString);
+                redisOptions.ConnectTimeout = 1000; // 1 second
+                redisOptions.SyncTimeout = 1000;    // 1 second
+                redisOptions.AbortOnConnectFail = false;
+
+                options.ConfigurationOptions = redisOptions;
                 options.InstanceName = "Kiremon_";
             });
 
