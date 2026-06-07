@@ -303,7 +303,11 @@ const Header: React.FC<HeaderProps> = ({
             </S.LanguageDropdown>
           </S.LanguageMenuContainer>
 
-          <S.GuideButton onClick={handleStartTour} title="Help Tour" id="tour-nav-guide">
+          <S.GuideButton
+            onClick={handleStartTour}
+            title="Help Tour"
+            id="tour-nav-guide"
+          >
             <GuideBookIcon />
             <span>{t("common.guide", languageId)}</span>
           </S.GuideButton>
@@ -371,7 +375,16 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </S.NavItem>
 
-          <NavItemWithDropdown title={t("nav.miniGames", languageId)} id="tour-nav-games">
+          <S.NavItem id="tour-nav-wildarea">
+            <Link to="/wild-area">
+              <S.NavLink as="span">{t("nav.wildArea", languageId)}</S.NavLink>
+            </Link>
+          </S.NavItem>
+
+          <NavItemWithDropdown
+            title={t("nav.miniGames", languageId)}
+            id="tour-nav-games"
+          >
             <Link to="/games/combat-team">
               <S.DropdownItem>
                 {t("games.combatTeam", languageId)}

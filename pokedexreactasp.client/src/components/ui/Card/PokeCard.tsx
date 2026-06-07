@@ -47,12 +47,13 @@ const PixelatedPokemonCard = styled.div<Props>`
     0px 1px 3px rgba(16, 24, 40, 0.1),
     0px 1px 2px rgba(16, 24, 40, 0.06);
 
-  cursor: ${(props) => (props.nickname ? "default" : "pointer")};
+  cursor: ${(props) =>
+    props.onClick || !props.nickname ? "pointer" : "default"};
 
   &:hover {
     transform: translateY(-4px);
     background-color: ${(props) =>
-      props.nickname ? "white" : colors["gray-200"]};
+      props.onClick || !props.nickname ? colors["gray-200"] : "white"};
     box-shadow:
       0px 12px 16px -4px rgba(16, 24, 40, 0.08),
       0px 4px 6px -2px rgba(16, 24, 40, 0.03);

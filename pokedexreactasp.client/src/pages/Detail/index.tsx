@@ -1,4 +1,4 @@
-﻿import styled from "@emotion/styled";
+import styled from "@emotion/styled";
 import {
   ChangeEvent,
   createRef,
@@ -1041,7 +1041,9 @@ const DetailPokemon = () => {
 
       <Navbar ref={navRef} fadeHeight={224}>
         {!isLoading && (
-          <>
+          <div
+            style={{ display: "flex", width: "100%", justifyContent: "center" }}
+          >
             {!isAuthenticated ? (
               <Link to="/login" style={navActionLinkStyle}>
                 <Button variant="dark" size="xl" icon="/static/pokeball.png">
@@ -1074,7 +1076,7 @@ const DetailPokemon = () => {
                 {isCatching ? "Catching..." : "Catch"}
               </Button>
             )}
-          </>
+          </div>
         )}
       </Navbar>
     </>

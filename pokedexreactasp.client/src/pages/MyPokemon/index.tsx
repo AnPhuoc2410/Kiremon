@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { IconStar, IconStarFilled } from "@tabler/icons-react";
 
 import { useAuth } from "@/contexts";
+import { useMyTcgCards } from "@/hooks/queries";
 import {
   Button,
   Navbar,
@@ -20,6 +21,7 @@ import { UserPokemonDto } from "@/types/userspokemon.types";
 
 interface DisplayPokemon {
   id?: number;
+  pokemonApiId?: number;
   name: string;
   nickname: string;
   sprite?: string;
@@ -43,6 +45,10 @@ const MyPokemon: React.FC = () => {
     "release" | "back"
   >("back");
 
+  const [cardsModalOpen, setCardsModalOpen] = useState<boolean>(false);
+  const [selectedPokemonForCards, setSelectedPokemonForCards] =
+    useState<DisplayPokemon | null>(null);
+
   const { isAuthenticated } = useAuth();
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +61,7 @@ const MyPokemon: React.FC = () => {
         const displayPokemon: DisplayPokemon[] = apiPokemon.map(
           (p: UserPokemonDto) => ({
             id: p.id,
+            pokemonApiId: p.pokemonApiId,
             name: p.name.toUpperCase(),
             nickname: p.displayName,
             sprite: p.spriteUrl || p.officialArtworkUrl || undefined,
@@ -274,6 +281,11 @@ const MyPokemon: React.FC = () => {
                     name={pokemon.name}
                     nickname={pokemon.nickname}
                     sprite={pokemon.sprite}
+                    pokemonId={pokemon.pokemonApiId}
+                    onClick={() => {
+                      setSelectedPokemonForCards(pokemon);
+                      setCardsModalOpen(true);
+                    }}
                   >
                     <T.CardChrome>
                       <T.CardMeta>
@@ -342,7 +354,8 @@ const MyPokemon: React.FC = () => {
                             top: "auto",
                             right: "auto",
                           }}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedPokemon(pokemon);
                             setDeleteConfirmation(true);
                           }}
@@ -393,8 +406,160 @@ const MyPokemon: React.FC = () => {
         )}
       </T.Page>
 
+      <Modal open={cardsModalOpen} overlay="dark-translucent">
+        <T.CardsModalContainer className="pxl-border">
+          <T.ModalHeader>
+            <div>
+              <Text
+                as="h2"
+                size="lg"
+                style={{
+                  fontFamily: '"Press Start 2P", monospace',
+                  fontSize: "12px",
+                  color: "#000000",
+                  margin: 0,
+                }}
+              >
+                {selectedPokemonForCards?.nickname?.toUpperCase()}'S CARDS
+              </Text>
+              <Text size="sm" style={{ color: "#475569", marginTop: "4px" }}>
+                API ID: {selectedPokemonForCards?.pokemonApiId}
+              </Text>
+            </div>
+            <T.CloseButton
+              onClick={() => {
+                setCardsModalOpen(false);
+                setSelectedPokemonForCards(null);
+              }}
+            >
+              X
+            </T.CloseButton>
+          </T.ModalHeader>
+          <MyPokemonCardsView
+            pokemonApiId={selectedPokemonForCards?.pokemonApiId}
+          />
+        </T.CardsModalContainer>
+      </Modal>
+
       <Navbar ref={navRef} />
     </>
+  );
+};
+
+const MyPokemonCardsView: React.FC<{ pokemonApiId?: number }> = ({
+  pokemonApiId,
+}) => {
+  const query = useMemo(
+    () => ({
+      page: 1,
+      pageSize: 50,
+      pokemonApiId: pokemonApiId,
+      sort: "obtained-desc" as const,
+    }),
+    [pokemonApiId],
+  );
+
+  const myCardsQuery = useMyTcgCards(query, !!pokemonApiId);
+
+  if (myCardsQuery.isLoading) {
+    return <Loading label="Loading cards..." />;
+  }
+
+  if (myCardsQuery.isError) {
+    return <Text>Failed to load card collection.</Text>;
+  }
+
+  const cards = myCardsQuery.data?.items ?? [];
+
+  if (cards.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "32px 0" }}>
+        <Text
+          style={{
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: "11px",
+            lineHeight: "1.8",
+            color: "#475569",
+          }}
+        >
+          NO CARDS COLLECTED YET FOR THIS POKÉMON!
+        </Text>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+        gap: "16px",
+        padding: "8px 0",
+        maxHeight: "55vh",
+        overflowY: "auto",
+      }}
+    >
+      {cards.map((card) => (
+        <div
+          key={card.userCardId}
+          className="pxl-border"
+          style={{
+            padding: "12px",
+            background: "#ffffff",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            alignItems: "stretch",
+          }}
+        >
+          <img
+            src={card.imageSmall || card.imageLarge || "/substitute.png"}
+            alt={card.name}
+            style={{
+              width: "100%",
+              height: "230px",
+              objectFit: "contain",
+              background: "#1e293b",
+              borderRadius: "4px",
+              border: "2px solid #000000",
+            }}
+            loading="lazy"
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <Text
+              style={{ fontWeight: "bold", fontSize: "14px", color: "#000" }}
+            >
+              {card.name.toUpperCase()}
+            </Text>
+            <Text style={{ fontSize: "11px", color: "#475569" }}>
+              {card.rarityTier.toUpperCase()}
+            </Text>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#bae6fd",
+                border: "2px solid #000000",
+                padding: "4px 8px",
+                marginTop: "4px",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                  fontFamily: '"Press Start 2P", monospace',
+                  color: "#000000",
+                }}
+              >
+                QTY: {card.quantity}
+              </Text>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 
