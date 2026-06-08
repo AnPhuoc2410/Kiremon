@@ -42,7 +42,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
 
   if (!item) {
     return (
-      <DialogBox $visible={false}>
+      <DialogBox $visible={false} id="tour-market-description">
         <DialogContent>
           <DialogPlaceholder>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,7 +65,7 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
   return (
     <>
       <DialogOverlay $visible={!!item} onClick={onClose} />
-      <DialogBox $visible={!!item}>
+      <DialogBox $visible={!!item} id="tour-market-description">
         <DialogHeader>
           <DialogTitle>{displayName}</DialogTitle>
           <CloseButton onClick={onClose} aria-label="Close">

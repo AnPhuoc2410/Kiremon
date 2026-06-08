@@ -283,7 +283,7 @@ const PokeTcg: React.FC = () => {
   );
 
   return (
-    <S.Page ref={pageRef}>
+    <S.Page ref={pageRef} id="tour-tcg-page">
       <Header
         title={t("tcg.title", languageId)}
         subtitle={t("tcg.subtitle", languageId)}
@@ -298,7 +298,7 @@ const PokeTcg: React.FC = () => {
             the rest of the Pokedex.
           </S.IntroText>
 
-          <S.SearchArea>
+          <S.SearchArea id="tour-tcg-search">
             <S.SearchForm onSubmit={submitSearch}>
               <S.SearchInput
                 value={draftSearch}
@@ -362,7 +362,7 @@ const PokeTcg: React.FC = () => {
         </S.PreviewStack>
       </S.IntroPanel>
 
-      <S.Toolbar className="tcg-reveal">
+      <S.Toolbar className="tcg-reveal" id="tour-tcg-filters">
         <S.Stat>
           <span>Pokemon</span>
           <strong>{debouncedPokemonName || DEFAULT_POKEMON}</strong>

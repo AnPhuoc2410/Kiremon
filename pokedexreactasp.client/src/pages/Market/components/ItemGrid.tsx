@@ -80,13 +80,14 @@ export const ItemGrid: React.FC<ItemGridProps> = ({
   return (
     <ItemsSection>
       <ItemsGrid>
-        {items.map((item) => {
+        {items.map((item, index) => {
           const spriteUrl = getItemSpriteUrl(item);
           const displayName = getItemDisplayName(item);
 
           return (
             <ItemCard
               key={item.id}
+              id={index === 0 ? "tour-market-first-item" : undefined}
               $selected={selectedItemId === item.id}
               onClick={() => onSelectItem?.(item)}
               tabIndex={0}
