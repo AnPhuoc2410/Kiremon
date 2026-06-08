@@ -156,7 +156,7 @@ const Explore = () => {
             </div>
           }
         >
-          <T.Grid>
+          <T.Grid id="tour-pokedex-grid">
             {state?.pokemons?.length
               ? state?.pokemons.map((pokemon: IPokemon) => {
                   const pokemonId =

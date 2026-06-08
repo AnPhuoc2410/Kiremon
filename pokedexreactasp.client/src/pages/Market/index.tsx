@@ -131,7 +131,7 @@ const Market: React.FC = () => {
               />
             </SidebarContainer>
 
-            <ContentArea>
+            <ContentArea id="tour-market-content">
               <ItemsContainer>
                 <ItemGrid
                   items={items}
