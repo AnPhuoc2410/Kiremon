@@ -169,6 +169,7 @@ namespace PokedexReactASP.Server
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
             builder.Services.AddHostedService<NewsSyncBackgroundService>();
+            builder.Services.AddScoped<IPokemonNewsService, PokemonNewsService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
