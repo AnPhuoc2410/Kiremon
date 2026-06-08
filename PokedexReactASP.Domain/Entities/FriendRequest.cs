@@ -1,4 +1,3 @@
-using System;
 using PokedexReactASP.Domain.Enums;
 
 namespace PokedexReactASP.Domain.Entities

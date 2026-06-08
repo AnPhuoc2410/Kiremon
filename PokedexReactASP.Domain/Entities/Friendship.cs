@@ -1,5 +1,3 @@
-using System;
-
 namespace PokedexReactASP.Domain.Entities
 {
     /// <summary>
