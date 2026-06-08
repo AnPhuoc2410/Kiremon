@@ -59,8 +59,6 @@ namespace PokedexReactASP.Application.DTOs.User
         
         // Activity
         public DateTime LastActiveDate { get; set; }
-        public int DaysPlayed { get; set; }
-        public int HoursPlayed { get; set; }
         
         // Preferences
         public bool ShowOnlineStatus { get; set; }

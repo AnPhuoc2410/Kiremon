@@ -7,7 +7,7 @@ namespace PokedexReactASP.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class PokemonController : ControllerBase
+    public class PokemonController : ApiControllerBase
     {
         private readonly IPokemonService _pokemonService;
 

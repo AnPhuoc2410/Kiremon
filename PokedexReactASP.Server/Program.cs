@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Interfaces.IGameMechanics;
@@ -22,6 +21,7 @@ using System.Threading.RateLimiting;
 using PokedexReactASP.Application.Common.Helpers;
 using Serilog;
 using Masking.Serilog;
+using Prometheus;
 
 namespace PokedexReactASP.Server
 {
@@ -126,15 +126,41 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddMemoryCache();
 
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                var connectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(connectionString);
+                redisOptions.ConnectTimeout = 1000; // 1 second
+                redisOptions.SyncTimeout = 1000;    // 1 second
+                redisOptions.AbortOnConnectFail = false;
+
+                options.ConfigurationOptions = redisOptions;
+                options.InstanceName = "Kiremon_";
+            });
+
+            builder.Services.AddSingleton<ICacheService, ResilientCacheService>();
+
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
             // Add Application Services
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();
 
-
             builder.Services.AddSingleton<IPokemonCacheService, PokemonCacheService>();
-            builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricherService>();
-            builder.Services.AddScoped<IUserService, UserService>();
+
+            builder.Services.AddScoped<IPokemonEnricherService, PokemonEnricher>();
+
+            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+            builder.Services.AddScoped<IPokemonCollectionService, PokemonCollectionService>();
+            builder.Services.AddScoped<IPokemonCatchService, PokemonCatchService>();
+            builder.Services.AddScoped<IAchievementService, AchievementService>();
+            builder.Services.AddScoped<IAchievementNotificationService, AchievementNotificationService>();
+            builder.Services.AddScoped<IWildAreaService, WildAreaService>();
+            builder.Services.AddScoped<ICardRewardService, CardRewardService>();
+            builder.Services.AddScoped<IPokemonSpawnMetadataSyncService, PokemonSpawnMetadataSyncService>();
+            builder.Services.AddScoped<BiomeSpawnCandidateService>();
+            builder.Services.AddScoped<IPokemonBiomeTagService, PokemonBiomeTagService>();
 
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
@@ -152,6 +178,8 @@ namespace PokedexReactASP.Server
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
             builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection(RecaptchaSettings.SectionName));
             builder.Services.Configure<ItemSystemSettings>(builder.Configuration.GetSection(ItemSystemSettings.SectionName));
+            builder.Services.Configure<WildAreaSettings>(builder.Configuration.GetSection(WildAreaSettings.SectionName));
+            builder.Services.Configure<CardRewardSettings>(builder.Configuration.GetSection(CardRewardSettings.SectionName));
             builder.Services.AddHttpClient<IRecaptchaService, ReCaptchaService>(client =>
             {
                 client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
@@ -218,10 +246,21 @@ namespace PokedexReactASP.Server
                 {
                     options.AddPolicy("AllowReactApp", policy =>
                     {
-                        policy.WithOrigins(allowedOrigins ?? [])
-                              .AllowAnyHeader()
-                              .AllowAnyMethod()
-                              .AllowCredentials();
+                        policy
+                            .SetIsOriginAllowed(origin =>
+                            {
+                                if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+                                    uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return true;
+                                }
+
+                                return Array.Exists(allowedOrigins ?? [], o =>
+                                    string.Equals(o, origin, StringComparison.OrdinalIgnoreCase));
+                            })
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
                     });
                 })
                 .ConfigureApplicationCookie(options =>
@@ -231,14 +270,9 @@ namespace PokedexReactASP.Server
                     if (builder.Environment.IsDevelopment())
                     {
                         options.Cookie.SameSite = SameSiteMode.Lax;
-
                         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     }
                     else
-                    {
-                        options.Cookie.SameSite = SameSiteMode.None;
-                        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    }
                     {
                         options.Cookie.SameSite = SameSiteMode.None;
                         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -268,6 +302,15 @@ namespace PokedexReactASP.Server
                     limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     limiterOptions.QueueLimit = 20;
                 });
+
+                // Wild catch policy: stricter anti-abuse for spawn catch endpoint
+                options.AddFixedWindowLimiter("WildCatchPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 20;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 0;
+                });
             });
 
             var app = builder.Build();
@@ -277,6 +320,8 @@ namespace PokedexReactASP.Server
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseRateLimiter();
             // Configure the HTTP request pipeline.
@@ -312,6 +357,20 @@ namespace PokedexReactASP.Server
 
             // Health check endpoint for Docker/Load Balancer
             app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+            app.MapGet("/version", () => Results.Ok(new
+            {
+                Version = typeof(Program).Assembly.GetName().Version?.ToString(),
+                Environment = app.Environment.EnvironmentName,
+                DotNetVersion = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                OS = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+                ServerTime = DateTime.UtcNow
+            }));
+
+            app.UseHttpMetrics();
+            // Expose endpoint /metrics cho Prometheus server crawl data
+            app.MapMetrics();
+
 
             app.MapFallbackToFile("/index.html");
 

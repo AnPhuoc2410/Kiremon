@@ -22,6 +22,7 @@ namespace PokedexReactASP.Application.Services
         private readonly ISocialAuthService _socialAuthService;
         private readonly UrlEncoder _urlEncoder;
         private readonly ILogger<AuthService> _logger;
+        private readonly JwtSettings _jwtSettings;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -33,7 +34,8 @@ namespace PokedexReactASP.Application.Services
             IOptions<EmailSettings> emailOptions,
             ISocialAuthService socialAuthService,
             UrlEncoder urlEncoder,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IOptions<JwtSettings> jwtOptions)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -45,6 +47,7 @@ namespace PokedexReactASP.Application.Services
             _socialAuthService = socialAuthService;
             _urlEncoder = urlEncoder;
             _logger = logger;
+            _jwtSettings = jwtOptions.Value;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -242,7 +245,7 @@ namespace PokedexReactASP.Application.Services
             if (includeToken && user.EmailConfirmed)
             {
                 response.Token = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
-                response.ExpiresAt = DateTime.UtcNow.AddDays(7); // Production nên cân nhắc Refresh Token
+                response.ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.ExpirationDays);
             }
 
             return response;

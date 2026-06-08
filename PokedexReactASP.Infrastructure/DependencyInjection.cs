@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Options;
+using PokedexReactASP.Infrastructure.ExternalApis;
 using PokedexReactASP.Infrastructure.Persistence;
 using PokedexReactASP.Infrastructure.Repositories;
 using PokedexReactASP.Infrastructure.Services;
@@ -34,6 +34,24 @@ namespace PokedexReactASP.Infrastructure
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IFriendService, FriendService>();
+            services.Configure<PokemonTcgApiSettings>(configuration.GetSection(PokemonTcgApiSettings.SectionName));
+            services.AddHttpClient<IPokemonTcgApiClient, PokemonTcgApiClient>((serviceProvider, client) =>
+            {
+                var settings = serviceProvider
+                    .GetRequiredService<Microsoft.Extensions.Options.IOptions<PokemonTcgApiSettings>>()
+                    .Value;
+
+                client.BaseAddress = new Uri(settings.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+
+                if (!string.IsNullOrWhiteSpace(settings.ApiKey))
+                {
+                    client.DefaultRequestHeaders.Remove("X-Api-Key");
+                    client.DefaultRequestHeaders.Add("X-Api-Key", settings.ApiKey);
+                }
+            });
+            services.AddScoped<ITcgCardService, TcgCardService>();
+            services.AddScoped<ITcgCardCollectionService, TcgCardCollectionService>();
 
             return services;
         }

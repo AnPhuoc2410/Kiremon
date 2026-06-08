@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { Button, Loading, Text } from "@/components/ui";
 import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
+import { usePokemonTcgPreview } from "@/hooks/queries/usePokemonTcgPreview";
 import {
   TcgAttack,
   TcgCardDetail,
@@ -11,12 +12,17 @@ import * as S from "./TcgTab.style";
 
 interface TcgTabProps {
   pokemonName: string;
+  pokemonApiId?: number;
   enabled: boolean;
 }
 
 const PAGE_SIZE = 12;
 
-const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
+const TcgTab: React.FC<TcgTabProps> = ({
+  pokemonName,
+  pokemonApiId,
+  enabled,
+}) => {
   const [page, setPage] = useState(1);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [detailImageSrc, setDetailImageSrc] = useState("");
@@ -31,9 +37,16 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
     ["--scale" as any]: 1,
   });
 
-  const cardsQuery = useTcgCards(pokemonName, page, PAGE_SIZE, filters, enabled);
+  const cardsQuery = useTcgCards(
+    pokemonName,
+    page,
+    PAGE_SIZE,
+    filters,
+    enabled,
+  );
   const facetsQuery = useTcgFacets(pokemonName, enabled);
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
+  const previewQuery = usePokemonTcgPreview(pokemonApiId, enabled);
 
   useEffect(() => {
     setPage(1);
@@ -64,7 +77,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
   useEffect(() => {
     const nextImage =
-      displayCard?.images?.large || displayCard?.images?.small || "/substitute.png";
+      displayCard?.images?.large ||
+      displayCard?.images?.small ||
+      "/substitute.png";
     setDetailImageSrc(nextImage);
   }, [displayCard]);
 
@@ -99,7 +114,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
     return (
       <S.ErrorBox>
         <Text>Failed to load TCG cards for this Pokemon.</Text>
-        <Text as="p">{(cardsQuery.error as Error)?.message || "Unknown error"}</Text>
+        <Text as="p">
+          {(cardsQuery.error as Error)?.message || "Unknown error"}
+        </Text>
         <Button
           variant="light"
           onClick={() => cardsQuery.refetch()}
@@ -116,12 +133,19 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
       <S.Header>
         <Text as="h3">TCG cards for {pokemonName.toUpperCase()}</Text>
         <Text as="p">Total: {cardsQuery.data?.totalCount || 0} cards</Text>
+        {previewQuery.data && previewQuery.data.length > 0 && (
+          <Text as="p">
+            Cached reward preview cards: {previewQuery.data.length}
+          </Text>
+        )}
       </S.Header>
 
       <S.FilterRow>
         <S.Select
           value={filters.rarity || ""}
-          onChange={(e) => setFilters((prev) => ({ ...prev, rarity: e.target.value }))}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, rarity: e.target.value }))
+          }
         >
           <option value="">All Rarity</option>
           {rarityOptions.map((rarity) => (
@@ -147,7 +171,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
         <S.Select
           value={filters.subtype || ""}
-          onChange={(e) => setFilters((prev) => ({ ...prev, subtype: e.target.value }))}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, subtype: e.target.value }))
+          }
         >
           <option value="">All Subtypes</option>
           {subtypeOptions.map((subtype) => (
@@ -161,14 +187,23 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
       {facetsQuery.isLoading && <Text as="p">Loading filters...</Text>}
 
       {cards.length === 0 ? (
-        <S.EmptyBox>No TCG card found for this Pokemon with current filters.</S.EmptyBox>
+        <S.EmptyBox>
+          No TCG card found for this Pokemon with current filters.
+        </S.EmptyBox>
       ) : (
         <>
           <S.Grid>
             {cards.map((card) => (
-              <S.CardItem key={card.id} onClick={() => setSelectedCardId(card.id)}>
+              <S.CardItem
+                key={card.id}
+                onClick={() => setSelectedCardId(card.id)}
+              >
                 <S.CardImage
-                  src={card.images?.small || card.images?.large || "/substitute.png"}
+                  src={
+                    card.images?.small ||
+                    card.images?.large ||
+                    "/substitute.png"
+                  }
                   alt={card.name}
                   loading="lazy"
                 />
@@ -179,7 +214,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                   </S.MetaLine>
                   <S.MetaLine>
                     {card.rarity || "Unknown rarity"}
-                    {card.regulationMark ? ` - Mark ${card.regulationMark}` : ""}
+                    {card.regulationMark
+                      ? ` - Mark ${card.regulationMark}`
+                      : ""}
                   </S.MetaLine>
                 </S.CardMeta>
               </S.CardItem>
@@ -236,7 +273,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
             ) : detailQuery.isError || !displayCard ? (
               <S.ErrorBox>
                 <Text>Failed to load card detail.</Text>
-                <Text as="p">{(detailQuery.error as Error)?.message || "Unknown error"}</Text>
+                <Text as="p">
+                  {(detailQuery.error as Error)?.message || "Unknown error"}
+                </Text>
                 <Button variant="light" onClick={() => detailQuery.refetch()}>
                   Retry
                 </Button>
@@ -285,7 +324,7 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
 
                 <S.DetailBlock>
                   <S.ScrollArea>
-                  <S.InfoChunk>
+                    <S.InfoChunk>
                       <S.PremiumTitle>{displayCard.name}</S.PremiumTitle>
                       <S.HeaderSub>
                         {displayCard.set.series} - {displayCard.set.name}
@@ -298,7 +337,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                       </S.StatsRow>
                       <S.BadgeRow>
                         <S.Badge>{displayCard.id}</S.Badge>
-                        {displayCard.rarity && <S.Badge>{displayCard.rarity}</S.Badge>}
+                        {displayCard.rarity && (
+                          <S.Badge>{displayCard.rarity}</S.Badge>
+                        )}
                       </S.BadgeRow>
                     </S.InfoChunk>
 
@@ -350,8 +391,10 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                         <S.DataRow>
                           <S.Label>Retreat</S.Label>
                           <S.Value>
-                            {(selectedCard?.retreatCost || []).join(", ") || "-"}
-                            {typeof selectedCard?.convertedRetreatCost === "number"
+                            {(selectedCard?.retreatCost || []).join(", ") ||
+                              "-"}
+                            {typeof selectedCard?.convertedRetreatCost ===
+                            "number"
                               ? ` (${selectedCard.convertedRetreatCost})`
                               : ""}
                           </S.Value>
@@ -391,7 +434,9 @@ const TcgTab: React.FC<TcgTabProps> = ({ pokemonName, enabled }) => {
                                 {ability.type || "Ability"}
                               </S.AbilityTypeBadge>
                             </S.AttackHeader>
-                            <S.AttackDescription>{ability.text || "-"}</S.AttackDescription>
+                            <S.AttackDescription>
+                              {ability.text || "-"}
+                            </S.AttackDescription>
                           </S.AttackRow>
                         ))
                       )}

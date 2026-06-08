@@ -1,4 +1,4 @@
-﻿services:
+services:
   api:
     image: ${DOCKER_IMAGE_NAME}:latest
     container_name: kiremon_api
@@ -14,8 +14,14 @@
     env_file:
       - .env
 
+    environment:
+      - ConnectionStrings__Redis=redis:6379
+
     ports:
       - "${API_PORT:-2410}:8080"
+
+    depends_on:
+      - redis
 
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
@@ -39,6 +45,24 @@
           memory: 1G
           cpus: "1.00"
 
+  redis:
+    image: redis:7-alpine
+    container_name: kiremon_redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+
+    volumes:
+      - redis_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  redis_data:
+
 networks:
   default:
     driver: bridge
+

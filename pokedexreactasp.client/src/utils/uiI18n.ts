@@ -90,6 +90,16 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.ITALIAN]: "Poké TCG",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "宝可梦卡牌游戏",
   },
+  "nav.wildArea": {
+    [LANGUAGE_IDS.ENGLISH]: "Wild Area",
+    [LANGUAGE_IDS.JAPANESE]: "ワイルドエリア",
+    [LANGUAGE_IDS.KOREAN]: "와일드에어리어",
+    [LANGUAGE_IDS.FRENCH]: "Terres Sauvages",
+    [LANGUAGE_IDS.GERMAN]: "Naturzone",
+    [LANGUAGE_IDS.SPANISH]: "Área Silvestre",
+    [LANGUAGE_IDS.ITALIAN]: "Terre Selvagge",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "旷野地带",
+  },
 
   // Mini Games dropdown
   "games.combatTeam": {
