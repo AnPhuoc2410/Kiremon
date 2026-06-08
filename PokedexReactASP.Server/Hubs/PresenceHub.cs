@@ -48,7 +48,7 @@ namespace PokedexReactASP.Server.Hubs
                 //if (onlineFriendIds.Any())
                 //{
                 //    await Clients.Caller.SendAsync("GetOnlineFriends", onlineFriendIds);
-                //}d
+                //}
             }
 
             await base.OnConnectedAsync();
@@ -56,8 +56,12 @@ namespace PokedexReactASP.Server.Hubs
 
         public async Task<string[]> GetOnlineFriendsList()
         {
-            var userId = Context.User?.FindFirst("NameIdentifier")?.Value;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return Array.Empty<string>();
+            
             var friendIds = await _friendService.GetFriendIdsAsync(userId);
+            if (friendIds == null) return Array.Empty<string>();
+            
             var onlineUsers = await _tracker.GetOnlineUsers();
 
             return onlineUsers.Intersect(friendIds).ToArray();

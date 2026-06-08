@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using PokedexReactASP.Application.DTOs.Auth;
 
 namespace PokedexReactASP.Application.Services
@@ -22,8 +22,9 @@ namespace PokedexReactASP.Application.Services
             }
 
             // Tạo format URI cho Google Authenticator
-            var email = user.Email;
+            var email = user.Email ?? user.UserName ?? string.Empty;
             var appName = "PokedexApp";
+            key ??= string.Empty;
             var qrUri = string.Format(
                 "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6",
                 _urlEncoder.Encode(appName),

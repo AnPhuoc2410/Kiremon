@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Domain.Entities;
@@ -15,7 +15,6 @@ namespace PokedexReactASP.Application.Services
                 throw new ApplicationException("External authenticaton failed.");
 
             var user = await _userManager.FindByLoginAsync(socialUser.Provider, socialUser.ProviderKey);
-            bool isNewUser = false;
 
             if (user != null)
             {
@@ -28,7 +27,6 @@ namespace PokedexReactASP.Application.Services
 
                 if (user == null)
                 {
-                    isNewUser = true;
                     user = _mapper.Map<ApplicationUser>(socialUser);
 
                     if (socialUser.IsEmailVerified)

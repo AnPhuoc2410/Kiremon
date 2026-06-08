@@ -129,7 +129,7 @@ namespace PokedexReactASP.Application.Services
             var isNewSpecies    = existingCatch == null;
             var creationContext = BuildCreationContext(
                 userId, request.PokemonApiId, pokeApiData, nicknameToSave,
-                request.CaughtLocation, request.PokeballType, user,
+                request.CaughtLocation ?? "Wild", request.PokeballType, user,
                 captureRate, isLegendary, isMythical, isBaby, genderRate);
 
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);

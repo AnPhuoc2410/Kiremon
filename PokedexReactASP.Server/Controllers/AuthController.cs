@@ -138,6 +138,7 @@ namespace PokedexReactASP.Server.Controllers
         public async Task<ActionResult<TwoFactorDto>> SetupTwoFactor()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
             var result = await _authService.GetTwoFactorAsync(userId);
             return Ok(result);
         }
@@ -147,6 +148,7 @@ namespace PokedexReactASP.Server.Controllers
         public async Task<IActionResult> EnableTwoFactor([FromBody] Enable2FADto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
             var isSuccess = await _authService.EnableTwoFactorAsync(userId, dto);
 
             if (isSuccess)
@@ -160,6 +162,7 @@ namespace PokedexReactASP.Server.Controllers
         public async Task<IActionResult> DisableTwoFactor([FromBody] Disable2FADto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
             var isSuccess = await _authService.DisableTwoFactorAsync(userId, dto.Code);
 
             if (isSuccess)

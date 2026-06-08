@@ -162,6 +162,15 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<BiomeSpawnCandidateService>();
             builder.Services.AddScoped<IPokemonBiomeTagService, PokemonBiomeTagService>();
 
+            // News Synchronization Services
+            builder.Services.Configure<NewsSyncSettings>(builder.Configuration.GetSection(NewsSyncSettings.SectionName));
+            builder.Services.AddHttpClient<IPokemonNewsSyncService, PokemonNewsSyncService>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+            builder.Services.AddHostedService<NewsSyncBackgroundService>();
+            builder.Services.AddScoped<IPokemonNewsService, PokemonNewsService>();
+
             // Game Mechanics Services
             builder.Services.AddSingleton<IIVGeneratorService, IVGeneratorService>();
             builder.Services.AddSingleton<IShinyRollerService, ShinyRollerService>();

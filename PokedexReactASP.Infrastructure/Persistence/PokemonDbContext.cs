@@ -10,18 +10,19 @@ namespace PokedexReactASP.Infrastructure.Persistence
         {
         }
 
-        public DbSet<UserPokemon> UserPokemon { get; set; }
-        public DbSet<UserBox> UserBoxes { get; set; } 
-        public DbSet<UserItem> UserItems { get; set; }
-        public DbSet<Friendship> Friendships { get; set; }
-        public DbSet<FriendRequest> FriendRequests { get; set; }
-        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; }
-        public DbSet<UserTcgCard> UserTcgCards { get; set; }
-        public DbSet<TcgCardCache> TcgCardCaches { get; set; }
-        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; }
-        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; }
-        public DbSet<Achievement> Achievements { get; set; }
-        public DbSet<UserAchievement> UserAchievements { get; set; }
+        public DbSet<UserPokemon> UserPokemon { get; set; } = null!;
+        public DbSet<UserBox> UserBoxes { get; set; } = null!;
+        public DbSet<UserItem> UserItems { get; set; } = null!;
+        public DbSet<Friendship> Friendships { get; set; } = null!;
+        public DbSet<FriendRequest> FriendRequests { get; set; } = null!;
+        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; } = null!;
+        public DbSet<UserTcgCard> UserTcgCards { get; set; } = null!;
+        public DbSet<TcgCardCache> TcgCardCaches { get; set; } = null!;
+        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; } = null!;
+        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; } = null!;
+        public DbSet<Achievement> Achievements { get; set; } = null!;
+        public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
+        public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -284,6 +285,19 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.Tag).HasMaxLength(60).IsRequired();
                 entity.Property(e => e.Source).HasMaxLength(100);
                 entity.Property(e => e.Weight).HasPrecision(10, 4);
+            });
+
+            // Configure PokemonNews entity
+            modelBuilder.Entity<PokemonNews>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.SourceUrl).IsUnique();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Summary).HasColumnType("text");
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.SourceUrl).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Author).HasMaxLength(100);
             });
         }
     }

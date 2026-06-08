@@ -437,6 +437,12 @@ const Header: React.FC<HeaderProps> = ({
               <S.NavLink as="span">{t("nav.pokeTcg", languageId)}</S.NavLink>
             </Link>
           </S.NavItem>
+
+          <S.NavItem id="tour-nav-news">
+            <Link to="/poke-news">
+              <S.NavLink as="span">{t("nav.pokeNews", languageId)}</S.NavLink>
+            </Link>
+          </S.NavItem>
         </S.NavList>
       </S.NavContainer>
     </S.HeaderContainer>

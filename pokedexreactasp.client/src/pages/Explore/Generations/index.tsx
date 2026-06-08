@@ -140,7 +140,7 @@ const GenerationsExplore = () => {
             <Loading label="Loading generations data..." />
           </S.LoadingWrapper>
         ) : (
-          <S.GenerationsGrid>
+          <S.GenerationsGrid id="tour-generations-grid">
             {pokemonGenerations.map((generation) => (
               <S.GenerationCard
                 key={generation.id}
