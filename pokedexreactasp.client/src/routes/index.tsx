@@ -32,6 +32,7 @@ const Settings = lazy(() => import("@/pages/Settings"));
 const Friends = lazy(() => import("@/pages/Friends"));
 const Pokemart = lazy(() => import("@/pages/Market"));
 const PokeTcg = lazy(() => import("@/pages/PokeTcg"));
+const PokeNews = lazy(() => import("@/pages/PokeNews"));
 
 export default function Routes() {
   return (
@@ -250,6 +251,22 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <PokeTcg />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/poke-news"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <PokeNews />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/news"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <PokeNews />
               </Suspense>
             }
           />
