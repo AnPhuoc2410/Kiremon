@@ -44,19 +44,19 @@ namespace PokedexReactASP.Application.Services
             return pokemon == null ? null : MapPokeApiToPokemonDto(pokemon);
         }
 
-        public async Task<PokemonDto> CreatePokemonAsync(CreatePokemonDto createPokemonDto)
+        public Task<PokemonDto> CreatePokemonAsync(CreatePokemonDto createPokemonDto)
         {
-            throw new NotSupportedException("Creating Pokemon is not supported. Pokemon data comes from PokeAPI.");
+            return Task.FromException<PokemonDto>(new NotSupportedException("Creating Pokemon is not supported. Pokemon data comes from PokeAPI."));
         }
 
-        public async Task<bool> UpdatePokemonAsync(int id, CreatePokemonDto updatePokemonDto)
+        public Task<bool> UpdatePokemonAsync(int id, CreatePokemonDto updatePokemonDto)
         {
-            throw new NotSupportedException("Updating Pokemon is not supported. Pokemon data comes from PokeAPI.");
+            return Task.FromException<bool>(new NotSupportedException("Updating Pokemon is not supported. Pokemon data comes from PokeAPI."));
         }
 
-        public async Task<bool> DeletePokemonAsync(int id)
+        public Task<bool> DeletePokemonAsync(int id)
         {
-            throw new NotSupportedException("Deleting Pokemon is not supported. Pokemon data comes from PokeAPI.");
+            return Task.FromException<bool>(new NotSupportedException("Deleting Pokemon is not supported. Pokemon data comes from PokeAPI."));
         }
 
         public async Task<IEnumerable<PokemonDto>> SearchPokemonAsync(string searchTerm)

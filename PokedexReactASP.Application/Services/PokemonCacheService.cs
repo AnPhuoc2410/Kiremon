@@ -1,11 +1,5 @@
-using Microsoft.Extensions.Caching.Distributed;
+using AsyncKeyedLock;
 using PokedexReactASP.Application.Interfaces;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PokedexReactASP.Application.Services
 {
@@ -19,7 +13,7 @@ namespace PokedexReactASP.Application.Services
         private readonly ICacheService _cache;
 
         /// <summary>Per-key semaphores to prevent thundering-herd for single fetches.</summary>
-        private readonly ConcurrentDictionary<int, SemaphoreSlim> _keyLocks = new();
+        private readonly AsyncKeyedLocker<int> _keyLocks = new();
 
         /// <summary>Semaphore pool for batch fetches — max 5 concurrent PokeAPI calls.</summary>
         private readonly SemaphoreSlim _batchSemaphore = new(5, 5);
@@ -48,10 +42,8 @@ namespace PokedexReactASP.Application.Services
                 return pokemon;
             }
 
-            // Acquire the per-key lock for this specific Pokémon ID
-            var keyLock = _keyLocks.GetOrAdd(pokemonApiId, _ => new SemaphoreSlim(1, 1));
-            await keyLock.WaitAsync();
-            try
+            // Acquire the per-key lock for this specific Pokémon ID using AsyncKeyedLock to prevent memory leaks
+            using (await _keyLocks.LockAsync(pokemonApiId))
             {
                 // Double-check after acquiring lock
                 pokemon = await _cache.GetAsync<PokeApiPokemon>(cacheKey);
@@ -67,10 +59,6 @@ namespace PokedexReactASP.Application.Services
                 }
 
                 return pokemon;
-            }
-            finally
-            {
-                keyLock.Release();
             }
         }
 
@@ -170,9 +158,8 @@ namespace PokedexReactASP.Application.Services
             if (_disposed) return;
             _disposed = true;
 
-            // Dispose all per-key semaphores
-            foreach (var semaphore in _keyLocks.Values)
-                semaphore.Dispose();
+            // Dispose AsyncKeyedLocker resources
+            _keyLocks.Dispose();
 
             _batchSemaphore.Dispose();
         }

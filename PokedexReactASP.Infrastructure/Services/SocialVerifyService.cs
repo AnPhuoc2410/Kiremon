@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth;
+using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using PokedexReactASP.Application.Common.Enum;
 using PokedexReactASP.Application.DTOs.Auth;
@@ -114,8 +114,8 @@ namespace PokedexReactASP.Infrastructure.Services
 
                     // Logic Username cũ
                     Username = node["email"] != null
-                   ? node["email"].ToString().Split('@')[0]
-                   : node["id"].ToString()
+                   ? node["email"]!.ToString().Split('@')[0]
+                   : node["id"]?.ToString() ?? string.Empty
                 };
 
             }
@@ -125,9 +125,8 @@ namespace PokedexReactASP.Infrastructure.Services
             }
         }
 
-        private async Task<SocialUserDto> VerifyGithubTokenAsync(string token)
+        private Task<SocialUserDto> VerifyGithubTokenAsync(string token)
         {
-
             throw new NotImplementedException();
         }
 
