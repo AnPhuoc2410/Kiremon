@@ -20,62 +20,67 @@ const getTourTranslation = (key: string, langId: number): string => {
 
   const translations: Record<string, Record<number, string>> = {
     welcome: {
-      [EN]: "Welcome, Trainer! I am Professor Oak. Let me guide you through this portal to help you understand the Pokémon world!",
-      [JA]: "ようこそ、トレーナー！私はオーキド博士です。ポケモン世界を理解できるよう、このポータルを案内しましょう！",
-      [ZH]: "欢迎，训练家！我是大木博士。让我带你浏览这个入口，帮助你了解宝可梦世界！",
-    },
-    search: {
-      [EN]: "Looking for a specific Pokémon? Use this search bar to quickly find any Pokémon by its name!",
-      [JA]: "特定のポケモンをお探しですか？この検索バーを使って、名前からすぐにポケモンを見つけられます！",
-      [ZH]: "正在寻找特定的宝可梦吗？使用这个搜索栏可以根据名称快速找到任何宝可梦！",
+      [EN]: "Welcome, Trainer! I am Professor Oak. Let me guide you on a comprehensive tour of the Kiremon portal. We will explore the Pokédex, Regions, Types, Generations, Poké Mart, and the Poke TCG Gallery!",
+      [JA]: "ようこそ、トレーナー！私はオーキド博士です...このポータルの主要なセクション（図鑑、地方、タイプ、世代、フレンドリィショップ、カードギャラリー）をご案内しましょう！",
+      [ZH]: "欢迎，训练家！我是大木博士。让我带你游览这个入口的各大主要版块（图鉴、地区、属性、世代、商店、卡牌展示馆）！",
     },
     pokedex: {
-      [EN]: "This is the Pokédex! Here you can browse all known Pokémon, view their details, and see if you have captured them.",
-      [JA]: "こちらはポケモン図鑑です！登録されているすべてのポケモンを閲覧し、詳細情報や捕獲状況を確認できます。",
-      [ZH]: "这是宝可梦图鉴！在这里你可以浏览所有已知的宝可梦，查看它们的详细信息，并查看你是否已经捕获了它们。",
+      [EN]: "This is the Pokédex dashboard! Here you can browse all known Pokémon, view their elements, and check their capture status marked with a Poké Ball icon.",
+      [JA]: "こちらはポケモン図鑑です！すべてのポケモンを閲覧し、属性タイプや、捕獲マーク（モンスターボール）を確認できます。",
+      [ZH]: "这是宝可梦图鉴！在这里你可以浏览所有已知的宝可梦，查看它们的属性，并追踪你的捕获进度（已捕获의宝可梦会显示精灵球图标）。",
     },
-    mypokemon: {
-      [EN]: "Check out My Pokémon! Once you capture Pokémon from games or challenges, they will appear here. You can mark favorites or release them back into the wild.",
-      [JA]: "「マイポケモン」を確認しましょう！ゲームやチャレンジで捕まえたポケモンがここに表示されます。お気に入りに登録したり、野生に逃がしたりできます。",
-      [ZH]: "查看我的宝可梦！一旦你在游戏或挑战中捕获了宝可梦，它们就会出现在这里。你可以标记喜爱的宝可梦或将它们放生回野外。",
+    search: {
+      [EN]: "Looking for a specific Pokémon? Type its name here in the search bar. The Pokédex will immediately filter to match your query.",
+      [JA]: "特定のポケモンをお探しですか？この検索バーに名前を入力すると、すぐに対象のポケモンが表示されます。",
+      [ZH]: "正在寻找特定的宝可梦吗？在此搜索栏中输入名称，图鉴将立即过滤显示符合条件的宝可梦。",
     },
-    games: {
-      [EN]: "Feeling playful? Hover over Mini Games to access Combat Team, Who's That Pokémon, Type Matchup, and Catch Challenge!",
-      [JA]: "遊んでみますか？ミニゲームメニューから、コンバットチーム、だれだ？、タイプ相性チェッカー、キャッチチャレンジにアクセスできます！",
-      [ZH]: "想玩游戏吗？将鼠标悬停在迷你游戏上，即可访问对战团队、是谁的宝可梦、属性相性以及捕获挑战！",
-    },
-    explore: {
-      [EN]: "Use the Explore menu to browse by Regions, Types, or Generations. Let's head over to the Regions page next!",
-      [JA]: "地方、タイプ、世代ごとに探索してみましょう。次は地方のページへ行ってみましょう！",
-      [ZH]: "使用探索菜单按地区、属性或世代进行浏览。接下来让我们前往地区页面！",
+    nav: {
+      [EN]: "Use the top navigation bar to quickly jump between key sections of Kiremon, such as your captured party, the Wild Area, mini-games, and more!",
+      [JA]: "上部のナビゲーションバーを使用して、マイポケモン、ワイルドエリア、ミニゲームなどの主要なセクションに素早く切り替えることができます！",
+      [ZH]: "使用顶部的导航栏，可以快速在我的宝可梦、荒野地带、迷你游戏等核心版块之间进行跳转！",
     },
     regions: {
-      [EN]: "Welcome to the Region selection! You can see various regions like Kanto, Johto, Sinnoh, and more. Click on them to see their maps and local Pokémon!",
-      [JA]: "地方選択画面へようこそ！カントー、ジョウト、シンオウなど様々な地方があります。クリックすると、地図や出現するポケモンを見られます！",
-      [ZH]: "欢迎来到地区选择！你可以看到关都、城都、神奥等多个地区。点击它们可以查看地图和当地的宝可梦！",
+      [EN]: "Explore Pokémon by regions! Select regions like Kanto, Johto, or Sinnoh to view their maps and local Pokémon species.",
+      [JA]: "地方ごとにポケモンを探索しましょう！カントーやジョウトなどの地方を選択して、地図やその地方のポケモンを見ることができます。",
+      [ZH]: "按地区探索宝可梦！选择关都、城都、神奥等地区来查看地图和当地的宝可梦物种。",
     },
     types: {
-      [EN]: "This is the Type selection screen! You can browse Pokémon grouped by elements like Fire, Water, and Grass, and check which ones you have captured.",
+      [EN]: "This is the Type selection screen! Browse Pokémon grouped by elements like Fire, Water, and Grass, and check which ones you have captured.",
       [JA]: "こちらはタイプ選択画面です！ほのお、みず、くさなどの属性ごとにポケモンを閲覧し、捕まえたかどうか確認できます。",
       [ZH]: "这是属性选择界面！你可以按火、水、草等元素属性浏览宝可梦，并检查你捕获了哪些宝可梦。",
     },
-    market_nav: {
-      [EN]: "Need items for your journey? Click on Poké Mart to buy essential gear!",
-      [JA]: "冒険の道具が必要ですか？フレンドリィショップをクリックして、必要なアイテムを購入しましょう！",
-      [ZH]: "旅途中需要道具吗？点击宝可梦商店购买必备装备！",
+    generations: {
+      [EN]: "And here is the Generation explore screen! Browse Pokémon categorized by their original game release generations (Gen I through Gen IX), showing release years, starter details, and new species.",
+      [JA]: "こちらは世代選択画面です！世代（第I世代から第IX世代まで）ごとにポケモンを分類し、ゲームの発売年や御三家画像、新しいポケモン数を確認できます。",
+      [ZH]: "这是世代选择界面！你可以按游戏发布世代（第一世代到第九世代）浏览宝可梦，查看发布年份、御三家图片及新增宝可梦数量。",
     },
-    market: {
-      [EN]: "Welcome to the Poké Mart! Purchase Poké Balls, health potions, and combat accessories here to aid you in your battles and catch challenges.",
-      [JA]: "フレンドリィショップへようこそ！ここではモンスターボールやキズぐすり、戦闘用アイテムを購入して、バトルやキャッチチャレンジに役立てることができます。",
-      [ZH]: "欢迎来到宝可梦商店！在这里购买精灵球、伤药和战斗配件，协助你在战斗和捕获挑战中取得胜利。",
+    market_sidebar: {
+      [EN]: "Welcome to the Poké Mart! The sidebar on the left lets you filter shop items by categories such as Poké Balls, Medicine, and combat gear.",
+      [JA]: "フレンドリィショップへようこそ！左側のサイドバーで、モンスターボールやキズぐすり、戦闘用アイテムなどのカテゴリー別に商品を絞り込むことができます。",
+      [ZH]: "欢迎来到宝可梦商店！左侧的分类栏可以让你按精灵球、药剂、战斗装备等类别筛选商品。",
     },
-    tcg: {
-      [EN]: "Finally, check out Poke TCG! Browse, collect, and admire beautiful Pokémon Trading Cards here.",
-      [JA]: "最後に、ポケモンカード（TCG）をチェックしましょう！美しいカードコレクションを閲覧し、集めて楽しめます。",
-      [ZH]: "最后，来看看宝可梦纸牌游戏（TCG）！在这里浏览、收集并欣赏精美的宝可梦集换式卡牌。",
+    market_items: {
+      [EN]: "This is the items grid on the right! It lists all available gear in the selected category. Simply click any item to see its detailed description and price.",
+      [JA]: "右側は商品リストです！選択したカテゴリーのアイテムが一覧表示され、クリックすると詳細な説明や価格を確認できます。",
+      [ZH]: "右侧是商品列表！这里展示了所选类别下的所有道具，点击任意道具即可查看其详细描述和价格。",
+    },
+    market_detail: {
+      [EN]: "When you click an item, this detail panel opens! It reveals the item's effects, price in Poké-dollars, and a list of wild Pokémon that may carry this item in the wild.",
+      [JA]: "アイテムをクリックすると、この詳細パネルが開きます！アイテムの効果や価格、さらに野生でそのアイテムを持っている可能性のあるポケモンの一覧が表示されます。",
+      [ZH]: "点击道具后，会打开此详细面板！里面展示了道具的效果、售价，以及野外可能携带该道具的宝可梦列表。",
+    },
+    tcg_search: {
+      [EN]: "Welcome to the Poke TCG Gallery! Enter a Pokémon's name in this search bar to view all official trading card releases for that Pokémon.",
+      [JA]: "カードギャラリーへようこそ！検索バーにポケモンの名前を入力すると、そのポケモンの公式トレーディングカードがすべて表示されます。",
+      [ZH]: "欢迎来到卡牌展示馆！在搜索栏中输入宝可梦的名称，即可展示该宝可梦所有的官方集换式卡牌。",
+    },
+    tcg_filters: {
+      [EN]: "You can also use the filters below to refine card results by Rarity, Regulation mark, or Subtype, helping you easily find rare cards!",
+      [JA]: "検索バーの下にあるフィルターを使用して、レア度、レギュレーションマーク、サブタイプでカードを絞り込み、目当てのカードをすぐに見つけることができます！",
+      [ZH]: "你还可以使用下方的筛选框，按稀有度、赛制标记或子类别来过滤卡牌，轻松找到心仪的卡牌！",
     },
     conclusion: {
-      [EN]: "You are now fully trained on how to use the portal. Venture forth, discover new species, and catch 'em all!",
+      [EN]: "That completes Professor Oak's grand tour! Venture forth, catch wild Pokémon, compile your team, and complete your Pokédex. Good luck, Trainer!",
       [JA]: "これでポータルの使い方はバッチリです。さあ冒険へ出発し、新しいポケモンを見つけ、すべて捕まえましょう！",
       [ZH]: "现在你已经完全掌握了入口的使用方法。出发吧，去发现新物种，收服所有宝可梦！",
     },
@@ -104,6 +109,21 @@ const getTourTranslation = (key: string, langId: number): string => {
   const item = translations[key];
   if (!item) return key;
   return item[langId] || item[EN] || key;
+};
+
+// Helper to open/close dropdowns in the Header
+const toggleDropdown = (id: string, shouldOpen: boolean) => {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const button = container.querySelector("button") || container.querySelector("a") || container.querySelector("[role='button']") || container.firstElementChild;
+  if (!button) return;
+  const isOpen = button.classList.contains("active");
+
+  if (shouldOpen && !isOpen) {
+    (button as HTMLElement).click();
+  } else if (!shouldOpen && isOpen) {
+    (button as HTMLElement).click();
+  }
 };
 
 const TourGuide: React.FC = () => {
@@ -176,6 +196,14 @@ const TourGuide: React.FC = () => {
         before: ensureRouteAndElement("/pokemons", "body"),
       },
       {
+        target: "#tour-pokedex-grid",
+        placement: "top",
+        content: getTourTranslation("pokedex", languageId),
+        route: "/pokemons",
+        disableBeacon: true,
+        before: ensureRouteAndElement("/pokemons", "#tour-pokedex-grid"),
+      },
+      {
         target: "#tour-search-container",
         placement: "bottom",
         content: getTourTranslation("search", languageId),
@@ -186,34 +214,10 @@ const TourGuide: React.FC = () => {
       {
         target: "#tour-nav-pokedex",
         placement: "bottom",
-        content: getTourTranslation("pokedex", languageId),
+        content: getTourTranslation("nav", languageId),
         route: "/pokemons",
         disableBeacon: true,
         before: ensureRouteAndElement("/pokemons", "#tour-nav-pokedex"),
-      },
-      {
-        target: "#tour-nav-mypokemon",
-        placement: "bottom",
-        content: getTourTranslation("mypokemon", languageId),
-        route: "/pokemons",
-        disableBeacon: true,
-        before: ensureRouteAndElement("/pokemons", "#tour-nav-mypokemon"),
-      },
-      {
-        target: "#tour-nav-games",
-        placement: "bottom",
-        content: getTourTranslation("games", languageId),
-        route: "/pokemons",
-        disableBeacon: true,
-        before: ensureRouteAndElement("/pokemons", "#tour-nav-games"),
-      },
-      {
-        target: "#tour-nav-explore",
-        placement: "bottom",
-        content: getTourTranslation("explore", languageId),
-        route: "/pokemons",
-        disableBeacon: true,
-        before: ensureRouteAndElement("/pokemons", "#tour-nav-explore"),
       },
       {
         target: "#tour-regions-grid",
@@ -232,36 +236,67 @@ const TourGuide: React.FC = () => {
         before: ensureRouteAndElement("/explore/types", "#tour-types-grid"),
       },
       {
-        target: "#tour-nav-market",
-        placement: "bottom",
-        content: getTourTranslation("market_nav", languageId),
-        route: "/explore/types",
+        target: "#tour-generations-grid",
+        placement: "top",
+        content: getTourTranslation("generations", languageId),
+        route: "/explore/generations",
         disableBeacon: true,
-        before: ensureRouteAndElement("/explore/types", "#tour-nav-market"),
+        before: ensureRouteAndElement("/explore/generations", "#tour-generations-grid"),
       },
       {
         target: "#tour-market-sidebar",
         placement: "right",
-        content: getTourTranslation("market", languageId),
+        content: getTourTranslation("market_sidebar", languageId),
         route: "/poke-mart",
         disableBeacon: true,
         before: ensureRouteAndElement("/poke-mart", "#tour-market-sidebar"),
       },
       {
-        target: "#tour-nav-tcg",
-        placement: "bottom",
-        content: getTourTranslation("tcg", languageId),
+        target: "#tour-market-content",
+        placement: "top",
+        content: getTourTranslation("market_items", languageId),
         route: "/poke-mart",
         disableBeacon: true,
-        before: ensureRouteAndElement("/poke-mart", "#tour-nav-tcg"),
+        before: ensureRouteAndElement("/poke-mart", "#tour-market-content"),
+      },
+      {
+        target: "#tour-market-description",
+        placement: "left",
+        content: getTourTranslation("market_detail", languageId),
+        route: "/poke-mart",
+        disableBeacon: true,
+        before: () => {
+          return ensureRouteAndElement("/poke-mart", "#tour-market-description")().then(() => {
+            const firstItem = document.getElementById("tour-market-first-item");
+            if (firstItem) {
+              (firstItem as HTMLElement).click();
+            }
+          });
+        },
+      },
+      {
+        target: "#tour-tcg-search",
+        placement: "bottom",
+        content: getTourTranslation("tcg_search", languageId),
+        route: "/poke-tcg",
+        disableBeacon: true,
+        before: ensureRouteAndElement("/poke-tcg", "#tour-tcg-search"),
+      },
+      {
+        target: "#tour-tcg-filters",
+        placement: "top",
+        content: getTourTranslation("tcg_filters", languageId),
+        route: "/poke-tcg",
+        disableBeacon: true,
+        before: ensureRouteAndElement("/poke-tcg", "#tour-tcg-filters"),
       },
       {
         target: "body",
         placement: "center",
         content: getTourTranslation("conclusion", languageId),
-        route: "/poke-mart",
+        route: "/pokemons",
         disableBeacon: true,
-        before: ensureRouteAndElement("/poke-mart", "body"),
+        before: ensureRouteAndElement("/pokemons", "body"),
       },
     ],
     [languageId, navigate],
@@ -295,6 +330,9 @@ const TourGuide: React.FC = () => {
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRun(false);
       localStorage.setItem("hasCompletedTour", "true");
+      // Close dropdowns
+      toggleDropdown("tour-nav-games", false);
+      toggleDropdown("tour-nav-explore", false);
     }
   };
 
