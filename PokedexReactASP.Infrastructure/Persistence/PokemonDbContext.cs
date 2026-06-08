@@ -10,18 +10,18 @@ namespace PokedexReactASP.Infrastructure.Persistence
         {
         }
 
-        public DbSet<UserPokemon> UserPokemon { get; set; }
-        public DbSet<UserBox> UserBoxes { get; set; } 
-        public DbSet<UserItem> UserItems { get; set; }
-        public DbSet<Friendship> Friendships { get; set; }
-        public DbSet<FriendRequest> FriendRequests { get; set; }
-        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; }
-        public DbSet<UserTcgCard> UserTcgCards { get; set; }
-        public DbSet<TcgCardCache> TcgCardCaches { get; set; }
-        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; }
-        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; }
-        public DbSet<Achievement> Achievements { get; set; }
-        public DbSet<UserAchievement> UserAchievements { get; set; }
+        public DbSet<UserPokemon> UserPokemon { get; set; } = null!;
+        public DbSet<UserBox> UserBoxes { get; set; } = null!;
+        public DbSet<UserItem> UserItems { get; set; } = null!;
+        public DbSet<Friendship> Friendships { get; set; } = null!;
+        public DbSet<FriendRequest> FriendRequests { get; set; } = null!;
+        public DbSet<WildAreaSpawn> WildAreaSpawns { get; set; } = null!;
+        public DbSet<UserTcgCard> UserTcgCards { get; set; } = null!;
+        public DbSet<TcgCardCache> TcgCardCaches { get; set; } = null!;
+        public DbSet<PokemonSpawnMetadata> PokemonSpawnMetadata { get; set; } = null!;
+        public DbSet<PokemonBiomeTag> PokemonBiomeTags { get; set; } = null!;
+        public DbSet<Achievement> Achievements { get; set; } = null!;
+        public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

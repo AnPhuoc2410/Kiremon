@@ -259,7 +259,7 @@ namespace PokedexReactASP.Application.Services
                 user.TrainerLevel, isLegendary, isMythical);
 
             // 5. Determine effective nickname (handle duplicates)
-            string effectiveNickname = request.Nickname;
+            string effectiveNickname = request.Nickname ?? string.Empty;
             if (string.IsNullOrEmpty(effectiveNickname))
                 effectiveNickname = PokemonNameHelper.CapitalizeFirst(pokeApiData.Name);
 
@@ -311,7 +311,7 @@ namespace PokedexReactASP.Application.Services
             var isNewSpecies = existingCatch == null;
             var creationContext = BuildCreationContext(
                 userId, request.PokemonApiId, pokeApiData, nicknameToSave,
-                request.CaughtLocation, request.PokeballType, user,
+                request.CaughtLocation ?? "Wild", request.PokeballType, user,
                 captureRate, isLegendary, isMythical, isBaby, genderRate);
 
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
@@ -564,7 +564,7 @@ namespace PokedexReactASP.Application.Services
             {
                 // We need the species name
                 var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
-                targetName = CapitalizeFirst(apiData.Name);
+                targetName = apiData != null ? CapitalizeFirst(apiData.Name) : "Unknown";
             }
 
             // Calculate unique version
@@ -579,7 +579,7 @@ namespace PokedexReactASP.Application.Services
             else
             {
                 var apiData = await _pokemonCache.GetPokemonAsync(userPokemon.PokemonApiId);
-                speciesName = CapitalizeFirst(apiData.Name);
+                speciesName = apiData != null ? CapitalizeFirst(apiData.Name) : "Unknown";
             }
 
             userPokemon.Nickname = uniqueName.Equals(speciesName, StringComparison.Ordinal) ? null : uniqueName;
