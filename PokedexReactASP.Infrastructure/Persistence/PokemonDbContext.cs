@@ -68,6 +68,10 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     .WithMany(b => b.Pokemons)
                     .HasForeignKey(p => p.BoxId)
                     .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(p => p.HeldItem)
+                    .WithMany()
+                    .HasForeignKey(p => p.HeldItemId)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 // String length constraints
                 entity.Property(e => e.Nickname).HasMaxLength(50);
@@ -76,6 +80,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.OriginalTrainerId).HasMaxLength(450);
                 entity.Property(e => e.OriginalTrainerName).HasMaxLength(100);
                 entity.Property(e => e.Notes).HasMaxLength(1000);
+                entity.Property(e => e.Markings).HasMaxLength(100);
 
                 // Required fields
                 entity.Property(e => e.UserId).IsRequired();

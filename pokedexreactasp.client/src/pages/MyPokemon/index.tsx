@@ -242,6 +242,36 @@ const MyPokemon: React.FC = () => {
               {isAuthenticated && pokemons.length > 0 && (
                 <T.StatChip>Showing: {filteredPokemon.length}</T.StatChip>
               )}
+              {isAuthenticated && (
+                <Link
+                  to="/my-pokemon/pc"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "linear-gradient(135deg, #0ea5e9, #4f46e5)",
+                    color: "#fff",
+                    padding: "6px 14px",
+                    borderRadius: "999px",
+                    fontSize: "0.825rem",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)",
+                    transition: "all 0.2s ease",
+                    marginLeft: "8px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(14, 165, 233, 0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(14, 165, 233, 0.3)";
+                  }}
+                >
+                  🖥️ Switch to PC Storage
+                </Link>
+              )}
             </T.StatsRow>
           </T.HeaderCopy>
 

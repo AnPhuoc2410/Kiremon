@@ -89,6 +89,9 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.Type2, opt => opt.Ignore())
                 .ForMember(dest => dest.SpriteUrl, opt => opt.Ignore())
                 .ForMember(dest => dest.MaxHp, opt => opt.Ignore());
+
+            // UserBox → UserBoxDto
+            CreateMap<UserBox, UserBoxDto>();
         }
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PokedexReactASP.Application.Common.Helpers;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces;
@@ -135,6 +136,9 @@ namespace PokedexReactASP.Application.Services
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
             var userPokemon    = creationResult.Pokemon;
 
+            // Assign position in party or box
+            await AssignPositionForNewPokemonAsync(userPokemon);
+
             // 10. Persist Pokemon + trainer counters
             await _unitOfWork.UserPokemon.AddAsync(userPokemon);
 
@@ -216,6 +220,9 @@ namespace PokedexReactASP.Application.Services
 
             var creationResult = await _pokemonFactory.CreateCaughtPokemonAsync(creationContext);
             var userPokemon    = creationResult.Pokemon;
+
+            // Assign position in party or box
+            await AssignPositionForNewPokemonAsync(userPokemon);
 
             // 7. Save Pokemon + trainer stats
             await _unitOfWork.UserPokemon.AddAsync(userPokemon);
@@ -487,6 +494,82 @@ namespace PokedexReactASP.Application.Services
                 >= 17 and < 20 => TimeOfDay.Evening,
                 _              => TimeOfDay.Night
             };
+        }
+
+        private async Task AssignPositionForNewPokemonAsync(UserPokemon pokemon)
+        {
+            var userId = pokemon.UserId;
+
+            // 1. Get party pokemon slots
+            var partySlots = (await _unitOfWork.UserPokemon.FindAsync(
+                p => p.UserId == userId && p.IsInParty,
+                disableTracking: true
+            )).Select(p => p.SlotIndex).ToHashSet();
+
+            if (partySlots.Count < 6)
+            {
+                // Assign to party
+                pokemon.IsInParty = true;
+                pokemon.BoxId = null;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    if (!partySlots.Contains(i))
+                    {
+                        pokemon.SlotIndex = i;
+                        break;
+                    }
+                }
+                return;
+            }
+
+            // 2. Party is full, assign to box
+            var boxes = (await _unitOfWork.UserBox.FindAsync(
+                b => b.UserId == userId,
+                query => query.Include(b => b.Pokemons),
+                disableTracking: false
+            )).OrderBy(b => b.Order).ToList();
+
+            // Seed boxes if not existing (e.g. new user)
+            if (boxes.Count < 32)
+            {
+                int currentCount = boxes.Count;
+                for (int i = currentCount; i < 32; i++)
+                {
+                    var newBox = new UserBox
+                    {
+                        UserId = userId,
+                        Name = $"Box {i + 1}",
+                        Order = i,
+                        BackgroundImage = "Box_Forest_BDSP.png"
+                    };
+                    await _unitOfWork.UserBox.AddAsync(newBox);
+                    boxes.Add(newBox);
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            // Find first box with an empty slot
+            var targetBox = boxes.FirstOrDefault(b => b.Pokemons.Count < 30);
+            if (targetBox == null)
+            {
+                throw new InvalidOperationException("Your Party and PC boxes are completely full!");
+            }
+
+            var occupiedSlots = targetBox.Pokemons.Select(p => p.SlotIndex).ToHashSet();
+            int targetSlot = 0;
+            for (int i = 0; i < 30; i++)
+            {
+                if (!occupiedSlots.Contains(i))
+                {
+                    targetSlot = i;
+                    break;
+                }
+            }
+
+            pokemon.IsInParty = false;
+            pokemon.BoxId = targetBox.Id;
+            pokemon.SlotIndex = targetSlot;
         }
     }
 }

@@ -153,6 +153,7 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<IPokemonCollectionService, PokemonCollectionService>();
+            builder.Services.AddScoped<IPokemonBoxService, PokemonBoxService>();
             builder.Services.AddScoped<IPokemonCatchService, PokemonCatchService>();
             builder.Services.AddScoped<IAchievementService, AchievementService>();
             builder.Services.AddScoped<IAchievementNotificationService, AchievementNotificationService>();
