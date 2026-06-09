@@ -1322,3 +1322,743 @@ export const DetailTabButton = styled("button")<{ active: boolean }>(({ active }
   },
 }));
 
+export const DetailStatsGrid = styled("div")({
+  width: "calc(100% - 28px)",
+  margin: "0 14px 12px",
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: "10px",
+  background: "rgba(15, 23, 42, 0.03)",
+  border: "1px solid rgba(15, 23, 42, 0.05)",
+  borderRadius: "8px",
+  padding: "12px",
+  boxSizing: "border-box",
+  ".stat-box": {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "2px",
+    ".name": {
+      fontSize: "0.55rem",
+      fontFamily: '"Press Start 2P", monospace',
+      color: "#64748b",
+      textTransform: "uppercase",
+      textAlign: "center",
+    },
+    ".value": {
+      fontSize: "0.85rem",
+      fontFamily: '"Press Start 2P", monospace',
+      fontWeight: "bold",
+      color: "#0f172a",
+    },
+    ".breakdown": {
+      fontSize: "11px",
+      fontFamily: '"VT323", monospace',
+      color: "#64748b",
+      marginTop: "1px",
+      textAlign: "center",
+      whiteSpace: "nowrap",
+    },
+    ".max-val": {
+      fontSize: "10px",
+      fontFamily: '"VT323", monospace',
+      color: "#94a3b8",
+      textAlign: "center",
+      whiteSpace: "nowrap",
+    },
+  },
+});
+
+/* ================== Redesigned Detail Tabs & Content ================== */
+export const DetailMainTabContainer = styled("div")({
+  display: "flex",
+  width: "calc(100% - 24px)",
+  margin: "12px 12px 8px",
+  background: "rgba(15, 23, 42, 0.04)",
+  borderRadius: "8px",
+  padding: "3px",
+  boxSizing: "border-box",
+  border: "1px solid rgba(15, 23, 42, 0.06)",
+});
+
+export const DetailMainTabButton = styled("button")<{ active: boolean }>(({ active }) => ({
+  flex: 1,
+  background: active ? "#ffffff" : "transparent",
+  color: active ? "#2563eb" : "#64748b",
+  border: "none",
+  borderRadius: "6px",
+  padding: "8px 0",
+  fontSize: "0.75rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+  boxShadow: active ? "0 2px 6px rgba(15, 23, 42, 0.08)" : "none",
+  "&:hover": {
+    color: active ? "#2563eb" : "#0f172a",
+  },
+}));
+
+export const StatusTabContainer = styled("div")({
+  width: "100%",
+  padding: "0 12px 12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  boxSizing: "border-box",
+  alignItems: "center",
+});
+
+export const HpBarWrapper = styled("div")({
+  width: "100%",
+  background: "rgba(15, 23, 42, 0.05)",
+  border: "1px solid rgba(148, 163, 184, 0.2)",
+  borderRadius: "6px",
+  height: "14px",
+  position: "relative",
+  overflow: "hidden",
+  display: "flex",
+  alignItems: "center",
+});
+
+export const HpBarInner = styled("div")<{ percent: number; colorCode: string }>(({ percent, colorCode }) => ({
+  height: "100%",
+  width: `${percent}%`,
+  backgroundColor: colorCode,
+  transition: "width 0.3s ease, background-color 0.3s ease",
+}));
+
+export const HpBarText = styled("div")({
+  position: "absolute",
+  width: "100%",
+  textAlign: "center",
+  fontSize: "0.6rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: "bold",
+  color: "#0f172a",
+  zIndex: 1,
+});
+
+export const InfoGrid = styled("div")({
+  width: "100%",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "8px",
+});
+
+export const InfoItemBox = styled("div")({
+  background: "rgba(15, 23, 42, 0.02)",
+  border: "1px solid rgba(148, 163, 184, 0.15)",
+  borderRadius: "8px",
+  padding: "8px 10px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+  boxSizing: "border-box",
+  ".label": {
+    fontSize: "0.55rem",
+    fontFamily: '"Press Start 2P", monospace',
+    color: "#64748b",
+    textTransform: "uppercase",
+  },
+  ".value": {
+    fontSize: "0.75rem",
+    fontFamily: '"Press Start 2P", monospace',
+    color: "#0f172a",
+    fontWeight: "bold",
+  },
+});
+
+export const AbilityPill = styled("div")({
+  background: "rgba(59, 130, 246, 0.08)",
+  border: "1px solid rgba(59, 130, 246, 0.2)",
+  borderRadius: "8px",
+  padding: "8px 10px",
+  width: "100%",
+  boxSizing: "border-box",
+  cursor: "help",
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+  transition: "all 0.15s ease",
+  "&:hover": {
+    background: "rgba(59, 130, 246, 0.12)",
+    borderColor: "rgba(59, 130, 246, 0.3)",
+    ".tooltip": {
+      opacity: 1,
+      visibility: "visible",
+      transform: "translateX(-50%) translateY(0)",
+    },
+  },
+  ".label": {
+    fontSize: "0.55rem",
+    fontFamily: '"Press Start 2P", monospace',
+    color: "#3b82f6",
+    textTransform: "uppercase",
+  },
+  ".value": {
+    fontSize: "0.75rem",
+    fontFamily: '"Press Start 2P", monospace',
+    color: "#1d4ed8",
+    fontWeight: "bold",
+  },
+  ".tooltip": {
+    position: "absolute",
+    bottom: "100%",
+    left: "50%",
+    transform: "translateX(-50%) translateY(5px)",
+    background: "#1e293b",
+    color: "#ffffff",
+    padding: "8px 12px",
+    borderRadius: "8px",
+    fontSize: "0.75rem",
+    fontFamily: '"Outfit", "Inter", sans-serif',
+    width: "220px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+    zIndex: 100,
+    opacity: 0,
+    visibility: "hidden",
+    transition: "all 0.15s ease",
+    pointerEvents: "none",
+    textAlign: "center",
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: "100%",
+      left: "50%",
+      marginLeft: "-6px",
+      borderWidth: "6px",
+      borderStyle: "solid",
+      borderColor: "#1e293b transparent transparent transparent",
+    },
+  },
+});
+
+export const HeldItemPill = styled("div")<{ hasItem: boolean }>(({ hasItem }) => ({
+  background: hasItem ? "rgba(16, 185, 129, 0.08)" : "rgba(15, 23, 42, 0.02)",
+  border: hasItem ? "1px solid rgba(16, 185, 129, 0.2)" : "1px solid rgba(148, 163, 184, 0.15)",
+  borderRadius: "8px",
+  padding: "8px 10px",
+  width: "100%",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  ".icon": {
+    width: "24px",
+    height: "24px",
+    objectFit: "contain",
+  },
+  ".info": {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+    ".label": {
+      fontSize: "0.55rem",
+      fontFamily: '"Press Start 2P", monospace',
+      color: hasItem ? "#059669" : "#64748b",
+      textTransform: "uppercase",
+    },
+    ".value": {
+      fontSize: "0.75rem",
+      fontFamily: '"Press Start 2P", monospace',
+      color: hasItem ? "#065f46" : "#475569",
+      fontWeight: "bold",
+    },
+  },
+}));
+
+/* ================== Tab 2: Moves ================== */
+export const MovesTabContainer = styled("div")({
+  width: "100%",
+  padding: "0 12px 12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  boxSizing: "border-box",
+});
+
+export const MovesGrid = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  width: "100%",
+});
+
+export const MoveItemCard = styled("div")<{ typeColor: string }>(({ typeColor }) => ({
+  background: "#ffffff",
+  border: `1px solid rgba(148, 163, 184, 0.2)`,
+  borderLeft: `5px solid ${typeColor}`,
+  borderRadius: "8px",
+  padding: "8px 12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+  boxShadow: "0 2px 4px rgba(15, 23, 42, 0.02)",
+  boxSizing: "border-box",
+  ".move-header": {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    ".move-name": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.65rem",
+      fontWeight: "bold",
+      color: "#0f172a",
+      textTransform: "uppercase",
+    },
+    ".pp-val": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.55rem",
+      color: "#64748b",
+    },
+  },
+}));
+
+export const MoveMetaRow = styled("div")({
+  display: "flex",
+  gap: "6px",
+  alignItems: "center",
+  ".type-badge": {
+    padding: "2px 6px",
+    borderRadius: "4px",
+    color: "#ffffff",
+    fontSize: "0.5rem",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    textShadow: "1px 1px 0 rgba(0,0,0,0.3)",
+  },
+  ".class-badge": {
+    padding: "2px 6px",
+    borderRadius: "4px",
+    fontSize: "0.5rem",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    "&.physical": { background: "#ef4444", color: "#ffffff" },
+    "&.special": { background: "#3b82f6", color: "#ffffff" },
+    "&.status": { background: "#94a3b8", color: "#1e293b" },
+  },
+  ".power-acc": {
+    fontSize: "0.85rem",
+    fontFamily: '"VT323", monospace',
+    color: "#64748b",
+    marginLeft: "auto",
+  },
+});
+
+export const ManageMovesBtn = styled("button")({
+  width: "100%",
+  padding: "10px",
+  background: "#0f172a",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: "8px",
+  fontSize: "0.75rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+  marginTop: "4px",
+  textTransform: "uppercase",
+  "&:hover": {
+    background: "#1e293b",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(15, 23, 42, 0.25)",
+  },
+});
+
+/* ================== Tab 3: Stats ================== */
+export const StatsTabContainer = styled("div")({
+  width: "100%",
+  padding: "0 12px 12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+  boxSizing: "border-box",
+});
+
+export const StatBarRow = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+  width: "100%",
+});
+
+export const StatLabelRow = styled("div")<{ textColor: string }>(({ textColor }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-end",
+  ".stat-name": {
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.55rem",
+    color: textColor,
+    textTransform: "uppercase",
+    fontWeight: "bold",
+  },
+  ".stat-values": {
+    fontFamily: '"VT323", monospace',
+    fontSize: "0.95rem",
+    color: "#475569",
+    fontWeight: "bold",
+    ".curr": {
+      color: textColor,
+      fontSize: "1.1rem",
+    },
+    ".max": {
+      color: "#94a3b8",
+      fontSize: "0.85rem",
+    },
+  },
+}));
+
+export const StatBarWrapper = styled("div")({
+  width: "100%",
+  background: "rgba(15, 23, 42, 0.05)",
+  borderRadius: "4px",
+  height: "8px",
+  position: "relative",
+  overflow: "hidden",
+});
+
+export const StatBarInner = styled("div")<{ percent: number; color: string }>(({ percent, color }) => ({
+  height: "100%",
+  width: `${percent}%`,
+  backgroundColor: color,
+  borderRadius: "4px",
+  transition: "width 0.3s ease",
+}));
+
+export const RadarToggleBtn = styled("button")({
+  width: "100%",
+  padding: "8px",
+  background: "transparent",
+  border: "1px dashed rgba(148, 163, 184, 0.4)",
+  color: "#64748b",
+  borderRadius: "8px",
+  fontSize: "0.65rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+  marginTop: "6px",
+  "&:hover": {
+    background: "rgba(15, 23, 42, 0.03)",
+    color: "#0f172a",
+    borderColor: "rgba(15, 23, 42, 0.3)",
+  },
+});
+
+/* ================== Manage Moves Modal ================== */
+export const MoveManagerModalOverlay = styled("div")({
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: "rgba(15, 23, 42, 0.4)",
+  backdropFilter: "blur(4px)",
+  zIndex: 3000,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "20px",
+});
+
+export const MoveManagerContainer = styled("div")({
+  background: "#fdfdfd",
+  width: "100%",
+  maxWidth: "850px",
+  padding: "24px",
+  boxShadow: "8px 8px 0px rgba(15, 23, 42, 0.15)", // Retro pixel-art style drop shadow
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  boxSizing: "border-box",
+  // Note: we do not override border or borderRadius so the global .pxl-border works properly!
+  ".modal-header": {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "4px double #0f172a", // Retro double line
+    paddingBottom: "12px",
+    h3: {
+      margin: 0,
+      fontSize: "0.95rem",
+      fontFamily: '"Press Start 2P", monospace',
+      color: "#0f172a",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+    },
+    ".close-btn": {
+      background: "transparent",
+      border: "none",
+      color: "#64748b",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "4px",
+      transition: "all 0.15s ease",
+      "&:hover": {
+        color: "#ef4444",
+        transform: "scale(1.1)",
+      },
+      "&:active": {
+        transform: "scale(0.9)",
+      },
+    },
+  },
+  ".validation-warning": {
+    background: "rgba(239, 68, 68, 0.08)",
+    border: "2px solid #ef4444",
+    borderRadius: "4px",
+    padding: "8px 12px",
+    color: "#ef4444",
+    fontSize: "0.6rem",
+    fontFamily: '"Press Start 2P", monospace',
+    lineHeight: "1.4",
+  },
+  ".actions-row": {
+    display: "flex",
+    gap: "16px",
+    justifyContent: "flex-end",
+    marginTop: "8px",
+  },
+});
+
+export const MoveManagerSplitLayout = styled("div")({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: "24px",
+  width: "100%",
+  boxSizing: "border-box",
+  "@media (min-width: 640px)": {
+    gridTemplateColumns: "1fr 1.25fr",
+  },
+});
+
+export const ActiveMovesColumn = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+});
+
+export const ActiveMoveSlot = styled("div")<{ isEmpty: boolean; typeColor?: string }>(({ isEmpty, typeColor }) => ({
+  minHeight: "72px",
+  borderRadius: "8px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  padding: "10px 14px",
+  boxSizing: "border-box",
+  transition: "all 0.15s ease",
+  position: "relative",
+  gap: "6px",
+  ...(isEmpty
+    ? {
+        border: "3px dashed #cbd5e1",
+        background: "rgba(15, 23, 42, 0.02)",
+        alignItems: "center",
+        color: "#94a3b8",
+        fontSize: "0.6rem",
+        fontFamily: '"Press Start 2P", monospace',
+        textTransform: "uppercase",
+        cursor: "default",
+      }
+    : {
+        border: "2px solid #0f172a", // Retro outline
+        borderLeft: `6px solid ${typeColor || "#888"}`,
+        background: "#ffffff",
+        cursor: "pointer",
+        "&:hover": {
+          borderColor: "#ef4444",
+          background: "rgba(239, 68, 68, 0.03)",
+          ".remove-indicator": {
+            opacity: 1,
+            transform: "scale(1)",
+          },
+        },
+      }),
+  ".active-move-header": {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    ".move-name": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.65rem",
+      fontWeight: "bold",
+      color: "#0f172a",
+      textTransform: "uppercase",
+    },
+    ".pp-val": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.55rem",
+      color: "#64748b",
+    },
+  },
+  ".active-move-meta": {
+    display: "flex",
+    gap: "6px",
+    alignItems: "center",
+    width: "100%",
+    ".type-badge": {
+      padding: "2px 6px",
+      borderRadius: "4px",
+      color: "#ffffff",
+      fontSize: "8px",
+      fontFamily: '"Press Start 2P", monospace',
+      fontWeight: "bold",
+      textShadow: "1px 1px 0 rgba(0,0,0,0.3)",
+    },
+    ".class-badge": {
+      padding: "2px 6px",
+      borderRadius: "4px",
+      fontSize: "8px",
+      fontFamily: '"Press Start 2P", monospace',
+      fontWeight: "bold",
+      textTransform: "uppercase",
+      "&.physical": { background: "#ef4444", color: "#ffffff" },
+      "&.special": { background: "#3b82f6", color: "#ffffff" },
+      "&.status": { background: "#94a3b8", color: "#1e293b" },
+    },
+    ".power-acc": {
+      fontSize: "0.9rem",
+      fontFamily: '"VT323", monospace',
+      color: "#64748b",
+      marginLeft: "auto",
+    },
+  },
+  ".remove-indicator": {
+    position: "absolute",
+    top: "-8px",
+    right: "-8px",
+    background: "#ef4444",
+    color: "#ffffff",
+    border: "2px solid #0f172a",
+    borderRadius: "4px", // Blocky retro bubble
+    width: "20px",
+    height: "20px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "10px",
+    fontWeight: "bold",
+    opacity: 0,
+    transform: "scale(0.8)",
+    transition: "all 0.15s ease",
+    pointerEvents: "none",
+    zIndex: 10,
+    boxShadow: "2px 2px 0px #0f172a",
+  },
+}));
+
+export const AvailableMovesColumn = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  minWidth: 0,
+});
+
+export const MovesListContainer = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  maxHeight: "340px",
+  overflowY: "auto",
+  paddingRight: "6px",
+  "&::-webkit-scrollbar": {
+    width: "6px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    background: "rgba(0,0,0,0.15)",
+    borderRadius: "3px",
+  },
+});
+
+export const PixelCheckbox = styled("div")<{ checked: boolean }>(({ checked }) => ({
+  width: "18px",
+  height: "18px",
+  border: "2px solid #0f172a",
+  background: checked ? "#10b981" : "#ffffff", // Retro green when checked
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "inset -2px -2px rgba(0,0,0,0.1)",
+  flexShrink: 0,
+  "&::after": checked
+    ? {
+        content: '"✓"',
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: "8px",
+        color: "#ffffff",
+        fontWeight: "bold",
+      }
+    : {},
+}));
+
+export const MoveRowItem = styled("div")<{ checked: boolean; disabled: boolean }>(({ checked, disabled }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "10px 14px",
+  borderRadius: "8px",
+  background: checked ? "rgba(16, 185, 129, 0.03)" : "#ffffff",
+  border: checked
+    ? "2px solid #0f172a" // Retro outline when selected
+    : "2px solid rgba(15, 23, 42, 0.1)",
+  cursor: disabled ? "not-allowed" : "pointer",
+  transition: "all 0.15s ease",
+  opacity: disabled ? 0.5 : 1,
+  boxSizing: "border-box",
+  boxShadow: checked ? "2px 2px 0px #0f172a" : "none", // Nice pixel shadow when selected
+  "&:hover": {
+    borderColor: disabled ? (checked ? "#0f172a" : "rgba(15, 23, 42, 0.1)") : "#0f172a",
+    background: disabled ? (checked ? "rgba(16, 185, 129, 0.03)" : "#ffffff") : "rgba(15, 23, 42, 0.02)",
+    boxShadow: disabled ? (checked ? "2px 2px 0px #0f172a" : "none") : "2px 2px 0px #0f172a",
+  },
+  ".lvl-badge": {
+    background: "#0f172a",
+    color: "#facc15",
+    padding: "3px 6px",
+    borderRadius: "4px",
+    fontSize: "8px",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    minWidth: "55px",
+    textAlign: "center",
+  },
+  ".move-name": {
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+    fontWeight: "bold",
+    color: "#0f172a",
+    textTransform: "uppercase",
+    flex: 1,
+  },
+  ".move-stats": {
+    display: "flex",
+    gap: "8px",
+    alignItems: "center",
+    ".type-badge": {
+      padding: "2px 6px",
+      borderRadius: "4px",
+      color: "#ffffff",
+      fontSize: "8px",
+      fontFamily: '"Press Start 2P", monospace',
+      fontWeight: "bold",
+      textShadow: "1px 1px 0 rgba(0,0,0,0.3)",
+    },
+    ".stat": {
+      fontSize: "0.9rem",
+      fontFamily: '"VT323", monospace',
+      color: "#475569",
+      fontWeight: "bold",
+    },
+  },
+}));
+
+

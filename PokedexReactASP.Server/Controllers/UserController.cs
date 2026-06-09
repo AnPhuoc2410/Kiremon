@@ -142,6 +142,19 @@ namespace PokedexReactASP.Server.Controllers
             return result ? Ok(new { message = "Notes updated successfully" }) : NotFound(new { message = "Pokemon not found in your collection" });
         }
 
+        /// <summary>Update Pokemon moves</summary>
+        [HttpPut("pokemon/{userPokemonId}/moves")]
+        public async Task<ActionResult> UpdatePokemonMoves(int userPokemonId, [FromBody] List<int> moveIds)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (moveIds == null || moveIds.Count > 4) return BadRequest(new { message = "Invalid moveset. Maximum 4 moves allowed." });
+
+            var result = await _catchService.UpdatePokemonMovesAsync(CurrentUserId, userPokemonId, moveIds);
+            return result 
+                ? Ok(new { message = "Moveset updated successfully" }) 
+                : NotFound(new { message = "Pokemon not found in your collection" });
+        }
+
         /// <summary>Get user's achievements with progress</summary>
         [HttpGet("achievements")]
         public async Task<ActionResult<IEnumerable<UserAchievementStatusDto>>> GetAchievements()

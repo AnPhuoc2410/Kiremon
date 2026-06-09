@@ -68,6 +68,8 @@ export interface UserPokemonDto {
   
   customMoveIds: number[] | null;
   heldItemId: number | null;
+  heldItemName: string | null;
+  heldItemSpriteUrl: string | null;
   boxId: number | null;
   isInParty: boolean;
   slotIndex: number;

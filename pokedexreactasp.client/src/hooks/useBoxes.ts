@@ -66,3 +66,25 @@ export const useReorderBoxes = () => {
     },
   });
 };
+
+import { collectionService } from "@/services/collection/collection.service";
+
+export const useUpdatePokemonMoves = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userPokemonId,
+      moveIds,
+    }: {
+      userPokemonId: number;
+      moveIds: number[];
+    }) => collectionService.updateMoves(userPokemonId, moveIds),
+    onSuccess: () => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["boxes"] }),
+        queryClient.invalidateQueries({ queryKey: ["collection"] }),
+      ]);
+    },
+  });
+};

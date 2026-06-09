@@ -370,6 +370,23 @@ namespace PokedexReactASP.Application.Services
             return true;
         }
 
+        /// <inheritdoc/>
+        public async Task<bool> UpdatePokemonMovesAsync(string userId, int userPokemonId, List<int> moveIds)
+        {
+            var userPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
+                up => up.UserId == userId && up.Id == userPokemonId, disableTracking: false);
+
+            if (userPokemon == null) return false;
+
+            // Enforce max 4 moves
+            var cleanMoveIds = moveIds.Take(4).ToList();
+            userPokemon.CustomMoveIds = cleanMoveIds.Any() ? string.Join(',', cleanMoveIds) : null;
+            
+            _unitOfWork.UserPokemon.Update(userPokemon);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
         // ── Private Helpers ───────────────────────────────────────────────────
 
         /// <summary>

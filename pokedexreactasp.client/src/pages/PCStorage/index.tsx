@@ -13,7 +13,7 @@ import {
   IconLayout,
 } from "@tabler/icons-react";
 
-import { Navbar, Text } from "@/components/ui";
+import { Navbar, Text, Button } from "@/components/ui";
 import { useAuth } from "@/contexts";
 import { useSupabaseStorage } from "@/components/hooks/useSupabaseStorage";
 import {
@@ -22,7 +22,9 @@ import {
   useMovePokemon,
   useMovePokemonBatch,
   useReorderBoxes,
+  useUpdatePokemonMoves,
 } from "@/hooks/useBoxes";
+import { usePokemonCore } from "@/hooks/queries";
 import { collectionService } from "@/services/collection/collection.service";
 import { UserPokemonDto } from "@/types/userspokemon.types";
 import { UserBoxDto, MovePokemonItemDto } from "@/types/box.types";
@@ -175,6 +177,7 @@ const PCStorage: React.FC = () => {
   const movePokemonMutation  = useMovePokemon();
   const moveBatchMutation    = useMovePokemonBatch();
   const reorderBoxesMutation = useReorderBoxes();
+  const updateMovesMutation  = useUpdatePokemonMoves();
   const { uploadFile, uploading, uploadProgress } = useSupabaseStorage();
 
   // ── UI State ──────────────────────────────────────────────
@@ -187,6 +190,17 @@ const PCStorage: React.FC = () => {
   // ── Selection ─────────────────────────────────────────────
   // Primary single-click selection → shows detail panel
   const [selectedPokemon, setSelectedPokemon] = useState<UserPokemonDto | null>(null);
+  const [activeMainTab, setActiveMainTab] = useState<"status" | "moves" | "stats">("status");
+  const [showMoveManager, setShowMoveManager] = useState(false);
+  const [tempSelectedMoves, setTempSelectedMoves] = useState<number[]>([]);
+  const [showRadarChart, setShowRadarChart] = useState(false);
+
+  useEffect(() => {
+    if (selectedPokemon) {
+      setActiveMainTab("status");
+    }
+  }, [selectedPokemon?.id]);
+
   // Ctrl+Click multi-select (max 2) → group drag / compare
   const [multiSelectedIds, setMultiSelectedIds] = useState<Set<number>>(new Set());
   // For Shift+Click range select
@@ -656,8 +670,71 @@ const PCStorage: React.FC = () => {
     );
   };
 
+  // ── Sync Selected Pokémon Details ──
+  const activePokemonDetails = useMemo(() => {
+    if (!selectedPokemon) return null;
+    const inParty = partyPokemons.find((p) => p.id === selectedPokemon.id);
+    if (inParty) return inParty;
+    for (const box of boxes) {
+      const inBox = box.pokemons.find((p: any) => p.id === selectedPokemon.id);
+      if (inBox) return inBox;
+    }
+    return selectedPokemon;
+  }, [selectedPokemon?.id, boxes, partyPokemons]);
+
+  // ── usePokemonCore for Moves & Abilities details ──
+  const { detail } = usePokemonCore(activePokemonDetails?.name || "");
+
+  // ── Moves Lookup ──
+  const allLearnedMoves = useMemo(() => {
+    if (!detail?.moveDetails || !activePokemonDetails) return [];
+    
+    // Filter level-up moves learned up to current level
+    const filtered = detail.moveDetails.filter(
+      (m) => m.learnMethod === "level-up" && m.level !== null && m.level <= activePokemonDetails.currentLevel
+    );
+
+    // Group by move ID or name and keep the one with the lowest level (earliest learned)
+    const uniqueMovesMap = new Map<number | string, typeof filtered[0]>();
+    for (const move of filtered) {
+      const key = move.id || move.name;
+      const existing = uniqueMovesMap.get(key);
+      if (!existing || (move.level !== null && existing.level !== null && move.level < existing.level)) {
+        uniqueMovesMap.set(key, move);
+      }
+    }
+
+    // Convert back to array and sort by level ascending
+    return Array.from(uniqueMovesMap.values()).sort((a, b) => {
+      const lvlA = a.level ?? 0;
+      const lvlB = b.level ?? 0;
+      if (lvlA !== lvlB) return lvlA - lvlB;
+      return a.name.localeCompare(b.name);
+    });
+  }, [detail?.moveDetails, activePokemonDetails?.currentLevel]);
+
+  const currentMoves = useMemo(() => {
+    if (!activePokemonDetails || !detail?.moveDetails) return [];
+    if (activePokemonDetails.customMoveIds && activePokemonDetails.customMoveIds.length > 0) {
+      return activePokemonDetails.customMoveIds
+        .map((id) => detail.moveDetails.find((m) => m.id === id))
+        .filter(Boolean) as any[];
+    }
+    // Fallback to top 4 level-up moves
+    const sorted = [...allLearnedMoves].sort((a, b) => (b.level || 0) - (a.level || 0));
+    return sorted.slice(0, 4);
+  }, [activePokemonDetails, detail?.moveDetails, allLearnedMoves]);
+
+  const getAbilityDesc = (abilityName: string) => {
+    if (!detail?.abilities) return null;
+    const found = detail.abilities.find(
+      (a: any) => a.ability.name.toLowerCase() === abilityName.toLowerCase()
+    );
+    return found?.description || "No description available.";
+  };
+
   // ── Radar Chart Calculations ──────────────────────────────
-  const natureKey = selectedPokemon?.natureDisplay?.toLowerCase() || "";
+  const natureKey = activePokemonDetails?.natureDisplay?.toLowerCase().split(" ")[0] || "";
   const natureEffect = NATURE_EFFECTS[natureKey];
 
   const getStatColor = (label: string) => {
@@ -693,6 +770,12 @@ const PCStorage: React.FC = () => {
     return null;
   };
 
+  const getMaxStatAtCurrentLevel = (base: number, level: number, isHp: boolean) => {
+    if (isHp) {
+      return Math.floor(((2 * base + 31 + Math.floor(252 / 4)) * level) / 100) + level + 10;
+    }
+    return Math.floor((Math.floor(((2 * base + 31 + Math.floor(252 / 4)) * level) / 100) + 5) * 1.1);
+  };
 
   const getStatRadius = (iv: number | null) => {
     const val = iv ?? 15; // default to Decent if null
@@ -704,27 +787,27 @@ const PCStorage: React.FC = () => {
     return 10 + (val / 252) * 45; // maps 0..252 to 10..55 range
   };
 
-  const radii = selectedPokemon
+  const radii = activePokemonDetails
     ? activeStatTab === "iv"
       ? [
-          getStatRadius(selectedPokemon.ivHp),
-          getStatRadius(selectedPokemon.ivAttack),
-          getStatRadius(selectedPokemon.ivDefense),
-          getStatRadius(selectedPokemon.ivSpeed),
-          getStatRadius(selectedPokemon.ivSpecialDefense),
-          getStatRadius(selectedPokemon.ivSpecialAttack),
+          getStatRadius(activePokemonDetails.ivHp),
+          getStatRadius(activePokemonDetails.ivAttack),
+          getStatRadius(activePokemonDetails.ivDefense),
+          getStatRadius(activePokemonDetails.ivSpeed),
+          getStatRadius(activePokemonDetails.ivSpecialDefense),
+          getStatRadius(activePokemonDetails.ivSpecialAttack),
         ]
       : [
-          getEvRadius(selectedPokemon.evHp),
-          getEvRadius(selectedPokemon.evAttack),
-          getEvRadius(selectedPokemon.evDefense),
-          getEvRadius(selectedPokemon.evSpeed),
-          getEvRadius(selectedPokemon.evSpecialDefense),
-          getEvRadius(selectedPokemon.evSpecialAttack),
+          getEvRadius(activePokemonDetails.evHp),
+          getEvRadius(activePokemonDetails.evAttack),
+          getEvRadius(activePokemonDetails.evDefense),
+          getEvRadius(activePokemonDetails.evSpeed),
+          getEvRadius(activePokemonDetails.evSpecialDefense),
+          getEvRadius(activePokemonDetails.evSpecialAttack),
         ]
     : [];
 
-  const cx = 130;
+  const cx = 140;
   const cy = 110;
 
   const getGridHexagon = (r: number) => {
@@ -743,25 +826,61 @@ const PCStorage: React.FC = () => {
     })
     .join(" ");
 
-  const statItems = selectedPokemon
+  const statItems = activePokemonDetails
     ? activeStatTab === "iv"
       ? [
-          { label: "HP", displayName: "HP", judge: getIvJudgeText(selectedPokemon.ivHp) },
-          { label: "ATK", displayName: "Attack", judge: getIvJudgeText(selectedPokemon.ivAttack) },
-          { label: "DEF", displayName: "Defense", judge: getIvJudgeText(selectedPokemon.ivDefense) },
-          { label: "SPD", displayName: "Speed", judge: getIvJudgeText(selectedPokemon.ivSpeed) },
-          { label: "SpD", displayName: "Sp. Def", judge: getIvJudgeText(selectedPokemon.ivSpecialDefense) },
-          { label: "SpA", displayName: "Sp. Atk", judge: getIvJudgeText(selectedPokemon.ivSpecialAttack) },
+          { label: "HP", displayName: "HP", judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})` },
+          { label: "ATK", displayName: "Attack", judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})` },
+          { label: "DEF", displayName: "Defense", judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})` },
+          { label: "SPD", displayName: "Speed", judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})` },
+          { label: "SpD", displayName: "Sp. Def", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})` },
+          { label: "SpA", displayName: "Sp. Atk", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})` },
         ]
       : [
-          { label: "HP", displayName: "HP", judge: `${selectedPokemon.evHp}/252` },
-          { label: "ATK", displayName: "Attack", judge: `${selectedPokemon.evAttack}/252` },
-          { label: "DEF", displayName: "Defense", judge: `${selectedPokemon.evDefense}/252` },
-          { label: "SPD", displayName: "Speed", judge: `${selectedPokemon.evSpeed}/252` },
-          { label: "SpD", displayName: "Sp. Def", judge: `${selectedPokemon.evSpecialDefense}/252` },
-          { label: "SpA", displayName: "Sp. Atk", judge: `${selectedPokemon.evSpecialAttack}/252` },
+          { label: "HP", displayName: "HP", judge: `EV: ${activePokemonDetails.evHp}` },
+          { label: "ATK", displayName: "Attack", judge: `EV: ${activePokemonDetails.evAttack}` },
+          { label: "DEF", displayName: "Defense", judge: `EV: ${activePokemonDetails.evDefense}` },
+          { label: "SPD", displayName: "Speed", judge: `EV: ${activePokemonDetails.evSpeed}` },
+          { label: "SpD", displayName: "Sp. Def", judge: `EV: ${activePokemonDetails.evSpecialDefense}` },
+          { label: "SpA", displayName: "Sp. Atk", judge: `EV: ${activePokemonDetails.evSpecialAttack}` },
         ]
     : [];
+
+  const handleOpenMoveManager = () => {
+    if (!activePokemonDetails) return;
+    const currentMoveIds = currentMoves.map(m => m.id).filter(Boolean) as number[];
+    setTempSelectedMoves(currentMoveIds);
+    setShowMoveManager(true);
+  };
+
+  const handleToggleMove = (moveId: number) => {
+    setTempSelectedMoves(prev => {
+      if (prev.includes(moveId)) {
+        return prev.filter(id => id !== moveId);
+      } else {
+        if (prev.length >= 4) {
+          toast.error("You can select up to 4 moves!");
+          return prev;
+        }
+        return [...prev, moveId];
+      }
+    });
+  };
+
+  const handleSaveMoves = async () => {
+    if (!activePokemonDetails) return;
+    if (tempSelectedMoves.length === 0 || tempSelectedMoves.length > 4) return;
+    try {
+      await updateMovesMutation.mutateAsync({
+        userPokemonId: activePokemonDetails.id,
+        moveIds: tempSelectedMoves,
+      });
+      toast.success("Moveset updated successfully!");
+      setShowMoveManager(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update moveset.");
+    }
+  };
 
   // ═══════════════════════════════════════════════════════════
   // RENDER
@@ -933,34 +1052,34 @@ const PCStorage: React.FC = () => {
             </S.SearchBoxWrapper>
 
             {/* Pokemon Detail Panel */}
-            {selectedPokemon ? (
+            {activePokemonDetails ? (
               <S.DetailPanel>
                 <S.DetailTopBar>
                   <div className="left-section">
                     <img
-                      src={getPokeballSpriteUrl(selectedPokemon.caughtBall)}
+                      src={getPokeballSpriteUrl(activePokemonDetails.caughtBall)}
                       alt="Pokeball"
                       className="pokeball-icon"
                     />
-                    <span className="name">{selectedPokemon.displayName}</span>
+                    <span className="name">{activePokemonDetails.displayName}</span>
                   </div>
                   <div className="right-section">
-                    <span className="lvl-pill">Lv.{selectedPokemon.currentLevel}</span>
-                    <span className={`gender-badge ${selectedPokemon.gender === 0 ? "male" : selectedPokemon.gender === 1 ? "female" : "genderless"}`}>
-                      {selectedPokemon.gender === 0 ? "♂" : selectedPokemon.gender === 1 ? "♀" : "⚲"}
+                    <span className="lvl-pill">Lv.{activePokemonDetails.currentLevel}</span>
+                    <span className={`gender-badge ${activePokemonDetails.gender === 0 ? "male" : activePokemonDetails.gender === 1 ? "female" : "genderless"}`}>
+                      {activePokemonDetails.gender === 0 ? "♂" : activePokemonDetails.gender === 1 ? "♀" : "⚲"}
                     </span>
                   </div>
                 </S.DetailTopBar>
 
                 <S.DetailSubBar>
                   <span className="dex-no">
-                    No. {String(selectedPokemon.pokemonApiId).padStart(3, "0")}
+                    No. {String(activePokemonDetails.pokemonApiId).padStart(3, "0")}
                   </span>
-                  {selectedPokemon.isShiny && <span className="shiny-star">★ Shiny</span>}
+                  {activePokemonDetails.isShiny && <span className="shiny-star">★ Shiny</span>}
                 </S.DetailSubBar>
 
                 <S.DetailTypeRow>
-                  {[selectedPokemon.type1, selectedPokemon.type2]
+                  {[activePokemonDetails.type1, activePokemonDetails.type2]
                     .filter(Boolean)
                     .map((t) => (
                       <span
@@ -975,191 +1094,358 @@ const PCStorage: React.FC = () => {
 
                 <S.DetailArtworkArea>
                   <img
-                    src={selectedPokemon.officialArtworkUrl ?? selectedPokemon.spriteUrl}
-                    alt={selectedPokemon.displayName}
+                    src={activePokemonDetails.officialArtworkUrl ?? activePokemonDetails.spriteUrl}
+                    alt={activePokemonDetails.displayName}
                     className="artwork"
                   />
                 </S.DetailArtworkArea>
 
-                <S.DetailTabContainer>
-                  <S.DetailTabButton
-                    active={activeStatTab === "iv"}
-                    onClick={() => setActiveStatTab("iv")}
+                {/* Main 3-Tab Headers */}
+                <S.DetailMainTabContainer>
+                  <S.DetailMainTabButton
+                    active={activeMainTab === "status"}
+                    onClick={() => setActiveMainTab("status")}
                   >
-                    IVs
-                  </S.DetailTabButton>
-                  <S.DetailTabButton
-                    active={activeStatTab === "ev"}
-                    onClick={() => setActiveStatTab("ev")}
+                    Status
+                  </S.DetailMainTabButton>
+                  <S.DetailMainTabButton
+                    active={activeMainTab === "moves"}
+                    onClick={() => setActiveMainTab("moves")}
                   >
-                    EVs
-                  </S.DetailTabButton>
-                </S.DetailTabContainer>
+                    Moves
+                  </S.DetailMainTabButton>
+                  <S.DetailMainTabButton
+                    active={activeMainTab === "stats"}
+                    onClick={() => setActiveMainTab("stats")}
+                  >
+                    Stats
+                  </S.DetailMainTabButton>
+                </S.DetailMainTabContainer>
 
-                <S.DetailStatsArea>
-                  <div className="radar-chart-container">
-                    <svg width="260" height="220" viewBox="0 0 260 220">
-                      {/* Grid hexagons */}
-                      <polygon points={getGridHexagon(60)} stroke="rgba(15, 23, 42, 0.12)" fill="none" strokeWidth="1" />
-                      <polygon points={getGridHexagon(40)} stroke="rgba(15, 23, 42, 0.08)" fill="none" strokeWidth="1" />
-                      <polygon points={getGridHexagon(20)} stroke="rgba(15, 23, 42, 0.05)" fill="none" strokeWidth="1" />
-
-                      {/* Radial lines */}
-                      {[0, 1, 2, 3, 4, 5].map((i) => {
-                        const angle = -Math.PI / 2 + (i * Math.PI) / 3;
+                {/* Tab 1: Status */}
+                {activeMainTab === "status" && (
+                  <S.StatusTabContainer>
+                    <S.HpBarWrapper>
+                      {(() => {
+                        const hpPercent = Math.min(100, Math.max(0, (activePokemonDetails.currentHp / activePokemonDetails.maxHp) * 100));
+                        let hpColor = "#10b981"; // green >50%
+                        if (hpPercent <= 20) hpColor = "#ef4444"; // red <=20%
+                        else if (hpPercent <= 50) hpColor = "#f59e0b"; // yellow <=50%
                         return (
-                          <line
-                            key={`line-${i}`}
-                            x1={130}
-                            y1={110}
-                            x2={130 + 60 * Math.cos(angle)}
-                            y2={110 + 60 * Math.sin(angle)}
-                            stroke="rgba(15, 23, 42, 0.1)"
-                            strokeWidth="1"
-                            strokeDasharray="2,2"
-                          />
+                          <>
+                            <S.HpBarInner percent={hpPercent} colorCode={hpColor} />
+                            <S.HpBarText>{activePokemonDetails.currentHp} / {activePokemonDetails.maxHp} HP</S.HpBarText>
+                          </>
+                        );
+                      })()}
+                    </S.HpBarWrapper>
+
+                    <S.InfoGrid>
+                      <S.InfoItemBox>
+                        <span className="label">Nature</span>
+                        <span className="value">{activePokemonDetails.natureDisplay.split(" ")[0]}</span>
+                      </S.InfoItemBox>
+                      <S.InfoItemBox>
+                        <span className="label">Gender</span>
+                        <span className="value">
+                          {activePokemonDetails.gender === 0 ? "Male (♂)" : activePokemonDetails.gender === 1 ? "Female (♀)" : "Unknown (⚲)"}
+                        </span>
+                      </S.InfoItemBox>
+                    </S.InfoGrid>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+                      {activePokemonDetails.abilities && activePokemonDetails.abilities.map((abilityName) => {
+                        const desc = getAbilityDesc(abilityName);
+                        return (
+                          <S.AbilityPill key={abilityName}>
+                            <span className="label">Ability</span>
+                            <span className="value">{abilityName}</span>
+                            {desc && <span className="tooltip">{desc}</span>}
+                          </S.AbilityPill>
                         );
                       })}
+                      {(!activePokemonDetails.abilities || activePokemonDetails.abilities.length === 0) && (
+                        <S.InfoItemBox>
+                          <span className="label">Ability</span>
+                          <span className="value">None</span>
+                        </S.InfoItemBox>
+                      )}
 
-                      {/* Stat poly */}
-                      <polygon
-                        points={polyPoints}
-                        fill="rgba(59, 130, 246, 0.22)"
-                        stroke="#3b82f6"
-                        strokeWidth="2.5"
-                      />
+                      {activePokemonDetails.heldItemName ? (
+                        <S.HeldItemPill hasItem={true}>
+                          {activePokemonDetails.heldItemSpriteUrl ? (
+                            <img className="icon" src={activePokemonDetails.heldItemSpriteUrl} alt={activePokemonDetails.heldItemName} />
+                          ) : (
+                            <div className="icon" style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>🎒</div>
+                          )}
+                          <div className="info">
+                            <span className="label">Held Item</span>
+                            <span className="value">{activePokemonDetails.heldItemName}</span>
+                          </div>
+                        </S.HeldItemPill>
+                      ) : (
+                        <S.HeldItemPill hasItem={false}>
+                          <div className="icon" style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>—</div>
+                          <div className="info">
+                            <span className="label">Held Item</span>
+                            <span className="value">No Item</span>
+                          </div>
+                        </S.HeldItemPill>
+                      )}
+                    </div>
+                  </S.StatusTabContainer>
+                )}
 
-                      {/* Dots */}
-                      {radii.map((r, i) => {
-                        const angle = -Math.PI / 2 + (i * Math.PI) / 3;
-                        const x = 130 + r * Math.cos(angle);
-                        const y = 110 + r * Math.sin(angle);
+                {/* Tab 2: Moves */}
+                {activeMainTab === "moves" && (
+                  <S.MovesTabContainer>
+                    <S.MovesGrid>
+                      {currentMoves.map((move, idx) => {
+                        const typeColor = TYPE_COLORS[move.type?.toLowerCase() || "normal"] || "#888";
                         return (
-                          <circle
-                            key={`dot-${i}`}
-                            cx={x}
-                            cy={y}
-                            r="3.5"
-                            fill="#ffffff"
-                            stroke="#3b82f6"
-                            strokeWidth="1.5"
-                          />
+                          <S.MoveItemCard key={`${move.name}-${idx}`} typeColor={typeColor}>
+                            <div className="move-header">
+                              <span className="move-name">{move.localizedName || move.name}</span>
+                              <span className="pp-val">PP {move.pp || "—"}/{move.pp || "—"}</span>
+                            </div>
+                            <S.MoveMetaRow>
+                              <span className="type-badge" style={{ backgroundColor: typeColor }}>
+                                {move.type}
+                              </span>
+                              <span className={`class-badge ${move.damageClass}`}>
+                                {move.damageClass}
+                              </span>
+                              <span className="power-acc">
+                                Power: {move.power || "—"}  Acc: {move.accuracy || "—"}%
+                              </span>
+                            </S.MoveMetaRow>
+                          </S.MoveItemCard>
                         );
                       })}
+                      {currentMoves.length === 0 && (
+                        <span style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", padding: "12px" }}>
+                          No moves learned yet.
+                        </span>
+                      )}
+                    </S.MovesGrid>
+                    <S.ManageMovesBtn className="pxl-border" onClick={handleOpenMoveManager}>
+                      Manage Moves
+                    </S.ManageMovesBtn>
+                  </S.MovesTabContainer>
+                )}
 
-                      {/* Labels */}
-                      {statItems.map((item, idx) => {
-                        const angle = -Math.PI / 2 + (idx * Math.PI) / 3;
-                        const color = getStatColor(item.label);
-
-                        let lx = 130;
-                        let ly = 110;
-                        let textAnchor: "inherit" | "end" | "start" | "middle" = "middle";
-                        let offsetLy1 = 0;
-                        let offsetLy2 = 0;
-
-                        if (idx === 0) {
-                          lx = 130;
-                          ly = 110 - 65;
-                          textAnchor = "middle";
-                          offsetLy1 = -6;
-                          offsetLy2 = 6;
-                        } else if (idx === 1) {
-                          lx = 130 + 65 * 0.866;
-                          ly = 110 - 65 * 0.5;
-                          textAnchor = "start";
-                          lx += 6;
-                          offsetLy1 = -4;
-                          offsetLy2 = 8;
-                        } else if (idx === 2) {
-                          lx = 130 + 65 * 0.866;
-                          ly = 110 + 65 * 0.5;
-                          textAnchor = "start";
-                          lx += 6;
-                          offsetLy1 = -4;
-                          offsetLy2 = 8;
-                        } else if (idx === 3) {
-                          lx = 130;
-                          ly = 110 + 65;
-                          textAnchor = "middle";
-                          offsetLy1 = 4;
-                          offsetLy2 = 16;
-                        } else if (idx === 4) {
-                          lx = 130 - 65 * 0.866;
-                          ly = 110 + 65 * 0.5;
-                          textAnchor = "end";
-                          lx -= 6;
-                          offsetLy1 = -4;
-                          offsetLy2 = 8;
-                        } else if (idx === 5) {
-                          lx = 130 - 65 * 0.866;
-                          ly = 110 - 65 * 0.5;
-                          textAnchor = "end";
-                          lx -= 6;
-                          offsetLy1 = -4;
-                          offsetLy2 = 8;
-                        }
-
-                        let arrowX = lx;
-                        if (idx === 1 || idx === 2) {
-                          arrowX -= 12;
-                        } else if (idx === 4 || idx === 5) {
-                          arrowX += 12;
-                        }
-
+                {/* Tab 3: Stats */}
+                {activeMainTab === "stats" && (
+                  <S.StatsTabContainer>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {[
+                        { label: "HP", key: "HP", val: activePokemonDetails.calculatedHp, base: activePokemonDetails.baseHp, isHp: true },
+                        { label: "Attack", key: "ATK", val: activePokemonDetails.calculatedAttack, base: activePokemonDetails.baseAttack, isHp: false },
+                        { label: "Defense", key: "DEF", val: activePokemonDetails.calculatedDefense, base: activePokemonDetails.baseDefense, isHp: false },
+                        { label: "Sp. Atk", key: "SpA", val: activePokemonDetails.calculatedSpecialAttack, base: activePokemonDetails.baseSpecialAttack, isHp: false },
+                        { label: "Sp. Def", key: "SpD", val: activePokemonDetails.calculatedSpecialDefense, base: activePokemonDetails.baseSpecialDefense, isHp: false },
+                        { label: "Speed", key: "SPD", val: activePokemonDetails.calculatedSpeed, base: activePokemonDetails.baseSpeed, isHp: false },
+                      ].map((s) => {
+                        const maxVal = getMaxStatAtCurrentLevel(s.base, activePokemonDetails.currentLevel, s.isHp);
+                        const percent = Math.min(100, Math.max(0, (s.val / maxVal) * 100));
+                        const textColor = getStatColor(s.key);
                         return (
-                          <g key={item.label}>
-                            <text
-                              x={lx}
-                              y={ly + offsetLy1}
-                              textAnchor={textAnchor}
-                              fill={color}
-                              style={{
-                                fontFamily: '"VT323", sans-serif',
-                                fontSize: "14px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {item.displayName}
-                            </text>
-                            <text
-                              x={lx}
-                              y={ly + offsetLy2}
-                              textAnchor={textAnchor}
-                              fill="#64748b"
-                              style={{
-                                fontFamily: '"VT323", sans-serif',
-                                fontSize: "12px",
-                              }}
-                            >
-                              {item.judge}
-                            </text>
-                            {getStatArrow(item.label, arrowX, ly + offsetLy1 - 3)}
-                          </g>
+                          <S.StatBarRow key={s.label}>
+                            <S.StatLabelRow textColor={textColor}>
+                              <span className="stat-name">{s.label}</span>
+                              <span className="stat-values">
+                                <span className="curr">{s.val}</span>
+                                <span className="max">/{maxVal}</span>
+                              </span>
+                            </S.StatLabelRow>
+                            <S.StatBarWrapper>
+                              <S.StatBarInner percent={percent} color={textColor} />
+                            </S.StatBarWrapper>
+                          </S.StatBarRow>
                         );
                       })}
-                    </svg>
-                  </div>
-                </S.DetailStatsArea>
+                    </div>
 
-                <S.DetailNatureBar>
-                  <span className="label">Nature</span>
-                  <span className="value">{selectedPokemon.natureDisplay}</span>
-                </S.DetailNatureBar>
+                    <S.RadarToggleBtn className="pxl-border" onClick={() => setShowRadarChart(!showRadarChart)}>
+                      {showRadarChart ? "Hide Radar Chart" : "Show Radar (IV/EV)"}
+                    </S.RadarToggleBtn>
 
-                {activeStatTab === "iv" && selectedPokemon.ivRating ? (
-                  <S.DetailIvJudgmentBar>
-                    <span className="rating-text">{selectedPokemon.ivRating}</span>
-                  </S.DetailIvJudgmentBar>
-                ) : activeStatTab === "ev" ? (
-                  <S.DetailIvJudgmentBar>
-                    <span className="rating-text">Total EVs: {selectedPokemon.evTotal}/510</span>
-                  </S.DetailIvJudgmentBar>
-                ) : null}
+                    {showRadarChart && (
+                      <>
+                        <S.DetailTabContainer style={{ margin: "8px 0 0", width: "100%" }}>
+                          <S.DetailTabButton
+                            active={activeStatTab === "iv"}
+                            onClick={() => setActiveStatTab("iv")}
+                          >
+                            IVs
+                          </S.DetailTabButton>
+                          <S.DetailTabButton
+                            active={activeStatTab === "ev"}
+                            onClick={() => setActiveStatTab("ev")}
+                          >
+                            EVs
+                          </S.DetailTabButton>
+                        </S.DetailTabContainer>
 
+                        <S.DetailStatsArea style={{ padding: "8px 0 0" }}>
+                          <div className="radar-chart-container">
+                            <svg width="280" height="220" viewBox="0 0 280 220">
+                              <polygon points={getGridHexagon(60)} stroke="rgba(15, 23, 42, 0.12)" fill="none" strokeWidth="1" />
+                              <polygon points={getGridHexagon(40)} stroke="rgba(15, 23, 42, 0.08)" fill="none" strokeWidth="1" />
+                              <polygon points={getGridHexagon(20)} stroke="rgba(15, 23, 42, 0.05)" fill="none" strokeWidth="1" />
+
+                              {[0, 1, 2, 3, 4, 5].map((i) => {
+                                const angle = -Math.PI / 2 + (i * Math.PI) / 3;
+                                return (
+                                  <line
+                                    key={`line-${i}`}
+                                    x1={cx}
+                                    y1={cy}
+                                    x2={cx + 60 * Math.cos(angle)}
+                                    y2={cy + 60 * Math.sin(angle)}
+                                    stroke="rgba(15, 23, 42, 0.1)"
+                                    strokeWidth="1"
+                                    strokeDasharray="2,2"
+                                  />
+                                );
+                              })}
+
+                              <polygon
+                                points={polyPoints}
+                                fill="rgba(59, 130, 246, 0.22)"
+                                stroke="#3b82f6"
+                                strokeWidth="2.5"
+                              />
+
+                              {radii.map((r, i) => {
+                                const angle = -Math.PI / 2 + (i * Math.PI) / 3;
+                                const x = cx + r * Math.cos(angle);
+                                const y = cy + r * Math.sin(angle);
+                                return (
+                                  <circle
+                                    key={`dot-${i}`}
+                                    cx={x}
+                                    cy={y}
+                                    r="3.5"
+                                    fill="#ffffff"
+                                    stroke="#3b82f6"
+                                    strokeWidth="1.5"
+                                  />
+                                );
+                              })}
+
+                              {statItems.map((item, idx) => {
+                                const angle = -Math.PI / 2 + (idx * Math.PI) / 3;
+                                const color = getStatColor(item.label);
+
+                                let lx = cx;
+                                let ly = cy;
+                                let textAnchor: "inherit" | "end" | "start" | "middle" = "middle";
+                                let offsetLy1 = 0;
+                                let offsetLy2 = 0;
+
+                                if (idx === 0) {
+                                  lx = cx;
+                                  ly = cy - 65;
+                                  textAnchor = "middle";
+                                  offsetLy1 = -6;
+                                  offsetLy2 = 6;
+                                } else if (idx === 1) {
+                                  lx = cx + 65 * 0.866;
+                                  ly = cy - 65 * 0.5;
+                                  textAnchor = "start";
+                                  lx += 6;
+                                  offsetLy1 = -4;
+                                  offsetLy2 = 8;
+                                } else if (idx === 2) {
+                                  lx = cx + 65 * 0.866;
+                                  ly = cy + 65 * 0.5;
+                                  textAnchor = "start";
+                                  lx += 6;
+                                  offsetLy1 = -4;
+                                  offsetLy2 = 8;
+                                } else if (idx === 3) {
+                                  lx = cx;
+                                  ly = cy + 65;
+                                  textAnchor = "middle";
+                                  offsetLy1 = 4;
+                                  offsetLy2 = 16;
+                                } else if (idx === 4) {
+                                  lx = cx - 65 * 0.866;
+                                  ly = cy + 65 * 0.5;
+                                  textAnchor = "end";
+                                  lx -= 6;
+                                  offsetLy1 = -4;
+                                  offsetLy2 = 8;
+                                } else if (idx === 5) {
+                                  lx = cx - 65 * 0.866;
+                                  ly = cy - 65 * 0.5;
+                                  textAnchor = "end";
+                                  lx -= 6;
+                                  offsetLy1 = -4;
+                                  offsetLy2 = 8;
+                                }
+
+                                let arrowX = lx;
+                                if (idx === 1 || idx === 2) {
+                                  arrowX -= 12;
+                                } else if (idx === 4 || idx === 5) {
+                                  arrowX += 12;
+                                }
+
+                                return (
+                                  <g key={item.label}>
+                                    <text
+                                      x={lx}
+                                      y={ly + offsetLy1}
+                                      textAnchor={textAnchor}
+                                      fill={color}
+                                      style={{
+                                        fontFamily: '"VT323", sans-serif',
+                                        fontSize: "14px",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {item.displayName}
+                                    </text>
+                                    <text
+                                      x={lx}
+                                      y={ly + offsetLy2}
+                                      textAnchor={textAnchor}
+                                      fill="#64748b"
+                                      style={{
+                                        fontFamily: '"VT323", sans-serif',
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      {item.judge}
+                                    </text>
+                                    {getStatArrow(item.label, arrowX, ly + offsetLy1 - 3)}
+                                  </g>
+                                );
+                              })}
+                            </svg>
+                          </div>
+                        </S.DetailStatsArea>
+
+                        {activeStatTab === "iv" && activePokemonDetails.ivRating ? (
+                          <S.DetailIvJudgmentBar style={{ margin: "8px 0 0", width: "100%" }}>
+                            <span className="rating-text">{activePokemonDetails.ivRating}</span>
+                          </S.DetailIvJudgmentBar>
+                        ) : activeStatTab === "ev" ? (
+                          <S.DetailIvJudgmentBar style={{ margin: "8px 0 0", width: "100%" }}>
+                            <span className="rating-text">Total EVs: {activePokemonDetails.evTotal}/510</span>
+                          </S.DetailIvJudgmentBar>
+                        ) : null}
+                      </>
+                    )}
+                  </S.StatsTabContainer>
+                )}
+
+                {/* Markings */}
                 <S.DetailMarkingsBar>
                   {["circle", "triangle", "square", "heart", "star", "diamond"].map((shape) => {
-                    const isActive = selectedPokemon.markings?.split(",").includes(shape);
+                    const isActive = activePokemonDetails.markings?.split(",").includes(shape);
                     const symbols: Record<string, string> = {
                       circle: "●",
                       triangle: "▲",
@@ -1432,6 +1718,140 @@ const PCStorage: React.FC = () => {
             </S.HelpCloseButton>
           </S.HelpContainer>
         </S.HelpOverlay>
+      )}
+
+      {/* ── Manage Moves Modal ── */}
+      {showMoveManager && activePokemonDetails && (
+        <S.MoveManagerModalOverlay onClick={() => setShowMoveManager(false)}>
+          <S.MoveManagerContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Manage Moves</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowMoveManager(false)}
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+
+            <S.MoveManagerSplitLayout>
+              {/* Left Column: Active Moves (the 4 selected moves) */}
+              <S.ActiveMovesColumn>
+                <div style={{ fontSize: "0.7rem", fontFamily: '"Press Start 2P", monospace', color: "#475569", marginBottom: "8px" }}>
+                  Active Moves ({tempSelectedMoves.length}/4)
+                </div>
+                {Array.from({ length: 4 }).map((_, idx) => {
+                  const moveId = tempSelectedMoves[idx];
+                  if (moveId) {
+                    const move = detail?.moveDetails?.find((m) => m.id === moveId) || allLearnedMoves.find((m) => m.id === moveId);
+                    if (move) {
+                      const typeColor = TYPE_COLORS[move.type?.toLowerCase() || "normal"] || "#888";
+                      return (
+                        <S.ActiveMoveSlot
+                          key={`active-slot-${moveId}`}
+                          isEmpty={false}
+                          typeColor={typeColor}
+                          onClick={() => handleToggleMove(moveId)}
+                        >
+                          <div className="active-move-header">
+                            <span className="move-name">{move.localizedName || move.name}</span>
+                            <span className="pp-val">PP {move.pp || "—"}/{move.pp || "—"}</span>
+                          </div>
+                          <div className="active-move-meta">
+                            <span className="type-badge" style={{ backgroundColor: typeColor }}>
+                              {move.type}
+                            </span>
+                            {move.damageClass && (
+                              <span className={`class-badge ${move.damageClass.toLowerCase()}`}>
+                                {move.damageClass}
+                              </span>
+                            )}
+                            <span className="power-acc">
+                              Pwr: {move.power || "—"}  Acc: {move.accuracy || "—"}%
+                            </span>
+                          </div>
+                          <span className="remove-indicator">✕</span>
+                        </S.ActiveMoveSlot>
+                      );
+                    }
+                  }
+                  return (
+                    <S.ActiveMoveSlot key={`active-slot-empty-${idx}`} isEmpty={true}>
+                      — Empty Slot —
+                    </S.ActiveMoveSlot>
+                  );
+                })}
+              </S.ActiveMovesColumn>
+
+              {/* Right Column: Available Moves */}
+              <S.AvailableMovesColumn>
+                <div style={{ fontSize: "0.7rem", fontFamily: '"Press Start 2P", monospace', color: "#475569", marginBottom: "8px" }}>
+                  Available Level-up Moves
+                </div>
+                {tempSelectedMoves.length === 0 && (
+                  <div className="validation-warning" style={{ marginBottom: "8px" }}>
+                    Warning: You must select at least 1 move.
+                  </div>
+                )}
+                {tempSelectedMoves.length > 4 && (
+                  <div className="validation-warning" style={{ marginBottom: "8px" }}>
+                    Warning: Maximum 4 moves allowed.
+                  </div>
+                )}
+
+                <S.MovesListContainer>
+                  {allLearnedMoves.map((move) => {
+                    const moveId = move.id;
+                    if (!moveId) return null;
+                    const isChecked = tempSelectedMoves.includes(moveId);
+                    const isDisable = !isChecked && tempSelectedMoves.length >= 4;
+                    const typeColor = TYPE_COLORS[move.type?.toLowerCase() || "normal"] || "#888";
+                    return (
+                      <S.MoveRowItem
+                        key={moveId}
+                        checked={isChecked}
+                        disabled={isDisable}
+                        onClick={() => handleToggleMove(moveId)}
+                      >
+                        <S.PixelCheckbox checked={isChecked} />
+                        <span className="lvl-badge">Lvl {move.level}</span>
+                        <span className="move-name">{move.localizedName || move.name}</span>
+                        <div className="move-stats">
+                          <span className="type-badge" style={{ backgroundColor: typeColor }}>
+                            {move.type}
+                          </span>
+                          <span className="stat">Pwr: {move.power || "—"}</span>
+                          <span className="stat">Acc: {move.accuracy || "—"}%</span>
+                        </div>
+                      </S.MoveRowItem>
+                    );
+                  })}
+                  {allLearnedMoves.length === 0 && (
+                    <div style={{ textAlign: "center", color: "#64748b", padding: "24px" }}>
+                      Loading level-up moves from database/PokeAPI...
+                    </div>
+                  )}
+                </S.MovesListContainer>
+              </S.AvailableMovesColumn>
+            </S.MoveManagerSplitLayout>
+
+            <div className="actions-row">
+              <Button
+                variant="sky"
+                onClick={() => setShowMoveManager(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={tempSelectedMoves.length === 0 || tempSelectedMoves.length > 4 || updateMovesMutation.isPending}
+                onClick={handleSaveMoves}
+              >
+                {updateMovesMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </S.MoveManagerContainer>
+        </S.MoveManagerModalOverlay>
       )}
     </>
   );

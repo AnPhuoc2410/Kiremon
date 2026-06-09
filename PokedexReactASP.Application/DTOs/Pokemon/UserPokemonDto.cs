@@ -68,6 +68,8 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public string FriendshipLevel { get; set; } = string.Empty; // "Low", "Medium", "High", "Max"
         public List<int>? CustomMoveIds { get; set; }
         public int? HeldItemId { get; set; }
+        public string? HeldItemName { get; set; }
+        public string? HeldItemSpriteUrl { get; set; }
 
         // Location Management
         public int? BoxId { get; set; }

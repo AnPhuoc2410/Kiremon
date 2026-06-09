@@ -26,7 +26,7 @@ namespace PokedexReactASP.Application.Services
         {
             var boxes = (await _unitOfWork.UserBox.FindAsync(
                 b => b.UserId == userId,
-                query => query.Include(b => b.Pokemons),
+                query => query.Include(b => b.Pokemons).ThenInclude(p => p.HeldItem),
                 disableTracking: false
             )).OrderBy(b => b.Order).ToList();
 
@@ -72,7 +72,7 @@ namespace PokedexReactASP.Application.Services
         {
             var box = await _unitOfWork.UserBox.FirstOrDefaultAsync(
                 b => b.UserId == userId && b.Id == boxId,
-                query => query.Include(b => b.Pokemons),
+                query => query.Include(b => b.Pokemons).ThenInclude(p => p.HeldItem),
                 disableTracking: false
             );
 
