@@ -107,19 +107,34 @@ export const PartySlot = styled("div")<{
   isHovered: boolean;
   isEmpty: boolean;
   isDraggingOver: boolean;
-}>(({ isHovered, isEmpty, isDraggingOver }) => ({
+  isSelected?: boolean;
+  isMultiSelected?: boolean;
+}>(({ isHovered, isEmpty, isDraggingOver, isSelected, isMultiSelected }) => ({
   height: "72px",
   borderRadius: "12px",
-  border: isDraggingOver
+  border: isMultiSelected
+    ? "2px solid #a855f7"
+    : isSelected
+    ? "2px solid #f59e0b"
+    : isDraggingOver
     ? "2px dashed #3b82f6"
     : isHovered
     ? "1px solid rgba(59, 130, 246, 0.5)"
     : "1px solid rgba(148, 163, 184, 0.2)",
-  background: isDraggingOver
+  background: isMultiSelected
+    ? "rgba(168, 85, 247, 0.08)"
+    : isSelected
+    ? "rgba(245, 158, 11, 0.08)"
+    : isDraggingOver
     ? "rgba(59, 130, 246, 0.05)"
     : isEmpty
     ? "rgba(15, 23, 42, 0.03)"
     : "rgba(255, 255, 255, 0.85)",
+  boxShadow: isMultiSelected
+    ? "0 0 12px rgba(168, 85, 247, 0.35)"
+    : isSelected
+    ? "0 0 10px rgba(245, 158, 11, 0.3)"
+    : "none",
   display: "flex",
   alignItems: "center",
   padding: "8px 12px",
@@ -175,6 +190,7 @@ export const PartySlot = styled("div")<{
     objectFit: "contain",
   },
 }));
+
 
 /* ================== Box Area ================== */
 export const BoxWrapper = styled("div")({
@@ -257,10 +273,13 @@ export const BoxSlotCell = styled("div")<{
   isHighlighted?: boolean;
   isShiny?: boolean;
   isCompareSelected?: boolean;
-}>(({ isEmpty, isHovered, isDraggingOver, isDimmed, isHighlighted, isShiny, isCompareSelected }) => ({
+  isSelected?: boolean;
+}>(({ isEmpty, isHovered, isDraggingOver, isDimmed, isHighlighted, isShiny, isCompareSelected, isSelected }) => ({
   borderRadius: "8px",
   border: isCompareSelected
     ? "2px solid #a855f7"
+    : isSelected
+    ? "2px solid #f59e0b"
     : isDraggingOver
     ? "2px dashed #fbbf24"
     : isHighlighted
@@ -270,6 +289,8 @@ export const BoxSlotCell = styled("div")<{
     : "1px solid rgba(148, 163, 184, 0.2)",
   background: isCompareSelected
     ? "rgba(168, 85, 247, 0.12)"
+    : isSelected
+    ? "rgba(245, 158, 11, 0.1)"
     : isDraggingOver
     ? "rgba(251, 191, 36, 0.15)"
     : isEmpty
@@ -286,6 +307,8 @@ export const BoxSlotCell = styled("div")<{
   opacity: isDimmed ? 0.3 : 1,
   boxShadow: isCompareSelected
     ? "0 0 14px rgba(168, 85, 247, 0.5)"
+    : isSelected
+    ? "0 0 10px rgba(245, 158, 11, 0.4)"
     : isHighlighted
     ? "0 0 15px rgba(59, 130, 246, 0.5)"
     : isShiny && !isEmpty
@@ -328,7 +351,7 @@ export const BoxSlotCell = styled("div")<{
     fontSize: "8px",
     color: "#3b82f6",
   },
-  // Small "♦ N" badge when compare-selected
+  // Badge when ctrl-selected for compare
   ".compare-badge": {
     position: "absolute",
     top: "2px",
@@ -930,7 +953,7 @@ export const HelpContainer = styled("div")({
 export const CompareButton = styled("button")({
   width: "100%",
   padding: "10px 16px",
-  background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
+  background: "linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%)",
   color: "#ffffff",
   border: "none",
   borderRadius: "8px",
@@ -941,9 +964,9 @@ export const CompareButton = styled("button")({
   letterSpacing: "0.05em",
   transition: "all 0.15s ease",
   "&:hover": {
-    background: "linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)",
+    background: "linear-gradient(90deg, #6d28d9 0%, #5b21b6 100%)",
     transform: "translateY(-1px)",
-    boxShadow: "0 4px 14px rgba(59, 130, 246, 0.35)",
+    boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)",
   },
 });
 
@@ -994,5 +1017,278 @@ export const HelpCloseButton = styled("button")({
   transition: "background-color 0.15s ease",
   "&:hover": {
     background: "#2563eb",
+  },
+});
+
+/* ================== Pokemon Detail Panel (right column) ================== */
+export const DetailPanel = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: "0px",
+  padding: "0px",
+  background: "rgba(255, 255, 255, 0.72) !important",
+  color: "#0f172a",
+  border: "1px solid rgba(148, 163, 184, 0.2)",
+  borderRadius: "12px",
+  boxShadow: "0 6px 20px rgba(15, 23, 42, 0.03)",
+  marginBottom: "12px",
+  width: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+});
+
+export const DetailTopBar = styled("div")({
+  background: "#facc15",
+  width: "100%",
+  padding: "10px 14px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
+  ".left-section": {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    ".pokeball-icon": {
+      width: "24px",
+      height: "24px",
+      objectFit: "contain",
+    },
+    ".name": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.85rem",
+      fontWeight: "bold",
+      textTransform: "capitalize",
+    },
+  },
+  ".right-section": {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    ".lvl-pill": {
+      background: "#0f172a",
+      color: "#facc15",
+      padding: "2px 6px",
+      borderRadius: "4px",
+      fontSize: "0.75rem",
+      fontFamily: '"Press Start 2P", monospace',
+      fontWeight: "bold",
+    },
+    ".gender-badge": {
+      width: "20px",
+      height: "20px",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "0.8rem",
+      fontWeight: "bold",
+      color: "#fff",
+      "&.male": {
+        background: "#3b82f6",
+      },
+      "&.female": {
+        background: "#ec4899",
+      },
+      "&.genderless": {
+        background: "#64748b",
+      },
+    },
+  },
+});
+
+export const DetailSubBar = styled("div")({
+  background: "rgba(15, 23, 42, 0.02)",
+  width: "100%",
+  padding: "8px 14px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxSizing: "border-box",
+  borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
+  ".dex-no": {
+    color: "#64748b",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+  },
+  ".shiny-star": {
+    color: "#d97706",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+    textShadow: "0 0 4px rgba(217, 119, 6, 0.2)",
+  },
+});
+
+export const DetailTypeRow = styled("div")({
+  width: "100%",
+  padding: "10px 14px 6px",
+  display: "flex",
+  gap: "8px",
+  boxSizing: "border-box",
+  justifyContent: "center",
+  ".type-badge": {
+    padding: "4px 12px",
+    borderRadius: "4px",
+    fontSize: "0.65rem",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    color: "#fff",
+    textShadow: "1px 1px 0 rgba(0,0,0,0.5)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+  },
+});
+
+export const DetailArtworkArea = styled("div")({
+  width: "100%",
+  display: "flex",
+  justifyContent: "center",
+  padding: "10px 0",
+  background: "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%)",
+  ".artwork": {
+    width: "120px",
+    height: "120px",
+    objectFit: "contain",
+    filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+  },
+});
+
+export const DetailStatsArea = styled("div")({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "10px 14px",
+  boxSizing: "border-box",
+  ".radar-chart-container": {
+    position: "relative",
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+  },
+});
+
+export const DetailNatureBar = styled("div")({
+  width: "calc(100% - 28px)",
+  margin: "0 14px 10px",
+  background: "rgba(15, 23, 42, 0.03)",
+  border: "1px solid rgba(15, 23, 42, 0.06)",
+  borderRadius: "4px",
+  padding: "8px 12px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxSizing: "border-box",
+  ".label": {
+    color: "#0f766e",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+    textTransform: "uppercase",
+  },
+  ".value": {
+    color: "#0f172a",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+    fontWeight: "bold",
+  },
+});
+
+export const DetailIvJudgmentBar = styled("div")({
+  width: "calc(100% - 28px)",
+  margin: "0 14px 12px",
+  background: "rgba(59, 130, 246, 0.06)",
+  border: "1.5px dashed rgba(59, 130, 246, 0.25)",
+  borderRadius: "6px",
+  padding: "10px",
+  textAlign: "center",
+  boxSizing: "border-box",
+  ".rating-text": {
+    color: "#1d4ed8",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.7rem",
+    textTransform: "uppercase",
+  },
+});
+
+export const DetailMarkingsBar = styled("div")({
+  width: "100%",
+  display: "flex",
+  justifyContent: "center",
+  gap: "14px",
+  padding: "12px 14px 16px",
+  borderTop: "1px solid rgba(15, 23, 42, 0.06)",
+  boxSizing: "border-box",
+  ".marking-shape": {
+    fontSize: "1.1rem",
+    color: "rgba(15, 23, 42, 0.15)",
+    transition: "all 0.2s ease",
+    cursor: "default",
+    userSelect: "none",
+    "&.active": {
+      color: "#2563eb",
+      textShadow: "0 0 4px rgba(37, 99, 235, 0.3)",
+      transform: "scale(1.1)",
+    },
+  },
+});
+
+export const DetailPlaceholder = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "24px 14px",
+  gap: "6px",
+  background: "rgba(255, 255, 255, 0.4)",
+  borderRadius: "14px",
+  border: "1px dashed rgba(148, 163, 184, 0.3)",
+  marginBottom: "12px",
+  minHeight: "80px",
+  textAlign: "center",
+  ".hint-main": {
+    fontSize: "1rem",
+    fontWeight: 700,
+    color: "#475569",
+  },
+  ".hint-sub": {
+    fontSize: "0.8rem",
+    color: "#94a3b8",
+    maxWidth: "180px",
+    lineHeight: 1.4,
+  },
+});
+
+export const CompareStrip = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  padding: "10px",
+  background: "rgba(168, 85, 247, 0.07)",
+  border: "1px solid rgba(168, 85, 247, 0.25)",
+  borderRadius: "12px",
+  marginBottom: "12px",
+  ".compare-picks": {
+    display: "flex",
+    gap: "8px",
+    justifyContent: "center",
+    ".pick": {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "2px",
+      img: {
+        width: "40px",
+        height: "40px",
+        objectFit: "contain",
+      },
+      span: {
+        fontSize: "0.75rem",
+        color: "#334155",
+        fontWeight: 600,
+        textTransform: "capitalize",
+      },
+    },
   },
 });
