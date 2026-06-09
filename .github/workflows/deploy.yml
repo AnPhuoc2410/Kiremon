@@ -64,6 +64,12 @@ jobs:
           OAuth__Facebook__AppId=${{ secrets.FACEBOOK_OAUTH_APP_ID }}
           OAuth__Facebook__AppSecret=${{ secrets.FACEBOOK_OAUTH_APP_SECRET }}
 
+          PokemonTcgApi__BaseUrl=https://api.pokemontcg.io/v2/
+          PokemonTcgApi__ApiKey=${{ secrets.POKEMON_TCG_API_KEY }}
+          PokemonTcgApi__CacheDurationHours=168
+
+          NewsSyncSettings__SourceUrl=${{ secrets.NEWS_SYNC_SOURCE_URL }}
+
           API_PORT=2410
 
           DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/kiremon-api
