@@ -199,6 +199,8 @@ const PCStorage: React.FC = () => {
 
   // ── Compare ───────────────────────────────────────────────
   const [isComparing, setIsComparing] = useState<boolean>(false);
+  const [activeStatTab, setActiveStatTab] = useState<"iv" | "ev">("iv");
+
 
   // ── Context Menu ──────────────────────────────────────────
   const [contextMenu, setContextMenu] = useState<{
@@ -697,15 +699,29 @@ const PCStorage: React.FC = () => {
     return 10 + (val / 31) * 45; // maps 0..31 to 10..55 range
   };
 
+  const getEvRadius = (ev: number | null) => {
+    const val = ev ?? 0;
+    return 10 + (val / 252) * 45; // maps 0..252 to 10..55 range
+  };
+
   const radii = selectedPokemon
-    ? [
-        getStatRadius(selectedPokemon.ivHp),
-        getStatRadius(selectedPokemon.ivAttack),
-        getStatRadius(selectedPokemon.ivDefense),
-        getStatRadius(selectedPokemon.ivSpeed),
-        getStatRadius(selectedPokemon.ivSpecialDefense),
-        getStatRadius(selectedPokemon.ivSpecialAttack),
-      ]
+    ? activeStatTab === "iv"
+      ? [
+          getStatRadius(selectedPokemon.ivHp),
+          getStatRadius(selectedPokemon.ivAttack),
+          getStatRadius(selectedPokemon.ivDefense),
+          getStatRadius(selectedPokemon.ivSpeed),
+          getStatRadius(selectedPokemon.ivSpecialDefense),
+          getStatRadius(selectedPokemon.ivSpecialAttack),
+        ]
+      : [
+          getEvRadius(selectedPokemon.evHp),
+          getEvRadius(selectedPokemon.evAttack),
+          getEvRadius(selectedPokemon.evDefense),
+          getEvRadius(selectedPokemon.evSpeed),
+          getEvRadius(selectedPokemon.evSpecialDefense),
+          getEvRadius(selectedPokemon.evSpecialAttack),
+        ]
     : [];
 
   const cx = 130;
@@ -728,14 +744,23 @@ const PCStorage: React.FC = () => {
     .join(" ");
 
   const statItems = selectedPokemon
-    ? [
-        { label: "HP", displayName: "HP", judge: getIvJudgeText(selectedPokemon.ivHp) },
-        { label: "ATK", displayName: "Attack", judge: getIvJudgeText(selectedPokemon.ivAttack) },
-        { label: "DEF", displayName: "Defense", judge: getIvJudgeText(selectedPokemon.ivDefense) },
-        { label: "SPD", displayName: "Speed", judge: getIvJudgeText(selectedPokemon.ivSpeed) },
-        { label: "SpD", displayName: "Sp. Def", judge: getIvJudgeText(selectedPokemon.ivSpecialDefense) },
-        { label: "SpA", displayName: "Sp. Atk", judge: getIvJudgeText(selectedPokemon.ivSpecialAttack) },
-      ]
+    ? activeStatTab === "iv"
+      ? [
+          { label: "HP", displayName: "HP", judge: getIvJudgeText(selectedPokemon.ivHp) },
+          { label: "ATK", displayName: "Attack", judge: getIvJudgeText(selectedPokemon.ivAttack) },
+          { label: "DEF", displayName: "Defense", judge: getIvJudgeText(selectedPokemon.ivDefense) },
+          { label: "SPD", displayName: "Speed", judge: getIvJudgeText(selectedPokemon.ivSpeed) },
+          { label: "SpD", displayName: "Sp. Def", judge: getIvJudgeText(selectedPokemon.ivSpecialDefense) },
+          { label: "SpA", displayName: "Sp. Atk", judge: getIvJudgeText(selectedPokemon.ivSpecialAttack) },
+        ]
+      : [
+          { label: "HP", displayName: "HP", judge: `${selectedPokemon.evHp}/252` },
+          { label: "ATK", displayName: "Attack", judge: `${selectedPokemon.evAttack}/252` },
+          { label: "DEF", displayName: "Defense", judge: `${selectedPokemon.evDefense}/252` },
+          { label: "SPD", displayName: "Speed", judge: `${selectedPokemon.evSpeed}/252` },
+          { label: "SpD", displayName: "Sp. Def", judge: `${selectedPokemon.evSpecialDefense}/252` },
+          { label: "SpA", displayName: "Sp. Atk", judge: `${selectedPokemon.evSpecialAttack}/252` },
+        ]
     : [];
 
   // ═══════════════════════════════════════════════════════════
@@ -956,6 +981,21 @@ const PCStorage: React.FC = () => {
                   />
                 </S.DetailArtworkArea>
 
+                <S.DetailTabContainer>
+                  <S.DetailTabButton
+                    active={activeStatTab === "iv"}
+                    onClick={() => setActiveStatTab("iv")}
+                  >
+                    IVs
+                  </S.DetailTabButton>
+                  <S.DetailTabButton
+                    active={activeStatTab === "ev"}
+                    onClick={() => setActiveStatTab("ev")}
+                  >
+                    EVs
+                  </S.DetailTabButton>
+                </S.DetailTabContainer>
+
                 <S.DetailStatsArea>
                   <div className="radar-chart-container">
                     <svg width="260" height="220" viewBox="0 0 260 220">
@@ -1107,11 +1147,15 @@ const PCStorage: React.FC = () => {
                   <span className="value">{selectedPokemon.natureDisplay}</span>
                 </S.DetailNatureBar>
 
-                {selectedPokemon.ivRating && (
+                {activeStatTab === "iv" && selectedPokemon.ivRating ? (
                   <S.DetailIvJudgmentBar>
                     <span className="rating-text">{selectedPokemon.ivRating}</span>
                   </S.DetailIvJudgmentBar>
-                )}
+                ) : activeStatTab === "ev" ? (
+                  <S.DetailIvJudgmentBar>
+                    <span className="rating-text">Total EVs: {selectedPokemon.evTotal}/510</span>
+                  </S.DetailIvJudgmentBar>
+                ) : null}
 
                 <S.DetailMarkingsBar>
                   {["circle", "triangle", "square", "heart", "star", "diamond"].map((shape) => {

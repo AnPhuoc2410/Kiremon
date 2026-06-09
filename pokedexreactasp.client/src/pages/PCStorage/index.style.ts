@@ -1292,3 +1292,33 @@ export const CompareStrip = styled("div")({
     },
   },
 });
+
+export const DetailTabContainer = styled("div")({
+  display: "flex",
+  width: "calc(100% - 28px)",
+  margin: "0 14px 10px",
+  background: "rgba(15, 23, 42, 0.04)",
+  borderRadius: "6px",
+  padding: "3px",
+  boxSizing: "border-box",
+  border: "1px solid rgba(15, 23, 42, 0.06)",
+});
+
+export const DetailTabButton = styled("button")<{ active: boolean }>(({ active }) => ({
+  flex: 1,
+  background: active ? "#ffffff" : "transparent",
+  color: active ? "#2563eb" : "#64748b",
+  border: "none",
+  borderRadius: "4px",
+  padding: "6px 0",
+  fontSize: "0.7rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+  boxShadow: active ? "0 2px 6px rgba(15, 23, 42, 0.08)" : "none",
+  "&:hover": {
+    color: active ? "#2563eb" : "#0f172a",
+  },
+}));
+
