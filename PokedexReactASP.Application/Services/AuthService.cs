@@ -99,7 +99,7 @@ namespace PokedexReactASP.Application.Services
                 ? await _userManager.FindByEmailAsync(loginDto.UsernameOrEmail)
                 : await _userManager.FindByNameAsync(loginDto.UsernameOrEmail);
 
-            if (user == null) throw new UnauthorizedAccessException("Invalid credentials");
+            if (user == null) throw new UnauthorizedAccessException("Login failed. Please check your credentials.");
 
             if (!user.EmailConfirmed)
             {
@@ -120,7 +120,7 @@ namespace PokedexReactASP.Application.Services
 
             if (!result.Succeeded && !result.RequiresTwoFactor)
             {
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedAccessException("Login failed. Please check your credentials.");
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
