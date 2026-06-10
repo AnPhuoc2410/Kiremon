@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Domain.Entities;
@@ -28,7 +29,9 @@ namespace PokedexReactASP.Application.Services
         public async Task<IEnumerable<UserPokemonDto>> GetUserPokemonAsync(string userId)
         {
             var userPokemonList = await _unitOfWork.UserPokemon.FindAsync(
-                up => up.UserId == userId, disableTracking: true);
+                up => up.UserId == userId,
+                query => query.Include(p => p.HeldItem),
+                disableTracking: true);
 
             var enrichedList = await _pokemonEnricher.EnrichBatchAsync(userPokemonList);
             return enrichedList.OrderByDescending(p => p.CaughtDate);
@@ -38,7 +41,9 @@ namespace PokedexReactASP.Application.Services
         public async Task<UserPokemonDto?> GetUserPokemonByIdAsync(string userId, int userPokemonId)
         {
             var userPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                up => up.UserId == userId && up.Id == userPokemonId, disableTracking: true);
+                up => up.UserId == userId && up.Id == userPokemonId,
+                query => query.Include(p => p.HeldItem),
+                disableTracking: true);
 
             if (userPokemon == null) return null;
             return await _pokemonEnricher.EnrichAsync(userPokemon);

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PokedexReactASP.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PokedexReactASP.Infrastructure.Persistence;
 namespace PokedexReactASP.Infrastructure.Migrations
 {
     [DbContext(typeof(PokemonDbContext))]
-    partial class PokemonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608100424_AddMarkingsAndConfigureHeldItemFK")]
+    partial class AddMarkingsAndConfigureHeldItemFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -656,46 +659,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.ToTable("PokemonSpawnMetadata");
                 });
 
-            modelBuilder.Entity("PokedexReactASP.Domain.Entities.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeviceInfo")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens");
-                });
-
             modelBuilder.Entity("PokedexReactASP.Domain.Entities.TcgCardCache", b =>
                 {
                     b.Property<int>("Id")
@@ -1271,17 +1234,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("PokedexReactASP.Domain.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("PokedexReactASP.Domain.Entities.ApplicationUser", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PokedexReactASP.Domain.Entities.UserAchievement", b =>
                 {
                     b.HasOne("PokedexReactASP.Domain.Entities.Achievement", "Achievement")
@@ -1386,8 +1338,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("ReceivedFriendRequests");
-
-                    b.Navigation("RefreshTokens");
 
                     b.Navigation("SentFriendRequests");
 

@@ -242,6 +242,41 @@ const MyPokemon: React.FC = () => {
               {isAuthenticated && pokemons.length > 0 && (
                 <T.StatChip>Showing: {filteredPokemon.length}</T.StatChip>
               )}
+              {isAuthenticated && (
+                <Link
+                  to="/my-pokemon/pc"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "linear-gradient(135deg, #0e7490, #155e75)",
+                    color: "#fff",
+                    padding: "5px 14px",
+                    borderRadius: "4px",
+                    fontSize: "0.8rem",
+                    fontFamily: "'Press Start 2P', monospace",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    boxShadow: "0 3px 0 #0c4a6e, 0 5px 10px rgba(14, 116, 144, 0.4)",
+                    transition: "all 0.1s ease",
+                    marginLeft: "8px",
+                    letterSpacing: "0.03em",
+                    imageRendering: "pixelated",
+                    border: "2px solid #67e8f9",
+                    outline: "2px solid #0c4a6e",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 5px 0 #0c4a6e, 0 8px 16px rgba(14, 116, 144, 0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 3px 0 #0c4a6e, 0 5px 10px rgba(14, 116, 144, 0.4)";
+                  }}
+                >
+                  🖥 PC Box
+                </Link>
+              )}
             </T.StatsRow>
           </T.HeaderCopy>
 
