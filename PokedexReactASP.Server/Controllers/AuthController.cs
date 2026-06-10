@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Options;
 using System.Security.Claims;
 
 namespace PokedexReactASP.Server.Controllers
@@ -10,22 +12,28 @@ namespace PokedexReactASP.Server.Controllers
     [Route("api/auth")]
     public class AuthController : ApiControllerBase
     {
+        private const string RefreshTokenCookieName = "refreshToken";
+        private const string AuthCookiePath = "/api/auth";
+        private const string DevEnvName = "Development";
+        private const string EnvVarName = "ASPNETCORE_ENVIRONMENT";
+
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
+        private readonly JwtSettings _jwtSettings;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        private bool IsDevelopment => Environment.GetEnvironmentVariable(EnvVarName) == DevEnvName;
+
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, IOptions<JwtSettings> jwtOptions)
         {
             _authService = authService;
             _logger = logger;
+            _jwtSettings = jwtOptions.Value;
         }
 
         [HttpPost("register")]
         [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             if (await _authService.UserExistsAsync(registerDto.Username))
                 return BadRequest(new { message = "Username already exists" });
 
@@ -40,20 +48,16 @@ namespace PokedexReactASP.Server.Controllers
         [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.LoginAsync(loginDto, userAgent);
 
-            var response = await _authService.LoginAsync(loginDto);
-            return Ok(response);
+            return HandleAuthResult(result);
         }
 
         [HttpPost("resend-confirmation")]
         [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ResendConfirmation([FromBody] ForgotPasswordDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             await _authService.ResendConfirmationEmailAsync(request.Email);
             return Ok(new { message = "If the account exists, a confirmation email has been sent." });
         }
@@ -61,9 +65,6 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("confirm-email")]
         public async Task<ActionResult> ConfirmEmail([FromBody] ConfirmEmailDto confirmEmailDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             await _authService.ConfirmEmailAsync(confirmEmailDto);
             return Ok(new { message = "Email confirmed successfully" });
         }
@@ -71,20 +72,16 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("external-login")]
         public async Task<ActionResult<AuthResponseDto>> ExternalLogin([FromBody] ExternalLoginDto externalLoginDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.ExternalLoginAsync(externalLoginDto, userAgent);
 
-            var response = await _authService.ExternalLoginAsync(externalLoginDto);
-            return Ok(response);
+            return HandleAuthResult(result);
         }
 
         [HttpPost("forgot-password")]
         [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             await _authService.ForgotPasswordAsync(forgotPasswordDto);
             return Ok(new { message = "If the account exists and email is confirmed, reset instructions have been sent." });
         }
@@ -93,9 +90,6 @@ namespace PokedexReactASP.Server.Controllers
         [EnableRateLimiting("AuthPolicy")]
         public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             await _authService.ResetPasswordAsync(resetPasswordDto);
             return Ok(new { message = "Password reset successfully" });
         }
@@ -104,14 +98,10 @@ namespace PokedexReactASP.Server.Controllers
         [Authorize]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(CurrentUserId))
                 return Unauthorized();
 
-            var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
+            var result = await _authService.ChangePasswordAsync(CurrentUserId, changePasswordDto);
             if (result)
                 return Ok(new { message = "Password changed successfully" });
 
@@ -129,17 +119,18 @@ namespace PokedexReactASP.Server.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponseDto>> LoginTwoFactor([FromBody] TwoFactorLoginDto dto)
         {
-            var response = await _authService.LoginTwoFactorAsync(dto);
-            return Ok(response);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.LoginTwoFactorAsync(dto, userAgent);
+
+            return HandleAuthResult(result);
         }
 
         [Authorize]
         [HttpGet("2fa/setup")]
         public async Task<ActionResult<TwoFactorDto>> SetupTwoFactor()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            var result = await _authService.GetTwoFactorAsync(userId);
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            var result = await _authService.GetTwoFactorAsync(CurrentUserId);
             return Ok(result);
         }
 
@@ -147,9 +138,8 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("2fa/enable")]
         public async Task<IActionResult> EnableTwoFactor([FromBody] Enable2FADto dto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            var isSuccess = await _authService.EnableTwoFactorAsync(userId, dto);
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            var isSuccess = await _authService.EnableTwoFactorAsync(CurrentUserId, dto);
 
             if (isSuccess)
                 return Ok(new { message = "2FA enabled successfully" });
@@ -161,14 +151,84 @@ namespace PokedexReactASP.Server.Controllers
         [HttpPost("2fa/disable")]
         public async Task<IActionResult> DisableTwoFactor([FromBody] Disable2FADto dto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            var isSuccess = await _authService.DisableTwoFactorAsync(userId, dto.Code);
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            var isSuccess = await _authService.DisableTwoFactorAsync(CurrentUserId, dto.Code);
 
             if (isSuccess)
                 return Ok(new { message = "2FA disabled successfully" });
 
             return BadRequest(new { message = "Failed to disable 2FA." });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<AuthResponseDto>> Refresh()
+        {
+            var refreshToken = Request.Cookies[RefreshTokenCookieName];
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return Unauthorized(new { message = "Refresh token is missing." });
+            }
+
+            var deviceInfo = Request.Headers["User-Agent"].ToString();
+
+            try
+            {
+                var result = await _authService.RefreshAsync(refreshToken, deviceInfo);
+                return HandleAuthResult(result);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("revoke")]
+        public async Task<IActionResult> Revoke()
+        {
+            var refreshToken = Request.Cookies[RefreshTokenCookieName];
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                await _authService.RevokeAsync(refreshToken);
+            }
+
+            // Clear the cookie
+            Response.Cookies.Delete(RefreshTokenCookieName, GetCookieOptions(isExpired: true));
+
+            return Ok(new { message = "Token revoked successfully" });
+        }
+
+        private CookieOptions GetCookieOptions(bool isExpired = false)
+        {
+            var isDev = IsDevelopment;
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !isDev && Request.IsHttps,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+                Path = AuthCookiePath
+            };
+
+            if (!isExpired)
+            {
+                options.Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
+            }
+
+            return options;
+        }
+
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
+            Response.Cookies.Append(RefreshTokenCookieName, refreshToken, GetCookieOptions());
+        }
+
+        private ActionResult<AuthResponseDto> HandleAuthResult(AuthResultDto result)
+        {
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                SetRefreshTokenCookie(result.RefreshToken);
+            }
+
+            return Ok(result.ResponseDto);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace PokedexReactASP.Application.Services
         }
 
 
-        public async Task<AuthResponseDto> LoginTwoFactorAsync(TwoFactorLoginDto dto)
+        public async Task<AuthResultDto> LoginTwoFactorAsync(TwoFactorLoginDto dto, string? deviceInfo = null)
         {
             var user = await _userManager.FindByIdAsync(dto.UserId);
             if (user == null) throw new UnauthorizedAccessException("User not found");
@@ -84,7 +84,7 @@ namespace PokedexReactASP.Application.Services
                 await _signInManager.RememberTwoFactorClientAsync(user);
             }
 
-            return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
+            return await GenerateAuthResultAsync(user, deviceInfo);
         }
 
         public async Task<bool> DisableTwoFactorAsync(string userId, string code)

@@ -4,5 +4,6 @@ namespace PokedexReactASP.Application.Interfaces
     {
         string GenerateJwtToken(string userId, string username, string email);
         string? ValidateToken(string token);
+        string GenerateRefreshToken();
     }
 }

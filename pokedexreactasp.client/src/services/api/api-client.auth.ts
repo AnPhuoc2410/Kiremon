@@ -1,7 +1,21 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { getCookie } from "@/components/utils/cookieUtils";
+import { getMemoryToken, setMemoryToken } from "./tokenHolder";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 
 /**
  * Create an authenticated axios instance with auto-injected Bearer token
@@ -19,7 +33,7 @@ const createAuthenticatedClient = (): AxiosInstance => {
 
   client.interceptors.request.use(
     (config) => {
-      const token = getCookie("accessToken");
+      const token = getMemoryToken();
       if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
       }
@@ -32,14 +46,64 @@ const createAuthenticatedClient = (): AxiosInstance => {
 
   client.interceptors.response.use(
     (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        console.error("Unauthorized - token may be expired");
-      } else if (error.code === "ECONNABORTED") {
+    async (error) => {
+      const originalRequest = error.config;
+
+      // Avoid infinite loop if refresh request itself returns 401
+      if (originalRequest.url?.includes("/auth/refresh")) {
+        return Promise.reject(error);
+      }
+
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.set("Authorization", `Bearer ${token}`);
+              return client(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const response = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            {},
+            { withCredentials: true },
+          );
+
+          const newAccessToken = response.data.token;
+          setMemoryToken(newAccessToken);
+
+          processQueue(null, newAccessToken);
+
+          originalRequest.headers.set(
+            "Authorization",
+            `Bearer ${newAccessToken}`,
+          );
+          return client(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          // Trigger logout custom event to let AuthContext clear state
+          window.dispatchEvent(new CustomEvent("unauthorized-logout"));
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      if (error.code === "ECONNABORTED") {
         console.error("Request timeout");
       } else if (!error.response) {
         console.error("Network error");
       }
+
       return Promise.reject(error);
     },
   );
@@ -97,7 +161,7 @@ export class AuthenticatedApiService {
    * Check if user is authenticated
    */
   protected isAuthenticated(): boolean {
-    return !!getCookie("accessToken");
+    return !!getMemoryToken();
   }
 }
 
