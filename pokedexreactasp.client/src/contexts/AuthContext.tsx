@@ -12,6 +12,36 @@ import { getMemoryToken, setMemoryToken } from "@/services/api/tokenHolder";
 import { presenceHub } from "@/services/signalr/presence.hub";
 import { AchievementToast } from "@/components/achievements/AchievementToast";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+const parseStoredUser = (storedUserCookie: string | null): AuthUser | null => {
+  if (!storedUserCookie) return null;
+  try {
+    return JSON.parse(decodeURIComponent(storedUserCookie));
+  } catch (err) {
+    console.warn("Failed to parse stored user", err);
+    return null;
+  }
+};
+
+interface SilentRefreshResult {
+  token: string;
+  expiresAt: string | null;
+}
+
+const silentRefresh = async (): Promise<SilentRefreshResult> => {
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    {},
+    { withCredentials: true },
+  );
+  return {
+    token: response.data.token,
+    expiresAt: response.data.expiresAt || null,
+  };
+};
+
 interface AuthContextType {
   isAuthenticated: boolean;
   isInitialized: boolean;
@@ -36,41 +66,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const initializeAuth = async () => {
+      const storedUserCookie = getCookie("authUser");
+      if (!storedUserCookie) {
+        setIsInitialized(true);
+        return;
+      }
+
       try {
-        const storedUser = getCookie("authUser");
+        const { token, expiresAt } = await silentRefresh();
+        setMemoryToken(token);
 
-        if (storedUser) {
-          try {
-            const response = await axios.post(
-              `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/refresh`,
-              {},
-              { withCredentials: true },
-            );
-
-            const token = response.data.token;
-            setMemoryToken(token);
-
-            let parsedUser: AuthUser | null = null;
-            try {
-              parsedUser = JSON.parse(decodeURIComponent(storedUser));
-            } catch {
-              console.warn("Failed to parse stored user");
-            }
-
-            setIsAuthenticated(true);
-            setUser(parsedUser);
-            setAuthData({
-              accessToken: token,
-              expires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-              user: parsedUser!,
-            });
-          } catch (refreshErr) {
-            console.warn("Silent refresh failed during init:", refreshErr);
-            eraseCookie("authUser");
-          }
+        const parsedUser = parseStoredUser(storedUserCookie);
+        if (parsedUser) {
+          setIsAuthenticated(true);
+          setUser(parsedUser);
+          setAuthData({
+            accessToken: token,
+            expires: expiresAt
+              ? new Date(expiresAt).toISOString()
+              : new Date(Date.now() + ACCESS_TOKEN_TTL_MS).toISOString(),
+            user: parsedUser,
+          });
+        } else {
+          eraseCookie("authUser");
         }
-      } catch (error) {
-        console.error("Failed to initialize auth:", error);
+      } catch (refreshErr) {
+        console.warn("Silent refresh failed during init:", refreshErr);
+        eraseCookie("authUser");
       } finally {
         setIsInitialized(true);
       }
@@ -114,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [isAuthenticated]);
 
-  const authLogin = async (loginData: AuthLoginData): Promise<void> => {
+  const authLogin = (loginData: AuthLoginData): void => {
     if (!loginData?.accessToken || !loginData?.user) {
       console.error("Invalid login data");
       return;
@@ -133,19 +155,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const authLogout = () => {
+    // 1. Clear token & cookie first to prevent race condition window
+    setMemoryToken(null);
+    eraseCookie("authUser");
+
+    // 2. Clear state next
     setIsAuthenticated(false);
     setAuthData(null);
     setUser(null);
 
-    setMemoryToken(null);
-    eraseCookie("authUser");
-
+    // 3. Make API call last
     axios
-      .post(
-        `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/revoke`,
-        {},
-        { withCredentials: true },
-      )
+      .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
       .catch((err) => console.warn("Failed to call revoke on server", err));
 
     toast.success("Đăng xuất thành công", { duration: 2500 });
