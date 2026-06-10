@@ -7,8 +7,40 @@ import {
   setCookie,
 } from "@/components/utils/cookieUtils";
 import toast from "react-hot-toast";
+import axios from "axios";
+import { getMemoryToken, setMemoryToken } from "@/services/api/tokenHolder";
 import { presenceHub } from "@/services/signalr/presence.hub";
-import { IconTrophy, IconCoin } from "@tabler/icons-react";
+import { AchievementToast } from "@/components/achievements/AchievementToast";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+const parseStoredUser = (storedUserCookie: string | null): AuthUser | null => {
+  if (!storedUserCookie) return null;
+  try {
+    return JSON.parse(decodeURIComponent(storedUserCookie));
+  } catch (err) {
+    console.warn("Failed to parse stored user", err);
+    return null;
+  }
+};
+
+interface SilentRefreshResult {
+  token: string;
+  expiresAt: string | null;
+}
+
+const silentRefresh = async (): Promise<SilentRefreshResult> => {
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    {},
+    { withCredentials: true },
+  );
+  return {
+    token: response.data.token,
+    expiresAt: response.data.expiresAt || null,
+  };
+};
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,153 +55,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const getBadgeIndex = (iconName: string): number | null => {
-  if (iconName && iconName.startsWith("badge-")) {
-    const num = parseInt(iconName.substring(6), 10);
-    return isNaN(num) ? null : num;
-  }
-  return null;
-};
-
-const AchievementToast = ({ t, achievement }: { t: any; achievement: any }) => {
-  const getRarityColor = (rarity: string) => {
-    switch (rarity.toLowerCase()) {
-      case "gold":
-        return {
-          border: "4px double #D4AF37",
-          bg: "#FFFBEB",
-          text: "#854D0E",
-          shadow: "0 0 15px rgba(212, 175, 55, 0.4)",
-          iconBg: "#FEF3C7",
-        };
-      case "silver":
-        return {
-          border: "4px double #9CA3AF",
-          bg: "#F9FAFB",
-          text: "#374151",
-          shadow: "0 0 15px rgba(156, 163, 175, 0.3)",
-          iconBg: "#F3F4F6",
-        };
-      case "bronze":
-      default:
-        return {
-          border: "4px double #B45309",
-          bg: "#FFFDF5",
-          text: "#78350F",
-          shadow: "0 0 15px rgba(180, 83, 9, 0.2)",
-          iconBg: "#FEF3C7",
-        };
-    }
-  };
-
-  const style = getRarityColor(achievement.rarity || "bronze");
-  const badgeIndex = getBadgeIndex(achievement.icon || "");
-  const badgeUrl =
-    badgeIndex !== null
-      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/${badgeIndex}.png`
-      : null;
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        padding: "12px 16px",
-        background: style.bg,
-        border: style.border,
-        boxShadow: `0 8px 20px rgba(0,0,0,0.15), ${style.shadow}`,
-        borderRadius: "4px",
-        maxWidth: "320px",
-        position: "relative",
-        opacity: t.visible ? 1 : 0,
-        transform: t.visible ? "scale(1)" : "scale(0.9)",
-        transition: "all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-        fontFamily: "'VT323', monospace",
-        imageRendering: "pixelated",
-      }}
-    >
-      <div
-        style={{
-          width: "40px",
-          height: "40px",
-          background: style.iconBg,
-          border: "2px solid currentColor",
-          color: style.text,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "4px",
-          flexShrink: 0,
-        }}
-      >
-        {badgeUrl ? (
-          <img
-            src={badgeUrl}
-            alt={achievement.name}
-            style={{
-              width: "32px",
-              height: "32px",
-              imageRendering: "pixelated",
-            }}
-          />
-        ) : (
-          <IconTrophy size={24} />
-        )}
-      </div>
-      <div style={{ flex: 1, color: "#111827" }}>
-        <div
-          style={{
-            fontSize: "12px",
-            fontWeight: "bold",
-            textTransform: "uppercase",
-            color: style.text,
-            letterSpacing: "0.5px",
-          }}
-        >
-          ! Achievement Unlocked !
-        </div>
-        <div
-          style={{
-            fontSize: "18px",
-            fontWeight: "bold",
-            lineHeight: "1.1",
-            marginTop: "2px",
-          }}
-        >
-          {achievement.name}
-        </div>
-        <div
-          style={{
-            fontSize: "14px",
-            color: "#4B5563",
-            marginTop: "2px",
-            lineHeight: "1.2",
-          }}
-        >
-          {achievement.description}
-        </div>
-        {achievement.rewardCoins > 0 && (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "4px",
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "#D97706",
-              marginTop: "4px",
-            }}
-          >
-            <IconCoin size={14} fill="#F59E0B" color="#D97706" />+
-            {achievement.rewardCoins} COINS
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -179,56 +64,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<AuthUser | null>(null);
   const navigate = useNavigate();
 
-  // Check token expiration
-  const checkTokenExpiration = () => {
-    const expiresTimestamp = getCookie("expires");
-    if (expiresTimestamp) {
-      const expiresDate = new Date(expiresTimestamp);
-      const currentDate = new Date();
-
-      if (currentDate > expiresDate) {
-        console.log("Token expired, logging out");
-        authLogout();
-        return false;
-      }
-    }
-    return true;
-  };
-
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
+      const storedUserCookie = getCookie("authUser");
+      if (!storedUserCookie) {
+        setIsInitialized(true);
+        return;
+      }
+
       try {
-        const token = getCookie("accessToken");
-        const expiresTimestamp = getCookie("expires");
-        const storedUser = getCookie("authUser");
+        const { token, expiresAt } = await silentRefresh();
+        setMemoryToken(token);
 
-        if (token && expiresTimestamp) {
-          // Check if token is expired before proceeding
-          if (!checkTokenExpiration()) {
-            setIsInitialized(true);
-            return;
-          }
-
-          // Restore user from cookie
-          let parsedUser: AuthUser | null = null;
-          if (storedUser) {
-            try {
-              parsedUser = JSON.parse(decodeURIComponent(storedUser));
-            } catch {
-              console.warn("Failed to parse stored user");
-            }
-          }
-
+        const parsedUser = parseStoredUser(storedUserCookie);
+        if (parsedUser) {
           setIsAuthenticated(true);
           setUser(parsedUser);
           setAuthData({
             accessToken: token,
-            expires: expiresTimestamp,
-            user: parsedUser!,
+            expires: expiresAt
+              ? new Date(expiresAt).toISOString()
+              : new Date(Date.now() + ACCESS_TOKEN_TTL_MS).toISOString(),
+            user: parsedUser,
           });
+        } else {
+          eraseCookie("authUser");
         }
-      } catch (error) {
-        console.error("Failed to initialize auth:", error);
+      } catch (refreshErr) {
+        console.warn("Silent refresh failed during init:", refreshErr);
+        eraseCookie("authUser");
       } finally {
         setIsInitialized(true);
       }
@@ -236,17 +100,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
 
-    // Set up interval to check token expiration regularly
-    const expirationCheckInterval = setInterval(() => {
-      if (isAuthenticated) {
-        checkTokenExpiration();
-      }
-    }, 60000); // Check every minute
+    const handleUnauthorizedLogout = () => {
+      authLogout();
+    };
+
+    window.addEventListener("unauthorized-logout", handleUnauthorizedLogout);
 
     return () => {
-      clearInterval(expirationCheckInterval);
+      window.removeEventListener(
+        "unauthorized-logout",
+        handleUnauthorizedLogout,
+      );
     };
-  }, [isAuthenticated]);
+  }, []);
 
   // Global PresenceHub & Real-time Achievement Notifications
   useEffect(() => {
@@ -270,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [isAuthenticated]);
 
-  const authLogin = async (loginData: AuthLoginData): Promise<void> => {
+  const authLogin = (loginData: AuthLoginData): void => {
     if (!loginData?.accessToken || !loginData?.user) {
       console.error("Invalid login data");
       return;
@@ -280,8 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAuthData(loginData);
     setUser(loginData.user);
 
-    setCookie("accessToken", loginData.accessToken, 7);
-    setCookie("expires", loginData.expires, 7);
+    setMemoryToken(loginData.accessToken);
     setCookie(
       "authUser",
       encodeURIComponent(JSON.stringify(loginData.user)),
@@ -290,13 +155,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const authLogout = () => {
+    // 1. Clear token & cookie first to prevent race condition window
+    setMemoryToken(null);
+    eraseCookie("authUser");
+
+    // 2. Clear state next
     setIsAuthenticated(false);
     setAuthData(null);
     setUser(null);
 
-    eraseCookie("accessToken");
-    eraseCookie("expires");
-    eraseCookie("authUser");
+    // 3. Make API call last
+    axios
+      .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
+      .catch((err) => console.warn("Failed to call revoke on server", err));
 
     toast.success("Đăng xuất thành công", { duration: 2500 });
     navigate("/");
@@ -311,11 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const getToken = () => {
-    // Check if token is valid before returning it
-    if (isAuthenticated && checkTokenExpiration()) {
-      return getCookie("accessToken");
-    }
-    return null;
+    return getMemoryToken();
   };
 
   return (

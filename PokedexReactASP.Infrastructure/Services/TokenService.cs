@@ -37,7 +37,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 issuer:             _jwtSettings.Issuer,
                 audience:           _jwtSettings.Audience,
                 claims:             claims,
-                expires:            DateTime.UtcNow.AddDays(_jwtSettings.ExpirationDays),
+                expires:            DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes),
                 signingCredentials: _signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -68,6 +68,14 @@ namespace PokedexReactASP.Infrastructure.Services
             {
                 return null;
             }
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }
