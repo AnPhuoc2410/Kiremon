@@ -29,6 +29,9 @@ export const StorageHeader = styled("header")({
       fontSize: "2.8rem",
       textTransform: "uppercase",
       letterSpacing: "1px",
+      "@media (max-width: 767px)": {
+        fontSize: "1.8rem",
+      },
     },
     p: {
       margin: "6px 0 0",
@@ -38,27 +41,72 @@ export const StorageHeader = styled("header")({
       letterSpacing: "0.02em",
     },
   },
+  "@media (max-width: 767px)": {
+    flexDirection: "column",
+    gap: "14px",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "14px 16px",
+  },
+});
+
+export const HeaderActions = styled("div")({
+  display: "flex",
+  gap: "12px",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  "@media (max-width: 767px)": {
+    width: "100%",
+    justifyContent: "center",
+  },
 });
 
 export const KeyboardInfoBtn = styled("button")({
-  background: "#fdfdfd",
+  background: "#ffffff",
   color: "#0f172a",
   fontFamily: '"Press Start 2P", monospace',
   fontSize: "0.65rem",
   fontWeight: "bold",
   display: "flex",
   alignItems: "center",
-  gap: "8px",
-  padding: "8px 14px",
-  transition: "all 0.12s ease",
+  justifyContent: "center",
+  gap: "10px",
+  padding: "10px 16px",
+  minHeight: "44px",
+  transition: "all 0.12s cubic-bezier(0.4, 0, 0.2, 1)",
   cursor: "pointer",
   textTransform: "uppercase",
-  "&:active": {
-    transform: "translateY(2px) translateX(2px)",
-  },
+  whiteSpace: "nowrap",
+  boxShadow: "3px 3px 0px #0f172a",
+  position: "relative",
   "&:hover": {
     background: "#facc15",
+    transform: "translateY(-2px)",
+    boxShadow: "4px 4px 0px #0f172a",
+  },
+  "&:active": {
+    transform: "translateY(1px) translateX(1px)",
+    boxShadow: "1px 1px 0px #0f172a",
+  },
+  svg: {
+    color: "#475569",
+    transition: "transform 0.2s ease",
+  },
+  "&:hover svg": {
+    transform: "scale(1.1)",
     color: "#0f172a",
+  },
+  "@media (max-width: 639px)": {
+    padding: "8px",
+    minWidth: "44px",
+    minHeight: "44px",
+    ".btn-text": {
+      display: "none",
+    },
+    svg: {
+      width: "18px",
+      height: "18px",
+    },
   },
 });
 
@@ -77,6 +125,9 @@ export const SidebarCard = styled("div")({
   background: "#fdfdfd",
   padding: "16px",
   boxShadow: "4px 4px 0px #0f172a",
+  "@media (max-width: 1023px)": {
+    padding: "10px 12px",
+  },
   h2: {
     margin: "0 0 12px",
     fontSize: "1.1rem",
@@ -88,6 +139,11 @@ export const SidebarCard = styled("div")({
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    "@media (max-width: 1023px)": {
+      fontSize: "0.8rem",
+      margin: "0 0 8px",
+      paddingBottom: "4px",
+    },
   },
 });
 
@@ -95,6 +151,11 @@ export const PartySlotsContainer = styled("div")({
   display: "flex",
   flexDirection: "column",
   gap: "12px",
+  "@media (max-width: 1023px)": {
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
+    gap: "6px",
+  },
 });
 
 export const PartySlot = styled("div")<{
@@ -161,6 +222,12 @@ export const PartySlot = styled("div")<{
     fontSize: "7px",
     fontFamily: '"Press Start 2P", monospace',
     color: "#64748b",
+    "&::before": {
+      content: '"SLOT "',
+    },
+    "@media (max-width: 1023px)": {
+      content: '""',
+    },
   },
   ".sprite": {
     width: "48px",
@@ -196,6 +263,42 @@ export const PartySlot = styled("div")<{
     height: "16px",
     objectFit: "contain",
   },
+  "@media (max-width: 1023px)": {
+    height: "auto",
+    aspectRatio: "1",
+    flexDirection: "column",
+    justifyContent: "center",
+    padding: "4px",
+    gap: "0px",
+    ".details": {
+      display: "none",
+    },
+    ".sprite": {
+      width: "36px",
+      height: "36px",
+    },
+    ".shiny-sparkle": {
+      position: "absolute",
+      bottom: "3px",
+      right: "3px",
+      fontSize: "10px",
+    },
+    ".held-item-icon": {
+      position: "absolute",
+      bottom: "3px",
+      left: "3px",
+      width: "12px",
+      height: "12px",
+    },
+    ".index-tag": {
+      top: "2px",
+      left: "3px",
+      fontSize: "6px",
+      "&::before": {
+        content: '""',
+      },
+    },
+  },
 }));
 
 
@@ -203,86 +306,153 @@ export const PartySlot = styled("div")<{
 export const BoxWrapper = styled("div")({
   display: "flex",
   flexDirection: "column",
-  gap: "16px",
   background: "#fdfdfd",
-  padding: "20px",
+  padding: "0 !important",
+  overflow: "hidden",
+  borderRadius: "8px",
   boxShadow: "4px 4px 0px #0f172a",
 });
 
 export const BoxControls = styled("div")({
   display: "flex",
-  justifyContent: "space-between",
   alignItems: "center",
-  background: "#f8f9fa",
-  borderBottom: "3px double #0f172a",
-  paddingBottom: "12px",
-  marginBottom: "4px",
-  ".navigation": {
+  justifyContent: "center",
+  background: "#fdfdfd",
+  borderBottom: "3px solid #0f172a",
+  padding: "8px 16px",
+  boxSizing: "border-box",
+  width: "100%",
+  position: "relative",
+  minHeight: "56px",
+
+  // Centered navigation group
+  ".navigation-group": {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
-    h3: {
-      margin: 0,
-      fontSize: "1.8rem",
-      minWidth: "160px",
-      textAlign: "center",
-      cursor: "pointer",
-      textTransform: "uppercase",
-      letterSpacing: "1.5px",
-      transition: "all 0.15s ease",
-      "&:hover": {
-        transform: "scale(1.05)",
-      },
-    },
+    gap: "12px",
+    zIndex: 1,
   },
-  ".box-action-btn": {
-    background: "#fdfdfd",
-    color: "#0f172a",
+
+  // Standalone triangular arrow buttons (borderless)
+  ".nav-arrow-btn": {
+    background: "none",
+    border: "none",
+    padding: 0,
     cursor: "pointer",
-    padding: "6px 10px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transition: "all 0.12s ease",
+    outline: "none",
+    transition: "transform 0.1s ease",
     "&:hover": {
-      background: "#facc15",
-      color: "#0f172a",
+      transform: "scale(1.15)",
+    },
+    polygon: {
+      fill: "#e2e8f0",
+      transition: "fill 0.15s ease",
+    },
+    "&:hover polygon": {
+      fill: "#facc15",
     },
     "&:active": {
-      transform: "translateY(2px) translateX(2px)",
+      transform: "scale(0.9)",
+    },
+    svg: {
+      display: "block",
+    },
+  },
+
+  // Yellow name plate (rectangular)
+  ".name-plate": {
+    background: "linear-gradient(180deg, #fffbeb 0%, #fef08a 100%)",
+    border: "2.5px solid #0f172a",
+    borderRadius: "2px",
+    boxShadow: "inset 0px 0px 0px 2.5px #ffffff, 2px 2px 0px #0f172a",
+    padding: "6px 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "160px",
+    height: "36px",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    boxSizing: "border-box",
+    "&:hover": {
+      background: "linear-gradient(180deg, #fffbeb 0%, #fde047 100%)",
+      transform: "translateY(-1px)",
+    },
+    h3: {
+      margin: 0,
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.85rem",
+      fontWeight: "bold",
+      color: "#0f172a",
+      textTransform: "uppercase",
+      letterSpacing: "1px",
+      textAlign: "center",
+      textShadow: "1px 1px 0px #ffffff",
+    },
+    "@media (max-width: 639px)": {
+      minWidth: "120px",
+      padding: "4px 12px",
+      h3: {
+        fontSize: "0.75rem",
+        letterSpacing: "0.5px",
+      },
+    },
+  },
+
+  // Count badge on the far right
+  ".box-count-badge": {
+    position: "absolute",
+    right: "16px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "#ffffff",
+    color: "#0f172a",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.65rem",
+    padding: "6px 12px",
+    borderRadius: "2px",
+    border: "2px solid #0f172a",
+    boxShadow: "2px 2px 0px #0f172a",
+    fontWeight: "bold",
+    whiteSpace: "nowrap",
+    zIndex: 1,
+    "@media (max-width: 639px)": {
+      display: "none",
     },
   },
 });
 
 export const BoxRenameInput = styled("input")({
-  fontFamily: '"VT323", monospace',
-  fontSize: "1.5rem",
+  fontFamily: '"Press Start 2P", monospace',
+  fontSize: "0.85rem",
+  fontWeight: "bold",
   color: "#0f172a",
-  background: "#ffffff",
-  border: "3px solid #0f172a",
-  boxShadow: "inset 2px 2px 0px rgba(0,0,0,0.12)",
+  background: "transparent",
+  border: "none",
   textAlign: "center",
-  width: "160px",
-  padding: "2px 8px",
+  width: "100%",
+  padding: "0",
   outline: "none",
   textTransform: "uppercase",
   boxSizing: "border-box",
   display: "inline-block",
-  height: "36px",
-  lineHeight: "36px",
-  "&:focus": {
-    borderColor: "#facc15",
-    boxShadow: "2px 2px 0px #0f172a",
+  height: "24px",
+  lineHeight: "24px",
+  "@media (max-width: 639px)": {
+    fontSize: "0.75rem",
   },
 });
 
 export const BoxGridContainer = styled("div")<{ bgUrl?: string }>(({ bgUrl }) => ({
   aspectRatio: "1.2",
-  borderRadius: "16px",
+  borderRadius: "0px",
   backgroundImage: bgUrl ? `url(${bgUrl})` : "none",
   backgroundSize: "cover",
   backgroundPosition: "center",
-  boxShadow: "inset 0 0 50px rgba(0,0,0,0.15), 0 8px 30px rgba(15, 23, 42, 0.08)",
+  boxShadow: "inset 0 0 50px rgba(0,0,0,0.15)",
   padding: "20px",
   position: "relative",
   overflow: "hidden",
@@ -413,7 +583,22 @@ export const RightPanelCard = styled("div")({
   boxShadow: "4px 4px 0px #0f172a",
   display: "flex",
   flexDirection: "column",
-  gap: "16px",
+  gap: "20px",
+
+  ".detail-column": {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    width: "100%",
+  },
+
+  ".wallpaper-column": {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    width: "100%",
+  },
+
   h2: {
     margin: 0,
     fontFamily: '"Press Start 2P", monospace',
@@ -422,6 +607,27 @@ export const RightPanelCard = styled("div")({
     display: "flex",
     alignItems: "center",
     gap: "8px",
+  },
+
+  // Tablet: Two columns side-by-side
+  "@media (min-width: 640px) and (max-width: 1023px)": {
+    display: "grid",
+    gridTemplateColumns: "1.2fr 1fr",
+    gap: "24px",
+    alignItems: "start",
+    ".detail-column": {
+      width: "100%",
+    },
+    ".wallpaper-column": {
+      width: "100%",
+    },
+  },
+
+  // Desktop/Sidebar: Stacked vertically
+  "@media (min-width: 1024px)": {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
   },
 });
 
@@ -467,6 +673,9 @@ export const WallpaperGrid = styled("div")({
   maxHeight: "150px",
   overflowY: "auto",
   paddingRight: "4px",
+  "@media (max-width: 639px)": {
+    gridTemplateColumns: "repeat(6, 1fr)",
+  },
   "&::-webkit-scrollbar": {
     width: "4px",
   },
@@ -1246,8 +1455,9 @@ export const DetailArtworkArea = styled("div")({
   padding: "10px 0",
   background: "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%)",
   ".artwork": {
-    width: "120px",
-    height: "120px",
+    width: "min(28vw, 120px)",
+    height: "auto",
+    aspectRatio: "1",
     objectFit: "contain",
     filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
   },

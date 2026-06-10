@@ -551,7 +551,7 @@ const PCStorage: React.FC = () => {
     const target = e.target as HTMLElement;
     const isCell = target.closest("[data-slot-index]");
     const slotIdxAttr = isCell?.getAttribute("data-slot-index");
-    
+
     if (isCell && typeof slotIdxAttr === "string") {
       const slotIdx = parseInt(slotIdxAttr);
       const poke = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
@@ -1210,7 +1210,7 @@ const PCStorage: React.FC = () => {
                       }
                     }}
                   >
-                    <span className="index-tag">SLOT {idx + 1}</span>
+                    <span className="index-tag">{idx + 1}</span>
                     {poke ? (
                       <>
                         <img className="sprite" src={poke.spriteUrl} alt={poke.displayName} />
@@ -1218,7 +1218,11 @@ const PCStorage: React.FC = () => {
                           <span className="name">{poke.displayName}</span>
                           <span className="lvl">Lv. {poke.currentLevel}</span>
                         </div>
-                        {poke.isShiny && <span style={{ color: "#fbbf24", fontSize: 12 }}>★</span>}
+                        {poke.isShiny && (
+                          <span className="shiny-sparkle" style={{ color: "#fbbf24", fontSize: 12 }}>
+                            ★
+                          </span>
+                        )}
                       </>
                     ) : (
                       <span style={{ fontSize: "0.95rem", color: "#64748b", margin: "auto" }}>—</span>
@@ -1231,37 +1235,47 @@ const PCStorage: React.FC = () => {
 
           {/* ── CENTER: Box Grid ── */}
           <S.BoxWrapper className="pxl-border no-inset">
-            <S.BoxControls className="pxl-border no-inset">
-              <div className="navigation">
-                <button className="box-action-btn pxl-border" onClick={handlePrevBox}>
-                  <IconArrowLeft size={18} />
+            <S.BoxControls>
+              {/* Navigation elements grouped in center */}
+              <div className="navigation-group">
+                <button className="nav-arrow-btn" onClick={handlePrevBox} title="Previous Box">
+                  <svg viewBox="0 0 24 24" width="28" height="28">
+                    <polygon points="16,4 6,12 16,20" fill="#cbd5e1" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="miter" />
+                  </svg>
                 </button>
-                {isEditingBoxName ? (
-                  <S.BoxRenameInput
-                    className="box-rename-input"
-                    type="text"
-                    value={editingBoxName}
-                    onChange={(e) => setEditingBoxName(e.target.value)}
-                    onBlur={handleSaveBoxRename}
-                    onKeyDown={handleBoxRenameKeyDown}
-                    autoFocus
-                    maxLength={15}
-                  />
-                ) : (
-                  <Text
-                    as="h3" variant="outlined" size="lg"
-                    onClick={handleStartBoxRename}
-                  >
-                    {activeBox?.name ?? `Box ${currentBoxIndex + 1}`}
-                  </Text>
-                )}
-                <button className="box-action-btn pxl-border" onClick={handleNextBox}>
-                  <IconArrowRight size={18} />
+
+                <div 
+                  className="name-plate" 
+                  onClick={!isEditingBoxName ? handleStartBoxRename : undefined} 
+                  title={!isEditingBoxName ? "Rename Box" : undefined}
+                >
+                  {isEditingBoxName ? (
+                    <S.BoxRenameInput
+                      className="box-rename-input"
+                      type="text"
+                      value={editingBoxName}
+                      onChange={(e) => setEditingBoxName(e.target.value)}
+                      onBlur={handleSaveBoxRename}
+                      onKeyDown={handleBoxRenameKeyDown}
+                      autoFocus
+                      maxLength={15}
+                    />
+                  ) : (
+                    <h3>{activeBox?.name ?? `Box ${currentBoxIndex + 1}`}</h3>
+                  )}
+                </div>
+
+                <button className="nav-arrow-btn" onClick={handleNextBox} title="Next Box">
+                  <svg viewBox="0 0 24 24" width="28" height="28">
+                    <polygon points="8,4 18,12 8,20" fill="#cbd5e1" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="miter" />
+                  </svg>
                 </button>
               </div>
-              <Text as="span" variant="darker" size="sm">
+
+              {/* Box count badge */}
+              <div className="box-count-badge">
                 {activeBox?.pokemons.length ?? 0} / 30
-              </Text>
+              </div>
             </S.BoxControls>
 
             <S.BoxGridContainer
@@ -1338,10 +1352,10 @@ const PCStorage: React.FC = () => {
             </S.BoxGridContainer>
           </S.BoxWrapper>
 
-          {/* ── RIGHT: Detail + Wallpaper ── */}
           <S.RightPanelCard className="pxl-border no-inset">
+            <div className="detail-column">
 
-            {/* Search */}
+              {/* Search */}
             <S.SearchBoxWrapper>
               <IconSearch size={18} style={{ color: "#64748b", flexShrink: 0 }} />
               <input
@@ -1812,9 +1826,11 @@ const PCStorage: React.FC = () => {
                 </S.CompareButton>
               </S.CompareStrip>
             )}
+            </div>
 
-            {/* Wallpaper selector */}
-            <S.WallpaperSelectorWrapper>
+            <div className="wallpaper-column">
+              {/* Wallpaper selector */}
+              <S.WallpaperSelectorWrapper>
               <Text as="h3" variant="darker" size="md" style={{ marginBottom: "8px" }}>
                 Box Wallpaper
               </Text>
@@ -1864,6 +1880,7 @@ const PCStorage: React.FC = () => {
                 </span>
               </S.UploadWallpaperZone>
             </S.WallpaperSelectorWrapper>
+            </div>
 
           </S.RightPanelCard>
         </S.Workspace>
