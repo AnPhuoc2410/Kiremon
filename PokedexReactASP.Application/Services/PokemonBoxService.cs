@@ -142,12 +142,6 @@ namespace PokedexReactASP.Application.Services
                 }
                 else
                 {
-                    // Straight move out of party minimum check
-                    if (pokemon.IsInParty)
-                    {
-                        // Moving from party slot A to empty party slot B. Party size remains same.
-                    }
-
                     pokemon.IsInParty = true;
                     pokemon.BoxId = null;
                     pokemon.SlotIndex = dto.SlotIndex;
@@ -215,7 +209,6 @@ namespace PokedexReactASP.Application.Services
             return new MovePokemonResultDto
             {
                 Success = true,
-                Message = swappedPokemonId != null ? "Pokémon positions swapped successfully." : "Pokémon moved successfully.",
                 SwappedPokemonId = swappedPokemonId
             };
         }

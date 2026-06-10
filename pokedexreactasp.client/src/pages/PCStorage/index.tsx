@@ -33,7 +33,6 @@ import * as S from "./index.style";
 
 // ── Constants ────────────────────────────────────────────────
 const DRAG_THRESHOLD = 8; // px before drag starts
-const STAT_MAX = 255;
 
 const NATURE_EFFECTS: Record<string, { increased: string; decreased: string } | null> = {
   lonely: { increased: "ATK", decreased: "DEF" },
@@ -91,12 +90,12 @@ const getPokeballSpriteUrl = (ball: number): string => {
 
 
 const TYPE_COLORS: Record<string, string> = {
-  fire: "#FF6B35",    water: "#4A90E2",   grass: "#5CB85C",
-  electric: "#F0C040", ice: "#74CEC0",    fighting: "#C03028",
-  poison: "#A040A0",  ground: "#E0C068",  flying: "#A890F0",
-  psychic: "#F85888", bug: "#A8B820",     rock: "#B8A038",
-  ghost: "#705898",   dragon: "#7038F8",  dark: "#705848",
-  steel: "#B8B8D0",   fairy: "#EE99AC",   normal: "#A8A878",
+  fire: "#FF6B35", water: "#4A90E2", grass: "#5CB85C",
+  electric: "#F0C040", ice: "#74CEC0", fighting: "#C03028",
+  poison: "#A040A0", ground: "#E0C068", flying: "#A890F0",
+  psychic: "#F85888", bug: "#A8B820", rock: "#B8A038",
+  ghost: "#705898", dragon: "#7038F8", dark: "#705848",
+  steel: "#B8B8D0", fairy: "#EE99AC", normal: "#A8A878",
 };
 
 const DEFAULT_WALLPAPERS = [
@@ -173,23 +172,26 @@ const PCStorage: React.FC = () => {
 
   // ── Data ─────────────────────────────────────────────────
   const { data: boxes = [], isLoading: isLoadingBoxes } = useUserBoxes();
-  const updateBoxMutation    = useUpdateBox();
-  const movePokemonMutation  = useMovePokemon();
-  const moveBatchMutation    = useMovePokemonBatch();
+  const updateBoxMutation = useUpdateBox();
+  const movePokemonMutation = useMovePokemon();
+  const moveBatchMutation = useMovePokemonBatch();
   const reorderBoxesMutation = useReorderBoxes();
-  const updateMovesMutation  = useUpdatePokemonMoves();
+  const updateMovesMutation = useUpdatePokemonMoves();
   const { uploadFile, uploading, uploadProgress } = useSupabaseStorage();
 
   // ── UI State ──────────────────────────────────────────────
   const [currentBoxIndex, setCurrentBoxIndex] = useState<number>(0);
-  const [searchQuery, setSearchQuery]         = useState<string>("");
-  const [partyPokemons, setPartyPokemons]     = useState<UserPokemonDto[]>([]);
-  const [showBoxList, setShowBoxList]         = useState<boolean>(false);
-  const [showHelp, setShowHelp]               = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [partyPokemons, setPartyPokemons] = useState<UserPokemonDto[]>([]);
+  const [showBoxList, setShowBoxList] = useState<boolean>(false);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
+  const [isEditingBoxName, setIsEditingBoxName] = useState<boolean>(false);
+  const [editingBoxName, setEditingBoxName] = useState<string>("");
 
   // ── Selection ─────────────────────────────────────────────
   // Primary single-click selection → shows detail panel
   const [selectedPokemon, setSelectedPokemon] = useState<UserPokemonDto | null>(null);
+  const [hoveredPokemon, setHoveredPokemon] = useState<UserPokemonDto | null>(null);
   const [activeMainTab, setActiveMainTab] = useState<"status" | "moves" | "stats">("status");
   const [showMoveManager, setShowMoveManager] = useState(false);
   const [tempSelectedMoves, setTempSelectedMoves] = useState<number[]>([]);
@@ -208,8 +210,14 @@ const PCStorage: React.FC = () => {
 
   // ── Drag State ────────────────────────────────────────────
   const [heldPokemon, setHeldPokemon] = useState<HeldPokemonInfo | null>(null);
-  const [heldGroup, setHeldGroup]     = useState<GroupMemberInfo[] | null>(null);
-  const [mousePos, setMousePos]       = useState<Position>({ x: 0, y: 0 });
+  const [heldGroup, setHeldGroup] = useState<GroupMemberInfo[] | null>(null);
+  const [mousePos, setMousePos] = useState<Position>({ x: 0, y: 0 });
+
+  // ── Drag Selection (Marquee) State ────────────────────────
+  const [dragSelectStart, setDragSelectStart] = useState<Position | null>(null);
+  const [dragSelectCurrent, setDragSelectCurrent] = useState<Position | null>(null);
+  const [isDragSelecting, setIsDragSelecting] = useState<boolean>(false);
+  const didDragSelectRef = useRef<boolean>(false);
 
   // ── Compare ───────────────────────────────────────────────
   const [isComparing, setIsComparing] = useState<boolean>(false);
@@ -226,14 +234,14 @@ const PCStorage: React.FC = () => {
 
   // ── Refs ──────────────────────────────────────────────────
   const gridContainerRef = useRef<HTMLDivElement>(null);
-  const fileInputRef     = useRef<HTMLInputElement>(null);
-  const wpDropZoneRef    = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const wpDropZoneRef = useRef<HTMLDivElement>(null);
   // Drag candidate recorded on mousedown
   const dragCandidateRef = useRef<DragCandidate | null>(null);
   // Set to true once drag threshold exceeded (to guard onClick)
-  const isDraggingRef    = useRef<boolean>(false);
+  const isDraggingRef = useRef<boolean>(false);
   // Set to true when drop lands on valid slot (to prevent global cancel)
-  const didDropRef       = useRef<boolean>(false);
+  const didDropRef = useRef<boolean>(false);
 
   // ── Derived ───────────────────────────────────────────────
   const activeBox = boxes[currentBoxIndex] as UserBoxDto | undefined;
@@ -279,6 +287,55 @@ const PCStorage: React.FC = () => {
   // ── 2. Drag detection ─────────────────────────────────────
   useEffect(() => {
     const onMouseMove = (e: globalThis.MouseEvent) => {
+      // Marquee selection drag
+      if (isDragSelecting && dragSelectStart && gridContainerRef.current) {
+        const rect = gridContainerRef.current.getBoundingClientRect();
+        const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+        const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+        setDragSelectCurrent({ x, y });
+
+        const dx = Math.abs(x - dragSelectStart.x);
+        const dy = Math.abs(y - dragSelectStart.y);
+        if (dx > 5 || dy > 5) {
+          didDragSelectRef.current = true;
+        }
+
+        const selLeft = Math.min(dragSelectStart.x, x);
+        const selRight = Math.max(dragSelectStart.x, x);
+        const selTop = Math.min(dragSelectStart.y, y);
+        const selBottom = Math.max(dragSelectStart.y, y);
+
+        const cells = gridContainerRef.current.querySelectorAll("[data-slot-index]");
+        const intersectedIds = new Set<number>();
+
+        cells.forEach((cell) => {
+          const cellRect = cell.getBoundingClientRect();
+          const relativeCell = {
+            left: cellRect.left - rect.left,
+            top: cellRect.top - rect.top,
+            right: cellRect.right - rect.left,
+            bottom: cellRect.bottom - rect.top,
+          };
+
+          const intersects = !(
+            relativeCell.left > selRight ||
+            relativeCell.right < selLeft ||
+            relativeCell.top > selBottom ||
+            relativeCell.bottom < selTop
+          );
+
+          if (intersects) {
+            const pokeIdAttr = cell.getAttribute("data-pokemon-id");
+            if (pokeIdAttr) {
+              intersectedIds.add(parseInt(pokeIdAttr));
+            }
+          }
+        });
+
+        setMultiSelectedIds(intersectedIds);
+        return;
+      }
+
       // Detect drag threshold crossing
       if (dragCandidateRef.current && !isDraggingRef.current) {
         const dx = e.clientX - dragCandidateRef.current.startX;
@@ -290,16 +347,16 @@ const PCStorage: React.FC = () => {
 
           // Multi-selected group drag
           if (!dc.fromParty && multiSelectedIds.has(dc.pokemon.id) && multiSelectedIds.size > 1) {
-            const pokesToLift = (activeBox?.pokemons ?? []).filter((p) =>
-              multiSelectedIds.has(p.id)
-            );
-            const anchorRow = Math.floor(dc.fromSlot / 6);
-            const anchorCol = dc.fromSlot % 6;
+            const pokesToLift: UserPokemonDto[] = [];
+            for (const id of multiSelectedIds) {
+              const p = activeBox?.pokemons.find((x) => x.id === id);
+              if (p) pokesToLift.push(p);
+            }
             setHeldGroup(
               pokesToLift.map((p) => ({
                 pokemon: p,
-                rowOffset: Math.floor(p.slotIndex / 6) - anchorRow,
-                colOffset: (p.slotIndex % 6) - anchorCol,
+                rowOffset: 0,
+                colOffset: 0,
                 fromParty: false,
                 fromSlot: p.slotIndex,
                 fromBoxId: activeBox?.id ?? null,
@@ -322,22 +379,72 @@ const PCStorage: React.FC = () => {
     };
     window.addEventListener("mousemove", onMouseMove);
     return () => window.removeEventListener("mousemove", onMouseMove);
-  }, [heldPokemon, heldGroup, multiSelectedIds, activeBox]);
+  }, [heldPokemon, heldGroup, multiSelectedIds, activeBox, isDragSelecting, dragSelectStart]);
 
   // ── 2b. Cancel drag on release outside slot ───────────────
   useEffect(() => {
     const onMouseUp = () => {
       dragCandidateRef.current = null;
-      isDraggingRef.current    = false;
+
+      if (isDragSelecting) {
+        setIsDragSelecting(false);
+        setDragSelectStart(null);
+        setDragSelectCurrent(null);
+        if (!didDragSelectRef.current) {
+          // Normal click on background/empty slot -> clear selection
+          setMultiSelectedIds(new Set());
+          setSelectedPokemon(null);
+          setHoveredPokemon(null);
+        }
+        setTimeout(() => {
+          didDragSelectRef.current = false;
+        }, 50);
+        return;
+      }
+
       if (!didDropRef.current) {
         if (heldPokemon) setHeldPokemon(null);
-        if (heldGroup)   setHeldGroup(null);
+        if (heldGroup) setHeldGroup(null);
       }
       didDropRef.current = false;
+
+      setTimeout(() => {
+        isDraggingRef.current = false;
+      }, 50);
     };
     window.addEventListener("mouseup", onMouseUp);
     return () => window.removeEventListener("mouseup", onMouseUp);
-  }, [heldPokemon, heldGroup]);
+  }, [heldPokemon, heldGroup, isDragSelecting, dragSelectStart]);
+
+  // ── 2c. Scroll wheel box navigation during drag ───────────
+  const lastWheelSwitchRef = useRef<number>(0);
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (!heldPokemon && !heldGroup) return;
+
+      // Always block browser scrolling while active dragging is happening
+      e.preventDefault();
+
+      const now = Date.now();
+      if (now - lastWheelSwitchRef.current < 250) return;
+
+      const boxCount = boxes.length;
+      if (boxCount <= 1) return;
+
+      if (e.deltaY < 0) {
+        animateBoxTransition("left");
+        setCurrentBoxIndex((p) => (p - 1 + boxCount) % boxCount);
+        lastWheelSwitchRef.current = now;
+      } else if (e.deltaY > 0) {
+        animateBoxTransition("right");
+        setCurrentBoxIndex((p) => (p + 1) % boxCount);
+        lastWheelSwitchRef.current = now;
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    return () => window.removeEventListener("wheel", onWheel, { capture: true });
+  }, [heldPokemon, heldGroup, boxes.length]);
 
   // ── 3. Keyboard shortcuts ─────────────────────────────────
   useEffect(() => {
@@ -362,6 +469,7 @@ const PCStorage: React.FC = () => {
           setHeldGroup(null);
           setMultiSelectedIds(new Set());
           setSelectedPokemon(null);
+          setHoveredPokemon(null);
           setContextMenu(null);
           setIsComparing(false);
           setShowBoxList(false);
@@ -413,6 +521,33 @@ const PCStorage: React.FC = () => {
     return `/wallpaper/${bg}`;
   };
 
+  const handleGridMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // Only left click
+
+    // Only start drag selecting if we click the grid background or an empty slot
+    const target = e.target as HTMLElement;
+    const isCell = target.closest("[data-slot-index]");
+    const slotIdxAttr = isCell?.getAttribute("data-slot-index");
+    
+    if (isCell && typeof slotIdxAttr === "string") {
+      const slotIdx = parseInt(slotIdxAttr);
+      const poke = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+      if (poke) return; // Has pokemon, standard drag instead of marquee select
+    }
+
+    if (!gridContainerRef.current) return;
+    e.preventDefault();
+
+    const rect = gridContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setDragSelectStart({ x, y });
+    setDragSelectCurrent({ x, y });
+    setIsDragSelecting(true);
+    didDragSelectRef.current = false;
+  };
+
   // ── 6. Unified slot interaction ───────────────────────────
   const handleSlotMouseDown = (
     e: MouseEvent<HTMLElement>,
@@ -442,7 +577,13 @@ const PCStorage: React.FC = () => {
       handleDropHeldPokemon(slotIdx, isParty);
     } else if (heldGroup) {
       didDropRef.current = true;
-      handleDropGroup(slotIdx);
+      if (isParty) {
+        toast.error("Cannot move a group of Pokémon into the party.");
+        setHeldGroup(null);
+        setMultiSelectedIds(new Set());
+      } else {
+        handleDropGroup(slotIdx);
+      }
     }
   };
 
@@ -451,6 +592,10 @@ const PCStorage: React.FC = () => {
     slotIdx: number,
     isParty: boolean
   ) => {
+    if (didDragSelectRef.current) {
+      didDragSelectRef.current = false;
+      return;
+    }
     // Ignore if this was a drag (isDraggingRef still set from mousemove)
     if (isDraggingRef.current) { isDraggingRef.current = false; return; }
 
@@ -467,7 +612,6 @@ const PCStorage: React.FC = () => {
         if (next.has(poke.id)) {
           next.delete(poke.id);
         } else {
-          if (next.size >= 2) next.delete(next.values().next().value as number);
           next.add(poke.id);
         }
         return next;
@@ -510,8 +654,7 @@ const PCStorage: React.FC = () => {
         userPokemonId: pokemon.id,
         data: { targetBoxId: toParty ? null : (activeBox?.id ?? null), toParty, slotIndex: targetSlot },
       });
-      if (result.success) toast.success(result.message);
-      else toast.error(result.message);
+      if (!result.success) toast.error(result.message);
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Move failed.");
     } finally {
@@ -523,32 +666,30 @@ const PCStorage: React.FC = () => {
 
   const handleDropGroup = async (targetAnchorSlot: number) => {
     if (!heldGroup || !activeBox) return;
-    const anchorRow = Math.floor(targetAnchorSlot / 6);
-    const anchorCol = targetAnchorSlot % 6;
     const occupied = new Set<number>();
     activeBox.pokemons.forEach((p) => {
       if (!heldGroup.some((m) => m.pokemon.id === p.id)) occupied.add(p.slotIndex);
     });
     const moves: MovePokemonItemDto[] = [];
     let invalid = false;
-    for (const m of heldGroup) {
-      const tRow = anchorRow + m.rowOffset;
-      const tCol = anchorCol + m.colOffset;
-      if (tRow < 0 || tRow >= 5 || tCol < 0 || tCol >= 6) {
+    for (let i = 0; i < heldGroup.length; i++) {
+      const m = heldGroup[i];
+      const tSlot = targetAnchorSlot + i;
+      if (tSlot < 0 || tSlot >= 30) {
         toast.error("Placement out of bounds!");
-        invalid = true; break;
+        invalid = true;
+        break;
       }
-      const tSlot = tRow * 6 + tCol;
       if (occupied.has(tSlot)) {
         toast.error("Target slots must be empty for group move.");
-        invalid = true; break;
+        invalid = true;
+        break;
       }
       moves.push({ userPokemonId: m.pokemon.id, targetBoxId: activeBox.id, toParty: false, slotIndex: tSlot });
     }
     if (invalid) { setHeldGroup(null); setMultiSelectedIds(new Set()); return; }
     try {
       await moveBatchMutation.mutateAsync({ moves });
-      toast.success("Pokémon moved.");
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Move failed.");
     } finally {
@@ -590,7 +731,7 @@ const PCStorage: React.FC = () => {
 
   const handleWpDragEnter = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); if (!uploading) setIsWpDragging(true); };
   const handleWpDragLeave = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); if (e.currentTarget === wpDropZoneRef.current) setIsWpDragging(false); };
-  const handleWpDragOver  = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); };
+  const handleWpDragOver = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); };
   const handleWpDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault(); e.stopPropagation(); setIsWpDragging(false);
     if (!uploading) { const f = e.dataTransfer.files?.[0]; if (f) await uploadAndApplyWallpaper(f); }
@@ -612,14 +753,44 @@ const PCStorage: React.FC = () => {
     return () => document.removeEventListener("paste", onPaste);
   }, [activeBox, uploading]);
 
-  // ── 9. Box management ─────────────────────────────────────
-  const handleRenameBox = async () => {
+  const handleStartBoxRename = () => {
     if (!activeBox) return;
-    const n = prompt("New name:", activeBox.name);
-    if (!n?.trim() || n === activeBox.name) return;
+    setEditingBoxName(activeBox.name);
+    setIsEditingBoxName(true);
+    setTimeout(() => {
+      const inputEl = document.querySelector(".box-rename-input");
+      if (inputEl) {
+        gsap.fromTo(
+          inputEl,
+          { scale: 0.8, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.15, ease: "back.out(1.5)" }
+        );
+      }
+    }, 0);
+  };
+
+  const handleSaveBoxRename = async () => {
+    setIsEditingBoxName(false);
+    if (!activeBox) return;
+    const trimmed = editingBoxName.trim();
+    if (!trimmed || trimmed === activeBox.name) return;
     try {
-      await updateBoxMutation.mutateAsync({ boxId: activeBox.id, data: { name: n.trim(), backgroundImage: activeBox.backgroundImage } });
-    } catch { toast.error("Rename failed."); }
+      await updateBoxMutation.mutateAsync({
+        boxId: activeBox.id,
+        data: { name: trimmed, backgroundImage: activeBox.backgroundImage },
+      });
+      toast.success("Box renamed!");
+    } catch {
+      toast.error("Rename failed.");
+    }
+  };
+
+  const handleBoxRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSaveBoxRename();
+    } else if (e.key === "Escape") {
+      setIsEditingBoxName(false);
+    }
   };
 
   const handleBoxDragStart = (e: React.DragEvent, boxId: number) =>
@@ -648,6 +819,7 @@ const PCStorage: React.FC = () => {
       await collectionService.releasePokemon(p.id);
       toast.success(`${p.displayName} was released.`);
       if (selectedPokemon?.id === p.id) setSelectedPokemon(null);
+      if (hoveredPokemon?.id === p.id) setHoveredPokemon(null);
       loadParty();
     } catch { toast.error("Release failed."); }
   };
@@ -672,23 +844,28 @@ const PCStorage: React.FC = () => {
 
   // ── Sync Selected Pokémon Details ──
   const activePokemonDetails = useMemo(() => {
-    if (!selectedPokemon) return null;
-    const inParty = partyPokemons.find((p) => p.id === selectedPokemon.id);
+    const displayedPokemon = hoveredPokemon || selectedPokemon;
+    if (!displayedPokemon) return null;
+    const inParty = partyPokemons.find((p) => p.id === displayedPokemon.id);
     if (inParty) return inParty;
     for (const box of boxes) {
-      const inBox = box.pokemons.find((p: any) => p.id === selectedPokemon.id);
+      const inBox = box.pokemons.find((p: any) => p.id === displayedPokemon.id);
       if (inBox) return inBox;
     }
-    return selectedPokemon;
-  }, [selectedPokemon?.id, boxes, partyPokemons]);
+    return displayedPokemon;
+  }, [hoveredPokemon?.id, selectedPokemon?.id, boxes, partyPokemons]);
 
   // ── usePokemonCore for Moves & Abilities details ──
-  const { detail } = usePokemonCore(activePokemonDetails?.name || "");
+  const { detail, isLoading: isCoreLoading } = usePokemonCore(
+    activePokemonDetails?.name || "",
+    undefined,
+    { enabled: !!activePokemonDetails && (activeMainTab === "moves" || showMoveManager) }
+  );
 
   // ── Moves Lookup ──
   const allLearnedMoves = useMemo(() => {
     if (!detail?.moveDetails || !activePokemonDetails) return [];
-    
+
     // Filter level-up moves learned up to current level
     const filtered = detail.moveDetails.filter(
       (m) => m.learnMethod === "level-up" && m.level !== null && m.level <= activePokemonDetails.currentLevel
@@ -751,7 +928,7 @@ const PCStorage: React.FC = () => {
     if (isIncreased) {
       return (
         <polygon
-          points={`${x},${y-4} ${x-4},${y+2} ${x+4},${y+2}`}
+          points={`${x},${y - 4} ${x - 4},${y + 2} ${x + 4},${y + 2}`}
           fill="#dc2626"
           stroke="#ffffff"
           strokeWidth="0.5"
@@ -760,7 +937,7 @@ const PCStorage: React.FC = () => {
     } else if (isDecreased) {
       return (
         <polygon
-          points={`${x},${y+2} ${x-4},${y-4} ${x+4},${y-4}`}
+          points={`${x},${y + 2} ${x - 4},${y - 4} ${x + 4},${y - 4}`}
           fill="#2563eb"
           stroke="#ffffff"
           strokeWidth="0.5"
@@ -790,21 +967,21 @@ const PCStorage: React.FC = () => {
   const radii = activePokemonDetails
     ? activeStatTab === "iv"
       ? [
-          getStatRadius(activePokemonDetails.ivHp),
-          getStatRadius(activePokemonDetails.ivAttack),
-          getStatRadius(activePokemonDetails.ivDefense),
-          getStatRadius(activePokemonDetails.ivSpeed),
-          getStatRadius(activePokemonDetails.ivSpecialDefense),
-          getStatRadius(activePokemonDetails.ivSpecialAttack),
-        ]
+        getStatRadius(activePokemonDetails.ivHp),
+        getStatRadius(activePokemonDetails.ivAttack),
+        getStatRadius(activePokemonDetails.ivDefense),
+        getStatRadius(activePokemonDetails.ivSpeed),
+        getStatRadius(activePokemonDetails.ivSpecialDefense),
+        getStatRadius(activePokemonDetails.ivSpecialAttack),
+      ]
       : [
-          getEvRadius(activePokemonDetails.evHp),
-          getEvRadius(activePokemonDetails.evAttack),
-          getEvRadius(activePokemonDetails.evDefense),
-          getEvRadius(activePokemonDetails.evSpeed),
-          getEvRadius(activePokemonDetails.evSpecialDefense),
-          getEvRadius(activePokemonDetails.evSpecialAttack),
-        ]
+        getEvRadius(activePokemonDetails.evHp),
+        getEvRadius(activePokemonDetails.evAttack),
+        getEvRadius(activePokemonDetails.evDefense),
+        getEvRadius(activePokemonDetails.evSpeed),
+        getEvRadius(activePokemonDetails.evSpecialDefense),
+        getEvRadius(activePokemonDetails.evSpecialAttack),
+      ]
     : [];
 
   const cx = 140;
@@ -829,21 +1006,21 @@ const PCStorage: React.FC = () => {
   const statItems = activePokemonDetails
     ? activeStatTab === "iv"
       ? [
-          { label: "HP", displayName: "HP", judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})` },
-          { label: "ATK", displayName: "Attack", judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})` },
-          { label: "DEF", displayName: "Defense", judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})` },
-          { label: "SPD", displayName: "Speed", judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})` },
-          { label: "SpD", displayName: "Sp. Def", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})` },
-          { label: "SpA", displayName: "Sp. Atk", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})` },
-        ]
+        { label: "HP", displayName: "HP", judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})` },
+        { label: "ATK", displayName: "Attack", judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})` },
+        { label: "DEF", displayName: "Defense", judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})` },
+        { label: "SPD", displayName: "Speed", judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})` },
+        { label: "SpD", displayName: "Sp. Def", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})` },
+        { label: "SpA", displayName: "Sp. Atk", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})` },
+      ]
       : [
-          { label: "HP", displayName: "HP", judge: `EV: ${activePokemonDetails.evHp}` },
-          { label: "ATK", displayName: "Attack", judge: `EV: ${activePokemonDetails.evAttack}` },
-          { label: "DEF", displayName: "Defense", judge: `EV: ${activePokemonDetails.evDefense}` },
-          { label: "SPD", displayName: "Speed", judge: `EV: ${activePokemonDetails.evSpeed}` },
-          { label: "SpD", displayName: "Sp. Def", judge: `EV: ${activePokemonDetails.evSpecialDefense}` },
-          { label: "SpA", displayName: "Sp. Atk", judge: `EV: ${activePokemonDetails.evSpecialAttack}` },
-        ]
+        { label: "HP", displayName: "HP", judge: `EV: ${activePokemonDetails.evHp}` },
+        { label: "ATK", displayName: "Attack", judge: `EV: ${activePokemonDetails.evAttack}` },
+        { label: "DEF", displayName: "Defense", judge: `EV: ${activePokemonDetails.evDefense}` },
+        { label: "SPD", displayName: "Speed", judge: `EV: ${activePokemonDetails.evSpeed}` },
+        { label: "SpD", displayName: "Sp. Def", judge: `EV: ${activePokemonDetails.evSpecialDefense}` },
+        { label: "SpA", displayName: "Sp. Atk", judge: `EV: ${activePokemonDetails.evSpecialAttack}` },
+      ]
     : [];
 
   const handleOpenMoveManager = () => {
@@ -893,10 +1070,7 @@ const PCStorage: React.FC = () => {
         {/* ── Header ── */}
         <S.StorageHeader className="pxl-border no-inset">
           <div className="title-section">
-            <Text as="h1" variant="outlined" size="xl">Pokémon PC Storage</Text>
-            <Text as="p" variant="darker" size="sm">
-              Click · Hold&amp;Drag to move · Ctrl+Click multi-select · Shift+Click range
-            </Text>
+            <Text as="h1" variant="outlined" size="xl" color="yellow">Pokémon PC Storage</Text>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
             <S.KeyboardInfoBtn className="pxl-border" onClick={() => setShowHelp(true)}>
@@ -918,13 +1092,15 @@ const PCStorage: React.FC = () => {
             <S.PartySlotsContainer>
               {Array.from({ length: 6 }).map((_, idx) => {
                 const poke = partyPokemons.find((p) => p.slotIndex === idx);
-                const isSel       = poke?.id === selectedPokemon?.id;
-                const isMultiSel  = poke ? multiSelectedIds.has(poke.id) : false;
+                const isSel = !!poke && !!(
+                  (hoveredPokemon && poke.id === hoveredPokemon.id) ||
+                  (!hoveredPokemon && selectedPokemon && poke.id === selectedPokemon.id)
+                );
+                const isMultiSel = poke ? multiSelectedIds.has(poke.id) : false;
                 return (
                   <S.PartySlot
                     key={`party-${idx}`}
                     isEmpty={!poke}
-                    isHovered={false}
                     isDraggingOver={(heldPokemon !== null || heldGroup !== null) && !poke}
                     isSelected={isSel}
                     isMultiSelected={isMultiSel}
@@ -932,6 +1108,16 @@ const PCStorage: React.FC = () => {
                     onMouseUp={() => handleSlotMouseUp(idx, true)}
                     onClick={(e) => handleSlotClick(e, idx, true)}
                     onContextMenu={(e) => poke && handleRightClickSlot(e, poke)}
+                    onMouseEnter={() => {
+                      if (poke && !heldPokemon && !heldGroup) {
+                        setHoveredPokemon(poke);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (!heldPokemon && !heldGroup) {
+                        setHoveredPokemon(null);
+                      }
+                    }}
                   >
                     <span className="index-tag">SLOT {idx + 1}</span>
                     {poke ? (
@@ -959,13 +1145,25 @@ const PCStorage: React.FC = () => {
                 <button className="box-action-btn pxl-border" onClick={handlePrevBox}>
                   <IconArrowLeft size={18} />
                 </button>
-                <Text
-                  as="h3" variant="outlined" size="lg"
-                  onClick={handleRenameBox}
-                  style={{ cursor: "pointer", minWidth: "120px", textAlign: "center" }}
-                >
-                  {activeBox?.name ?? `Box ${currentBoxIndex + 1}`}
-                </Text>
+                {isEditingBoxName ? (
+                  <S.BoxRenameInput
+                    className="box-rename-input"
+                    type="text"
+                    value={editingBoxName}
+                    onChange={(e) => setEditingBoxName(e.target.value)}
+                    onBlur={handleSaveBoxRename}
+                    onKeyDown={handleBoxRenameKeyDown}
+                    autoFocus
+                    maxLength={15}
+                  />
+                ) : (
+                  <Text
+                    as="h3" variant="outlined" size="lg"
+                    onClick={handleStartBoxRename}
+                  >
+                    {activeBox?.name ?? `Box ${currentBoxIndex + 1}`}
+                  </Text>
+                )}
                 <button className="box-action-btn pxl-border" onClick={handleNextBox}>
                   <IconArrowRight size={18} />
                 </button>
@@ -978,18 +1176,29 @@ const PCStorage: React.FC = () => {
             <S.BoxGridContainer
               ref={gridContainerRef}
               bgUrl={activeBox ? getBoxBgUrl(activeBox.backgroundImage) : ""}
+              onMouseDown={handleGridMouseDown}
             >
+              {isDragSelecting && dragSelectStart && dragSelectCurrent && (
+                <S.SelectionRectangle
+                  startX={Math.min(dragSelectStart.x, dragSelectCurrent.x)}
+                  startY={Math.min(dragSelectStart.y, dragSelectCurrent.y)}
+                  width={Math.abs(dragSelectStart.x - dragSelectCurrent.x)}
+                  height={Math.abs(dragSelectStart.y - dragSelectCurrent.y)}
+                />
+              )}
               {Array.from({ length: 30 }).map((_, slotIdx) => {
-                const poke        = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
-                const isSel       = poke?.id === selectedPokemon?.id;
-                const isMultiSel  = poke ? multiSelectedIds.has(poke.id) : false;
-                const isDimmed    = !!(searchQuery && poke && !matchesSearch(poke));
-                const compareIdx  = poke ? [...multiSelectedIds].indexOf(poke.id) : -1;
+                const poke = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+                const isSel = !!poke && !!(
+                  (hoveredPokemon && poke.id === hoveredPokemon.id) ||
+                  (!hoveredPokemon && selectedPokemon && poke.id === selectedPokemon.id)
+                );
+                const isMultiSel = poke ? multiSelectedIds.has(poke.id) : false;
+                const isDimmed = !!(searchQuery && poke && !matchesSearch(poke));
+                const compareIdx = poke ? [...multiSelectedIds].indexOf(poke.id) : -1;
                 return (
                   <S.BoxSlotCell
                     key={`box-slot-${slotIdx}`}
                     isEmpty={!poke}
-                    isHovered={false}
                     isDraggingOver={(heldPokemon !== null || heldGroup !== null) && !poke}
                     isDimmed={isDimmed}
                     isHighlighted={isMultiSel}
@@ -1002,6 +1211,16 @@ const PCStorage: React.FC = () => {
                     onMouseUp={() => handleSlotMouseUp(slotIdx, false)}
                     onClick={(e) => handleSlotClick(e, slotIdx, false)}
                     onContextMenu={(e) => poke && handleRightClickSlot(e, poke)}
+                    onMouseEnter={() => {
+                      if (poke && !heldPokemon && !heldGroup) {
+                        setHoveredPokemon(poke);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (!heldPokemon && !heldGroup) {
+                        setHoveredPokemon(null);
+                      }
+                    }}
                   >
                     {poke && (
                       <>
@@ -1199,38 +1418,46 @@ const PCStorage: React.FC = () => {
                 {/* Tab 2: Moves */}
                 {activeMainTab === "moves" && (
                   <S.MovesTabContainer>
-                    <S.MovesGrid>
-                      {currentMoves.map((move, idx) => {
-                        const typeColor = TYPE_COLORS[move.type?.toLowerCase() || "normal"] || "#888";
-                        return (
-                          <S.MoveItemCard key={`${move.name}-${idx}`} typeColor={typeColor}>
-                            <div className="move-header">
-                              <span className="move-name">{move.localizedName || move.name}</span>
-                              <span className="pp-val">PP {move.pp || "—"}/{move.pp || "—"}</span>
-                            </div>
-                            <S.MoveMetaRow>
-                              <span className="type-badge" style={{ backgroundColor: typeColor }}>
-                                {move.type}
-                              </span>
-                              <span className={`class-badge ${move.damageClass}`}>
-                                {move.damageClass}
-                              </span>
-                              <span className="power-acc">
-                                Power: {move.power || "—"}  Acc: {move.accuracy || "—"}%
-                              </span>
-                            </S.MoveMetaRow>
-                          </S.MoveItemCard>
-                        );
-                      })}
-                      {currentMoves.length === 0 && (
-                        <span style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", padding: "12px" }}>
-                          No moves learned yet.
-                        </span>
-                      )}
-                    </S.MovesGrid>
-                    <S.ManageMovesBtn className="pxl-border" onClick={handleOpenMoveManager}>
-                      Manage Moves
-                    </S.ManageMovesBtn>
+                    {isCoreLoading ? (
+                      <div style={{ textAlign: "center", padding: "24px", fontFamily: '"Press Start 2P", monospace', fontSize: "0.7rem", color: "#64748b" }}>
+                        Loading moves...
+                      </div>
+                    ) : (
+                      <>
+                        <S.MovesGrid>
+                          {currentMoves.map((move, idx) => {
+                            const typeColor = TYPE_COLORS[move.type?.toLowerCase() || "normal"] || "#888";
+                            return (
+                              <S.MoveItemCard key={`${move.name}-${idx}`} typeColor={typeColor}>
+                                <div className="move-header">
+                                  <span className="move-name">{move.localizedName || move.name}</span>
+                                  <span className="pp-val">PP {move.pp || "—"}/{move.pp || "—"}</span>
+                                </div>
+                                <S.MoveMetaRow>
+                                  <span className="type-badge" style={{ backgroundColor: typeColor }}>
+                                    {move.type}
+                                  </span>
+                                  <span className={`class-badge ${move.damageClass}`}>
+                                    {move.damageClass}
+                                  </span>
+                                  <span className="power-acc">
+                                    Power: {move.power || "—"}  Acc: {move.accuracy || "—"}%
+                                  </span>
+                                </S.MoveMetaRow>
+                              </S.MoveItemCard>
+                            );
+                          })}
+                          {currentMoves.length === 0 && (
+                            <span style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", padding: "12px" }}>
+                              No moves learned yet.
+                            </span>
+                          )}
+                        </S.MovesGrid>
+                        <S.ManageMovesBtn className="pxl-border" onClick={handleOpenMoveManager}>
+                          Manage Moves
+                        </S.ManageMovesBtn>
+                      </>
+                    )}
                   </S.MovesTabContainer>
                 )}
 
@@ -1579,13 +1806,13 @@ const PCStorage: React.FC = () => {
             Markings
           </div>
           <div style={{ display: "flex", gap: "2px", padding: "0 6px 4px" }}>
-            {(["circle","triangle","square","heart","star"] as const).map((m, i) => (
+            {(["circle", "triangle", "square", "heart", "star"] as const).map((m, i) => (
               <button
                 key={m}
                 style={{ background: "transparent", border: "none", color: "#334155", padding: "2px", cursor: "pointer", fontSize: "1.1rem" }}
                 onClick={() => handleToggleMarking(contextMenu.pokemon, m)}
               >
-                {["●","▲","■","♥","★"][i]}
+                {["●", "▲", "■", "♥", "★"][i]}
               </button>
             ))}
           </div>
@@ -1617,9 +1844,9 @@ const PCStorage: React.FC = () => {
                     </Text>
                     <div className="details">
                       {[
-                        { label: "Level",    val: p.currentLevel },
-                        { label: "Nature",   val: p.natureDisplay },
-                        { label: "Gender",   val: p.genderDisplay },
+                        { label: "Level", val: p.currentLevel },
+                        { label: "Nature", val: p.natureDisplay },
+                        { label: "Gender", val: p.genderDisplay },
                         { label: "Win Rate", val: `${p.winRate}%` },
                       ].map(({ label, val }) => (
                         <div className="detail-row" key={label}>
@@ -1629,12 +1856,12 @@ const PCStorage: React.FC = () => {
                       ))}
                       <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                         {[
-                          { name: "HP",       a: p.calculatedHp,            b: other.calculatedHp },
-                          { name: "Attack",   a: p.calculatedAttack,        b: other.calculatedAttack },
-                          { name: "Defense",  a: p.calculatedDefense,       b: other.calculatedDefense },
-                          { name: "Sp. Atk",  a: p.calculatedSpecialAttack, b: other.calculatedSpecialAttack },
-                          { name: "Sp. Def",  a: p.calculatedSpecialDefense,b: other.calculatedSpecialDefense },
-                          { name: "Speed",    a: p.calculatedSpeed,         b: other.calculatedSpeed },
+                          { name: "HP", a: p.calculatedHp, b: other.calculatedHp },
+                          { name: "Attack", a: p.calculatedAttack, b: other.calculatedAttack },
+                          { name: "Defense", a: p.calculatedDefense, b: other.calculatedDefense },
+                          { name: "Sp. Atk", a: p.calculatedSpecialAttack, b: other.calculatedSpecialAttack },
+                          { name: "Sp. Def", a: p.calculatedSpecialDefense, b: other.calculatedSpecialDefense },
+                          { name: "Speed", a: p.calculatedSpeed, b: other.calculatedSpeed },
                         ].map(({ name, a, b }) => (
                           <S.StatCompareRow key={name}>
                             <div className="stat-label">
@@ -1696,16 +1923,16 @@ const PCStorage: React.FC = () => {
             </Text>
             <div className="shortcuts-grid">
               {[
-                { desc: "Select Pokémon · show details",       key: "Click" },
+                { desc: "Select Pokémon · show details", key: "Click" },
                 { desc: "Multi-select (group move / compare)", key: "Ctrl+Click" },
-                { desc: "Range select",                        key: "Shift+Click" },
-                { desc: "Move / swap Pokémon",                 key: "Hold & Drag" },
-                { desc: "Drop to party slot 1–6",             key: "1 – 6" },
-                { desc: "Navigate Boxes",                      key: "← / → / A / D" },
-                { desc: "Open Box List",                       key: "B" },
-                { desc: "Compare (2 selected)",                key: "C" },
-                { desc: "Focus Search",                        key: "F / S" },
-                { desc: "Cancel / Close",                      key: "ESC" },
+                { desc: "Range select", key: "Shift+Click" },
+                { desc: "Move / swap Pokémon", key: "Hold & Drag" },
+                { desc: "Drop to party slot 1–6", key: "1 – 6" },
+                { desc: "Navigate Boxes", key: "← / → / A / D" },
+                { desc: "Open Box List", key: "B" },
+                { desc: "Compare (2 selected)", key: "C" },
+                { desc: "Focus Search", key: "F / S" },
+                { desc: "Cancel / Close", key: "ESC" },
               ].map(({ desc, key }) => (
                 <div className="shortcut-row" key={key}>
                   <span className="desc">{desc}</span>

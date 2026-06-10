@@ -568,18 +568,21 @@ function transformSpeciesDataFromRest(
 export function usePokemonCore(
   name: string,
   languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
+  options?: { enabled?: boolean }
 ) {
+  const isEnabled = options?.enabled ?? true;
+
   // Query 1: Pokemon Detail - fetches immediately
   const detailQuery = useQuery({
     queryKey: ["pokemon", "detail", name, languageId],
     queryFn: () => pokemonGraphQLService.getPokemonDetail(name, languageId),
-    enabled: !!name,
+    enabled: isEnabled && !!name,
   });
 
   const restDetailQuery = useQuery({
     queryKey: ["pokemon", "detail-rest", name],
     queryFn: () => pokemonService.getPokemonDetail(name),
-    enabled: !!name && !detailQuery.data,
+    enabled: isEnabled && !!name && !detailQuery.data,
   });
 
   // Extract speciesId from detail data
@@ -590,13 +593,13 @@ export function usePokemonCore(
     queryKey: ["pokemon", "species", speciesId, languageId],
     queryFn: () =>
       pokemonGraphQLService.getPokemonSpecies(speciesId!, languageId),
-    enabled: !!speciesId,
+    enabled: isEnabled && !!speciesId,
   });
 
   const restSpeciesQuery = useQuery({
     queryKey: ["pokemon", "species-rest", name],
     queryFn: () => speciesService.getPokemonSpecies(name),
-    enabled: !!name && !speciesQuery.data,
+    enabled: isEnabled && !!name && !speciesQuery.data,
   });
 
   // Transform data using memoization
