@@ -1163,14 +1163,16 @@ const PCStorage: React.FC = () => {
           <div className="title-section">
             <Text as="h1" variant="outlined" size="xl" color="yellow">Pokémon PC Storage</Text>
           </div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <S.KeyboardInfoBtn className="pxl-border" onClick={() => setShowHelp(true)}>
-              <IconHelp size={16} /> Help
+          <S.HeaderActions>
+            <S.KeyboardInfoBtn onClick={() => setShowHelp(true)} title="Help">
+              <IconHelp size={18} />
+              <span className="btn-text">Help</span>
             </S.KeyboardInfoBtn>
-            <S.KeyboardInfoBtn className="pxl-border" onClick={() => setShowBoxList(true)}>
-              <IconLayout size={16} /> Boxes (B)
+            <S.KeyboardInfoBtn onClick={() => setShowBoxList(true)} title="Boxes (B)">
+              <IconLayout size={18} />
+              <span className="btn-text">Boxes (B)</span>
             </S.KeyboardInfoBtn>
-          </div>
+          </S.HeaderActions>
         </S.StorageHeader>
 
         <S.Workspace>
@@ -1451,14 +1453,15 @@ const PCStorage: React.FC = () => {
                   <S.StatusTabContainer>
                     <S.HpBarWrapper>
                       {(() => {
-                        const hpPercent = Math.min(100, Math.max(0, (activePokemonDetails.currentHp / activePokemonDetails.maxHp) * 100));
+                        const hpPercent = Math.min(100, Math.max(0, activePokemonDetails.currentHp));
+                        const currentHpPoints = Math.round((hpPercent / 100) * activePokemonDetails.maxHp);
                         let hpColor = "#10b981"; // green >50%
                         if (hpPercent <= 20) hpColor = "#ef4444"; // red <=20%
                         else if (hpPercent <= 50) hpColor = "#f59e0b"; // yellow <=50%
                         return (
                           <>
                             <S.HpBarInner percent={hpPercent} colorCode={hpColor} />
-                            <S.HpBarText>{activePokemonDetails.currentHp} / {activePokemonDetails.maxHp} HP</S.HpBarText>
+                            <S.HpBarText>{currentHpPoints} / {activePokemonDetails.maxHp} HP</S.HpBarText>
                           </>
                         );
                       })()}
@@ -1570,32 +1573,35 @@ const PCStorage: React.FC = () => {
                 {activeMainTab === "stats" && (
                   <S.StatsTabContainer>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {[
-                        { label: "HP", key: "HP", val: activePokemonDetails.calculatedHp, base: activePokemonDetails.baseHp, isHp: true },
-                        { label: "Attack", key: "ATK", val: activePokemonDetails.calculatedAttack, base: activePokemonDetails.baseAttack, isHp: false },
-                        { label: "Defense", key: "DEF", val: activePokemonDetails.calculatedDefense, base: activePokemonDetails.baseDefense, isHp: false },
-                        { label: "Sp. Atk", key: "SpA", val: activePokemonDetails.calculatedSpecialAttack, base: activePokemonDetails.baseSpecialAttack, isHp: false },
-                        { label: "Sp. Def", key: "SpD", val: activePokemonDetails.calculatedSpecialDefense, base: activePokemonDetails.baseSpecialDefense, isHp: false },
-                        { label: "Speed", key: "SPD", val: activePokemonDetails.calculatedSpeed, base: activePokemonDetails.baseSpeed, isHp: false },
-                      ].map((s) => {
-                        const maxVal = getMaxStatAtCurrentLevel(s.base, activePokemonDetails.currentLevel, s.isHp);
-                        const percent = Math.min(100, Math.max(0, (s.val / maxVal) * 100));
-                        const textColor = getStatColor(s.key);
-                        return (
-                          <S.StatBarRow key={s.label}>
-                            <S.StatLabelRow textColor={textColor}>
-                              <span className="stat-name">{s.label}</span>
-                              <span className="stat-values">
-                                <span className="curr">{s.val}</span>
-                                <span className="max">/{maxVal}</span>
-                              </span>
-                            </S.StatLabelRow>
-                            <S.StatBarWrapper>
-                              <S.StatBarInner percent={percent} color={textColor} />
-                            </S.StatBarWrapper>
-                          </S.StatBarRow>
-                        );
-                      })}
+                      {(() => {
+                        const currentHpPoints = Math.round((Math.min(100, Math.max(0, activePokemonDetails.currentHp)) / 100) * activePokemonDetails.maxHp);
+                        return [
+                          { label: "HP", key: "HP", val: currentHpPoints, maxDisplay: activePokemonDetails.maxHp, base: activePokemonDetails.baseHp, isHp: true },
+                          { label: "Attack", key: "ATK", val: activePokemonDetails.calculatedAttack, base: activePokemonDetails.baseAttack, isHp: false },
+                          { label: "Defense", key: "DEF", val: activePokemonDetails.calculatedDefense, base: activePokemonDetails.baseDefense, isHp: false },
+                          { label: "Sp. Atk", key: "SpA", val: activePokemonDetails.calculatedSpecialAttack, base: activePokemonDetails.baseSpecialAttack, isHp: false },
+                          { label: "Sp. Def", key: "SpD", val: activePokemonDetails.calculatedSpecialDefense, base: activePokemonDetails.baseSpecialDefense, isHp: false },
+                          { label: "Speed", key: "SPD", val: activePokemonDetails.calculatedSpeed, base: activePokemonDetails.baseSpeed, isHp: false },
+                        ].map((s) => {
+                          const maxVal = getMaxStatAtCurrentLevel(s.base, activePokemonDetails.currentLevel, s.isHp);
+                          const percent = Math.min(100, Math.max(0, (s.val / maxVal) * 100));
+                          const textColor = getStatColor(s.key);
+                          return (
+                            <S.StatBarRow key={s.label}>
+                              <S.StatLabelRow textColor={textColor}>
+                                <span className="stat-name">{s.label}</span>
+                                <span className="stat-values">
+                                  <span className="curr">{s.val}</span>
+                                  <span className="max">/{s.isHp ? s.maxDisplay : maxVal}</span>
+                                </span>
+                              </S.StatLabelRow>
+                              <S.StatBarWrapper>
+                                <S.StatBarInner percent={percent} color={textColor} />
+                              </S.StatBarWrapper>
+                            </S.StatBarRow>
+                          );
+                        });
+                      })()}
                     </div>
 
                     <S.RadarToggleBtn className="pxl-border" onClick={() => setShowRadarChart(!showRadarChart)}>

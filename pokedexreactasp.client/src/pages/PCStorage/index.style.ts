@@ -29,8 +29,11 @@ export const StorageHeader = styled("header")({
       fontSize: "2.8rem",
       textTransform: "uppercase",
       letterSpacing: "1px",
-      "@media (max-width: 767px)": {
-        fontSize: "1.8rem",
+      "@media (max-width: 1023px)": {
+        fontSize: "2rem",
+      },
+      "@media (max-width: 639px)": {
+        fontSize: "1.4rem",
       },
     },
     p: {
@@ -41,12 +44,9 @@ export const StorageHeader = styled("header")({
       letterSpacing: "0.02em",
     },
   },
-  "@media (max-width: 767px)": {
-    flexDirection: "column",
-    gap: "14px",
-    alignItems: "center",
-    textAlign: "center",
-    padding: "14px 16px",
+  "@media (max-width: 1023px)": {
+    padding: "12px 16px",
+    gap: "12px",
   },
 });
 
@@ -55,9 +55,8 @@ export const HeaderActions = styled("div")({
   gap: "12px",
   alignItems: "center",
   justifyContent: "flex-end",
-  "@media (max-width: 767px)": {
-    width: "100%",
-    justifyContent: "center",
+  "@media (max-width: 1023px)": {
+    gap: "16px",
   },
 });
 
@@ -73,12 +72,15 @@ export const KeyboardInfoBtn = styled("button")({
   gap: "10px",
   padding: "10px 16px",
   minHeight: "44px",
+  border: "3px solid #0f172a",
+  boxShadow: "3px 3px 0px #0f172a",
+  borderRadius: "2px",
   transition: "all 0.12s cubic-bezier(0.4, 0, 0.2, 1)",
   cursor: "pointer",
   textTransform: "uppercase",
   whiteSpace: "nowrap",
-  boxShadow: "3px 3px 0px #0f172a",
   position: "relative",
+  
   "&:hover": {
     background: "#facc15",
     transform: "translateY(-2px)",
@@ -90,22 +92,38 @@ export const KeyboardInfoBtn = styled("button")({
   },
   svg: {
     color: "#475569",
-    transition: "transform 0.2s ease",
+    transition: "transform 0.2s ease, color 0.2s ease",
   },
   "&:hover svg": {
     transform: "scale(1.1)",
     color: "#0f172a",
   },
-  "@media (max-width: 639px)": {
-    padding: "8px",
-    minWidth: "44px",
-    minHeight: "44px",
+
+  // On medium and small screens: No button border/background, keep only raw icons on the same row!
+  "@media (max-width: 1023px)": {
+    background: "none",
+    border: "none",
+    boxShadow: "none",
+    padding: 0,
+    minHeight: "auto",
+    minWidth: "auto",
+    transform: "none !important",
+    "&:hover": {
+      background: "none",
+      transform: "none",
+      boxShadow: "none",
+    },
     ".btn-text": {
       display: "none",
     },
     svg: {
-      width: "18px",
-      height: "18px",
+      width: "24px",
+      height: "24px",
+      color: "#0f172a",
+    },
+    "&:hover svg": {
+      transform: "scale(1.15)",
+      color: "#facc15",
     },
   },
 });
@@ -168,25 +186,25 @@ export const PartySlot = styled("div")<{
   border: isMultiSelected
     ? "3px solid #0f172a"
     : isSelected
-    ? "3px solid #0f172a"
-    : isDraggingOver
-    ? "2.5px dashed #3b82f6"
-    : "2px solid rgba(15, 23, 42, 0.08)",
+      ? "3px solid #0f172a"
+      : isDraggingOver
+        ? "2.5px dashed #3b82f6"
+        : "2px solid rgba(15, 23, 42, 0.08)",
   background: isMultiSelected
     ? "rgba(254, 240, 138, 0.85)"
     : isSelected
-    ? "#eff6ff"
-    : isDraggingOver
-    ? "rgba(59, 130, 246, 0.03)"
-    : isEmpty
-    ? "rgba(15, 23, 42, 0.01)"
-    : "#ffffff",
+      ? "#eff6ff"
+      : isDraggingOver
+        ? "rgba(59, 130, 246, 0.03)"
+        : isEmpty
+          ? "rgba(15, 23, 42, 0.01)"
+          : "#ffffff",
   // Removed background Pokéball watermarks
   boxShadow: isMultiSelected
     ? "3px 3px 0px #ef4444"
     : isSelected
-    ? "3px 3px 0px #0f172a"
-    : "none",
+      ? "3px 3px 0px #0f172a"
+      : "none",
   display: "flex",
   alignItems: "center",
   padding: "8px 12px",
@@ -202,18 +220,18 @@ export const PartySlot = styled("div")<{
     background: isEmpty
       ? "rgba(15, 23, 42, 0.03)"
       : isSelected
-      ? "#eff6ff"
-      : isMultiSelected
-      ? "#fef08a"
-      : "#f8fafc",
+        ? "#eff6ff"
+        : isMultiSelected
+          ? "#fef08a"
+          : "#f8fafc",
     borderColor: isEmpty ? "rgba(15, 23, 42, 0.08)" : "#0f172a",
     boxShadow: isEmpty
       ? "none"
       : isSelected
-      ? "3px 5px 0px #0f172a"
-      : isMultiSelected
-      ? "3px 5px 0px #ef4444"
-      : "3px 3px 0px rgba(15, 23, 42, 0.15)",
+        ? "3px 5px 0px #0f172a"
+        : isMultiSelected
+          ? "3px 5px 0px #ef4444"
+          : "3px 3px 0px rgba(15, 23, 42, 0.15)",
   },
   ".index-tag": {
     position: "absolute",
@@ -274,8 +292,8 @@ export const PartySlot = styled("div")<{
       display: "none",
     },
     ".sprite": {
-      width: "36px",
-      height: "36px",
+      width: "48px",
+      height: "48px",
     },
     ".shiny-sparkle": {
       position: "absolute",
@@ -475,23 +493,23 @@ export const BoxSlotCell = styled("div")<{
   border: isCompareSelected
     ? "2.5px solid #7c3aed"
     : isSelected
-    ? "2.5px solid #0f172a"
-    : isDraggingOver
-    ? "2px dashed #0f172a"
-    : isHighlighted
-    ? "2.5px solid #0f172a"
-    : "1px solid rgba(148, 163, 184, 0.15)",
+      ? "2.5px solid #0f172a"
+      : isDraggingOver
+        ? "2px dashed #0f172a"
+        : isHighlighted
+          ? "2.5px solid #0f172a"
+          : "1px solid rgba(148, 163, 184, 0.15)",
   background: isCompareSelected
     ? "rgba(124, 58, 237, 0.08)"
     : isSelected
-    ? "#eff6ff"
-    : isDraggingOver
-    ? "rgba(15, 23, 42, 0.03)"
-    : isHighlighted
-    ? "rgba(254, 240, 138, 0.85)"
-    : isEmpty
-    ? "rgba(255, 255, 255, 0.35)"
-    : "rgba(255, 255, 255, 0.85)",
+      ? "#eff6ff"
+      : isDraggingOver
+        ? "rgba(15, 23, 42, 0.03)"
+        : isHighlighted
+          ? "rgba(254, 240, 138, 0.85)"
+          : isEmpty
+            ? "rgba(255, 255, 255, 0.35)"
+            : "rgba(255, 255, 255, 0.85)",
   // Removed background Pokéball watermarks
   backdropFilter: "blur(4px)",
   display: "flex",
@@ -505,12 +523,12 @@ export const BoxSlotCell = styled("div")<{
   boxShadow: isCompareSelected
     ? "2.5px 2.5px 0px #7c3aed"
     : isSelected
-    ? "none"
-    : isHighlighted
-    ? "2.5px 2.5px 0px #ef4444"
-    : isShiny && !isEmpty
-    ? "inset 0 0 6px rgba(251, 191, 36, 0.2)"
-    : "none",
+      ? "none"
+      : isHighlighted
+        ? "2.5px 2.5px 0px #ef4444"
+        : isShiny && !isEmpty
+          ? "inset 0 0 6px rgba(251, 191, 36, 0.2)"
+          : "none",
   transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
   "&:active": {
     cursor: isEmpty ? "default" : "grabbing",
@@ -520,24 +538,24 @@ export const BoxSlotCell = styled("div")<{
     background: isEmpty
       ? "rgba(255, 255, 255, 0.55)"
       : isSelected
-      ? "#eff6ff"
-      : isHighlighted
-      ? "#fef08a"
-      : "#ffffff",
+        ? "#eff6ff"
+        : isHighlighted
+          ? "#fef08a"
+          : "#ffffff",
     borderColor: isEmpty ? "rgba(148, 163, 184, 0.15)" : "#0f172a",
     boxShadow: isEmpty
       ? "none"
       : isSelected
-      ? "none"
-      : isHighlighted
-      ? "2.5px 4.5px 0px #ef4444"
-      : "2px 4px 0px rgba(15, 23, 42, 0.15)",
+        ? "none"
+        : isHighlighted
+          ? "2.5px 4.5px 0px #ef4444"
+          : "2px 4px 0px rgba(15, 23, 42, 0.15)",
     zIndex: 10,
   },
   ".sprite": {
-    width: "90%",
-    height: "90%",
-    maxHeight: "60px",
+    width: "95%",
+    height: "95%",
+    maxHeight: "68px",
     objectFit: "contain",
     imageRendering: "pixelated",
     filter: isDimmed ? "grayscale(80%)" : "none",
@@ -553,6 +571,9 @@ export const BoxSlotCell = styled("div")<{
     fontSize: "7px",
     fontFamily: '"Press Start 2P", monospace',
     color: "#0f172a",
+    "@media (max-width: 639px)": {
+      display: "none",
+    },
   },
   ".markings-dots": {
     position: "absolute",
@@ -2098,29 +2119,29 @@ export const ActiveMoveSlot = styled("div")<{ isEmpty: boolean; typeColor?: stri
   gap: "6px",
   ...(isEmpty
     ? {
-        border: "3px dashed #cbd5e1",
-        background: "rgba(15, 23, 42, 0.02)",
-        alignItems: "center",
-        color: "#94a3b8",
-        fontSize: "0.6rem",
-        fontFamily: '"Press Start 2P", monospace',
-        textTransform: "uppercase",
-        cursor: "default",
-      }
+      border: "3px dashed #cbd5e1",
+      background: "rgba(15, 23, 42, 0.02)",
+      alignItems: "center",
+      color: "#94a3b8",
+      fontSize: "0.6rem",
+      fontFamily: '"Press Start 2P", monospace',
+      textTransform: "uppercase",
+      cursor: "default",
+    }
     : {
-        border: "2px solid #0f172a", // Retro outline
-        borderLeft: `6px solid ${typeColor || "#888"}`,
-        background: "#ffffff",
-        cursor: "pointer",
-        "&:hover": {
-          borderColor: "#ef4444",
-          background: "rgba(239, 68, 68, 0.03)",
-          ".remove-indicator": {
-            opacity: 1,
-            transform: "scale(1)",
-          },
+      border: "2px solid #0f172a", // Retro outline
+      borderLeft: `6px solid ${typeColor || "#888"}`,
+      background: "#ffffff",
+      cursor: "pointer",
+      "&:hover": {
+        borderColor: "#ef4444",
+        background: "rgba(239, 68, 68, 0.03)",
+        ".remove-indicator": {
+          opacity: 1,
+          transform: "scale(1)",
         },
-      }),
+      },
+    }),
   ".active-move-header": {
     display: "flex",
     justifyContent: "space-between",
@@ -2232,12 +2253,12 @@ export const PixelCheckbox = styled("div")<{ checked: boolean }>(({ checked }) =
   flexShrink: 0,
   "&::after": checked
     ? {
-        content: '"✓"',
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: "8px",
-        color: "#ffffff",
-        fontWeight: "bold",
-      }
+      content: '"✓"',
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "8px",
+      color: "#ffffff",
+      fontWeight: "bold",
+    }
     : {},
 }));
 
