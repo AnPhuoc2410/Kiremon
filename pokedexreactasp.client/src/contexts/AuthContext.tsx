@@ -12,7 +12,9 @@ import { getMemoryToken, setMemoryToken } from "@/services/api/tokenHolder";
 import { presenceHub } from "@/services/signalr/presence.hub";
 import { AchievementToast } from "@/components/achievements/AchievementToast";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "/api";
 const ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 const parseStoredUser = (storedUserCookie: string | null): AuthUser | null => {

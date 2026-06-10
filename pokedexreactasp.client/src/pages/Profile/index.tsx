@@ -19,7 +19,7 @@ import { collectionService, friendService } from "@/services";
 import * as S from "./index.style";
 import toast from "react-hot-toast";
 import { UserProfile, UserAchievement } from "@/types/users.type";
-import { IconTrophy, IconCoin } from "@tabler/icons-react";
+import { IconTrophy, IconCoin, IconChevronDown } from "@tabler/icons-react";
 import {
   FriendDto,
   FriendRequestDto,
@@ -683,6 +683,16 @@ const Profile: React.FC = () => {
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [achievementsLoading, setAchievementsLoading] = useState(false);
   const [achievementsSubTab, setAchievementsSubTab] = useState<string>("all");
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<string, boolean>
+  >({});
+
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
 
   // My Pokemon state
   const [pokemons, setPokemons] = useState<
@@ -2008,198 +2018,275 @@ const Profile: React.FC = () => {
                       </S.AchievementStatCard>
                     </S.StatsDashboard>
 
-                    {/* Achievements Sub-Tabs */}
-                    <S.AchievementsSubTabContainer>
-                      <S.AchievementsSubTab
-                        $active={achievementsSubTab === "all"}
-                        onClick={() => setAchievementsSubTab("all")}
-                      >
-                        All ({achievements.length})
-                      </S.AchievementsSubTab>
-                      {REGIONS.map((r) => (
+                    {/* Achievements Sub-Tabs*/}
+                    <S.SubTabsHeader>
+                      <S.AchievementsSubTabContainer>
                         <S.AchievementsSubTab
-                          key={r.id}
-                          $active={achievementsSubTab === r.id}
-                          onClick={() => setAchievementsSubTab(r.id)}
+                          $active={achievementsSubTab === "all"}
+                          onClick={() => setAchievementsSubTab("all")}
                         >
-                          {r.name} (
-                          {
-                            achievements.filter((a) => a.region === r.name)
-                              .length
-                          }
-                          )
+                          All ({achievements.length})
                         </S.AchievementsSubTab>
-                      ))}
-                      <S.AchievementsSubTab
-                        $active={achievementsSubTab === "progression"}
-                        onClick={() => setAchievementsSubTab("progression")}
-                      >
-                        General ({achievements.filter((a) => !a.region).length})
-                      </S.AchievementsSubTab>
-                    </S.AchievementsSubTabContainer>
-
-                    {/* Dynamic Regional Badges Grids */}
-                    {REGIONS.map((region) => {
-                      if (
-                        achievementsSubTab !== "all" &&
-                        achievementsSubTab !== region.id
-                      ) {
-                        return null;
-                      }
-
-                      const regionBadges = achievements.filter(
-                        (a) => a.region === region.name,
-                      );
-                      if (regionBadges.length === 0) return null;
-
-                      return (
-                        <div key={region.id} style={{ marginTop: "16px" }}>
-                          <S.SectionTitle
-                            style={{
-                              marginBottom: "16px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
+                        {REGIONS.map((r) => (
+                          <S.AchievementsSubTab
+                            key={r.id}
+                            $active={achievementsSubTab === r.id}
+                            onClick={() => setAchievementsSubTab(r.id)}
                           >
-                            <span
-                              style={{
-                                display: "inline-block",
-                                width: "8px",
-                                height: "16px",
-                                background: region.color,
-                              }}
-                            ></span>
-                            {region.name} Gym Badges
-                          </S.SectionTitle>
-                          <S.BadgesGrid>
-                            {regionBadges.map((badge) => (
-                              <S.BadgeCard
-                                key={badge.id}
-                                $unlocked={badge.isUnlocked}
-                                $rarity={badge.rarity}
-                              >
-                                <S.BadgeIconWrapper
-                                  $unlocked={badge.isUnlocked}
-                                >
-                                  {renderBadgeIcon(
-                                    badge.icon,
-                                    badge.isUnlocked,
-                                  )}
-                                </S.BadgeIconWrapper>
-                                <S.BadgeName>{badge.name}</S.BadgeName>
-                                <S.BadgeLeaderInfo>
-                                  {badge.description
-                                    .replace("Defeat Gym Leader ", "")
-                                    .replace("Defeat ", "")}
-                                </S.BadgeLeaderInfo>
-                                <S.BadgeStatusText $unlocked={badge.isUnlocked}>
-                                  {badge.isUnlocked ? `Unlocked` : "Locked"}
-                                </S.BadgeStatusText>
-                                {!badge.isUnlocked && (
-                                  <S.SimulateBattleBtn
-                                    onClick={() =>
-                                      handleSimulateBattle(badge.id)
-                                    }
-                                  >
-                                    Simulate Battle
-                                  </S.SimulateBattleBtn>
-                                )}
-                              </S.BadgeCard>
-                            ))}
-                          </S.BadgesGrid>
-                        </div>
-                      );
-                    })}
+                            {r.name} (
+                            {
+                              achievements.filter((a) => a.region === r.name)
+                                .length
+                            }
+                            )
+                          </S.AchievementsSubTab>
+                        ))}
+                        <S.AchievementsSubTab
+                          $active={achievementsSubTab === "progression"}
+                          onClick={() => setAchievementsSubTab("progression")}
+                        >
+                          General (
+                          {achievements.filter((a) => !a.region).length})
+                        </S.AchievementsSubTab>
+                      </S.AchievementsSubTabContainer>
 
-                    {/* General Achievements Bento Grid */}
-                    {(achievementsSubTab === "all" ||
-                      achievementsSubTab === "progression") && (
-                      <div style={{ marginTop: "16px" }}>
-                        <S.SectionTitle
+                      {achievementsSubTab === "all" && (
+                        <S.SmallButton
+                          onClick={() => {
+                            const allSections = [
+                              ...REGIONS.map((r) => r.id),
+                              "general",
+                            ];
+                            const anyExpanded = allSections.some(
+                              (id) => !collapsedSections[id],
+                            );
+
+                            const newCollapsed: Record<string, boolean> = {};
+                            allSections.forEach((id) => {
+                              newCollapsed[id] = anyExpanded;
+                            });
+                            setCollapsedSections(newCollapsed);
+                          }}
                           style={{
-                            marginBottom: "16px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
+                            marginBottom: "6px",
+                            flexShrink: 0,
                           }}
                         >
-                          <span
+                          {[...REGIONS.map((r) => r.id), "general"].some(
+                            (id) => !collapsedSections[id],
+                          )
+                            ? "Collapse All"
+                            : "Expand All"}
+                        </S.SmallButton>
+                      )}
+                    </S.SubTabsHeader>
+
+                    {/* Collapsible Sections Wrapper */}
+                    <S.RegionsWrapper>
+                      {/* Dynamic Regional Badges Grids */}
+                      {REGIONS.map((region) => {
+                        if (
+                          achievementsSubTab !== "all" &&
+                          achievementsSubTab !== region.id
+                        ) {
+                          return null;
+                        }
+
+                        const regionBadges = achievements.filter(
+                          (a) => a.region === region.name,
+                        );
+                        if (regionBadges.length === 0) return null;
+
+                        const isCollapsed = !!collapsedSections[region.id];
+
+                        return (
+                          <div
+                            key={region.id}
                             style={{
-                              display: "inline-block",
-                              width: "8px",
-                              height: "16px",
-                              background: "#eab308",
+                              marginBottom: isCollapsed ? "0px" : "16px",
                             }}
-                          ></span>
-                          General Achievements
-                        </S.SectionTitle>
-                        <S.AchievementsBentoGrid>
-                          {achievements
-                            .filter((a) => !a.region)
-                            .map((ach) => {
-                              const progressPercent =
-                                ach.targetValue > 0
-                                  ? (ach.currentProgress / ach.targetValue) *
-                                    100
-                                  : 0;
-                              return (
-                                <S.AchievementBentoCard
-                                  key={ach.id}
-                                  $unlocked={ach.isUnlocked}
-                                >
-                                  <S.AchievementBentoIcon
-                                    $unlocked={ach.isUnlocked}
-                                    $rarity={ach.rarity}
+                          >
+                            <S.RegionHeader
+                              onClick={() => toggleSection(region.id)}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    width: "8px",
+                                    height: "16px",
+                                    background: region.color,
+                                  }}
+                                ></span>
+                                <S.SectionTitle style={{ margin: 0 }}>
+                                  {region.name} Gym Badges
+                                </S.SectionTitle>
+                              </div>
+                              <S.ToggleIcon $isCollapsed={isCollapsed}>
+                                <IconChevronDown size={20} />
+                              </S.ToggleIcon>
+                            </S.RegionHeader>
+                            {!isCollapsed && (
+                              <S.BadgesGrid>
+                                {regionBadges.map((badge) => (
+                                  <S.BadgeCard
+                                    key={badge.id}
+                                    $unlocked={badge.isUnlocked}
+                                    $rarity={badge.rarity}
                                   >
-                                    {renderBadgeIcon(ach.icon, ach.isUnlocked)}
-                                  </S.AchievementBentoIcon>
-                                  <S.AchievementBentoContent>
-                                    <S.AchievementBentoHeader>
-                                      <S.AchievementTitle>
-                                        {ach.name}
-                                      </S.AchievementTitle>
-                                      <S.AchievementRarityBadge
+                                    <S.BadgeIconWrapper
+                                      $unlocked={badge.isUnlocked}
+                                    >
+                                      {renderBadgeIcon(
+                                        badge.icon,
+                                        badge.isUnlocked,
+                                      )}
+                                    </S.BadgeIconWrapper>
+                                    <S.BadgeName>{badge.name}</S.BadgeName>
+                                    <S.BadgeLeaderInfo>
+                                      {badge.description
+                                        .replace("Defeat Gym Leader ", "")
+                                        .replace("Defeat ", "")}
+                                    </S.BadgeLeaderInfo>
+                                    <S.BadgeStatusText
+                                      $unlocked={badge.isUnlocked}
+                                    >
+                                      {badge.isUnlocked ? `Unlocked` : "Locked"}
+                                    </S.BadgeStatusText>
+                                    {!badge.isUnlocked && (
+                                      <S.SimulateBattleBtn
+                                        onClick={() =>
+                                          handleSimulateBattle(badge.id)
+                                        }
+                                      >
+                                        Simulate Battle
+                                      </S.SimulateBattleBtn>
+                                    )}
+                                  </S.BadgeCard>
+                                ))}
+                              </S.BadgesGrid>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* General Achievements Bento Grid */}
+                      {(achievementsSubTab === "all" ||
+                        achievementsSubTab === "progression") && (
+                        <div
+                          style={{
+                            marginBottom: !!collapsedSections["general"]
+                              ? "0px"
+                              : "16px",
+                          }}
+                        >
+                          <S.RegionHeader
+                            onClick={() => toggleSection("general")}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  width: "8px",
+                                  height: "16px",
+                                  background: "#eab308",
+                                }}
+                              ></span>
+                              <S.SectionTitle style={{ margin: 0 }}>
+                                General Achievements
+                              </S.SectionTitle>
+                            </div>
+                            <S.ToggleIcon
+                              $isCollapsed={!!collapsedSections["general"]}
+                            >
+                              <IconChevronDown size={20} />
+                            </S.ToggleIcon>
+                          </S.RegionHeader>
+                          {!collapsedSections["general"] && (
+                            <S.AchievementsBentoGrid>
+                              {achievements
+                                .filter((a) => !a.region)
+                                .map((ach) => {
+                                  const progressPercent =
+                                    ach.targetValue > 0
+                                      ? (ach.currentProgress /
+                                          ach.targetValue) *
+                                        100
+                                      : 0;
+                                  return (
+                                    <S.AchievementBentoCard
+                                      key={ach.id}
+                                      $unlocked={ach.isUnlocked}
+                                    >
+                                      <S.AchievementBentoIcon
+                                        $unlocked={ach.isUnlocked}
                                         $rarity={ach.rarity}
                                       >
-                                        {ach.rarity}
-                                      </S.AchievementRarityBadge>
-                                    </S.AchievementBentoHeader>
-                                    <S.AchievementDesc>
-                                      {ach.description}
-                                    </S.AchievementDesc>
-                                    <S.AchievementFooter>
-                                      <S.AchievementProgressBarWrapper>
-                                        <S.AchievementProgressTrack>
-                                          <S.AchievementProgressFill
-                                            $percent={progressPercent}
-                                            $unlocked={ach.isUnlocked}
-                                          />
-                                        </S.AchievementProgressTrack>
-                                        <S.AchievementProgressText>
-                                          {Math.min(
-                                            ach.currentProgress,
-                                            ach.targetValue,
-                                          )}{" "}
-                                          / {ach.targetValue}
-                                        </S.AchievementProgressText>
-                                      </S.AchievementProgressBarWrapper>
-                                      <S.RewardCoinsWrapper>
-                                        <IconCoin
-                                          size={14}
-                                          fill="#F59E0B"
-                                          color="#D97706"
-                                        />
-                                        +{ach.rewardCoins}
-                                      </S.RewardCoinsWrapper>
-                                    </S.AchievementFooter>
-                                  </S.AchievementBentoContent>
-                                </S.AchievementBentoCard>
-                              );
-                            })}
-                        </S.AchievementsBentoGrid>
-                      </div>
-                    )}
+                                        {renderBadgeIcon(
+                                          ach.icon,
+                                          ach.isUnlocked,
+                                        )}
+                                      </S.AchievementBentoIcon>
+                                      <S.AchievementBentoContent>
+                                        <S.AchievementBentoHeader>
+                                          <S.AchievementTitle>
+                                            {ach.name}
+                                          </S.AchievementTitle>
+                                          <S.AchievementRarityBadge
+                                            $rarity={ach.rarity}
+                                          >
+                                            {ach.rarity}
+                                          </S.AchievementRarityBadge>
+                                        </S.AchievementBentoHeader>
+                                        <S.AchievementDesc>
+                                          {ach.description}
+                                        </S.AchievementDesc>
+                                        <S.AchievementFooter>
+                                          <S.AchievementProgressBarWrapper>
+                                            <S.AchievementProgressTrack>
+                                              <S.AchievementProgressFill
+                                                $percent={progressPercent}
+                                                $unlocked={ach.isUnlocked}
+                                              />
+                                            </S.AchievementProgressTrack>
+                                            <S.AchievementProgressText>
+                                              {Math.min(
+                                                ach.currentProgress,
+                                                ach.targetValue,
+                                              )}{" "}
+                                              / {ach.targetValue}
+                                            </S.AchievementProgressText>
+                                          </S.AchievementProgressBarWrapper>
+                                          <S.RewardCoinsWrapper>
+                                            <IconCoin
+                                              size={14}
+                                              fill="#F59E0B"
+                                              color="#D97706"
+                                            />
+                                            +{ach.rewardCoins}
+                                          </S.RewardCoinsWrapper>
+                                        </S.AchievementFooter>
+                                      </S.AchievementBentoContent>
+                                    </S.AchievementBentoCard>
+                                  );
+                                })}
+                            </S.AchievementsBentoGrid>
+                          )}
+                        </div>
+                      )}
+                    </S.RegionsWrapper>
                   </S.AchievementsContainer>
                 )}
               </>

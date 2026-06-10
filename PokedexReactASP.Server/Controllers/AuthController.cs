@@ -203,7 +203,7 @@ namespace PokedexReactASP.Server.Controllers
             var options = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !isDev && Request.IsHttps,
+                Secure = !isDev,
                 SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
                 Path = AuthCookiePath
             };
