@@ -335,7 +335,7 @@ export const BoxSlotCell = styled("div")<{
   boxShadow: isCompareSelected
     ? "2.5px 2.5px 0px #7c3aed"
     : isSelected
-    ? "2.5px 2.5px 0px #0f172a"
+    ? "none"
     : isHighlighted
     ? "2.5px 2.5px 0px #ef4444"
     : isShiny && !isEmpty
@@ -358,7 +358,7 @@ export const BoxSlotCell = styled("div")<{
     boxShadow: isEmpty
       ? "none"
       : isSelected
-      ? "2.5px 4.5px 0px #0f172a"
+      ? "none"
       : isHighlighted
       ? "2.5px 4.5px 0px #ef4444"
       : "2px 4px 0px rgba(15, 23, 42, 0.15)",
