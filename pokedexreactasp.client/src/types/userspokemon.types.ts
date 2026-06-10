@@ -85,6 +85,7 @@ export interface UserPokemonDto {
   spriteUrl: string;
   officialArtworkUrl: string | null;
   abilities: string[];
+  ability: string;
 
   // Base stats
   baseHp: number;
@@ -150,6 +151,7 @@ export interface CaughtPokemonDto {
   isLegendary: boolean;
   isMythical: boolean;
   isUltraBeast: boolean;
+  ability: string;
 }
 
 /**

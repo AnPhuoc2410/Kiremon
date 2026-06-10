@@ -1481,17 +1481,18 @@ const PCStorage: React.FC = () => {
                     </S.InfoGrid>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
-                      {activePokemonDetails.abilities && activePokemonDetails.abilities.map((abilityName) => {
-                        const desc = getAbilityDesc(abilityName);
-                        return (
-                          <S.AbilityPill key={abilityName}>
-                            <span className="label">Ability</span>
-                            <span className="value">{abilityName}</span>
-                            {desc && <span className="tooltip">{desc}</span>}
-                          </S.AbilityPill>
-                        );
-                      })}
-                      {(!activePokemonDetails.abilities || activePokemonDetails.abilities.length === 0) && (
+                      {activePokemonDetails.ability ? (
+                        (() => {
+                          const desc = getAbilityDesc(activePokemonDetails.ability);
+                          return (
+                            <S.AbilityPill key={activePokemonDetails.ability}>
+                              <span className="label">Ability</span>
+                              <span className="value">{activePokemonDetails.ability.replace("-", " ")}</span>
+                              {desc && <span className="tooltip">{desc}</span>}
+                            </S.AbilityPill>
+                          );
+                        })()
+                      ) : (
                         <S.InfoItemBox>
                           <span className="label">Ability</span>
                           <span className="value">None</span>

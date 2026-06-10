@@ -59,6 +59,7 @@ namespace PokedexReactASP.Application.DTOs.WildArea
         public bool IsShiny { get; set; }
         public string Nature { get; set; } = string.Empty;
         public int CaughtLevel { get; set; }
+        public string Ability { get; set; } = string.Empty;
     }
 
     public class WildCardRewardDto
