@@ -39,6 +39,7 @@ export type LanguageId = (typeof LANGUAGE_IDS)[keyof typeof LANGUAGE_IDS];
 
 // Move detail data for UI display
 export interface MoveDetailData {
+  id?: number;
   name: string;
   localizedName: string;
   type: string;
@@ -197,6 +198,7 @@ function transformPokemonDetail(
 
   const transformedMoveDetails: MoveDetailData[] = data.pokemonmoves.map(
     (m: PokemonMove) => ({
+      id: m.move.id,
       name: m.move.name,
       localizedName:
         pokemonGraphQLService.getLocalizedName(m.move.movenames, languageId) ||
@@ -236,6 +238,7 @@ function transformPokemonDetail(
       },
       is_hidden: a.is_hidden,
       slot: a.slot,
+      description: a.ability.abilityflavortexts?.[0]?.flavor_text || null,
     }));
 
   const transformedHeldItems: IPokemonDetailResponse["held_items"] = [];
@@ -456,28 +459,33 @@ function transformPokemonDetailFromRest(
   const transformedTypes = data.types.map((t) => t.type.name);
   const transformedMoves = data.moves.map((m) => m.move.name);
 
-  const transformedMoveDetails: MoveDetailData[] = data.moves.map((m) => ({
-    name: m.move.name,
-    localizedName: m.move.name,
-    type: "normal",
-    power: null,
-    accuracy: null,
-    pp: null,
-    priority: 0,
-    damageClass: "status",
-    learnMethod: m.version_group_details?.[0]?.move_learn_method?.name || "unknown",
-    level: m.version_group_details?.[0]?.level_learned_at ?? null,
-    generation: null,
-    description: null,
-    meta: null,
-    effectChance: null,
-    statChanges: [],
-  }));
+  const transformedMoveDetails: MoveDetailData[] = data.moves.map((m) => {
+    const moveId = m.move.url ? parseInt(m.move.url.split("/").filter(Boolean).pop() || "0", 10) : undefined;
+    return {
+      id: moveId,
+      name: m.move.name,
+      localizedName: m.move.name,
+      type: "normal",
+      power: null,
+      accuracy: null,
+      pp: null,
+      priority: 0,
+      damageClass: "status",
+      learnMethod: m.version_group_details?.[0]?.move_learn_method?.name || "unknown",
+      level: m.version_group_details?.[0]?.level_learned_at ?? null,
+      generation: null,
+      description: null,
+      meta: null,
+      effectChance: null,
+      statChanges: [],
+    };
+  });
 
   const transformedAbilities = data.abilities.map((a) => ({
     ability: { name: a.ability.name, url: a.ability.url },
     is_hidden: a.is_hidden,
     slot: a.slot,
+    description: null,
   }));
 
   const transformedForms: PokemonForm[] = data.forms.map((f, idx) => ({
@@ -560,18 +568,21 @@ function transformSpeciesDataFromRest(
 export function usePokemonCore(
   name: string,
   languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
+  options?: { enabled?: boolean }
 ) {
+  const isEnabled = options?.enabled ?? true;
+
   // Query 1: Pokemon Detail - fetches immediately
   const detailQuery = useQuery({
     queryKey: ["pokemon", "detail", name, languageId],
     queryFn: () => pokemonGraphQLService.getPokemonDetail(name, languageId),
-    enabled: !!name,
+    enabled: isEnabled && !!name,
   });
 
   const restDetailQuery = useQuery({
     queryKey: ["pokemon", "detail-rest", name],
     queryFn: () => pokemonService.getPokemonDetail(name),
-    enabled: !!name && !detailQuery.data,
+    enabled: isEnabled && !!name && !detailQuery.data,
   });
 
   // Extract speciesId from detail data
@@ -582,13 +593,13 @@ export function usePokemonCore(
     queryKey: ["pokemon", "species", speciesId, languageId],
     queryFn: () =>
       pokemonGraphQLService.getPokemonSpecies(speciesId!, languageId),
-    enabled: !!speciesId,
+    enabled: isEnabled && !!speciesId,
   });
 
   const restSpeciesQuery = useQuery({
     queryKey: ["pokemon", "species-rest", name],
     queryFn: () => speciesService.getPokemonSpecies(name),
-    enabled: !!name && !speciesQuery.data,
+    enabled: isEnabled && !!name && !speciesQuery.data,
   });
 
   // Transform data using memoization

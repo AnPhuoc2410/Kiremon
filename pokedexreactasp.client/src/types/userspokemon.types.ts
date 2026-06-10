@@ -65,6 +65,15 @@ export interface UserPokemonDto {
   canEvolve: boolean;
   isTraded: boolean;
   originalTrainerName: string | null;
+  
+  customMoveIds: number[] | null;
+  heldItemId: number | null;
+  heldItemName: string | null;
+  heldItemSpriteUrl: string | null;
+  boxId: number | null;
+  isInParty: boolean;
+  slotIndex: number;
+  markings: string | null;
 
   // From PokeAPI
   name: string;
