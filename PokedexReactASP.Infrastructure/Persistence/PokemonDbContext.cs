@@ -23,6 +23,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<Achievement> Achievements { get; set; } = null!;
         public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
         public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -303,6 +304,22 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.SourceUrl).IsRequired().HasMaxLength(500);
                 entity.Property(e => e.Category).HasMaxLength(100);
                 entity.Property(e => e.Author).HasMaxLength(100);
+            });
+
+            // Configure RefreshToken entity
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.UserId);
+
+                entity.Property(e => e.Token).HasMaxLength(256).IsRequired();
+                entity.Property(e => e.DeviceInfo).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.RefreshTokens)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

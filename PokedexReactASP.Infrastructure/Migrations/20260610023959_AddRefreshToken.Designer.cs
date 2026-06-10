@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PokedexReactASP.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PokedexReactASP.Infrastructure.Persistence;
 namespace PokedexReactASP.Infrastructure.Migrations
 {
     [DbContext(typeof(PokemonDbContext))]
-    partial class PokemonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260610023959_AddRefreshToken")]
+    partial class AddRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -998,10 +1001,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.Property<DateTime>("LastInteractionDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Markings")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<int>("Nature")
                         .HasColumnType("integer");
 
@@ -1037,8 +1036,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BoxId");
-
-                    b.HasIndex("HeldItemId");
 
                     b.HasIndex("PokemonApiId");
 
@@ -1330,11 +1327,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                         .HasForeignKey("BoxId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("PokedexReactASP.Domain.Entities.UserItem", "HeldItem")
-                        .WithMany()
-                        .HasForeignKey("HeldItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("PokedexReactASP.Domain.Entities.ApplicationUser", "User")
                         .WithMany("UserPokemons")
                         .HasForeignKey("UserId")
@@ -1342,8 +1334,6 @@ namespace PokedexReactASP.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Box");
-
-                    b.Navigation("HeldItem");
 
                     b.Navigation("User");
                 });

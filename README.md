@@ -15,6 +15,14 @@
 
 </div>
 
+<br/>
+
+> ⚠️ **LEGAL DISCLAIMER / TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM**
+> 
+> **[EN]** This is a strictly **non-commercial, open-source fan project** created solely for **educational purposes** to learn and demonstrate full-stack web development. This project is **NOT** affiliated with, endorsed, sponsored, or specifically approved by Nintendo, Game Freak, or The Pokémon Company. All Pokémon names, images, characters, and related concepts are registered trademarks and copyrights of their respective owners. No copyright infringement is intended.
+>
+> **[VN]** Đây là một dự án cá nhân **phi thương mại**, được tạo ra hoàn toàn với mục đích **giáo dục và rèn luyện kỹ năng lập trình**. Dự án này **KHÔNG** có bất kỳ sự liên kết, tài trợ hay chứng nhận nào từ Nintendo, Game Freak, hay The Pokémon Company. Tất cả hình ảnh, tên gọi, nhân vật và khái niệm liên quan đến Pokémon đều thuộc bản quyền của chủ sở hữu tương ứng. Dự án không có ý định vi phạm bản quyền.
+
 ---
 
 ## 🌟 Giới thiệu

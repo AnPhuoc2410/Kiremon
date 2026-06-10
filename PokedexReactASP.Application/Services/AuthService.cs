@@ -23,6 +23,7 @@ namespace PokedexReactASP.Application.Services
         private readonly UrlEncoder _urlEncoder;
         private readonly ILogger<AuthService> _logger;
         private readonly JwtSettings _jwtSettings;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -35,7 +36,8 @@ namespace PokedexReactASP.Application.Services
             ISocialAuthService socialAuthService,
             UrlEncoder urlEncoder,
             ILogger<AuthService> logger,
-            IOptions<JwtSettings> jwtOptions)
+            IOptions<JwtSettings> jwtOptions,
+            IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -48,6 +50,7 @@ namespace PokedexReactASP.Application.Services
             _urlEncoder = urlEncoder;
             _logger = logger;
             _jwtSettings = jwtOptions.Value;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -84,7 +87,7 @@ namespace PokedexReactASP.Application.Services
             return GenerateAuthResponse(user, includeToken: false);
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<AuthResultDto> LoginAsync(LoginDto loginDto, string? deviceInfo = null)
         {
             var captchaPassed = await _recaptchaService.ValidateAsync(loginDto.ReCaptchaToken);
             if (!captchaPassed)
@@ -96,7 +99,7 @@ namespace PokedexReactASP.Application.Services
                 ? await _userManager.FindByEmailAsync(loginDto.UsernameOrEmail)
                 : await _userManager.FindByNameAsync(loginDto.UsernameOrEmail);
 
-            if (user == null) throw new UnauthorizedAccessException("Invalid credentials");
+            if (user == null) throw new UnauthorizedAccessException("Login failed. Please check your credentials.");
 
             if (!user.EmailConfirmed)
             {
@@ -117,7 +120,7 @@ namespace PokedexReactASP.Application.Services
 
             if (!result.Succeeded && !result.RequiresTwoFactor)
             {
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new UnauthorizedAccessException("Login failed. Please check your credentials.");
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
@@ -131,13 +134,17 @@ namespace PokedexReactASP.Application.Services
                 if (isTrustedDevice)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+                    return await GenerateAuthResultAsync(user, deviceInfo);
                 }
 
-                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
+                return new AuthResultDto
+                {
+                    ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true),
+                    RefreshToken = null
+                };
             }
 
-            return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+            return await GenerateAuthResultAsync(user, deviceInfo);
         }
 
         public async Task ResendConfirmationEmailAsync(string email)
@@ -245,10 +252,107 @@ namespace PokedexReactASP.Application.Services
             if (includeToken && user.EmailConfirmed)
             {
                 response.Token = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
-                response.ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.ExpirationDays);
+                response.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
             }
 
             return response;
+        }
+
+        private async Task<AuthResultDto> GenerateAuthResultAsync(ApplicationUser user, string? deviceInfo)
+        {
+            var responseDto = _mapper.Map<AuthResponseDto>(user);
+            responseDto.EmailConfirmed = user.EmailConfirmed;
+            responseDto.RequiresTwoFactor = false;
+            responseDto.TwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+
+            var accessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
+            responseDto.Token = accessToken;
+            responseDto.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
+
+            // Generate refresh token
+            var refreshTokenString = _tokenService.GenerateRefreshToken();
+            var expiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshTokenString,
+                ExpiresAt = expiryTime,
+                DeviceInfo = deviceInfo,
+                CreatedAt = DateTime.UtcNow,
+                IsRevoked = false
+            };
+
+            await _unitOfWork.RefreshToken.AddAsync(refreshTokenEntity);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new AuthResultDto
+            {
+                ResponseDto = responseDto,
+                RefreshToken = refreshTokenString
+            };
+        }
+
+        public async Task<AuthResultDto> RefreshAsync(string refreshToken, string deviceInfo)
+        {
+            var dbToken = await _unitOfWork.RefreshToken.FirstOrDefaultAsync(
+                t => t.Token == refreshToken && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow
+            );
+
+            if (dbToken == null)
+            {
+                throw new UnauthorizedAccessException("Session expired or invalid refresh token.");
+            }
+
+            var user = await _userManager.FindByIdAsync(dbToken.UserId);
+            if (user == null || !user.EmailConfirmed)
+            {
+                throw new UnauthorizedAccessException("User invalid or email not confirmed.");
+            }
+
+            // Revoke old token
+            dbToken.IsRevoked = true;
+            _unitOfWork.RefreshToken.Update(dbToken);
+
+            // Generate new token pair
+            var newAccessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
+            var newRefreshTokenString = _tokenService.GenerateRefreshToken();
+            var expiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
+
+            var newDbToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = newRefreshTokenString,
+                ExpiresAt = expiryTime,
+                DeviceInfo = deviceInfo,
+                CreatedAt = DateTime.UtcNow,
+                IsRevoked = false
+            };
+
+            await _unitOfWork.RefreshToken.AddAsync(newDbToken);
+            await _unitOfWork.SaveChangesAsync();
+
+            var responseDto = _mapper.Map<AuthResponseDto>(user);
+            responseDto.Token = newAccessToken;
+            responseDto.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
+            responseDto.EmailConfirmed = user.EmailConfirmed;
+
+            return new AuthResultDto
+            {
+                ResponseDto = responseDto,
+                RefreshToken = newRefreshTokenString
+            };
+        }
+
+        public async Task RevokeAsync(string refreshToken)
+        {
+            var dbToken = await _unitOfWork.RefreshToken.FirstOrDefaultAsync(t => t.Token == refreshToken);
+            if (dbToken != null)
+            {
+                dbToken.IsRevoked = true;
+                _unitOfWork.RefreshToken.Update(dbToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
 
         private async Task SendConfirmationEmail(ApplicationUser user)
