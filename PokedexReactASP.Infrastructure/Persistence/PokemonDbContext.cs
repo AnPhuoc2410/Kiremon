@@ -87,7 +87,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.UserId).IsRequired();
                 entity.Property(e => e.PokemonApiId).IsRequired();
                 entity.Property(e => e.CaughtDate).IsRequired();
-                
+
+                entity.Property(e => e.Ability).HasMaxLength(100);
             });
 
             // Configure UserBox entity

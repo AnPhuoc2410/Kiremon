@@ -485,7 +485,8 @@ namespace PokedexReactASP.Application.Services
                 Type2: pokeApiData.Type2,
                 SpriteUrl: pokeApiData.Sprites?.Front_Default ?? "",
                 ShinySpriteUrl: pokeApiData.Sprites?.Front_Shiny,
-                GenderRate: genderRate);
+                GenderRate: genderRate,
+                Abilities: pokeApiData.Abilities ?? new List<PokeApiAbility>());
         }
 
         private async Task UpdateTrainerExp(ApplicationUser user, int expGain, CatchAttemptResultDto result)

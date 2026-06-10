@@ -4,6 +4,7 @@ using PokedexReactASP.Application.Interfaces.IGameMechanics;
 using PokedexReactASP.Application.Models.GameMechanics;
 using PokedexReactASP.Domain.Entities;
 using PokedexReactASP.Domain.Enums;
+using PokedexReactASP.Application.Services;
 
 namespace PokedexReactASP.Application.Services.GameMechanics
 {
@@ -62,6 +63,9 @@ namespace PokedexReactASP.Application.Services.GameMechanics
             // 7. Calculate EXP gained
             int expGained = CalculateCatchExp(ctx.BaseExperience, level, isShiny, ctx.IsLegendary, ctx.IsMythical);
 
+            // 7.5 Roll Ability
+            string chosenAbility = RollAbility(ctx.Abilities);
+
             // 8. Create entity
             var pokemon = new UserPokemon
             {
@@ -74,6 +78,7 @@ namespace PokedexReactASP.Application.Services.GameMechanics
                 IsShiny = isShiny,
                 CaughtDate = DateTime.UtcNow,
                 LastInteractionDate = DateTime.UtcNow,
+                Ability = chosenAbility,
 
                 // Server-generated IVs
                 IvHp = ivs.Hp,
@@ -135,7 +140,8 @@ namespace PokedexReactASP.Application.Services.GameMechanics
                 // Rarity
                 IsLegendary = ctx.IsLegendary,
                 IsMythical = ctx.IsMythical,
-                IsUltraBeast = false // Would need to check species
+                IsUltraBeast = false, // Would need to check species
+                Ability = chosenAbility
             };
 
             return await Task.FromResult(new PokemonCreationResult(
@@ -222,6 +228,42 @@ namespace PokedexReactASP.Application.Services.GameMechanics
         };
 
         private static string CapitalizeFirst(string input) => PokemonNameHelper.CapitalizeFirst(input);
+
+        private static string RollAbility(List<PokeApiAbility> abilities)
+        {
+            if (abilities == null || abilities.Count == 0)
+            {
+                return "Unknown";
+            }
+
+            var hiddenAbilities = abilities.Where(a => a.Is_Hidden).ToList();
+            var normalAbilities = abilities.Where(a => !a.Is_Hidden).ToList();
+
+            // If there are only hidden or only normal, just roll uniformly
+            if (hiddenAbilities.Count == 0)
+            {
+                var rolled = normalAbilities[Random.Shared.Next(normalAbilities.Count)];
+                return rolled.Ability.Name;
+            }
+            if (normalAbilities.Count == 0)
+            {
+                var rolled = hiddenAbilities[Random.Shared.Next(hiddenAbilities.Count)];
+                return rolled.Ability.Name;
+            }
+
+            // Standard: 10% chance for Hidden Ability
+            bool getHidden = Random.Shared.NextDouble() < 0.10;
+            if (getHidden)
+            {
+                var rolled = hiddenAbilities[Random.Shared.Next(hiddenAbilities.Count)];
+                return rolled.Ability.Name;
+            }
+            else
+            {
+                var rolled = normalAbilities[Random.Shared.Next(normalAbilities.Count)];
+                return rolled.Ability.Name;
+            }
+        }
     }
 }
 
