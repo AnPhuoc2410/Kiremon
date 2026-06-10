@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, MouseEvent } from "react";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import gsap from "gsap";
 import {
   IconSearch,
@@ -169,6 +170,7 @@ interface DragCandidate {
 
 const PCStorage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   // ── Data ─────────────────────────────────────────────────
   const { data: boxes = [], isLoading: isLoadingBoxes } = useUserBoxes();
@@ -187,6 +189,7 @@ const PCStorage: React.FC = () => {
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [isEditingBoxName, setIsEditingBoxName] = useState<boolean>(false);
   const [editingBoxName, setEditingBoxName] = useState<string>("");
+  const [boxFilter, setBoxFilter] = useState<"all" | "has_pokemon" | "empty">("all");
 
   // ── Selection ─────────────────────────────────────────────
   // Primary single-click selection → shows detail panel
@@ -270,6 +273,26 @@ const PCStorage: React.FC = () => {
     });
     return allPokes.filter((p) => multiSelectedIds.has(p.id)).slice(0, 2);
   }, [multiSelectedIds, boxes, partyPokemons]);
+
+  const filteredBoxes = useMemo(() => {
+    return boxes
+      .map((box, idx) => ({ box, originalIndex: idx }))
+      .filter(({ box }) => {
+        if (boxFilter === "has_pokemon") return box.pokemons.length > 0;
+        if (boxFilter === "empty") return box.pokemons.length === 0;
+        return true;
+      });
+  }, [boxes, boxFilter]);
+
+  const filterCounts = useMemo(() => {
+    let occupied = 0;
+    let empty = 0;
+    boxes.forEach((b) => {
+      if (b.pokemons.length > 0) occupied++;
+      else empty++;
+    });
+    return { all: boxes.length, occupied, empty };
+  }, [boxes]);
 
   // ── 1. Party load ─────────────────────────────────────────
   const loadParty = async () => {
@@ -640,27 +663,68 @@ const PCStorage: React.FC = () => {
   // ── 7. Drop logic ─────────────────────────────────────────
   const handleDropHeldPokemon = async (targetSlot: number, toParty: boolean) => {
     if (!heldPokemon) return;
-    const { pokemon, fromParty } = heldPokemon;
+    const { pokemon, fromParty, fromSlot, fromBoxId } = heldPokemon;
+    const targetBoxId = toParty ? null : (activeBox?.id ?? null);
     const targetPokemon = toParty
       ? partyPokemons.find((p) => p.slotIndex === targetSlot)
       : activeBox?.pokemons.find((p) => p.slotIndex === targetSlot);
+
     if (fromParty && !toParty && !targetPokemon && partyPokemons.length <= 1) {
       toast.error("Your party needs at least 1 Pokémon.");
       setHeldPokemon(null);
       return;
     }
+
+    // Capture snapshots for rollback
+    const prevBoxes = queryClient.getQueryData<UserBoxDto[]>(["boxes"]);
+    const prevParty = [...partyPokemons];
+
+    // Clear drag state immediately to make UI feel instant
+    setHeldPokemon(null);
+    setMultiSelectedIds(new Set());
+
+    // Perform optimistic update
+    const movedPoke = { ...pokemon, isInParty: toParty, slotIndex: targetSlot, boxId: targetBoxId };
+    const swappedPoke = targetPokemon
+      ? { ...targetPokemon, isInParty: fromParty, slotIndex: fromSlot, boxId: fromBoxId }
+      : null;
+
+    setPartyPokemons((prev) => {
+      let next = prev.filter((p) => p.id !== movedPoke.id && (!swappedPoke || p.id !== swappedPoke.id));
+      if (toParty) next.push(movedPoke);
+      if (fromParty && swappedPoke) next.push(swappedPoke);
+      return next.sort((a, b) => a.slotIndex - b.slotIndex);
+    });
+
+    queryClient.setQueryData<UserBoxDto[]>(["boxes"], (old) => {
+      if (!old) return old;
+      return old.map((box) => {
+        let pokes = box.pokemons.filter(
+          (p) => p.id !== movedPoke.id && (!swappedPoke || p.id !== swappedPoke.id)
+        );
+        if (!toParty && box.id === targetBoxId) pokes.push(movedPoke);
+        if (!fromParty && box.id === fromBoxId && swappedPoke) pokes.push(swappedPoke);
+        return {
+          ...box,
+          pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+        };
+      });
+    });
+
     try {
       const result = await movePokemonMutation.mutateAsync({
         userPokemonId: pokemon.id,
-        data: { targetBoxId: toParty ? null : (activeBox?.id ?? null), toParty, slotIndex: targetSlot },
+        data: { targetBoxId, toParty, slotIndex: targetSlot },
       });
-      if (!result.success) toast.error(result.message);
+      if (!result.success) {
+        toast.error(result.message);
+        if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
+        setPartyPokemons(prevParty);
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Move failed.");
-    } finally {
-      setHeldPokemon(null);
-      setMultiSelectedIds(new Set());
-      loadParty();
+      if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
+      setPartyPokemons(prevParty);
     }
   };
 
@@ -688,14 +752,41 @@ const PCStorage: React.FC = () => {
       moves.push({ userPokemonId: m.pokemon.id, targetBoxId: activeBox.id, toParty: false, slotIndex: tSlot });
     }
     if (invalid) { setHeldGroup(null); setMultiSelectedIds(new Set()); return; }
+
+    const prevBoxes = queryClient.getQueryData<UserBoxDto[]>(["boxes"]);
+    setHeldGroup(null);
+    setMultiSelectedIds(new Set());
+
+    // Optimistic update for group move
+    queryClient.setQueryData<UserBoxDto[]>(["boxes"], (old) => {
+      if (!old) return old;
+      return old.map((box) => {
+        let pokes = box.pokemons.filter((p) => !moves.some((mv) => mv.userPokemonId === p.id));
+        moves.forEach((mv) => {
+          if (box.id === mv.targetBoxId) {
+            const member = heldGroup.find((g) => g.pokemon.id === mv.userPokemonId);
+            if (member) {
+              pokes.push({
+                ...member.pokemon,
+                isInParty: false,
+                boxId: mv.targetBoxId,
+                slotIndex: mv.slotIndex,
+              });
+            }
+          }
+        });
+        return {
+          ...box,
+          pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+        };
+      });
+    });
+
     try {
       await moveBatchMutation.mutateAsync({ moves });
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Move failed.");
-    } finally {
-      setHeldGroup(null);
-      setMultiSelectedIds(new Set());
-      loadParty();
+      if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
     }
   };
 
@@ -1888,25 +1979,52 @@ const PCStorage: React.FC = () => {
         <S.BoxListModalOverlay onClick={() => setShowBoxList(false)}>
           <S.BoxListModalContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <Text as="h3" variant="outlined" size="lg">PC Box List</Text>
-              <S.ModalCloseButton onClick={() => setShowBoxList(false)}>
-                <IconX size={20} />
-              </S.ModalCloseButton>
+              <h3>PC Box List</h3>
+              <div className="header-meta">
+                <S.ModalCloseButton onClick={() => setShowBoxList(false)}>
+                  <IconX size={20} />
+                </S.ModalCloseButton>
+              </div>
             </div>
+            <S.BoxFilterTabsContainer>
+              <S.FilterTabButton
+                isActive={boxFilter === "all"}
+                onClick={() => setBoxFilter("all")}
+              >
+                All ({filterCounts.all})
+              </S.FilterTabButton>
+              <S.FilterTabButton
+                isActive={boxFilter === "has_pokemon"}
+                onClick={() => setBoxFilter("has_pokemon")}
+              >
+                Occupied ({filterCounts.occupied})
+              </S.FilterTabButton>
+              <S.FilterTabButton
+                isActive={boxFilter === "empty"}
+                onClick={() => setBoxFilter("empty")}
+              >
+                Empty ({filterCounts.empty})
+              </S.FilterTabButton>
+            </S.BoxFilterTabsContainer>
             <div className="grid-container">
-              {boxes.map((box, idx) => (
+              {filteredBoxes.map(({ box, originalIndex }) => (
                 <S.BoxThumbnailItem
                   key={box.id}
-                  isActive={idx === currentBoxIndex}
+                  isActive={originalIndex === currentBoxIndex}
                   bgUrl={getBoxBgUrl(box.backgroundImage)}
+                  pokemonCount={box.pokemons.length}
                   draggable
                   onDragStart={(e) => handleBoxDragStart(e, box.id)}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => handleBoxDrop(e, box.id)}
-                  onClick={() => handleSelectBoxFromModal(idx)}
+                  onClick={() => handleSelectBoxFromModal(originalIndex)}
                 >
-                  <span className="box-num">{box.name}</span>
-                  <span className="box-count">{box.pokemons.length}/30</span>
+                  <div className="box-details">
+                    <span className="box-name">
+                      {originalIndex === currentBoxIndex && "▶ "}{box.name}
+                    </span>
+                    <span className="box-count">{box.pokemons.length}/30</span>
+                  </div>
                 </S.BoxThumbnailItem>
               ))}
             </div>

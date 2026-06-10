@@ -100,31 +100,48 @@ namespace PokedexReactASP.Application.Services
 
         public async Task<MovePokemonResultDto> MovePokemonAsync(string userId, int userPokemonId, MovePokemonDto dto, CancellationToken cancellationToken = default)
         {
-            var pokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                p => p.UserId == userId && p.Id == userPokemonId,
-                disableTracking: false
-            );
-
-            if (pokemon == null)
-            {
-                return new MovePokemonResultDto { Success = false, Message = "Pokémon not found." };
-            }
-
-            int? swappedPokemonId = null;
-
+            // Input validation
             if (dto.ToParty)
             {
                 if (dto.SlotIndex < 0 || dto.SlotIndex > 5)
                 {
                     return new MovePokemonResultDto { Success = false, Message = "Invalid party slot index. Must be between 0 and 5." };
                 }
+            }
+            else
+            {
+                if (dto.TargetBoxId == null)
+                {
+                    return new MovePokemonResultDto { Success = false, Message = "Target Box ID is required." };
+                }
+                if (dto.SlotIndex < 0 || dto.SlotIndex > 29)
+                {
+                    return new MovePokemonResultDto { Success = false, Message = "Invalid box slot index. Must be between 0 and 29." };
+                }
+            }
 
-                // Check for a pokemon in the target party slot
-                var targetPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    p => p.UserId == userId && p.IsInParty && p.SlotIndex == dto.SlotIndex,
-                    disableTracking: false
-                );
+            // Batch fetch the moving pokemon and any target pokemon in the destination slot in a single query
+            var pokemonList = (await _unitOfWork.UserPokemon.FindAsync(
+                p => p.UserId == userId && (p.Id == userPokemonId || 
+                    (dto.ToParty 
+                        ? (p.IsInParty && p.SlotIndex == dto.SlotIndex)
+                        : (p.BoxId == dto.TargetBoxId && p.SlotIndex == dto.SlotIndex && !p.IsInParty)
+                    )
+                ),
+                disableTracking: false
+            )).ToList();
 
+            var pokemon = pokemonList.FirstOrDefault(p => p.Id == userPokemonId);
+            if (pokemon == null)
+            {
+                return new MovePokemonResultDto { Success = false, Message = "Pokémon not found." };
+            }
+
+            var targetPokemon = pokemonList.FirstOrDefault(p => p.Id != userPokemonId);
+            int? swappedPokemonId = null;
+
+            if (dto.ToParty)
+            {
                 if (targetPokemon != null)
                 {
                     swappedPokemonId = targetPokemon.Id;
@@ -149,27 +166,6 @@ namespace PokedexReactASP.Application.Services
             }
             else
             {
-                if (dto.TargetBoxId == null)
-                {
-                    return new MovePokemonResultDto { Success = false, Message = "Target Box ID is required." };
-                }
-                if (dto.SlotIndex < 0 || dto.SlotIndex > 29)
-                {
-                    return new MovePokemonResultDto { Success = false, Message = "Invalid box slot index. Must be between 0 and 29." };
-                }
-
-                var boxExists = await _unitOfWork.UserBox.ExistsAsync(b => b.UserId == userId && b.Id == dto.TargetBoxId);
-                if (!boxExists)
-                {
-                    return new MovePokemonResultDto { Success = false, Message = "Target Box not found." };
-                }
-
-                // Check for a pokemon in the target box slot
-                var targetPokemon = await _unitOfWork.UserPokemon.FirstOrDefaultAsync(
-                    p => p.UserId == userId && p.BoxId == dto.TargetBoxId && p.SlotIndex == dto.SlotIndex && !p.IsInParty,
-                    disableTracking: false
-                );
-
                 if (targetPokemon != null)
                 {
                     swappedPokemonId = targetPokemon.Id;
@@ -187,7 +183,7 @@ namespace PokedexReactASP.Application.Services
                 }
                 else
                 {
-                    // Straight move to Box: check if leaving Party empty
+                    // Straight move to Box: check if leaving Party empty (only query db count if moving from party)
                     if (pokemon.IsInParty)
                     {
                         int partyCount = await _unitOfWork.UserPokemon.CountAsync(p => p.UserId == userId && p.IsInParty);
