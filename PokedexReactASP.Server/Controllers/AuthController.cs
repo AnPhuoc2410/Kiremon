@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using PokedexReactASP.Application.DTOs.Auth;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Application.Options;
 using System.Security.Claims;
 
 namespace PokedexReactASP.Server.Controllers
@@ -12,11 +14,13 @@ namespace PokedexReactASP.Server.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthController> _logger;
+        private readonly JwtSettings _jwtSettings;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, IOptions<JwtSettings> jwtOptions)
         {
             _authService = authService;
             _logger = logger;
+            _jwtSettings = jwtOptions.Value;
         }
 
         [HttpPost("register")]
@@ -43,8 +47,15 @@ namespace PokedexReactASP.Server.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var response = await _authService.LoginAsync(loginDto);
-            return Ok(response);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.LoginAsync(loginDto, userAgent);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                SetRefreshTokenCookie(result.RefreshToken);
+            }
+
+            return Ok(result.ResponseDto);
         }
 
         [HttpPost("resend-confirmation")]
@@ -74,8 +85,15 @@ namespace PokedexReactASP.Server.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var response = await _authService.ExternalLoginAsync(externalLoginDto);
-            return Ok(response);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.ExternalLoginAsync(externalLoginDto, userAgent);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                SetRefreshTokenCookie(result.RefreshToken);
+            }
+
+            return Ok(result.ResponseDto);
         }
 
         [HttpPost("forgot-password")]
@@ -129,8 +147,15 @@ namespace PokedexReactASP.Server.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponseDto>> LoginTwoFactor([FromBody] TwoFactorLoginDto dto)
         {
-            var response = await _authService.LoginTwoFactorAsync(dto);
-            return Ok(response);
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var result = await _authService.LoginTwoFactorAsync(dto, userAgent);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                SetRefreshTokenCookie(result.RefreshToken);
+            }
+
+            return Ok(result.ResponseDto);
         }
 
         [Authorize]
@@ -169,6 +194,71 @@ namespace PokedexReactASP.Server.Controllers
                 return Ok(new { message = "2FA disabled successfully" });
 
             return BadRequest(new { message = "Failed to disable 2FA." });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<AuthResponseDto>> Refresh()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return Unauthorized(new { message = "Refresh token is missing." });
+            }
+
+            var deviceInfo = Request.Headers["User-Agent"].ToString();
+
+            try
+            {
+                var result = await _authService.RefreshAsync(refreshToken, deviceInfo);
+
+                if (!string.IsNullOrEmpty(result.RefreshToken))
+                {
+                    SetRefreshTokenCookie(result.RefreshToken);
+                }
+
+                return Ok(result.ResponseDto);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("revoke")]
+        public async Task<IActionResult> Revoke()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                await _authService.RevokeAsync(refreshToken);
+            }
+
+            var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+            // Clear the cookie
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !isDev && Request.IsHttps,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+                Path = "/api/auth"
+            });
+
+            return Ok(new { message = "Token revoked successfully" });
+        }
+
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
+            var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !isDev && Request.IsHttps,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
+                Path = "/api/auth"
+            };
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
     }
 }

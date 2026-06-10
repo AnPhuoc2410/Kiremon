@@ -10,13 +10,17 @@ namespace PokedexReactASP.Application.Options
         public string SecretKey { get; set; } = string.Empty;
 
         [Required]
-        public string Issuer { get; set; } = "PokedexAPI";
+        public string Issuer { get; set; } = string.Empty;
 
         [Required]
-        public string Audience { get; set; } = "PokedexClient";
+        public string Audience { get; set; } = string.Empty;
 
-        /// <summary>Token lifetime in days. Defaults to 7.</summary>
+        /// <summary>Token lifetime in minutes</summary>
+        [Range(1, 365 * 24 * 60)]
+        public int ExpirationMinutes { get; set; }
+
+        /// <summary>Refresh token lifetime in days</summary>
         [Range(1, 365)]
-        public int ExpirationDays { get; set; } = 7;
+        public int RefreshTokenExpirationDays { get; set; }
     }
 }

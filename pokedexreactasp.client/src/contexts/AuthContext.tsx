@@ -7,6 +7,8 @@ import {
   setCookie,
 } from "@/components/utils/cookieUtils";
 import toast from "react-hot-toast";
+import axios from "axios";
+import { getMemoryToken, setMemoryToken } from "@/services/api/tokenHolder";
 import { presenceHub } from "@/services/signalr/presence.hub";
 import { IconTrophy, IconCoin } from "@tabler/icons-react";
 
@@ -179,53 +181,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<AuthUser | null>(null);
   const navigate = useNavigate();
 
-  // Check token expiration
-  const checkTokenExpiration = () => {
-    const expiresTimestamp = getCookie("expires");
-    if (expiresTimestamp) {
-      const expiresDate = new Date(expiresTimestamp);
-      const currentDate = new Date();
-
-      if (currentDate > expiresDate) {
-        console.log("Token expired, logging out");
-        authLogout();
-        return false;
-      }
-    }
-    return true;
-  };
-
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const token = getCookie("accessToken");
-        const expiresTimestamp = getCookie("expires");
         const storedUser = getCookie("authUser");
 
-        if (token && expiresTimestamp) {
-          // Check if token is expired before proceeding
-          if (!checkTokenExpiration()) {
-            setIsInitialized(true);
-            return;
-          }
+        if (storedUser) {
+          try {
+            const response = await axios.post(
+              `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/refresh`,
+              {},
+              { withCredentials: true },
+            );
 
-          // Restore user from cookie
-          let parsedUser: AuthUser | null = null;
-          if (storedUser) {
+            const token = response.data.token;
+            setMemoryToken(token);
+
+            let parsedUser: AuthUser | null = null;
             try {
               parsedUser = JSON.parse(decodeURIComponent(storedUser));
             } catch {
               console.warn("Failed to parse stored user");
             }
-          }
 
-          setIsAuthenticated(true);
-          setUser(parsedUser);
-          setAuthData({
-            accessToken: token,
-            expires: expiresTimestamp,
-            user: parsedUser!,
-          });
+            setIsAuthenticated(true);
+            setUser(parsedUser);
+            setAuthData({
+              accessToken: token,
+              expires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+              user: parsedUser!,
+            });
+          } catch (refreshErr) {
+            console.warn("Silent refresh failed during init:", refreshErr);
+            eraseCookie("authUser");
+          }
         }
       } catch (error) {
         console.error("Failed to initialize auth:", error);
@@ -236,17 +225,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     initializeAuth();
 
-    // Set up interval to check token expiration regularly
-    const expirationCheckInterval = setInterval(() => {
-      if (isAuthenticated) {
-        checkTokenExpiration();
-      }
-    }, 60000); // Check every minute
+    const handleUnauthorizedLogout = () => {
+      authLogout();
+    };
+
+    window.addEventListener("unauthorized-logout", handleUnauthorizedLogout);
 
     return () => {
-      clearInterval(expirationCheckInterval);
+      window.removeEventListener(
+        "unauthorized-logout",
+        handleUnauthorizedLogout,
+      );
     };
-  }, [isAuthenticated]);
+  }, []);
 
   // Global PresenceHub & Real-time Achievement Notifications
   useEffect(() => {
@@ -280,8 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAuthData(loginData);
     setUser(loginData.user);
 
-    setCookie("accessToken", loginData.accessToken, 7);
-    setCookie("expires", loginData.expires, 7);
+    setMemoryToken(loginData.accessToken);
     setCookie(
       "authUser",
       encodeURIComponent(JSON.stringify(loginData.user)),
@@ -294,9 +284,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAuthData(null);
     setUser(null);
 
-    eraseCookie("accessToken");
-    eraseCookie("expires");
+    setMemoryToken(null);
     eraseCookie("authUser");
+
+    axios
+      .post(
+        `${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/revoke`,
+        {},
+        { withCredentials: true },
+      )
+      .catch((err) => console.warn("Failed to call revoke on server", err));
 
     toast.success("Đăng xuất thành công", { duration: 2500 });
     navigate("/");
@@ -311,11 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const getToken = () => {
-    // Check if token is valid before returning it
-    if (isAuthenticated && checkTokenExpiration()) {
-      return getCookie("accessToken");
-    }
-    return null;
+    return getMemoryToken();
   };
 
   return (

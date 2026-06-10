@@ -5,8 +5,8 @@ namespace PokedexReactASP.Application.Interfaces
     public interface IAuthService
     {
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
-        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
-        Task<AuthResponseDto> ExternalLoginAsync(ExternalLoginDto loginDto);
+        Task<AuthResultDto> LoginAsync(LoginDto loginDto, string? deviceInfo = null);
+        Task<AuthResultDto> ExternalLoginAsync(ExternalLoginDto loginDto, string? deviceInfo = null);
         Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
         Task<bool> UserExistsAsync(string usernameOrEmail);
         Task ResendConfirmationEmailAsync(string email);
@@ -18,8 +18,10 @@ namespace PokedexReactASP.Application.Interfaces
 
         Task<TwoFactorDto> GetTwoFactorAsync(string userId);
         Task<bool> EnableTwoFactorAsync(string userId, Enable2FADto dto);
-        Task<AuthResponseDto> LoginTwoFactorAsync(TwoFactorLoginDto dto);
+        Task<AuthResultDto> LoginTwoFactorAsync(TwoFactorLoginDto dto, string? deviceInfo = null);
         Task<bool> DisableTwoFactorAsync(string userId, string password);
 
+        Task<AuthResultDto> RefreshAsync(string refreshToken, string deviceInfo);
+        Task RevokeAsync(string refreshToken);
     }
 }

@@ -37,6 +37,7 @@ namespace PokedexReactASP.Application.Interfaces
         IRepository<UserBox> UserBox { get; }
         IRepository<Achievement> Achievement { get; }
         IRepository<UserAchievement> UserAchievement { get; }
+        IRepository<RefreshToken> RefreshToken { get; }
         Task<int> SaveChangesAsync();
     }
 }

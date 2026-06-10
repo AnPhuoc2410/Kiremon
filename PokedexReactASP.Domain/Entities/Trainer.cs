@@ -76,6 +76,7 @@ namespace PokedexReactASP.Domain.Entities
         public ICollection<WildAreaSpawn> WildAreaSpawns { get; set; } = new List<WildAreaSpawn>();
         public ICollection<UserTcgCard> UserTcgCards { get; set; } = new List<UserTcgCard>();
         public ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         // Friendships where this user is User1
         public ICollection<Friendship> FriendshipsAsUser1 { get; set; } = new List<Friendship>();
