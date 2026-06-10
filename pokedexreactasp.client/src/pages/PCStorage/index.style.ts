@@ -120,14 +120,7 @@ export const PartySlot = styled("div")<{
     : isEmpty
     ? "rgba(15, 23, 42, 0.01)"
     : "#ffffff",
-  backgroundImage: isMultiSelected
-    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" opacity="0.12"><circle cx="12" cy="12" r="10" fill="none" stroke="%23ef4444" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="%23ef4444" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="%23ffffff" stroke="%23ef4444" stroke-width="2"/></svg>')`
-    : isSelected
-    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" opacity="0.12"><circle cx="12" cy="12" r="10" fill="none" stroke="%233b82f6" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="%233b82f6" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="%23ffffff" stroke="%233b82f6" stroke-width="2"/></svg>')`
-    : "none",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "center",
-  backgroundSize: "28px 28px",
+  // Removed background Pokéball watermarks
   boxShadow: isMultiSelected
     ? "3px 3px 0px #ef4444"
     : isSelected
@@ -329,16 +322,7 @@ export const BoxSlotCell = styled("div")<{
     : isEmpty
     ? "rgba(255, 255, 255, 0.35)"
     : "rgba(255, 255, 255, 0.85)",
-  backgroundImage: isHighlighted
-    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" opacity="0.12"><circle cx="12" cy="12" r="10" fill="none" stroke="%23ef4444" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="%23ef4444" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="%23ffffff" stroke="%23ef4444" stroke-width="2"/></svg>')`
-    : isSelected
-    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" opacity="0.12"><circle cx="12" cy="12" r="10" fill="none" stroke="%233b82f6" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="%233b82f6" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="%23ffffff" stroke="%233b82f6" stroke-width="2"/></svg>')`
-    : isCompareSelected
-    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" opacity="0.12"><circle cx="12" cy="12" r="10" fill="none" stroke="%237c3aed" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="%237c3aed" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="%23ffffff" stroke="%237c3aed" stroke-width="2"/></svg>')`
-    : "none",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "center",
-  backgroundSize: "28px 28px",
+  // Removed background Pokéball watermarks
   backdropFilter: "blur(4px)",
   display: "flex",
   flexDirection: "column",
