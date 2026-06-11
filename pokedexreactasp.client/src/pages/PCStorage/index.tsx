@@ -15,7 +15,15 @@ import {
 } from "@tabler/icons-react";
 
 import { Navbar, Text, Button } from "@/components/ui";
-import { useAuth } from "@/contexts";
+import { useAuth, useLanguage } from "@/contexts";
+import { 
+  getLocalizedStorageText, 
+  getLocalizedIvJudgeText, 
+  getLocalizedStatAbbreviation, 
+  getLocalizedNatureDisplay, 
+  getLocalizedGenderName, 
+  getLocalizedTypeName 
+} from "@/utils/typeI18n";
 import { useSupabaseStorage } from "@/components/hooks/useSupabaseStorage";
 import {
   useUserBoxes,
@@ -29,6 +37,7 @@ import { usePokemonCore } from "@/hooks/queries";
 import { collectionService } from "@/services/collection/collection.service";
 import { UserPokemonDto } from "@/types/userspokemon.types";
 import { UserBoxDto, MovePokemonItemDto } from "@/types/box.types";
+import { Nature, PokemonGender } from "@/types/pokemon.enums";
 
 import * as S from "./index.style";
 
@@ -58,14 +67,8 @@ const NATURE_EFFECTS: Record<string, { increased: string; decreased: string } | 
   careful: { increased: "SpD", decreased: "SpA" },
 };
 
-const getIvJudgeText = (iv: number | null): string => {
-  if (iv === null) return "Decent";
-  if (iv === 31) return "Best";
-  if (iv === 30) return "Fantastic";
-  if (iv >= 26) return "Very Good";
-  if (iv >= 16) return "Pretty Good";
-  if (iv >= 1) return "Decent";
-  return "No Good";
+const getIvJudgeText = (iv: number | null, langId: number): string => {
+  return getLocalizedIvJudgeText(iv, langId as any);
 };
 
 const getPokeballSpriteUrl = (ball: number): string => {
@@ -170,6 +173,7 @@ interface DragCandidate {
 
 const PCStorage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { languageId } = useLanguage();
   const queryClient = useQueryClient();
 
   // ── Data ─────────────────────────────────────────────────
@@ -245,6 +249,14 @@ const PCStorage: React.FC = () => {
   const isDraggingRef = useRef<boolean>(false);
   // Set to true when drop lands on valid slot (to prevent global cancel)
   const didDropRef = useRef<boolean>(false);
+
+  const getLocalizedBoxName = (name: string | undefined, index: number) => {
+    if (!name) return `${getLocalizedStorageText("pc.box", languageId)} ${index + 1}`;
+    if (name.startsWith("Box ")) {
+      return `${getLocalizedStorageText("pc.box", languageId)} ${name.substring(4)}`;
+    }
+    return name;
+  };
 
   // ── Derived ───────────────────────────────────────────────
   const activeBox = boxes[currentBoxIndex] as UserBoxDto | undefined;
@@ -670,7 +682,7 @@ const PCStorage: React.FC = () => {
       : activeBox?.pokemons.find((p) => p.slotIndex === targetSlot);
 
     if (fromParty && !toParty && !targetPokemon && partyPokemons.length <= 1) {
-      toast.error("Your party needs at least 1 Pokémon.");
+      toast.error(getLocalizedStorageText("pc.toastPartyMinLimit", languageId));
       setHeldPokemon(null);
       return;
     }
@@ -722,7 +734,7 @@ const PCStorage: React.FC = () => {
         setPartyPokemons(prevParty);
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message ?? "Move failed.");
+      toast.error(err.response?.data?.message || getLocalizedStorageText("pc.toastMoveFailed", languageId));
       if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
       setPartyPokemons(prevParty);
     }
@@ -740,12 +752,12 @@ const PCStorage: React.FC = () => {
       const m = heldGroup[i];
       const tSlot = targetAnchorSlot + i;
       if (tSlot < 0 || tSlot >= 30) {
-        toast.error("Placement out of bounds!");
+        toast.error(getLocalizedStorageText("pc.toastOutOfBounds", languageId));
         invalid = true;
         break;
       }
       if (occupied.has(tSlot)) {
-        toast.error("Target slots must be empty for group move.");
+        toast.error(getLocalizedStorageText("pc.toastSlotOccupied", languageId));
         invalid = true;
         break;
       }
@@ -785,7 +797,7 @@ const PCStorage: React.FC = () => {
     try {
       await moveBatchMutation.mutateAsync({ moves });
     } catch (err: any) {
-      toast.error(err.response?.data?.message ?? "Move failed.");
+      toast.error(err.response?.data?.message || getLocalizedStorageText("pc.toastMoveFailed", languageId));
       if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
     }
   };
@@ -795,23 +807,23 @@ const PCStorage: React.FC = () => {
     if (!activeBox) return;
     try {
       await updateBoxMutation.mutateAsync({ boxId: activeBox.id, data: { name: activeBox.name, backgroundImage: bg } });
-    } catch { toast.error("Failed to apply wallpaper."); }
+    } catch { toast.error(getLocalizedStorageText("pc.toastWallpaperFailed", languageId)); }
   };
 
   const uploadAndApplyWallpaper = async (file: File) => {
     if (!activeBox) return;
-    if (!file.type.startsWith("image/")) { toast.error("Invalid file type."); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("File must be under 5 MB."); return; }
+    if (!file.type.startsWith("image/")) { toast.error(getLocalizedStorageText("pc.imageFileWarning", languageId)); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error(getLocalizedStorageText("pc.imageSizeWarning", languageId)); return; }
     try {
-      toast.loading("Applying wallpaper…", { id: "wp" });
+      toast.loading(getLocalizedStorageText("pc.toastApplyingWallpaper", languageId), { id: "wp" });
       const { url, error } = await uploadFile(file, "Kiremon", "box-wallpapers");
       if (error || !url) throw error ?? new Error();
       await updateBoxMutation.mutateAsync({ boxId: activeBox.id, data: { name: activeBox.name, backgroundImage: url } });
       toast.dismiss("wp");
-      toast.success("Wallpaper applied!");
+      toast.success(getLocalizedStorageText("pc.toastWallpaperApplied", languageId));
     } catch {
       toast.dismiss("wp");
-      toast.error("Failed to apply wallpaper.");
+      toast.error(getLocalizedStorageText("pc.toastWallpaperFailed", languageId));
     }
   };
 
@@ -870,9 +882,9 @@ const PCStorage: React.FC = () => {
         boxId: activeBox.id,
         data: { name: trimmed, backgroundImage: activeBox.backgroundImage },
       });
-      toast.success("Box renamed!");
+      toast.success(getLocalizedStorageText("pc.toastBoxRenamed", languageId));
     } catch {
-      toast.error("Rename failed.");
+      toast.error(getLocalizedStorageText("pc.toastRenameFailed", languageId));
     }
   };
 
@@ -890,7 +902,7 @@ const PCStorage: React.FC = () => {
     const src = parseInt(e.dataTransfer.getData("boxId"));
     if (isNaN(src) || src === targetBoxId) return;
     try { await reorderBoxesMutation.mutateAsync({ boxIdA: src, boxIdB: targetBoxId }); }
-    catch { toast.error("Reorder failed."); }
+    catch { toast.error(getLocalizedStorageText("pc.toastActionFailed", languageId)); }
   };
 
   // ── 10. Context menu ──────────────────────────────────────
@@ -900,24 +912,24 @@ const PCStorage: React.FC = () => {
   };
   const handleToggleFavorite = async (p: UserPokemonDto) => {
     setContextMenu(null);
-    try { await collectionService.toggleFavorite(p.id); loadParty(); } catch { toast.error("Action failed."); }
+    try { await collectionService.toggleFavorite(p.id); loadParty(); } catch { toast.error(getLocalizedStorageText("pc.toastActionFailed", languageId)); }
   };
   const handleReleasePokemon = async (p: UserPokemonDto) => {
     setContextMenu(null);
-    if (p.isInParty && partyPokemons.length <= 1) { toast.error("Party needs at least 1 Pokémon."); return; }
-    if (!window.confirm(`Release ${p.displayName}?`)) return;
+    if (p.isInParty && partyPokemons.length <= 1) { toast.error(getLocalizedStorageText("pc.toastPartyMinLimit", languageId)); return; }
+    if (!window.confirm(`${getLocalizedStorageText("pc.confirmRelease", languageId)} ${p.displayName}?`)) return;
     try {
       await collectionService.releasePokemon(p.id);
-      toast.success(`${p.displayName} was released.`);
+      toast.success(`${p.displayName} ${getLocalizedStorageText("pc.toastReleaseSuccess", languageId)}`);
       if (selectedPokemon?.id === p.id) setSelectedPokemon(null);
       if (hoveredPokemon?.id === p.id) setHoveredPokemon(null);
       loadParty();
-    } catch { toast.error("Release failed."); }
+    } catch { toast.error(getLocalizedStorageText("pc.toastReleaseFailed", languageId)); }
   };
   const handleToggleMarking = (p: UserPokemonDto, marking: string) => {
     setContextMenu(null);
     // TODO: persist via API when ready
-    toast(`Marking toggled: ${marking}`);
+    toast(`${getLocalizedStorageText("pc.toastMarkingToggled", languageId)}: ${marking}`);
   };
 
   // ── 11. Search ────────────────────────────────────────────
@@ -1097,20 +1109,20 @@ const PCStorage: React.FC = () => {
   const statItems = activePokemonDetails
     ? activeStatTab === "iv"
       ? [
-        { label: "HP", displayName: "HP", judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})` },
-        { label: "ATK", displayName: "Attack", judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})` },
-        { label: "DEF", displayName: "Defense", judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})` },
-        { label: "SPD", displayName: "Speed", judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})` },
-        { label: "SpD", displayName: "Sp. Def", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})` },
-        { label: "SpA", displayName: "Sp. Atk", judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})` },
+        { label: "HP", displayName: getLocalizedStatAbbreviation("HP", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivHp, languageId)} (${activePokemonDetails.ivHp ?? 0})` },
+        { label: "ATK", displayName: getLocalizedStatAbbreviation("ATK", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivAttack, languageId)} (${activePokemonDetails.ivAttack ?? 0})` },
+        { label: "DEF", displayName: getLocalizedStatAbbreviation("DEF", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivDefense, languageId)} (${activePokemonDetails.ivDefense ?? 0})` },
+        { label: "SPD", displayName: getLocalizedStatAbbreviation("SPD", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivSpeed, languageId)} (${activePokemonDetails.ivSpeed ?? 0})` },
+        { label: "SpD", displayName: getLocalizedStatAbbreviation("SpD", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense, languageId)} (${activePokemonDetails.ivSpecialDefense ?? 0})` },
+        { label: "SpA", displayName: getLocalizedStatAbbreviation("SpA", languageId), judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack, languageId)} (${activePokemonDetails.ivSpecialAttack ?? 0})` },
       ]
       : [
-        { label: "HP", displayName: "HP", judge: `EV: ${activePokemonDetails.evHp}` },
-        { label: "ATK", displayName: "Attack", judge: `EV: ${activePokemonDetails.evAttack}` },
-        { label: "DEF", displayName: "Defense", judge: `EV: ${activePokemonDetails.evDefense}` },
-        { label: "SPD", displayName: "Speed", judge: `EV: ${activePokemonDetails.evSpeed}` },
-        { label: "SpD", displayName: "Sp. Def", judge: `EV: ${activePokemonDetails.evSpecialDefense}` },
-        { label: "SpA", displayName: "Sp. Atk", judge: `EV: ${activePokemonDetails.evSpecialAttack}` },
+        { label: "HP", displayName: getLocalizedStatAbbreviation("HP", languageId), judge: `EV: ${activePokemonDetails.evHp}` },
+        { label: "ATK", displayName: getLocalizedStatAbbreviation("ATK", languageId), judge: `EV: ${activePokemonDetails.evAttack}` },
+        { label: "DEF", displayName: getLocalizedStatAbbreviation("DEF", languageId), judge: `EV: ${activePokemonDetails.evDefense}` },
+        { label: "SPD", displayName: getLocalizedStatAbbreviation("SPD", languageId), judge: `EV: ${activePokemonDetails.evSpeed}` },
+        { label: "SpD", displayName: getLocalizedStatAbbreviation("SpD", languageId), judge: `EV: ${activePokemonDetails.evSpecialDefense}` },
+        { label: "SpA", displayName: getLocalizedStatAbbreviation("SpA", languageId), judge: `EV: ${activePokemonDetails.evSpecialAttack}` },
       ]
     : [];
 
@@ -1127,7 +1139,7 @@ const PCStorage: React.FC = () => {
         return prev.filter(id => id !== moveId);
       } else {
         if (prev.length >= 4) {
-          toast.error("You can select up to 4 moves!");
+          toast.error(getLocalizedStorageText("pc.toastMaxMovesWarning", languageId));
           return prev;
         }
         return [...prev, moveId];
@@ -1143,10 +1155,10 @@ const PCStorage: React.FC = () => {
         userPokemonId: activePokemonDetails.id,
         moveIds: tempSelectedMoves,
       });
-      toast.success("Moveset updated successfully!");
+      toast.success(getLocalizedStorageText("pc.toastMovesetUpdated", languageId));
       setShowMoveManager(false);
     } catch (err: any) {
-      toast.error(err.message || "Failed to update moveset.");
+      toast.error(err.message || getLocalizedStorageText("pc.toastMovesetUpdateFailed", languageId));
     }
   };
 
@@ -1161,16 +1173,16 @@ const PCStorage: React.FC = () => {
         {/* ── Header ── */}
         <S.StorageHeader className="pxl-border no-inset">
           <div className="title-section">
-            <Text as="h1" variant="outlined" size="xl" color="yellow">Pokémon PC Storage</Text>
+            <Text as="h1" variant="outlined" size="xl" color="yellow">{getLocalizedStorageText("pc.title", languageId)}</Text>
           </div>
           <S.HeaderActions>
-            <S.KeyboardInfoBtn onClick={() => setShowHelp(true)} title="Help">
+            <S.KeyboardInfoBtn onClick={() => setShowHelp(true)} title={getLocalizedStorageText("pc.help", languageId)}>
               <IconHelp size={18} />
-              <span className="btn-text">Help</span>
+              <span className="btn-text">{getLocalizedStorageText("pc.help", languageId)}</span>
             </S.KeyboardInfoBtn>
-            <S.KeyboardInfoBtn onClick={() => setShowBoxList(true)} title="Boxes (B)">
+            <S.KeyboardInfoBtn onClick={() => setShowBoxList(true)} title={getLocalizedStorageText("pc.boxes", languageId)}>
               <IconLayout size={18} />
-              <span className="btn-text">Boxes (B)</span>
+              <span className="btn-text">{getLocalizedStorageText("pc.boxes", languageId)}</span>
             </S.KeyboardInfoBtn>
           </S.HeaderActions>
         </S.StorageHeader>
@@ -1180,7 +1192,7 @@ const PCStorage: React.FC = () => {
           {/* ── LEFT: Party ── */}
           <S.SidebarCard className="pxl-border no-inset">
             <Text as="h2" variant="darker" size="lg" style={{ marginBottom: "16px" }}>
-              Party
+              {getLocalizedStorageText("pc.party", languageId)}
             </Text>
             <S.PartySlotsContainer>
               {Array.from({ length: 6 }).map((_, idx) => {
@@ -1240,7 +1252,7 @@ const PCStorage: React.FC = () => {
             <S.BoxControls>
               {/* Navigation elements grouped in center */}
               <div className="navigation-group">
-                <button className="nav-arrow-btn" onClick={handlePrevBox} title="Previous Box">
+                <button className="nav-arrow-btn" onClick={handlePrevBox} title={getLocalizedStorageText("pc.tooltipPrevBox", languageId)}>
                   <svg viewBox="0 0 24 24" width="28" height="28">
                     <polygon points="16,4 6,12 16,20" fill="#cbd5e1" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="miter" />
                   </svg>
@@ -1249,7 +1261,7 @@ const PCStorage: React.FC = () => {
                 <div 
                   className="name-plate" 
                   onClick={!isEditingBoxName ? handleStartBoxRename : undefined} 
-                  title={!isEditingBoxName ? "Rename Box" : undefined}
+                  title={!isEditingBoxName ? getLocalizedStorageText("pc.tooltipRenameBox", languageId) : undefined}
                 >
                   {isEditingBoxName ? (
                     <S.BoxRenameInput
@@ -1263,11 +1275,11 @@ const PCStorage: React.FC = () => {
                       maxLength={15}
                     />
                   ) : (
-                    <h3>{activeBox?.name ?? `Box ${currentBoxIndex + 1}`}</h3>
+                    <h3>{getLocalizedBoxName(activeBox?.name, currentBoxIndex)}</h3>
                   )}
                 </div>
 
-                <button className="nav-arrow-btn" onClick={handleNextBox} title="Next Box">
+                <button className="nav-arrow-btn" onClick={handleNextBox} title={getLocalizedStorageText("pc.tooltipNextBox", languageId)}>
                   <svg viewBox="0 0 24 24" width="28" height="28">
                     <polygon points="8,4 18,12 8,20" fill="#cbd5e1" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="miter" />
                   </svg>
@@ -1363,7 +1375,7 @@ const PCStorage: React.FC = () => {
               <input
                 id="search-input"
                 type="text"
-                placeholder="Name, type, or #ID  (F)"
+                placeholder={getLocalizedStorageText("pc.searchPlaceholder", languageId)}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -1401,7 +1413,7 @@ const PCStorage: React.FC = () => {
                   <span className="dex-no">
                     No. {String(activePokemonDetails.pokemonApiId).padStart(3, "0")}
                   </span>
-                  {activePokemonDetails.isShiny && <span className="shiny-star">★ Shiny</span>}
+                  {activePokemonDetails.isShiny && <span className="shiny-star">{getLocalizedStorageText("pc.shiny", languageId)}</span>}
                 </S.DetailSubBar>
 
                 <S.DetailTypeRow>
@@ -1413,7 +1425,7 @@ const PCStorage: React.FC = () => {
                         className="type-badge"
                         style={{ background: TYPE_COLORS[t!.toLowerCase()] ?? "#888" }}
                       >
-                        {t!.toUpperCase()}
+                        {getLocalizedTypeName(t!, languageId).toUpperCase()}
                       </span>
                     ))}
                 </S.DetailTypeRow>
@@ -1432,19 +1444,19 @@ const PCStorage: React.FC = () => {
                     active={activeMainTab === "status"}
                     onClick={() => setActiveMainTab("status")}
                   >
-                    Status
+                    {getLocalizedStorageText("pc.tabStatus", languageId)}
                   </S.DetailMainTabButton>
                   <S.DetailMainTabButton
                     active={activeMainTab === "moves"}
                     onClick={() => setActiveMainTab("moves")}
                   >
-                    Moves
+                    {getLocalizedStorageText("pc.tabMoves", languageId)}
                   </S.DetailMainTabButton>
                   <S.DetailMainTabButton
                     active={activeMainTab === "stats"}
                     onClick={() => setActiveMainTab("stats")}
                   >
-                    Stats
+                    {getLocalizedStorageText("pc.tabStats", languageId)}
                   </S.DetailMainTabButton>
                 </S.DetailMainTabContainer>
 
@@ -1461,7 +1473,7 @@ const PCStorage: React.FC = () => {
                         return (
                           <>
                             <S.HpBarInner percent={hpPercent} colorCode={hpColor} />
-                            <S.HpBarText>{currentHpPoints} / {activePokemonDetails.maxHp} HP</S.HpBarText>
+                            <S.HpBarText>{currentHpPoints} / {activePokemonDetails.maxHp} {getLocalizedStatAbbreviation("HP", languageId)}</S.HpBarText>
                           </>
                         );
                       })()}
@@ -1469,13 +1481,17 @@ const PCStorage: React.FC = () => {
 
                     <S.InfoGrid>
                       <S.InfoItemBox>
-                        <span className="label">Nature</span>
-                        <span className="value">{activePokemonDetails.natureDisplay.split(" ")[0]}</span>
+                        <span className="label">{getLocalizedStorageText("pc.nature", languageId)}</span>
+                        <span className="value">{getLocalizedStorageText("nature." + Nature[activePokemonDetails.nature].toLowerCase(), languageId)}</span>
                       </S.InfoItemBox>
                       <S.InfoItemBox>
-                        <span className="label">Gender</span>
+                        <span className="label">{getLocalizedStorageText("pc.gender", languageId)}</span>
                         <span className="value">
-                          {activePokemonDetails.gender === 0 ? "Male (♂)" : activePokemonDetails.gender === 1 ? "Female (♀)" : "Unknown (⚲)"}
+                          {activePokemonDetails.gender === PokemonGender.Male
+                            ? `${getLocalizedGenderName(activePokemonDetails.gender, languageId)} (♂)`
+                            : activePokemonDetails.gender === PokemonGender.Female
+                            ? `${getLocalizedGenderName(activePokemonDetails.gender, languageId)} (♀)`
+                            : `${getLocalizedGenderName(activePokemonDetails.gender, languageId)} (⚲)`}
                         </span>
                       </S.InfoItemBox>
                     </S.InfoGrid>
@@ -1486,7 +1502,7 @@ const PCStorage: React.FC = () => {
                           const desc = getAbilityDesc(activePokemonDetails.ability);
                           return (
                             <S.AbilityPill key={activePokemonDetails.ability}>
-                              <span className="label">Ability</span>
+                              <span className="label">{getLocalizedStorageText("pc.ability", languageId)}</span>
                               <span className="value">{activePokemonDetails.ability.replace("-", " ")}</span>
                               {desc && <span className="tooltip">{desc}</span>}
                             </S.AbilityPill>
@@ -1494,8 +1510,8 @@ const PCStorage: React.FC = () => {
                         })()
                       ) : (
                         <S.InfoItemBox>
-                          <span className="label">Ability</span>
-                          <span className="value">None</span>
+                          <span className="label">{getLocalizedStorageText("pc.ability", languageId)}</span>
+                          <span className="value">{getLocalizedStorageText("pc.abilityNone", languageId)}</span>
                         </S.InfoItemBox>
                       )}
 
@@ -1507,7 +1523,7 @@ const PCStorage: React.FC = () => {
                             <div className="icon" style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>🎒</div>
                           )}
                           <div className="info">
-                            <span className="label">Held Item</span>
+                            <span className="label">{getLocalizedStorageText("pc.heldItem", languageId)}</span>
                             <span className="value">{activePokemonDetails.heldItemName}</span>
                           </div>
                         </S.HeldItemPill>
@@ -1515,8 +1531,8 @@ const PCStorage: React.FC = () => {
                         <S.HeldItemPill hasItem={false}>
                           <div className="icon" style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>—</div>
                           <div className="info">
-                            <span className="label">Held Item</span>
-                            <span className="value">No Item</span>
+                            <span className="label">{getLocalizedStorageText("pc.heldItem", languageId)}</span>
+                            <span className="value">{getLocalizedStorageText("pc.noItem", languageId)}</span>
                           </div>
                         </S.HeldItemPill>
                       )}
@@ -1529,7 +1545,7 @@ const PCStorage: React.FC = () => {
                   <S.MovesTabContainer>
                     {isCoreLoading ? (
                       <div style={{ textAlign: "center", padding: "24px", fontFamily: '"Press Start 2P", monospace', fontSize: "0.7rem", color: "#64748b" }}>
-                        Loading moves...
+                        {getLocalizedStorageText("pc.loadingMoves", languageId)}
                       </div>
                     ) : (
                       <>
@@ -1544,13 +1560,13 @@ const PCStorage: React.FC = () => {
                                 </div>
                                 <S.MoveMetaRow>
                                   <span className="type-badge" style={{ backgroundColor: typeColor }}>
-                                    {move.type}
+                                    {getLocalizedTypeName(move.type || "normal", languageId)}
                                   </span>
                                   <span className={`class-badge ${move.damageClass}`}>
                                     {move.damageClass}
                                   </span>
                                   <span className="power-acc">
-                                    Power: {move.power || "—"}  Acc: {move.accuracy || "—"}%
+                                    {getLocalizedStorageText("pc.power", languageId)}: {move.power || "—"}  {getLocalizedStorageText("pc.acc", languageId)}: {move.accuracy || "—"}%
                                   </span>
                                 </S.MoveMetaRow>
                               </S.MoveItemCard>
@@ -1558,12 +1574,12 @@ const PCStorage: React.FC = () => {
                           })}
                           {currentMoves.length === 0 && (
                             <span style={{ fontSize: "0.85rem", color: "#64748b", textAlign: "center", padding: "12px" }}>
-                              No moves learned yet.
+                              {getLocalizedStorageText("pc.noMovesLearned", languageId)}
                             </span>
                           )}
                         </S.MovesGrid>
                         <S.ManageMovesBtn className="pxl-border" onClick={handleOpenMoveManager}>
-                          Manage Moves
+                          {getLocalizedStorageText("pc.manageMoves", languageId)}
                         </S.ManageMovesBtn>
                       </>
                     )}
@@ -1590,7 +1606,7 @@ const PCStorage: React.FC = () => {
                           return (
                             <S.StatBarRow key={s.label}>
                               <S.StatLabelRow textColor={textColor}>
-                                <span className="stat-name">{s.label}</span>
+                                <span className="stat-name">{getLocalizedStatAbbreviation(s.key, languageId)}</span>
                                 <span className="stat-values">
                                   <span className="curr">{s.val}</span>
                                   <span className="max">/{s.isHp ? s.maxDisplay : maxVal}</span>
@@ -1606,7 +1622,7 @@ const PCStorage: React.FC = () => {
                     </div>
 
                     <S.RadarToggleBtn className="pxl-border" onClick={() => setShowRadarChart(!showRadarChart)}>
-                      {showRadarChart ? "Hide Radar Chart" : "Show Radar (IV/EV)"}
+                      {showRadarChart ? getLocalizedStorageText("pc.hideRadar", languageId) : getLocalizedStorageText("pc.showRadar", languageId)}
                     </S.RadarToggleBtn>
 
                     {showRadarChart && (
@@ -1773,7 +1789,7 @@ const PCStorage: React.FC = () => {
                           </S.DetailIvJudgmentBar>
                         ) : activeStatTab === "ev" ? (
                           <S.DetailIvJudgmentBar style={{ margin: "8px 0 0", width: "100%" }}>
-                            <span className="rating-text">Total EVs: {activePokemonDetails.evTotal}/510</span>
+                            <span className="rating-text">{getLocalizedStorageText("pc.totalEvs", languageId)}: {activePokemonDetails.evTotal}/510</span>
                           </S.DetailIvJudgmentBar>
                         ) : null}
                       </>
@@ -1807,9 +1823,9 @@ const PCStorage: React.FC = () => {
               </S.DetailPanel>
             ) : (
               <S.DetailPlaceholder>
-                <span className="hint-main">Select a Pokémon</span>
+                <span className="hint-main">{getLocalizedStorageText("pc.selectPokemon", languageId)}</span>
                 <span className="hint-sub">
-                  Ctrl+Click 2 Pokémon to compare their stats
+                  {getLocalizedStorageText("pc.compareHint", languageId)}
                 </span>
               </S.DetailPlaceholder>
             )}
@@ -1829,7 +1845,7 @@ const PCStorage: React.FC = () => {
                   className="pxl-border"
                   onClick={() => setIsComparing(true)}
                 >
-                  ⚖ Compare Stats (C)
+                  {getLocalizedStorageText("pc.compareButtonText", languageId)}
                 </S.CompareButton>
               </S.CompareStrip>
             )}
@@ -1839,7 +1855,7 @@ const PCStorage: React.FC = () => {
               {/* Wallpaper selector */}
               <S.WallpaperSelectorWrapper>
               <Text as="h3" variant="darker" size="md" style={{ marginBottom: "8px" }}>
-                Box Wallpaper
+                {getLocalizedStorageText("pc.boxWallpaper", languageId)}
               </Text>
               <S.WallpaperGrid>
                 {DEFAULT_WALLPAPERS.map((wp) => (
@@ -1856,7 +1872,7 @@ const PCStorage: React.FC = () => {
                     selected={activeBox?.backgroundImage === url}
                     bgUrl={url}
                     onClick={() => handleSelectWallpaper(url)}
-                    title="Custom"
+                    title={getLocalizedStorageText("pc.customWallpaper", languageId)}
                   />
                 ))}
               </S.WallpaperGrid>
@@ -1882,8 +1898,8 @@ const PCStorage: React.FC = () => {
                 <IconPhoto size={20} />
                 <span>
                   {uploading
-                    ? `${uploadProgress}% uploading…`
-                    : "Upload · Drag & Drop · Ctrl+V"}
+                    ? `${uploadProgress}% ${getLocalizedStorageText("pc.uploading", languageId)}`
+                    : getLocalizedStorageText("pc.uploadWallpaper", languageId)}
                 </span>
               </S.UploadWallpaperZone>
             </S.WallpaperSelectorWrapper>
@@ -1914,11 +1930,11 @@ const PCStorage: React.FC = () => {
         <S.ContextMenu x={contextMenu.x} y={contextMenu.y} className="pxl-border no-inset">
           <S.ContextMenuItem onClick={() => handleToggleFavorite(contextMenu.pokemon)}>
             <IconStar size={16} />
-            {contextMenu.pokemon.isFavorite ? "Remove Favorite" : "Add to Favorites"}
+            {contextMenu.pokemon.isFavorite ? getLocalizedStorageText("pc.favoriteRemove", languageId) : getLocalizedStorageText("pc.favoriteAdd", languageId)}
           </S.ContextMenuItem>
           <div style={{ borderBottom: "1px solid rgba(15,23,42,0.08)", margin: "4px 0" }} />
           <div style={{ padding: "4px 8px", fontSize: "0.85rem", color: "#64748b", fontWeight: "bold" }}>
-            Markings
+            {getLocalizedStorageText("pc.markings", languageId)}
           </div>
           <div style={{ display: "flex", gap: "2px", padding: "0 6px 4px" }}>
             {(["circle", "triangle", "square", "heart", "star"] as const).map((m, i) => (
@@ -1933,7 +1949,7 @@ const PCStorage: React.FC = () => {
           </div>
           <div style={{ borderBottom: "1px solid rgba(15,23,42,0.08)", margin: "4px 0" }} />
           <S.ContextMenuItem className="danger" onClick={() => handleReleasePokemon(contextMenu.pokemon)}>
-            <IconTrash size={16} /> Release
+            <IconTrash size={16} /> {getLocalizedStorageText("pc.release", languageId)}
           </S.ContextMenuItem>
         </S.ContextMenu>
       )}
@@ -1943,9 +1959,9 @@ const PCStorage: React.FC = () => {
         <S.CompareOverlay onClick={() => setIsComparing(false)}>
           <S.CompareContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
             <div className="compare-header">
-              <Text as="h2" variant="outlined" size="lg">Compare Stats</Text>
+              <Text as="h2" variant="outlined" size="lg">{getLocalizedStorageText("pc.compareStats", languageId)}</Text>
               <S.CloseBtn className="pxl-border" onClick={() => setIsComparing(false)}>
-                Close
+                {getLocalizedStorageText("pc.close", languageId)}
               </S.CloseBtn>
             </div>
             <div className="compare-grids">
@@ -1959,10 +1975,10 @@ const PCStorage: React.FC = () => {
                     </Text>
                     <div className="details">
                       {[
-                        { label: "Level", val: p.currentLevel },
-                        { label: "Nature", val: p.natureDisplay },
-                        { label: "Gender", val: p.genderDisplay },
-                        { label: "Win Rate", val: `${p.winRate}%` },
+                        { label: getLocalizedStorageText("pc.level", languageId), val: p.currentLevel },
+                        { label: getLocalizedStorageText("pc.nature", languageId), val: getLocalizedNatureDisplay(p.nature, languageId) },
+                        { label: getLocalizedStorageText("pc.gender", languageId), val: getLocalizedGenderName(p.gender, languageId) },
+                        { label: getLocalizedStorageText("pc.winRate", languageId), val: `${p.winRate}%` },
                       ].map(({ label, val }) => (
                         <div className="detail-row" key={label}>
                           <span className="label">{label}</span>
@@ -1971,12 +1987,12 @@ const PCStorage: React.FC = () => {
                       ))}
                       <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                         {[
-                          { name: "HP", a: p.calculatedHp, b: other.calculatedHp },
-                          { name: "Attack", a: p.calculatedAttack, b: other.calculatedAttack },
-                          { name: "Defense", a: p.calculatedDefense, b: other.calculatedDefense },
-                          { name: "Sp. Atk", a: p.calculatedSpecialAttack, b: other.calculatedSpecialAttack },
-                          { name: "Sp. Def", a: p.calculatedSpecialDefense, b: other.calculatedSpecialDefense },
-                          { name: "Speed", a: p.calculatedSpeed, b: other.calculatedSpeed },
+                          { name: getLocalizedStatAbbreviation("HP", languageId), a: p.calculatedHp, b: other.calculatedHp },
+                          { name: getLocalizedStatAbbreviation("ATK", languageId), a: p.calculatedAttack, b: other.calculatedAttack },
+                          { name: getLocalizedStatAbbreviation("DEF", languageId), a: p.calculatedDefense, b: other.calculatedDefense },
+                          { name: getLocalizedStatAbbreviation("SpA", languageId), a: p.calculatedSpecialAttack, b: other.calculatedSpecialAttack },
+                          { name: getLocalizedStatAbbreviation("SpD", languageId), a: p.calculatedSpecialDefense, b: other.calculatedSpecialDefense },
+                          { name: getLocalizedStatAbbreviation("SPD", languageId), a: p.calculatedSpeed, b: other.calculatedSpeed },
                         ].map(({ name, a, b }) => (
                           <S.StatCompareRow key={name}>
                             <div className="stat-label">
@@ -2003,7 +2019,7 @@ const PCStorage: React.FC = () => {
         <S.BoxListModalOverlay onClick={() => setShowBoxList(false)}>
           <S.BoxListModalContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>PC Box List</h3>
+              <h3>{getLocalizedStorageText("pc.boxListTitle", languageId)}</h3>
               <div className="header-meta">
                 <S.ModalCloseButton onClick={() => setShowBoxList(false)}>
                   <IconX size={20} />
@@ -2015,19 +2031,19 @@ const PCStorage: React.FC = () => {
                 isActive={boxFilter === "all"}
                 onClick={() => setBoxFilter("all")}
               >
-                All ({filterCounts.all})
+                {getLocalizedStorageText("pc.filterAll", languageId)} ({filterCounts.all})
               </S.FilterTabButton>
               <S.FilterTabButton
                 isActive={boxFilter === "has_pokemon"}
                 onClick={() => setBoxFilter("has_pokemon")}
               >
-                Occupied ({filterCounts.occupied})
+                {getLocalizedStorageText("pc.filterOccupied", languageId)} ({filterCounts.occupied})
               </S.FilterTabButton>
               <S.FilterTabButton
                 isActive={boxFilter === "empty"}
                 onClick={() => setBoxFilter("empty")}
               >
-                Empty ({filterCounts.empty})
+                {getLocalizedStorageText("pc.filterEmpty", languageId)} ({filterCounts.empty})
               </S.FilterTabButton>
             </S.BoxFilterTabsContainer>
             <div className="grid-container">
@@ -2045,7 +2061,7 @@ const PCStorage: React.FC = () => {
                 >
                   <div className="box-details">
                     <span className="box-name">
-                      {originalIndex === currentBoxIndex && "▶ "}{box.name}
+                      {originalIndex === currentBoxIndex && "▶ "}{getLocalizedBoxName(box.name, originalIndex)}
                     </span>
                     <span className="box-count">{box.pokemons.length}/30</span>
                   </div>
@@ -2061,20 +2077,20 @@ const PCStorage: React.FC = () => {
         <S.HelpOverlay onClick={() => setShowHelp(false)}>
           <S.HelpContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
             <Text as="h3" variant="outlined" size="lg" style={{ marginBottom: "16px", paddingBottom: "8px" }}>
-              Controls
+              {getLocalizedStorageText("pc.controlsTitle", languageId)}
             </Text>
             <div className="shortcuts-grid">
               {[
-                { desc: "Select Pokémon · show details", key: "Click" },
-                { desc: "Multi-select (group move / compare)", key: "Ctrl+Click" },
-                { desc: "Range select", key: "Shift+Click" },
-                { desc: "Move / swap Pokémon", key: "Hold & Drag" },
-                { desc: "Drop to party slot 1–6", key: "1 – 6" },
-                { desc: "Navigate Boxes", key: "← / → / A / D" },
-                { desc: "Open Box List", key: "B" },
-                { desc: "Compare (2 selected)", key: "C" },
-                { desc: "Focus Search", key: "F / S" },
-                { desc: "Cancel / Close", key: "ESC" },
+                { desc: getLocalizedStorageText("pc.shortcutSelect", languageId), key: "Click" },
+                { desc: getLocalizedStorageText("pc.shortcutMultiSelect", languageId), key: "Ctrl+Click" },
+                { desc: getLocalizedStorageText("pc.shortcutRangeSelect", languageId), key: "Shift+Click" },
+                { desc: getLocalizedStorageText("pc.shortcutMoveSwap", languageId), key: "Hold & Drag" },
+                { desc: getLocalizedStorageText("pc.shortcutDropParty", languageId), key: "1 – 6" },
+                { desc: getLocalizedStorageText("pc.shortcutNavigateBoxes", languageId), key: "← / → / A / D" },
+                { desc: getLocalizedStorageText("pc.shortcutOpenBoxList", languageId), key: "B" },
+                { desc: getLocalizedStorageText("pc.shortcutCompare", languageId), key: "C" },
+                { desc: getLocalizedStorageText("pc.shortcutFocusSearch", languageId), key: "F / S" },
+                { desc: getLocalizedStorageText("pc.shortcutCancelClose", languageId), key: "ESC" },
               ].map(({ desc, key }) => (
                 <div className="shortcut-row" key={key}>
                   <span className="desc">{desc}</span>
@@ -2083,7 +2099,7 @@ const PCStorage: React.FC = () => {
               ))}
             </div>
             <S.HelpCloseButton className="pxl-border" onClick={() => setShowHelp(false)}>
-              Got it
+              {getLocalizedStorageText("pc.gotIt", languageId)}
             </S.HelpCloseButton>
           </S.HelpContainer>
         </S.HelpOverlay>
@@ -2094,7 +2110,7 @@ const PCStorage: React.FC = () => {
         <S.MoveManagerModalOverlay onClick={() => setShowMoveManager(false)}>
           <S.MoveManagerContainer className="pxl-border" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Manage Moves</h3>
+              <h3>{getLocalizedStorageText("pc.manageMoves", languageId)}</h3>
               <button
                 className="close-btn"
                 onClick={() => setShowMoveManager(false)}
@@ -2107,7 +2123,7 @@ const PCStorage: React.FC = () => {
               {/* Left Column: Active Moves (the 4 selected moves) */}
               <S.ActiveMovesColumn>
                 <div style={{ fontSize: "0.7rem", fontFamily: '"Press Start 2P", monospace', color: "#475569", marginBottom: "8px" }}>
-                  Active Moves ({tempSelectedMoves.length}/4)
+                  {getLocalizedStorageText("pc.activeMoves", languageId)} ({tempSelectedMoves.length}/4)
                 </div>
                 {Array.from({ length: 4 }).map((_, idx) => {
                   const moveId = tempSelectedMoves[idx];
@@ -2128,7 +2144,7 @@ const PCStorage: React.FC = () => {
                           </div>
                           <div className="active-move-meta">
                             <span className="type-badge" style={{ backgroundColor: typeColor }}>
-                              {move.type}
+                              {getLocalizedTypeName(move.type || "normal", languageId)}
                             </span>
                             {move.damageClass && (
                               <span className={`class-badge ${move.damageClass.toLowerCase()}`}>
@@ -2136,7 +2152,7 @@ const PCStorage: React.FC = () => {
                               </span>
                             )}
                             <span className="power-acc">
-                              Pwr: {move.power || "—"}  Acc: {move.accuracy || "—"}%
+                              {getLocalizedStorageText("pc.pwr", languageId)}: {move.power || "—"}  {getLocalizedStorageText("pc.acc", languageId)}: {move.accuracy || "—"}%
                             </span>
                           </div>
                           <span className="remove-indicator">✕</span>
@@ -2146,7 +2162,7 @@ const PCStorage: React.FC = () => {
                   }
                   return (
                     <S.ActiveMoveSlot key={`active-slot-empty-${idx}`} isEmpty={true}>
-                      — Empty Slot —
+                      {getLocalizedStorageText("pc.emptySlot", languageId)}
                     </S.ActiveMoveSlot>
                   );
                 })}
@@ -2155,16 +2171,16 @@ const PCStorage: React.FC = () => {
               {/* Right Column: Available Moves */}
               <S.AvailableMovesColumn>
                 <div style={{ fontSize: "0.7rem", fontFamily: '"Press Start 2P", monospace', color: "#475569", marginBottom: "8px" }}>
-                  Available Level-up Moves
+                  {getLocalizedStorageText("pc.availableMoves", languageId)}
                 </div>
                 {tempSelectedMoves.length === 0 && (
                   <div className="validation-warning" style={{ marginBottom: "8px" }}>
-                    Warning: You must select at least 1 move.
+                    {getLocalizedStorageText("pc.warningMinMove", languageId)}
                   </div>
                 )}
                 {tempSelectedMoves.length > 4 && (
                   <div className="validation-warning" style={{ marginBottom: "8px" }}>
-                    Warning: Maximum 4 moves allowed.
+                    {getLocalizedStorageText("pc.warningMaxMove", languageId)}
                   </div>
                 )}
 
@@ -2183,21 +2199,21 @@ const PCStorage: React.FC = () => {
                         onClick={() => handleToggleMove(moveId)}
                       >
                         <S.PixelCheckbox checked={isChecked} />
-                        <span className="lvl-badge">Lvl {move.level}</span>
+                        <span className="lvl-badge">{getLocalizedStorageText("pc.level", languageId)} {move.level}</span>
                         <span className="move-name">{move.localizedName || move.name}</span>
                         <div className="move-stats">
                           <span className="type-badge" style={{ backgroundColor: typeColor }}>
-                            {move.type}
+                            {getLocalizedTypeName(move.type || "normal", languageId)}
                           </span>
-                          <span className="stat">Pwr: {move.power || "—"}</span>
-                          <span className="stat">Acc: {move.accuracy || "—"}%</span>
+                          <span className="stat">{getLocalizedStorageText("pc.pwr", languageId)}: {move.power || "—"}</span>
+                          <span className="stat">{getLocalizedStorageText("pc.acc", languageId)}: {move.accuracy || "—"}%</span>
                         </div>
                       </S.MoveRowItem>
                     );
                   })}
                   {allLearnedMoves.length === 0 && (
                     <div style={{ textAlign: "center", color: "#64748b", padding: "24px" }}>
-                      Loading level-up moves from database/PokeAPI...
+                      {getLocalizedStorageText("pc.loadingLevelupMoves", languageId)}
                     </div>
                   )}
                 </S.MovesListContainer>
@@ -2209,14 +2225,14 @@ const PCStorage: React.FC = () => {
                 variant="sky"
                 onClick={() => setShowMoveManager(false)}
               >
-                Cancel
+                {getLocalizedStorageText("pc.cancel", languageId)}
               </Button>
               <Button
                 variant="primary"
                 disabled={tempSelectedMoves.length === 0 || tempSelectedMoves.length > 4 || updateMovesMutation.isPending}
                 onClick={handleSaveMoves}
               >
-                {updateMovesMutation.isPending ? "Saving..." : "Save"}
+                {updateMovesMutation.isPending ? getLocalizedStorageText("pc.saving", languageId) : getLocalizedStorageText("pc.save", languageId)}
               </Button>
             </div>
           </S.MoveManagerContainer>
