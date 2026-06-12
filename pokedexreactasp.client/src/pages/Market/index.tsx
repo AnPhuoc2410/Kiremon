@@ -49,6 +49,9 @@ const Market: React.FC = () => {
     !!itemNameFromUrl && categories.length > 0,
   );
 
+  const selectedCategorySlug =
+    categories.find((c) => c.id === selectedCategory)?.name ?? "";
+
   useEffect(() => {
     if (searchResult && !isSearchingItem) {
       setSelectedCategory(searchResult.categoryId);
@@ -147,6 +150,7 @@ const Market: React.FC = () => {
                 <ItemDescriptionBox
                   item={selectedItem}
                   categoryId={selectedCategory}
+                  categoryName={selectedCategorySlug}
                   onClose={() => setSelectedItem(null)}
                 />
               </DescriptionPanel>
