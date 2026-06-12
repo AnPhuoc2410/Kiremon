@@ -62,6 +62,10 @@ namespace PokedexReactASP.Application.Services
             {
                 EnrichFromPokeApi(dto, userPokemon, pokeApiData);
             }
+            else
+            {
+                dto.Ability = userPokemon.Ability ?? "Unknown";
+            }
 
             CalculateDerivedFields(dto);
 
@@ -110,6 +114,27 @@ namespace PokedexReactASP.Application.Services
             dto.OfficialArtworkUrl = pokeApiData.Sprites?.Other?.Official_Artwork?.Front_Default;
 
             dto.Abilities = pokeApiData.Abilities?.Select(a => a.Ability.Name).ToList() ?? [];
+
+            // Handle fallback for existing Pokemon with no ability set in DB
+            if (string.IsNullOrEmpty(userPokemon.Ability))
+            {
+                var fallbackAbility = pokeApiData.Abilities?
+                    .Where(a => !a.Is_Hidden)
+                    .OrderBy(a => a.Slot)
+                    .Select(a => a.Ability.Name)
+                    .FirstOrDefault();
+
+                if (string.IsNullOrEmpty(fallbackAbility))
+                {
+                    fallbackAbility = pokeApiData.Abilities?.Select(a => a.Ability.Name).FirstOrDefault();
+                }
+
+                dto.Ability = fallbackAbility ?? "Unknown";
+            }
+            else
+            {
+                dto.Ability = userPokemon.Ability;
+            }
 
             // Base stats
             dto.BaseHp = pokeApiData.Hp;

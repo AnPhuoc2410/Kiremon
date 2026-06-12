@@ -41,6 +41,8 @@ namespace PokedexReactASP.Application.Mappings
                     !string.IsNullOrEmpty(src.CustomMoveIds)
                         ? src.CustomMoveIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()
                         : null))
+                .ForMember(dest => dest.HeldItemName, opt => opt.MapFrom(src => src.HeldItem != null ? src.HeldItem.Name : null))
+                .ForMember(dest => dest.HeldItemSpriteUrl, opt => opt.MapFrom(src => src.HeldItem != null ? src.HeldItem.SpriteUrl : null))
                 // Server-determined display fields (enriched at runtime)
                 .ForMember(dest => dest.NatureDisplay, opt => opt.Ignore())
                 .ForMember(dest => dest.GenderDisplay, opt => opt.Ignore())
@@ -90,6 +92,9 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.Type2, opt => opt.Ignore())
                 .ForMember(dest => dest.SpriteUrl, opt => opt.Ignore())
                 .ForMember(dest => dest.MaxHp, opt => opt.Ignore());
+
+            // UserBox → UserBoxDto
+            CreateMap<UserBox, UserBoxDto>();
         }
     }
 }

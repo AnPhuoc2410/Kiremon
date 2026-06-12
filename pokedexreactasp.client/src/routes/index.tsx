@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts";
 import { TourGuide } from "@/components/ui";
 
 const MyPokemon = lazy(() => import("@/pages/MyPokemon"));
+const PCStorage = lazy(() => import("@/pages/PCStorage"));
 
 const Explore = lazy(() => import("@/pages/Explore"));
 const RegionsExplore = lazy(() => import("@/pages/Explore/Regions"));
@@ -113,6 +114,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <MyPokemon />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/my-pokemon/pc"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <PCStorage />
               </Suspense>
             }
           />

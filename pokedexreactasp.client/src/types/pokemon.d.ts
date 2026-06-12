@@ -121,6 +121,7 @@ export interface IAbility {
   ability: INameUrlPair;
   is_hidden: boolean;
   slot: number;
+  description?: string | null;
 }
 
 export interface IMove {

@@ -132,6 +132,8 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public bool IsLegendary { get; set; }
         public bool IsMythical { get; set; }
         public bool IsUltraBeast { get; set; }
+
+        public string Ability { get; set; } = string.Empty;
     }
 }
 

@@ -36,5 +36,8 @@ namespace PokedexReactASP.Application.Interfaces
 
         /// <summary>Daily interaction that increases friendship by 1 (max 255). Returns false if already interacted today.</summary>
         Task<bool> InteractWithPokemonAsync(string userId, int userPokemonId);
+
+        /// <summary>Updates custom moveset of a Pokemon (max 4 moves).</summary>
+        Task<bool> UpdatePokemonMovesAsync(string userId, int userPokemonId, List<int> moveIds);
     }
 }

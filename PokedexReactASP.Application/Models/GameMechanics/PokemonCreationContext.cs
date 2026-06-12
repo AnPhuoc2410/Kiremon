@@ -1,4 +1,5 @@
 using PokedexReactASP.Domain.Enums;
+using PokedexReactASP.Application.Services;
 
 namespace PokedexReactASP.Application.Models.GameMechanics
 {
@@ -25,5 +26,6 @@ namespace PokedexReactASP.Application.Models.GameMechanics
         string? Type2,
         string SpriteUrl,
         string? ShinySpriteUrl,
-        int GenderRate);
+        int GenderRate,
+        List<PokeApiAbility> Abilities);
 }

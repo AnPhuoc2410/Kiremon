@@ -369,12 +369,6 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </S.NavItem>
 
-          <S.NavItem id="tour-nav-mypokemon">
-            <Link to="/my-pokemon">
-              <S.NavLink as="span">{t("nav.myPokemon", languageId)}</S.NavLink>
-            </Link>
-          </S.NavItem>
-
           <S.NavItem id="tour-nav-wildarea">
             <Link to="/wild-area">
               <S.NavLink as="span">{t("nav.wildArea", languageId)}</S.NavLink>
