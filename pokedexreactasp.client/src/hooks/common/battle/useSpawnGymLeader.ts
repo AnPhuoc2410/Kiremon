@@ -1,75 +1,89 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  GYM_LEADERS,
   getGymLeaderOrDefault,
   IGymLeader,
   IGymPokemon,
 } from "@/constants/gymLeaders";
-
-export const LS_GYM_BATTLE_KEY = "pokegames@gym-battle";
-
-interface IGymBattleState {
-  leaderId: string;
-  activeEnemyIndex: number;
-  roster: IGymPokemon[];
-}
+import { battleService } from "@/services/battle/battle.service";
 
 export const useSpawnGymLeader = (leaderId: string) => {
-  const getSavedGymBattle = (): IGymBattleState | null => {
-    if (typeof window === "undefined") return null;
-    const saved = localStorage.getItem(LS_GYM_BATTLE_KEY);
-    if (saved) {
+  const [leader, setLeader] = useState<IGymLeader | null>(null);
+  const [activeEnemyIndex, setActiveEnemyIndex] = useState<number>(0);
+  const [enemyRoster, setEnemyRoster] = useState<IGymPokemon[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!leaderId) {
+      setIsLoading(false);
+      return;
+    }
+
+    const loadLeaderAndState = async () => {
       try {
-        const parsed = JSON.parse(saved) as IGymBattleState;
-        if (parsed.leaderId === leaderId) {
-          return parsed;
+        setIsLoading(true);
+        // 1. Fetch gym leader metadata
+        const leaderDto = await battleService.getGymLeader(leaderId);
+        const roster: IGymPokemon[] = JSON.parse(leaderDto.rosterJson);
+
+        const fullLeader: IGymLeader = {
+          id: leaderDto.id,
+          name: leaderDto.name,
+          badgeName: leaderDto.badgeName,
+          region: leaderDto.region,
+          avatar: leaderDto.avatar,
+          sprite: leaderDto.sprite,
+          roster,
+        };
+        setLeader(fullLeader);
+
+        // 2. Fetch saved battle state
+        const savedState = await battleService.getBattleState(
+          "gym_" + leaderId,
+        );
+        if (savedState) {
+          setActiveEnemyIndex(savedState.activeEnemyIndex ?? 0);
+          const gymRosterHps = savedState.gymRosterHps || [];
+          const hydratedRoster = roster.map((p, idx) => ({
+            ...p,
+            current_hp:
+              gymRosterHps[idx] !== undefined ? gymRosterHps[idx] : p.stats.hp,
+            is_defeated:
+              gymRosterHps[idx] !== undefined ? gymRosterHps[idx] <= 0 : false,
+          }));
+          setEnemyRoster(hydratedRoster);
+        } else {
+          setActiveEnemyIndex(0);
+          const initialRoster = roster.map((p) => ({
+            ...p,
+            current_hp: p.stats.hp,
+            is_defeated: false,
+          }));
+          setEnemyRoster(initialRoster);
         }
       } catch (e) {
-        return null;
+        console.error("Failed to load gym leader from database/cache:", e);
+        // Fallback if DB load fails
+        const fallbackLeader = getGymLeaderOrDefault(leaderId);
+        setLeader(fallbackLeader);
+        setActiveEnemyIndex(0);
+        const initialRoster = fallbackLeader.roster.map((p) => ({
+          ...p,
+          current_hp: p.stats.hp,
+          is_defeated: false,
+        }));
+        setEnemyRoster(initialRoster);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    return null;
-  };
-
-  const [battleState, setBattleState] = useState<IGymBattleState | null>(() => {
-    const saved = getSavedGymBattle();
-    if (saved) return saved;
-
-    if (!leaderId) return null;
-
-    const leader = getGymLeaderOrDefault(leaderId);
-    // Initialize roster HPs
-    const rosterWithHps = leader.roster.map((p) => ({
-      ...p,
-      current_hp: p.stats.hp,
-      is_defeated: false,
-    })) as any[];
-
-    const newState = {
-      leaderId,
-      activeEnemyIndex: 0,
-      roster: rosterWithHps,
     };
 
-    localStorage.setItem(LS_GYM_BATTLE_KEY, JSON.stringify(newState));
-    return newState;
-  });
+    loadLeaderAndState();
+  }, [leaderId]);
 
   const updateRosterPokemon = useCallback(
-    (
-      index: number,
-      updates: Partial<
-        IGymPokemon & { current_hp: number; is_defeated: boolean }
-      >,
-    ) => {
-      setBattleState((prev) => {
-        if (!prev) return null;
-        const updatedRoster = prev.roster.map((p, i) =>
-          i === index ? { ...p, ...updates } : p,
-        );
-        const updatedState = { ...prev, roster: updatedRoster };
-        localStorage.setItem(LS_GYM_BATTLE_KEY, JSON.stringify(updatedState));
-        return updatedState;
+    (index: number, updates: Partial<IGymPokemon>) => {
+      setEnemyRoster((prev) => {
+        return prev.map((p, idx) => (idx === index ? { ...p, ...updates } : p));
       });
     },
     [],
@@ -77,40 +91,31 @@ export const useSpawnGymLeader = (leaderId: string) => {
 
   const sendNextPokemon = useCallback((): boolean => {
     let succeeded = false;
-    setBattleState((prev) => {
-      if (!prev) return null;
-      if (prev.activeEnemyIndex + 1 < prev.roster.length) {
-        const updatedState = {
-          ...prev,
-          activeEnemyIndex: prev.activeEnemyIndex + 1,
-        };
-        localStorage.setItem(LS_GYM_BATTLE_KEY, JSON.stringify(updatedState));
+    setActiveEnemyIndex((prev) => {
+      if (prev + 1 < enemyRoster.length) {
         succeeded = true;
-        return updatedState;
+        return prev + 1;
       }
       return prev;
     });
     return succeeded;
-  }, []);
+  }, [enemyRoster.length]);
 
   const clearGymBattle = useCallback(() => {
-    localStorage.removeItem(LS_GYM_BATTLE_KEY);
-    setBattleState(null);
+    setEnemyRoster([]);
+    setActiveEnemyIndex(0);
   }, []);
 
-  const leader = leaderId ? getGymLeaderOrDefault(leaderId) : null;
-  const activeEnemy = battleState
-    ? (battleState.roster[battleState.activeEnemyIndex] as any)
-    : null;
+  const activeEnemy = enemyRoster[activeEnemyIndex] || null;
 
   return {
     leader,
     activeEnemy,
-    enemyRoster: battleState?.roster || [],
-    activeEnemyIndex: battleState?.activeEnemyIndex ?? 0,
+    enemyRoster,
+    activeEnemyIndex,
     updateRosterPokemon,
     sendNextPokemon,
     clearGymBattle,
-    isLoading: !battleState && !!leaderId,
+    isLoading,
   };
 };

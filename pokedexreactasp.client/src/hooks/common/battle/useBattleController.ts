@@ -6,6 +6,7 @@ import { useDamageSystem } from "./useDamageSystem";
 import { userService } from "@/services/user/user.service";
 import { collectionService } from "@/services/collection/collection.service";
 import toast from "react-hot-toast";
+import { battleService } from "@/services/battle/battle.service";
 
 interface IBattleControllerProps {
   playerPokemon: any;
@@ -287,42 +288,162 @@ export const useBattleController = ({
     if (playerTeam.length === 0) return;
     if (isBattleInitialized.current) return;
 
-    if (leaderId) {
-      // Gym Leader battle
-      if (!activeEnemy) return;
-      setPlayerCurrentHP(playerTeam[0].stats.hp);
-      setEnemyCurrentHP(activeEnemy.stats.hp);
-      setBattleLog([
-        `Gym Leader ${leader.name} challenged you to a battle!`,
-        `${leader.name} sent out ${activeEnemy.name}!`,
-        `Go, ${playerTeam[0].nickname}!`,
-      ]);
-    } else {
-      // Wild battle
-      if (!enemy) return;
-      const savedPlayerHP = localStorage.getItem(key.LS_PLAYER_HP_KEY);
-      const initialPlayerHP = savedPlayerHP
-        ? Math.min(parseInt(savedPlayerHP), playerTeam[0].stats.hp)
-        : playerTeam[0].stats.hp;
+    if (leaderId && (!activeEnemy || !leader)) return;
+    if (!leaderId && !enemy) return;
 
-      setPlayerCurrentHP(initialPlayerHP);
-      setEnemyCurrentHP(
-        enemy.current_hp !== undefined ? enemy.current_hp : enemy.stats.hp,
-      );
+    const initBattle = async () => {
+      isBattleInitialized.current = true;
+      const keyName = leaderId ? "gym_" + leaderId : "wild";
 
-      if (enemy.is_defeated || enemy.current_hp <= 0) {
-        setBattleLog([`${enemy.name} is already defeated!`]);
-        setGameOver(true);
-        setShowIntro(false);
-      } else {
-        setBattleLog([
-          `Wild ${enemy.name} appeared!`,
-          `Go, ${playerTeam[0].nickname}!`,
-        ]);
+      try {
+        const savedState = await battleService.getBattleState(keyName);
+        if (savedState) {
+          setActivePlayerIdx(savedState.activePlayerIdx);
+          setPlayerTeamHps(savedState.playerTeamHps);
+          setPlayerCurrentHP(savedState.playerCurrentHP);
+          setEnemyCurrentHP(savedState.enemyCurrentHP);
+          setIsPlayerTurn(savedState.isPlayerTurn);
+          setBattleLog(savedState.battleLog);
+          setUltimateGauge(savedState.ultimateGauge);
+          setEnemyUltimateGauge(savedState.enemyUltimateGauge);
+          setShowIntro(savedState.showIntro);
+          setGameOver(savedState.gameOver);
+
+          if (
+            leaderId &&
+            savedState.activeEnemyIndex !== undefined &&
+            updateRosterPokemon
+          ) {
+            const gymRosterHps = savedState.gymRosterHps || [];
+            gymRosterHps.forEach((hp, idx) => {
+              updateRosterPokemon(idx, {
+                current_hp: hp,
+                is_defeated: hp <= 0,
+              });
+            });
+          }
+        } else {
+          // Initialize fresh battle
+          const initialPlayerHP = playerTeam[0].stats.hp;
+          const initialEnemyHP = leaderId
+            ? activeEnemy.stats.hp
+            : enemy.stats.hp;
+
+          let initialLog: string[] = [];
+          if (leaderId) {
+            initialLog = [
+              `Gym Leader ${leader.name} challenged you to a battle!`,
+              `${leader.name} sent out ${activeEnemy.name}!`,
+              `Go, ${playerTeam[0].nickname}!`,
+            ];
+          } else {
+            initialLog = [
+              `Wild ${enemy.name} appeared!`,
+              `Go, ${playerTeam[0].nickname}!`,
+            ];
+          }
+
+          setPlayerCurrentHP(initialPlayerHP);
+          setEnemyCurrentHP(initialEnemyHP);
+          setBattleLog(initialLog);
+          setUltimateGauge(0);
+          setEnemyUltimateGauge(0);
+          setShowIntro(true);
+          setGameOver(false);
+
+          const initialPlayerHps = playerTeam.map((p) => p.stats.hp);
+          setPlayerTeamHps(initialPlayerHps);
+
+          const freshState: any = {
+            activePlayerIdx: 0,
+            playerTeamHps: initialPlayerHps,
+            playerCurrentHP: initialPlayerHP,
+            enemyCurrentHP: initialEnemyHP,
+            isPlayerTurn: true,
+            battleLog: initialLog,
+            ultimateGauge: 0,
+            enemyUltimateGauge: 0,
+            showIntro: true,
+            gameOver: false,
+          };
+
+          if (leaderId) {
+            freshState.activeEnemyIndex = 0;
+            freshState.gymRosterHps = enemyRoster.map((p) => p.stats.hp);
+          } else {
+            freshState.wildEnemy = enemy;
+          }
+
+          await battleService.saveBattleState(keyName, freshState);
+        }
+      } catch (err) {
+        console.error("Error initializing battle state from backend:", err);
       }
-    }
-    isBattleInitialized.current = true;
-  }, [playerTeam, enemy, activeEnemy, leaderId, leader, key.LS_PLAYER_HP_KEY]);
+    };
+
+    initBattle();
+  }, [
+    playerTeam,
+    enemy,
+    activeEnemy,
+    leaderId,
+    leader,
+    updateRosterPokemon,
+    enemyRoster,
+  ]);
+
+  // Auto-save active battle state to Redis when dynamic state changes
+  useEffect(() => {
+    if (!isBattleInitialized.current || gameOver) return;
+
+    const save = async () => {
+      const keyName = leaderId ? "gym_" + leaderId : "wild";
+      const stateToSave: any = {
+        activePlayerIdx,
+        playerTeamHps,
+        playerCurrentHP,
+        enemyCurrentHP,
+        isPlayerTurn,
+        battleLog,
+        ultimateGauge,
+        enemyUltimateGauge,
+        showIntro,
+        gameOver,
+      };
+
+      if (leaderId) {
+        stateToSave.activeEnemyIndex = activeEnemyIndex;
+        stateToSave.gymRosterHps = enemyRoster.map(
+          (p) => p.current_hp ?? p.stats.hp,
+        );
+      } else {
+        stateToSave.wildEnemy = enemy;
+      }
+
+      try {
+        await battleService.saveBattleState(keyName, stateToSave);
+      } catch (e) {
+        console.error("Failed to auto-save battle state to Redis:", e);
+      }
+    };
+
+    save();
+  }, [
+    activePlayerIdx,
+    playerTeamHps,
+    playerCurrentHP,
+    enemyCurrentHP,
+    isPlayerTurn,
+    battleLog,
+    ultimateGauge,
+    enemyUltimateGauge,
+    showIntro,
+    gameOver,
+    activeEnemyIndex,
+    enemyRoster,
+    leaderId,
+    enemy,
+  ]);
 
   const safeSetState = (setter: any, value: any) => {
     if (isMounted.current) setter(value);
@@ -337,9 +458,13 @@ export const useBattleController = ({
     }, HIT_EFFECT_DURATION);
   };
 
-  const clearStorage = () => {
-    localStorage.removeItem(key.LS_PLAYER_HP_KEY);
-    localStorage.removeItem(key.LS_ENEMY_KEY);
+  const clearStorage = async () => {
+    const keyName = leaderId ? "gym_" + leaderId : "wild";
+    try {
+      await battleService.clearBattleState(keyName);
+    } catch (err) {
+      console.error("Failed to clear battle state from Redis:", err);
+    }
     if (clearGymBattle) clearGymBattle();
   };
 
@@ -402,7 +527,6 @@ export const useBattleController = ({
     } else {
       // Wild Battle
       updateEnemyState({ current_hp: 0, is_defeated: true });
-      localStorage.removeItem(key.LS_PLAYER_HP_KEY);
 
       const expReward = calculateExpGain(
         currentEnemy.battle_state.level,
@@ -429,7 +553,6 @@ export const useBattleController = ({
 
   const handleLose = () => {
     if (!currentEnemy || !currentPlayer) return;
-    localStorage.removeItem(key.LS_PLAYER_HP_KEY);
 
     if (leaderId) {
       const loseLogs = [
@@ -536,10 +659,6 @@ export const useBattleController = ({
       const updatedHps = [...playerTeamHps];
       updatedHps[activePlayerIdx] = newHP;
       setPlayerTeamHps(updatedHps);
-
-      if (!leaderId) {
-        localStorage.setItem(key.LS_PLAYER_HP_KEY, newHP.toString());
-      }
 
       const logMessages = [
         logHeader,
