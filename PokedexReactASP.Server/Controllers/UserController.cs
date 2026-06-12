@@ -14,17 +14,20 @@ namespace PokedexReactASP.Server.Controllers
         private readonly IPokemonCollectionService _collectionService;
         private readonly IPokemonCatchService _catchService;
         private readonly IAchievementService _achievementService;
+        private readonly IPokemonBoxService _boxService;
 
         public UserController(
             IUserProfileService profileService,
             IPokemonCollectionService collectionService,
             IPokemonCatchService catchService,
-            IAchievementService achievementService)
+            IAchievementService achievementService,
+            IPokemonBoxService boxService)
         {
             _profileService    = profileService;
             _collectionService = collectionService;
             _catchService      = catchService;
             _achievementService = achievementService;
+            _boxService        = boxService;
         }
 
         [HttpGet("profile")]
@@ -139,6 +142,19 @@ namespace PokedexReactASP.Server.Controllers
             return result ? Ok(new { message = "Notes updated successfully" }) : NotFound(new { message = "Pokemon not found in your collection" });
         }
 
+        /// <summary>Update Pokemon moves</summary>
+        [HttpPut("pokemon/{userPokemonId}/moves")]
+        public async Task<ActionResult> UpdatePokemonMoves(int userPokemonId, [FromBody] List<int> moveIds)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (moveIds == null || moveIds.Count > 4) return BadRequest(new { message = "Invalid moveset. Maximum 4 moves allowed." });
+
+            var result = await _catchService.UpdatePokemonMovesAsync(CurrentUserId, userPokemonId, moveIds);
+            return result 
+                ? Ok(new { message = "Moveset updated successfully" }) 
+                : NotFound(new { message = "Pokemon not found in your collection" });
+        }
+
         /// <summary>Get user's achievements with progress</summary>
         [HttpGet("achievements")]
         public async Task<ActionResult<IEnumerable<UserAchievementStatusDto>>> GetAchievements()
@@ -157,6 +173,69 @@ namespace PokedexReactASP.Server.Controllers
             return success 
                 ? Ok(new { message = "Achievement unlocked successfully" }) 
                 : BadRequest(new { message = "Failed to unlock achievement. Make sure the ID is correct and not already unlocked." });
+        }
+
+        #endregion
+
+        #region Box Storage Endpoints
+
+        /// <summary>Get all boxes and their pokemon for the user</summary>
+        [HttpGet("boxes")]
+        public async Task<ActionResult<IEnumerable<UserBoxDto>>> GetBoxes(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            return Ok(await _boxService.GetBoxesAsync(CurrentUserId, cancellationToken));
+        }
+
+        /// <summary>Update box details (name, background image)</summary>
+        [HttpPut("boxes/{boxId}")]
+        public async Task<ActionResult<UserBoxDto>> UpdateBox(int boxId, [FromBody] UpdateBoxDto dto, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _boxService.UpdateBoxAsync(CurrentUserId, boxId, dto, cancellationToken);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>Moves a caught Pokemon to a new box or party slot, swapping positions if occupied.</summary>
+        [HttpPut("pokemon/{userPokemonId}/move")]
+        public async Task<ActionResult<MovePokemonResultDto>> MovePokemon(int userPokemonId, [FromBody] MovePokemonDto dto, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _boxService.MovePokemonAsync(CurrentUserId, userPokemonId, dto, cancellationToken);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>Moves a group of Pokemon to new box slots (Group Move). All target slots must be unoccupied.</summary>
+        [HttpPut("pokemon/move-batch")]
+        public async Task<ActionResult> MovePokemonBatch([FromBody] BatchMovePokemonDto dto, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var success = await _boxService.MovePokemonBatchAsync(CurrentUserId, dto, cancellationToken);
+            return success ? Ok(new { message = "Batch move completed successfully." }) : BadRequest(new { message = "Batch move failed. One or more target slots are occupied." });
+        }
+
+        /// <summary>Swaps the display order of two boxes.</summary>
+        [HttpPut("boxes/reorder")]
+        public async Task<ActionResult> ReorderBoxes([FromBody] ReorderBoxesDto dto, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var success = await _boxService.ReorderBoxesAsync(CurrentUserId, dto, cancellationToken);
+            return success ? Ok(new { message = "Boxes reordered successfully." }) : BadRequest(new { message = "Failed to reorder boxes." });
         }
 
         #endregion

@@ -65,6 +65,15 @@ export interface UserPokemonDto {
   canEvolve: boolean;
   isTraded: boolean;
   originalTrainerName: string | null;
+  
+  customMoveIds: number[] | null;
+  heldItemId: number | null;
+  heldItemName: string | null;
+  heldItemSpriteUrl: string | null;
+  boxId: number | null;
+  isInParty: boolean;
+  slotIndex: number;
+  markings: string | null;
 
   // From PokeAPI
   name: string;
@@ -76,6 +85,7 @@ export interface UserPokemonDto {
   spriteUrl: string;
   officialArtworkUrl: string | null;
   abilities: string[];
+  ability: string;
 
   // Base stats
   baseHp: number;
@@ -141,6 +151,7 @@ export interface CaughtPokemonDto {
   isLegendary: boolean;
   isMythical: boolean;
   isUltraBeast: boolean;
+  ability: string;
 }
 
 /**

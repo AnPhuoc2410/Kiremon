@@ -7,7 +7,7 @@ namespace PokedexReactASP.Application.Services
 {
     public partial class AuthService
     {
-        public async Task<AuthResponseDto> ExternalLoginAsync(ExternalLoginDto loginDto)
+        public async Task<AuthResultDto> ExternalLoginAsync(ExternalLoginDto loginDto, string? deviceInfo = null)
         {
             var socialUser = await _socialAuthService.VerifyTokenAsync(loginDto.Provider, loginDto.Token);
 
@@ -77,13 +77,26 @@ namespace PokedexReactASP.Application.Services
 
                 if (isTrustedDevice)
                 {
-                    return GenerateAuthResponse(user, includeToken: true, requiresTwoFactor: false);
+                    return await GenerateAuthResultAsync(user, deviceInfo);
                 }
 
-                return GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true);
+                return new AuthResultDto
+                {
+                    ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true),
+                    RefreshToken = null
+                };
             }
 
-            return GenerateAuthResponse(user, includeToken: user.EmailConfirmed, requiresTwoFactor: false);
+            if (user.EmailConfirmed)
+            {
+                return await GenerateAuthResultAsync(user, deviceInfo);
+            }
+
+            return new AuthResultDto
+            {
+                ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: false),
+                RefreshToken = null
+            };
         }
 
         private async Task SendWelcomeEmailForExternalUser(ApplicationUser user, string provider)

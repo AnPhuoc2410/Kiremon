@@ -4,10 +4,12 @@ import {
   LogLevel,
   HubConnectionState,
 } from "@microsoft/signalr";
-import { getCookie } from "@/components/utils/cookieUtils";
+import { getMemoryToken } from "@/services/api/tokenHolder";
 import { AchievementNotification } from "@/types/users.type";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "/api";
 
 const getHubUrl = () => {
   let baseUrl = API_BASE_URL;
@@ -44,7 +46,7 @@ class PresenceHubService {
     this.connection = new HubConnectionBuilder()
       .withUrl(hubUrl, {
         accessTokenFactory: () => {
-          return getCookie("accessToken") || "";
+          return getMemoryToken() || "";
         },
       })
       .withAutomaticReconnect()

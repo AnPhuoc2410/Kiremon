@@ -90,6 +90,19 @@ class CollectionService extends AuthenticatedApiService {
   async updateNotes(userPokemonId: number, notes: string): Promise<void> {
     return this.put<void>(`/User/pokemon/${userPokemonId}/notes`, { notes });
   }
+
+  /**
+   * Update Pokemon moves
+   */
+  async updateMoves(
+    userPokemonId: number,
+    moveIds: number[],
+  ): Promise<{ message: string }> {
+    return this.put<{ message: string }>(
+      `/User/pokemon/${userPokemonId}/moves`,
+      moveIds,
+    );
+  }
 }
 
 export const collectionService = new CollectionService();

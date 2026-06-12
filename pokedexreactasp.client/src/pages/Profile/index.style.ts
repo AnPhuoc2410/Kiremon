@@ -1491,14 +1491,23 @@ export const AchievementStatValue = styled.h3`
   line-height: 1;
 `;
 
+export const SubTabsHeader = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 4px solid ${colors["gray-300"]};
+  margin-top: 12px;
+  width: 100%;
+  gap: 16px;
+  padding-bottom: 2px;
+`;
+
 export const AchievementsSubTabContainer = styled.div`
   display: flex;
   gap: 8px;
-  border-bottom: 4px solid ${colors["gray-300"]};
-  padding-bottom: 2px;
-  margin-top: 12px;
   width: 100%;
   overflow-x: auto;
+  flex: 1;
 
   /* hide scrollbar */
   -ms-overflow-style: none;
@@ -1529,11 +1538,47 @@ export const AchievementsSubTab = styled.button<{ $active: boolean }>`
   }
 `;
 
+export const RegionsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+`;
+
+export const RegionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: ${colors["gray-100"]};
+  border: 2px solid ${colors["gray-200"]};
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${colors["gray-200"]};
+    border-color: ${colors["gray-300"]};
+  }
+`;
+
+export const ToggleIcon = styled.div<{ $isCollapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${colors["gray-500"]};
+  transition: transform 0.2s ease;
+  transform: ${({ $isCollapsed }) =>
+    $isCollapsed ? "rotate(-90deg)" : "rotate(0deg)"};
+`;
+
 export const BadgesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 20px;
   width: 100%;
+  margin-top: 12px;
 `;
 
 export const BadgeCard = styled.div<{ $unlocked: boolean; $rarity: string }>`
@@ -1659,6 +1704,7 @@ export const AchievementsBentoGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   width: 100%;
+  margin-top: 12px;
 `;
 
 export const AchievementBentoCard = styled.div<{ $unlocked: boolean }>`

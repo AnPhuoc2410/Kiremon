@@ -23,6 +23,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<Achievement> Achievements { get; set; } = null!;
         public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
         public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +69,10 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     .WithMany(b => b.Pokemons)
                     .HasForeignKey(p => p.BoxId)
                     .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(p => p.HeldItem)
+                    .WithMany()
+                    .HasForeignKey(p => p.HeldItemId)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 // String length constraints
                 entity.Property(e => e.Nickname).HasMaxLength(50);
@@ -76,12 +81,14 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.OriginalTrainerId).HasMaxLength(450);
                 entity.Property(e => e.OriginalTrainerName).HasMaxLength(100);
                 entity.Property(e => e.Notes).HasMaxLength(1000);
+                entity.Property(e => e.Markings).HasMaxLength(100);
 
                 // Required fields
                 entity.Property(e => e.UserId).IsRequired();
                 entity.Property(e => e.PokemonApiId).IsRequired();
                 entity.Property(e => e.CaughtDate).IsRequired();
-                
+
+                entity.Property(e => e.Ability).HasMaxLength(100);
             });
 
             // Configure UserBox entity
@@ -298,6 +305,22 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.SourceUrl).IsRequired().HasMaxLength(500);
                 entity.Property(e => e.Category).HasMaxLength(100);
                 entity.Property(e => e.Author).HasMaxLength(100);
+            });
+
+            // Configure RefreshToken entity
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.UserId);
+
+                entity.Property(e => e.Token).HasMaxLength(256).IsRequired();
+                entity.Property(e => e.DeviceInfo).HasMaxLength(500);
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.RefreshTokens)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

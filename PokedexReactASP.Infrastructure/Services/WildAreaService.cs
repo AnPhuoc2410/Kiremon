@@ -210,7 +210,8 @@ namespace PokedexReactASP.Infrastructure.Services
                         Nickname = catchResult.CaughtPokemon.Nickname,
                         IsShiny = catchResult.CaughtPokemon.IsShiny,
                         Nature = catchResult.CaughtPokemon.Nature.ToString(),
-                        CaughtLevel = catchResult.CaughtPokemon.Level
+                        CaughtLevel = catchResult.CaughtPokemon.Level,
+                        Ability = catchResult.CaughtPokemon.Ability
                     },
                 CardReward = reward
             };

@@ -76,6 +76,11 @@ namespace PokedexReactASP.Domain.Entities
 
         public string? Notes { get; set; }
 
+        /// <summary>
+        /// Comma-separated list of active markings (e.g., "circle,triangle,square,heart,star,diamond")
+        /// </summary>
+        public string? Markings { get; set; }
+
         #endregion
 
         #region Current Stats (Mutable)
@@ -132,9 +137,14 @@ namespace PokedexReactASP.Domain.Entities
         public string? CustomMoveIds { get; set; }
 
         /// <summary>
-        /// Held item (item ID from PokeAPI)
+        /// Held item database ID
         /// </summary>
         public int? HeldItemId { get; set; }
+
+        /// <summary>
+        /// Foreign key navigation property to the held UserItem
+        /// </summary>
+        public virtual UserItem? HeldItem { get; set; }
 
         #endregion
 
@@ -225,6 +235,10 @@ namespace PokedexReactASP.Domain.Entities
         /// </summary>
         public int? HeldItemApiId { get; set; }
 
+        /// <summary>
+        /// The specific ability this Pokemon individual currently possesses.
+        /// </summary>
+        public string? Ability { get; set; }
         #endregion
     }
 }

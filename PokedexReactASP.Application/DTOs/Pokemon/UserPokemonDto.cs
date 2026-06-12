@@ -68,6 +68,16 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public string FriendshipLevel { get; set; } = string.Empty; // "Low", "Medium", "High", "Max"
         public List<int>? CustomMoveIds { get; set; }
         public int? HeldItemId { get; set; }
+        public string? HeldItemName { get; set; }
+        public string? HeldItemSpriteUrl { get; set; }
+
+        // Location Management
+        public int? BoxId { get; set; }
+        public bool IsInParty { get; set; }
+        public int SlotIndex { get; set; }
+
+        // Customization
+        public string? Markings { get; set; }
         
         // Evolution
         public bool CanEvolve { get; set; }
@@ -89,6 +99,7 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public string? OfficialArtworkUrl { get; set; }
         public string? Category { get; set; }
         public List<string> Abilities { get; set; } = new();
+        public string Ability { get; set; } = string.Empty;
         
         // Base stats from PokeAPI
         public int BaseHp { get; set; }
