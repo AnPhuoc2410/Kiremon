@@ -420,6 +420,12 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </NavItemWithDropdown>
 
+          <S.NavItem id="tour-nav-bag">
+            <Link to="/bag">
+              <S.NavLink as="span">{t("nav.bag", languageId)}</S.NavLink>
+            </Link>
+          </S.NavItem>
+
           <S.NavItem id="tour-nav-market">
             <Link to="/poke-mart">
               <S.NavLink as="span">{t("nav.pokeMart", languageId)}</S.NavLink>

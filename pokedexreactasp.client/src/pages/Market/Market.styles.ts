@@ -82,10 +82,10 @@ export const CategorySidebar = styled.div<{ $isOpen?: boolean }>`
     width: 280px;
     z-index: 1000;
     transform: ${(props) =>
-      props.$isOpen ? "translateX(0)" : "translateX(-100%)"};
+    props.$isOpen ? "translateX(0)" : "translateX(-100%)"};
     transition: transform 0.3s ease;
     box-shadow: ${(props) =>
-      props.$isOpen ? "0 0 40px rgba(0,0,0,0.2)" : "none"};
+    props.$isOpen ? "0 0 40px rgba(0,0,0,0.2)" : "none"};
   }
 
   @media (min-width: 768px) {
@@ -156,7 +156,7 @@ export const CategoryTab = styled.button<{ $active?: boolean }>`
 
   &:hover {
     background: ${(props) =>
-      props.$active ? colors["blue-200"] : colors["gray-100"]};
+    props.$active ? colors["blue-200"] : colors["gray-100"]};
   }
 
   &:active {
@@ -257,7 +257,7 @@ export const ItemCard = styled.div<{ $selected?: boolean }>`
   &:hover {
     transform: translateY(-4px);
     background: ${(props) =>
-      props.$selected ? colors["blue-200"] : colors["gray-100"]};
+    props.$selected ? colors["blue-200"] : colors["gray-100"]};
     box-shadow:
       0 12px 16px -4px rgba(16, 24, 40, 0.08),
       0 4px 6px -2px rgba(16, 24, 40, 0.03);
@@ -407,6 +407,44 @@ export const DialogDescription = styled.p`
   margin: 0;
   color: ${colors["gray-600"]};
   line-height: 1.6;
+`;
+
+// ============ BUY SECTION ============
+export const BuySection = styled.div`
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const QuantityInput = styled.input`
+  width: 72px;
+  border: 2px solid ${colors["gray-300"]};
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+`;
+
+export const BuyButton = styled.button`
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: #b45309;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: #92400e;
+  }
+
+  &:disabled {
+    background: ${colors["gray-300"]};
+    cursor: not-allowed;
+  }
 `;
 
 // ============ WILD POKEMON SECTION ============

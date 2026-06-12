@@ -7,6 +7,7 @@ export { default as Loading } from "./Loading";
 export { default as NavItem } from "./Navbar/NavItem";
 export { default as TypeCard } from "./Card/TypeCard";
 export { default as PokeCard } from "./Card/PokeCard";
+export { default as ItemCard } from "./Card/ItemCard";
 export { default as DeleteButton } from "./Button/DeleteButton";
 export { default as NoSignal } from "./NoSignal";
 export { default as Header } from "./Header";

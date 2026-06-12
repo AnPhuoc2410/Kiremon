@@ -633,6 +633,67 @@ const GET_ITEMS_BY_IDS_QUERY = `
   }
 `;
 
+const GET_ITEM_CATEGORIES_QUERY = `
+  query getItemCategories($languageId: Int!) {
+    itemcategory(order_by: {id: asc}) {
+      id
+      name
+      itemcategorynames(where: {language_id: {_eq: $languageId}}) {
+        name
+        language_id
+      }
+      itempocket {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const GET_ITEM_EFFECT_DETAILS_QUERY = `
+  query getItemEffectDetails($itemId: Int!, $languageId: Int!) {
+    item(where: {id: {_eq: $itemId}}) {
+      id
+      itemeffecttexts(where: {language_id: {_eq: $languageId}}, limit: 1) {
+        effect
+      }
+      pokemonitems(
+        distinct_on: [pokemon_id]
+        order_by: {pokemon_id: asc}
+      ) {
+        pokemon {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+
+export interface ItemCategoryGraphQL {
+  id: number;
+  name: string;
+  itemcategorynames: Array<{
+    name: string;
+    language_id: number;
+  }>;
+  itempocket?: {
+    id: number;
+    name: string;
+  } | null;
+}
+
+export interface ItemEffectDetailsGraphQL {
+  id: number;
+  itemeffecttexts: Array<{ effect: string }>;
+  pokemonitems: Array<{
+    pokemon: {
+      id: number;
+      name: string;
+    };
+  }>;
+}
+
 // ============ GraphQL Fetch Function ============
 
 async function executeGraphQLQuery<T>(
@@ -855,6 +916,52 @@ export const pokemonGraphQLService = {
       });
     } catch (error) {
       console.error(`Error fetching Pokemon by ID ${id}:`, error);
+      return null;
+    }
+  },
+
+  /**
+   * Fetch all PokeAPI item categories with localized display names.
+   */
+  async getItemCategories(
+    languageId: number = 9,
+  ): Promise<ItemCategoryGraphQL[]> {
+    const cacheKey = `graphql:item-categories:${languageId}`;
+
+    try {
+      return await cacheUtils.getOrSet(cacheKey, async () => {
+        const data = await executeGraphQLQuery<{
+          itemcategory: ItemCategoryGraphQL[];
+        }>(GET_ITEM_CATEGORIES_QUERY, { languageId });
+
+        return data.itemcategory ?? [];
+      });
+    } catch (error) {
+      console.error("Error fetching item categories:", error);
+      return [];
+    }
+  },
+
+  /**
+   * Fetch item effect text and optional wild-Pokemon holders (Market / Bag descriptions).
+   */
+  async getItemEffectDetails(
+    itemId: number,
+    languageId: number = 9,
+  ): Promise<ItemEffectDetailsGraphQL | null> {
+    if (!itemId) return null;
+    const cacheKey = `graphql:item-effect:${itemId}:${languageId}`;
+
+    try {
+      return await cacheUtils.getOrSet(cacheKey, async () => {
+        const data = await executeGraphQLQuery<{
+          item: ItemEffectDetailsGraphQL[];
+        }>(GET_ITEM_EFFECT_DETAILS_QUERY, { itemId, languageId });
+
+        return data.item?.[0] ?? null;
+      });
+    } catch (error) {
+      console.error(`Error fetching item effect for ${itemId}:`, error);
       return null;
     }
   },
