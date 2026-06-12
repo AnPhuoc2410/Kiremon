@@ -8,12 +8,14 @@ export { generationsService } from "./pokemon/generations.service";
 export { pokemonGraphQLService } from "./pokemon/pokemon-graphql.service";
 export { pokeItemService } from "./pokeitem/pokeitem.service";
 export { marketService } from "./market/market.service";
+export { marketPurchaseService } from "./market/market-purchase.service";
 export { userService } from "./user/user.service";
 export { collectionService } from "./collection/collection.service";
 export { friendService } from "./friend/friend.service";
 export { tcgService } from "./tcg/tcg.service";
 export { wildAreaService } from "./wild-area/wild-area.service";
 export { tcgCardCollectionService } from "./tcg-card-collection/tcg-card-collection.service";
+export { inventoryService } from "./inventory/inventory.service";
 export { newsService } from "./news/news.service";
 // Export cache utility
 export { cacheUtils as pokeApiCache } from "./cache/cache";
