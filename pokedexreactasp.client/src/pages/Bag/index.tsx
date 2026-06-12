@@ -8,6 +8,7 @@ import {
   Navbar,
   Text,
 } from "@/components/ui";
+import { useCombatTeamActive } from "@/hooks/useCombatTeamActive";
 import { useItemCategories, useMyInventory } from "@/hooks/queries";
 import {
   InventorySort,
@@ -18,14 +19,16 @@ import {
   getInventoryCategoryMeta,
 } from "@/types/market.types";
 
-import { BagCategoryTabs } from "./components/BagCategoryTabs";
+import { BagCategoryStrip } from "./components/BagCategoryStrip";
 import { BagItemDescriptionBox } from "./components/BagItemDescriptionBox";
+import { BagPartyPanel } from "./components/BagPartyPanel";
 import * as S from "./index.style";
 
 const DEFAULT_PAGE_SIZE = 30;
 
 const Bag = () => {
   const navRef = createRef<HTMLDivElement>();
+  const { activeTeam } = useCombatTeamActive();
 
   const [page, setPage] = useState(1);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
@@ -33,7 +36,6 @@ const Bag = () => {
   );
   const [sort, setSort] = useState<InventorySort>("name-asc");
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const {
     categories: pokeApiCategories,
@@ -53,12 +55,6 @@ const Bag = () => {
       setSelectedCategoryId(pokeApiCategories[0].id);
     }
   }, [pokeApiCategories, selectedCategoryId]);
-
-  useEffect(() => {
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
-  }, [selectedCategoryId]);
 
   const query: MyInventoryQuery = useMemo(
     () => ({
@@ -137,34 +133,17 @@ const Bag = () => {
           <S.EmptyBag>No item categories available.</S.EmptyBag>
         ) : (
           <S.BagInner>
-            <S.MainContent>
-              <S.SidebarContainer>
-                <S.SidebarToggle onClick={() => setSidebarOpen(!sidebarOpen)}>
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Categories
-                </S.SidebarToggle>
+            <S.BagWorkspace>
+              <BagPartyPanel activeTeam={activeTeam} />
 
-                <S.SidebarOverlay
-                  $isOpen={sidebarOpen}
-                  onClick={() => setSidebarOpen(false)}
-                />
-
-                <BagCategoryTabs
+              <S.ContentColumn>
+                <BagCategoryStrip
                   categories={pokeApiCategories}
                   selectedCategoryId={selectedCategoryId}
                   ownedCountByCategory={summaryByCategory}
                   onSelectCategory={handleCategoryChange}
-                  isOpen={sidebarOpen}
                 />
-              </S.SidebarContainer>
 
-              <S.ContentColumn>
                 <S.ListToolbar>
                   <S.ToolbarTitle $accent={activeCategoryMeta.accent}>
                     <span>{activeCategoryLabel}</span>
@@ -252,7 +231,7 @@ const Bag = () => {
                   </S.Pager>
                 ) : null}
               </S.ContentColumn>
-            </S.MainContent>
+            </S.BagWorkspace>
           </S.BagInner>
         )}
       </S.Page>

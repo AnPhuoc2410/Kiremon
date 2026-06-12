@@ -3,13 +3,6 @@ import { keyframes } from "@emotion/react";
 
 import { colors, units } from "@/components/utils";
 
-export {
-  MainContent,
-  SidebarContainer,
-  SidebarToggle,
-  SidebarOverlay,
-} from "@/pages/Market/Market.styles";
-
 const bagGlow = keyframes`
   0%, 100% { opacity: 0.35; }
   50% { opacity: 0.5; }
@@ -34,6 +27,235 @@ export const BagInner = styled.div`
   gap: 16px;
   margin-top: 16px;
   text-align: left;
+`;
+
+export const BagWorkspace = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (min-width: ${units.screenSize["md"]}) {
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr);
+    gap: 20px;
+  }
+`;
+
+/* ── Combat team panel (left) ── */
+export const PartyPanel = styled.aside`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+`;
+
+export const PartyPanelTitle = styled.h2`
+  margin: 0;
+  padding: 0 4px 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: ${colors["gray-700"]};
+  border-bottom: 2px solid ${colors["gray-200"]};
+`;
+
+export const PartySlots = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (min-width: ${units.screenSize["md"]}) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+`;
+
+export const PartyCard = styled.div<{ $isEmpty?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: ${(p) => (p.$isEmpty ? "rgba(0,0,0,0.02)" : "#fff")};
+  border: 2px solid
+    ${(p) => (p.$isEmpty ? "rgba(0,0,0,0.06)" : "rgba(0,0,0,0.08)")};
+  box-shadow: ${(p) =>
+    p.$isEmpty ? "none" : "0 2px 6px rgba(0,0,0,0.06)"};
+  position: relative;
+`;
+
+export const PartySpriteWrap = styled.div`
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    image-rendering: pixelated;
+  }
+`;
+
+export const PartyDetails = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const PartyNameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+`;
+
+export const PartyName = styled.span`
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: ${colors["gray-900"]};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+`;
+
+export const PartyHpRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+export const PartyHpBar = styled.div`
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+export const PartyHpFill = styled.div<{ $percent: number }>`
+  height: 100%;
+  width: ${(p) => p.$percent}%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+`;
+
+export const PartyHpText = styled.span`
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: ${colors["gray-600"]};
+`;
+
+export const PartyLevel = styled.span`
+  flex-shrink: 0;
+  align-self: flex-end;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: ${colors["gray-600"]};
+`;
+
+export const PartyEmptySlot = styled.span`
+  margin: auto;
+  font-size: 0.9rem;
+  color: ${colors["gray-400"]};
+`;
+
+export const PartyHint = styled.p`
+  margin: 0;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: ${colors["gray-600"]};
+
+  a {
+    color: ${colors["blue-600"]};
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+/* ── Category strip (top of bag panel) ── */
+export const CategoryStrip = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.65) transparent;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+  }
+`;
+
+export const CategoryStripTab = styled.button<{
+  $active?: boolean;
+  $accent: string;
+}>`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 12px;
+  border: 2px solid
+    ${(p) => (p.$active ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.5)")};
+  border-radius: 999px;
+  background: ${(p) =>
+    p.$active ? p.$accent : "rgba(255,255,255,0.65)"};
+  color: ${(p) => (p.$active ? "#fff" : "rgba(0,0,0,0.72)")};
+  font-size: 0.78rem;
+  font-weight: ${(p) => (p.$active ? 700 : 600)};
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+
+  .label {
+    text-transform: capitalize;
+  }
+
+  .count {
+    font-size: 0.72rem;
+    opacity: 0.85;
+  }
+
+  &:hover {
+    background: ${(p) =>
+      p.$active ? p.$accent : "rgba(255,255,255,0.88)"};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(0, 0, 0, 0.35);
+    outline-offset: 2px;
+  }
 `;
 
 export const ContentColumn = styled.div`
