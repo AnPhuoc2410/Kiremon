@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
 import { marketService } from "@/services/market";
+import { pokemonGraphQLService } from "@/services/pokemon/pokemon-graphql.service";
 import { useLanguage, LanguageId, LANGUAGE_IDS } from "@/contexts";
 import {
   ItemCategory,
@@ -8,6 +9,7 @@ import {
   PokemonBasic,
   ItemWithHeldPokemon,
 } from "@/types/market.types";
+import { itemGraphQLQueryKeys } from "./useItemGraphQL";
 
 // ============ Query Keys ============
 
@@ -41,8 +43,8 @@ export function useMarketCategories(): UseMarketCategoriesResult {
   const { languageId } = useLanguage();
 
   const query = useQuery({
-    queryKey: marketQueryKeys.categories(languageId),
-    queryFn: () => marketService.getCategories(languageId),
+    queryKey: itemGraphQLQueryKeys.categories(languageId),
+    queryFn: () => pokemonGraphQLService.getItemCategories(languageId),
     // Categories are very static - keep stale for 30 minutes
     staleTime: 30 * 60 * 1000,
     // Keep in cache for 1 hour
@@ -118,8 +120,8 @@ export function useHeldItemDetails(
   const { languageId } = useLanguage();
 
   const query = useQuery({
-    queryKey: marketQueryKeys.heldItemDetails(itemId ?? 0, languageId),
-    queryFn: () => marketService.getHeldItemDetails(itemId!, languageId),
+    queryKey: itemGraphQLQueryKeys.effect(itemId ?? 0, languageId),
+    queryFn: () => pokemonGraphQLService.getItemEffectDetails(itemId!, languageId),
     enabled: itemId !== null && enabled,
     // Item details are static
     staleTime: 15 * 60 * 1000,
@@ -140,7 +142,14 @@ export function useHeldItemDetails(
   return {
     wildPokemon,
     itemEffect,
-    itemData: query.data ?? null,
+    itemData: query.data
+      ? ({
+          id: query.data.id,
+          name: "",
+          itemeffecttexts: query.data.itemeffecttexts,
+          pokemonitems: query.data.pokemonitems,
+        } as ItemWithHeldPokemon)
+      : null,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
