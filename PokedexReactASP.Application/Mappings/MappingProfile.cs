@@ -13,9 +13,9 @@ namespace PokedexReactASP.Application.Mappings
         {
             // Auth mappings
             CreateMap<RegisterDto, ApplicationUser>()
-                .ForMember(dest => dest.UserName,    opt => opt.MapFrom(src => src.Username))
-                .ForMember(dest => dest.DateJoined,  opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.FriendCode,  opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.FriendCode, opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
 
             CreateMap<ApplicationUser, AuthResponseDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -27,12 +27,13 @@ namespace PokedexReactASP.Application.Mappings
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.TrainerLevel))
                 .ForMember(dest => dest.Experience, opt => opt.MapFrom(src => src.TotalExperience))
-                .ForMember(dest => dest.PokemonCaught, opt => opt.MapFrom(src => src.PokemonCaught));
+                .ForMember(dest => dest.PokemonCaught, opt => opt.MapFrom(src => src.PokemonCaught))
+                .ForMember(dest => dest.Coins, opt => opt.MapFrom(src => src.Coins));
 
             CreateMap<SocialUserDto, ApplicationUser>()
-                .ForMember(dest => dest.DateJoined,  opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.DateJoined, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.LastActiveDate, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.FriendCode,  opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
+                .ForMember(dest => dest.FriendCode, opt => opt.MapFrom(_ => FriendCodeHelper.Generate()));
 
             // UserPokemon → UserPokemonDto
             CreateMap<UserPokemon, UserPokemonDto>()

@@ -12,5 +12,6 @@ namespace PokedexReactASP.Application.DTOs.User
         public int PokemonCaught { get; set; }
         public int Level { get; set; }
         public int Experience { get; set; }
+        public int Coins { get; set; }
     }
 }
