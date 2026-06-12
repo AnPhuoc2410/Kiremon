@@ -26,7 +26,7 @@ namespace PokedexReactASP.Application.Services
         {
             var boxes = (await _unitOfWork.UserBox.FindAsync(
                 b => b.UserId == userId,
-                query => query.Include(b => b.Pokemons).ThenInclude(p => p.HeldItem),
+                query => query.Include(b => b.Pokemons),
                 disableTracking: false
             )).OrderBy(b => b.Order).ToList();
 
@@ -48,24 +48,42 @@ namespace PokedexReactASP.Application.Services
                 await _unitOfWork.SaveChangesAsync();
             }
 
-            var boxDtos = _mapper.Map<List<UserBoxDto>>(boxes);
-
-            // Enrich all box pokemons in batch
-            var allBoxPokemons = boxes.SelectMany(b => b.Pokemons).ToList();
-            if (allBoxPokemons.Any())
+            var boxDtos = boxes.Select(b => new UserBoxDto
             {
-                var enrichedPokemons = await _pokemonEnricher.EnrichBatchAsync(allBoxPokemons);
-                var enrichedDict = enrichedPokemons.ToDictionary(p => p.Id);
-
-                foreach (var boxDto in boxDtos)
-                {
-                    boxDto.Pokemons = boxDto.Pokemons.Select(p =>
-                        enrichedDict.TryGetValue(p.Id, out var enriched) ? enriched : p
-                    ).OrderBy(p => p.SlotIndex).ToList();
-                }
-            }
+                Id = b.Id,
+                Name = b.Name,
+                Order = b.Order,
+                BackgroundImage = b.BackgroundImage,
+                PokemonCount = b.Pokemons.Count,
+                Pokemons = new List<UserPokemonDto>()
+            }).ToList();
 
             return boxDtos;
+        }
+
+        public async Task<UserBoxDto> GetBoxDetailsAsync(string userId, int boxId, CancellationToken cancellationToken = default)
+        {
+            var box = await _unitOfWork.UserBox.FirstOrDefaultAsync(
+                b => b.UserId == userId && b.Id == boxId,
+                query => query.Include(b => b.Pokemons).ThenInclude(p => p.HeldItem),
+                disableTracking: false
+            );
+
+            if (box == null)
+            {
+                throw new KeyNotFoundException("Box not found.");
+            }
+
+            var boxDto = _mapper.Map<UserBoxDto>(box);
+            boxDto.PokemonCount = box.Pokemons.Count;
+
+            if (box.Pokemons.Any())
+            {
+                var enrichedPokemons = await _pokemonEnricher.EnrichBatchAsync(box.Pokemons);
+                boxDto.Pokemons = enrichedPokemons.OrderBy(p => p.SlotIndex).ToList();
+            }
+
+            return boxDto;
         }
 
         public async Task<UserBoxDto> UpdateBoxAsync(string userId, int boxId, UpdateBoxDto dto, CancellationToken cancellationToken = default)
@@ -137,6 +155,7 @@ namespace PokedexReactASP.Application.Services
                 return new MovePokemonResultDto { Success = false, Message = "Pokémon not found." };
             }
 
+            int? sourceBoxId = pokemon.BoxId;
             var targetPokemon = pokemonList.FirstOrDefault(p => p.Id != userPokemonId);
             int? swappedPokemonId = null;
 
@@ -205,11 +224,13 @@ namespace PokedexReactASP.Application.Services
             return new MovePokemonResultDto
             {
                 Success = true,
-                SwappedPokemonId = swappedPokemonId
+                SwappedPokemonId = swappedPokemonId,
+                SourceBoxId = sourceBoxId,
+                TargetBoxId = dto.ToParty ? null : dto.TargetBoxId
             };
         }
 
-        public async Task<bool> MovePokemonBatchAsync(string userId, BatchMovePokemonDto dto, CancellationToken cancellationToken = default)
+        public async Task<BatchMoveResultDto> MovePokemonBatchAsync(string userId, BatchMovePokemonDto dto, CancellationToken cancellationToken = default)
         {
             var pokemonIds = dto.Moves.Select(m => m.UserPokemonId).ToList();
             var movingIds = pokemonIds.ToHashSet();
@@ -221,7 +242,23 @@ namespace PokedexReactASP.Application.Services
 
             if (pokemons.Count != dto.Moves.Count)
             {
-                return false;
+                return new BatchMoveResultDto { Success = false };
+            }
+
+            // Gather affected Box IDs and Party affected status
+            var affectedBoxIds = new HashSet<int>();
+            bool partyAffected = false;
+
+            foreach (var p in pokemons.Values)
+            {
+                if (p.BoxId.HasValue) affectedBoxIds.Add(p.BoxId.Value);
+                if (p.IsInParty) partyAffected = true;
+            }
+
+            foreach (var move in dto.Moves)
+            {
+                if (move.TargetBoxId.HasValue) affectedBoxIds.Add(move.TargetBoxId.Value);
+                if (move.ToParty) partyAffected = true;
             }
 
             // Party size check
@@ -244,7 +281,7 @@ namespace PokedexReactASP.Application.Services
 
             if (currentPartyCount - leavingPartyCount + enteringPartyCount < 1)
             {
-                return false; // Rule: at least 1 pokemon in party
+                return new BatchMoveResultDto { Success = false }; // Rule: at least 1 pokemon in party
             }
 
             // Occupancy check - destination must not be occupied by non-moving pokemon
@@ -273,7 +310,7 @@ namespace PokedexReactASP.Application.Services
                 {
                     if (!movingIds.Contains(occupyingId))
                     {
-                        return false; // Target slot is occupied by another pokemon outside the tray
+                        return new BatchMoveResultDto { Success = false }; // Target slot is occupied by another pokemon outside the tray
                     }
                 }
             }
@@ -289,7 +326,12 @@ namespace PokedexReactASP.Application.Services
             }
 
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            return new BatchMoveResultDto
+            {
+                Success = true,
+                AffectedBoxIds = affectedBoxIds.ToList(),
+                PartyAffected = partyAffected
+            };
         }
 
         public async Task<bool> ReorderBoxesAsync(string userId, ReorderBoxesDto dto, CancellationToken cancellationToken = default)

@@ -6,6 +6,7 @@ import {
   BatchMovePokemonDto,
   ReorderBoxesDto,
   MovePokemonResultDto,
+  BatchMoveResultDto,
 } from "@/types/box.types";
 
 class BoxService extends AuthenticatedApiService {
@@ -14,6 +15,13 @@ class BoxService extends AuthenticatedApiService {
    */
   async getBoxes(): Promise<UserBoxDto[]> {
     return this.get<UserBoxDto[]>("/User/boxes");
+  }
+
+  /**
+   * Get details for a specific box
+   */
+  async getBox(boxId: number): Promise<UserBoxDto> {
+    return this.get<UserBoxDto>(`/User/boxes/${boxId}`);
   }
 
   /**
@@ -36,8 +44,8 @@ class BoxService extends AuthenticatedApiService {
   /**
    * Move a batch of Pokemon (Group Move)
    */
-  async movePokemonBatch(data: BatchMovePokemonDto): Promise<void> {
-    return this.put<void>("/User/pokemon/move-batch", data);
+  async movePokemonBatch(data: BatchMovePokemonDto): Promise<BatchMoveResultDto> {
+    return this.put<BatchMoveResultDto>("/User/pokemon/move-batch", data);
   }
 
   /**

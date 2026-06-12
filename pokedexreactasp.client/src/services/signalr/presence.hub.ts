@@ -27,6 +27,9 @@ const getHubUrl = () => {
 
 type OnlineStatusHandler = (userId: string) => void;
 type OnlineFriendsHandler = (userIds: string[]) => void;
+type BoxUpdatedHandler = (boxId: number) => void;
+type BoxListUpdatedHandler = () => void;
+type PartyUpdatedHandler = () => void;
 
 class PresenceHubService {
   private connection: HubConnection | null = null;
@@ -36,6 +39,9 @@ class PresenceHubService {
   private achievementHandlers: ((
     achievement: AchievementNotification,
   ) => void)[] = [];
+  private boxUpdatedHandlers: BoxUpdatedHandler[] = [];
+  private boxListUpdatedHandlers: BoxListUpdatedHandler[] = [];
+  private partyUpdatedHandlers: PartyUpdatedHandler[] = [];
 
   constructor() {
     this.createConnection();
@@ -71,6 +77,18 @@ class PresenceHubService {
         this.achievementHandlers.forEach((handler) => handler(achievement));
       },
     );
+
+    this.connection.on("BoxUpdated", (boxId: number) => {
+      this.boxUpdatedHandlers.forEach((handler) => handler(boxId));
+    });
+
+    this.connection.on("BoxListUpdated", () => {
+      this.boxListUpdatedHandlers.forEach((handler) => handler());
+    });
+
+    this.connection.on("PartyUpdated", () => {
+      this.partyUpdatedHandlers.forEach((handler) => handler());
+    });
   }
 
   public async start(): Promise<void> {
@@ -143,6 +161,27 @@ class PresenceHubService {
       this.achievementHandlers = this.achievementHandlers.filter(
         (h) => h !== handler,
       );
+    };
+  }
+
+  public onBoxUpdated(handler: BoxUpdatedHandler) {
+    this.boxUpdatedHandlers.push(handler);
+    return () => {
+      this.boxUpdatedHandlers = this.boxUpdatedHandlers.filter((h) => h !== handler);
+    };
+  }
+
+  public onBoxListUpdated(handler: BoxListUpdatedHandler) {
+    this.boxListUpdatedHandlers.push(handler);
+    return () => {
+      this.boxListUpdatedHandlers = this.boxListUpdatedHandlers.filter((h) => h !== handler);
+    };
+  }
+
+  public onPartyUpdated(handler: PartyUpdatedHandler) {
+    this.partyUpdatedHandlers.push(handler);
+    return () => {
+      this.partyUpdatedHandlers = this.partyUpdatedHandlers.filter((h) => h !== handler);
     };
   }
 }

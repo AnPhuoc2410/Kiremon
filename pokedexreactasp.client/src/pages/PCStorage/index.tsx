@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, MouseEvent } from "react";
 import toast from "react-hot-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import gsap from "gsap";
 import {
   IconSearch,
@@ -35,6 +35,8 @@ import {
 } from "@/hooks/useBoxes";
 import { usePokemonCore } from "@/hooks/queries";
 import { collectionService } from "@/services/collection/collection.service";
+import { boxService } from "@/services/collection/box.service";
+import { presenceHub } from "@/services/signalr/presence.hub";
 import { UserPokemonDto } from "@/types/userspokemon.types";
 import { UserBoxDto, MovePokemonItemDto } from "@/types/box.types";
 import { Nature, PokemonGender } from "@/types/pokemon.enums";
@@ -212,6 +214,7 @@ const PCStorage: React.FC = () => {
 
   // Ctrl+Click multi-select (max 2) → group drag / compare
   const [multiSelectedIds, setMultiSelectedIds] = useState<Set<number>>(new Set());
+  const [multiSelectedPokes, setMultiSelectedPokes] = useState<UserPokemonDto[]>([]);
   // For Shift+Click range select
   const [lastClickedCtx, setLastClickedCtx] = useState<{ slot: number; isParty: boolean } | null>(null);
 
@@ -261,6 +264,72 @@ const PCStorage: React.FC = () => {
   // ── Derived ───────────────────────────────────────────────
   const activeBox = boxes[currentBoxIndex] as UserBoxDto | undefined;
 
+  // Tải chi tiết box đang hoạt động
+  const { data: activeBoxDetails, isLoading: isLoadingActiveBox } = useQuery({
+    queryKey: ["box", activeBox?.id],
+    queryFn: () => boxService.getBox(activeBox!.id),
+    enabled: !!activeBox?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+
+  // Khôi phục box active cuối cùng từ localStorage
+  useEffect(() => {
+    if (boxes.length === 0) return;
+    const savedBoxIdStr = localStorage.getItem("pc_last_active_box_id");
+    if (savedBoxIdStr) {
+      const savedBoxId = parseInt(savedBoxIdStr);
+      const foundIdx = boxes.findIndex((b) => b.id === savedBoxId);
+      if (foundIdx !== -1 && foundIdx !== currentBoxIndex) {
+        setCurrentBoxIndex(foundIdx);
+      }
+    }
+  }, [boxes]);
+
+  // Lưu box active hiện tại vào localStorage
+  useEffect(() => {
+    if (activeBox) {
+      localStorage.setItem("pc_last_active_box_id", activeBox.id.toString());
+    }
+  }, [currentBoxIndex, boxes]);
+
+  // Tải trước (Prefetching) 2 box liền kề
+  useEffect(() => {
+    if (boxes.length === 0) return;
+    const prefetch = (idx: number) => {
+      const targetBox = boxes[idx];
+      if (targetBox) {
+        queryClient.prefetchQuery({
+          queryKey: ["box", targetBox.id],
+          queryFn: () => boxService.getBox(targetBox.id),
+          staleTime: 1000 * 60 * 5,
+        });
+      }
+    };
+    prefetch((currentBoxIndex + 1) % boxes.length);
+    prefetch((currentBoxIndex - 1 + boxes.length) % boxes.length);
+  }, [currentBoxIndex, boxes, queryClient]);
+
+  // Đăng ký các sự kiện SignalR Real-time Sync
+  useEffect(() => {
+    const unsubBoxUpdated = presenceHub.onBoxUpdated((boxId) => {
+      queryClient.invalidateQueries({ queryKey: ["box", boxId] });
+    });
+
+    const unsubBoxListUpdated = presenceHub.onBoxListUpdated(() => {
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+    });
+
+    const unsubPartyUpdated = presenceHub.onPartyUpdated(() => {
+      loadParty();
+    });
+
+    return () => {
+      unsubBoxUpdated();
+      unsubBoxListUpdated();
+      unsubPartyUpdated();
+    };
+  }, [queryClient]);
+
   /** User-uploaded wallpaper URLs collected from all boxes (deduped) */
   const userUploadedWallpapers = useMemo<string[]>(() => {
     const seen = new Set<string>();
@@ -278,20 +347,15 @@ const PCStorage: React.FC = () => {
   /** The two Ctrl-selected pokemon (for compare) */
   const compareFromMulti = useMemo<UserPokemonDto[]>(() => {
     if (multiSelectedIds.size < 2) return [];
-    const allPokes: UserPokemonDto[] = [];
-    const seen = new Set<number>();
-    [...boxes.flatMap((b) => b.pokemons), ...partyPokemons].forEach((p) => {
-      if (!seen.has(p.id)) { seen.add(p.id); allPokes.push(p); }
-    });
-    return allPokes.filter((p) => multiSelectedIds.has(p.id)).slice(0, 2);
-  }, [multiSelectedIds, boxes, partyPokemons]);
+    return multiSelectedPokes.filter((p) => multiSelectedIds.has(p.id)).slice(0, 2);
+  }, [multiSelectedIds, multiSelectedPokes]);
 
   const filteredBoxes = useMemo(() => {
     return boxes
       .map((box, idx) => ({ box, originalIndex: idx }))
       .filter(({ box }) => {
-        if (boxFilter === "has_pokemon") return box.pokemons.length > 0;
-        if (boxFilter === "empty") return box.pokemons.length === 0;
+        if (boxFilter === "has_pokemon") return box.pokemonCount > 0;
+        if (boxFilter === "empty") return box.pokemonCount === 0;
         return true;
       });
   }, [boxes, boxFilter]);
@@ -300,7 +364,7 @@ const PCStorage: React.FC = () => {
     let occupied = 0;
     let empty = 0;
     boxes.forEach((b) => {
-      if (b.pokemons.length > 0) occupied++;
+      if (b.pokemonCount > 0) occupied++;
       else empty++;
     });
     return { all: boxes.length, occupied, empty };
@@ -367,7 +431,16 @@ const PCStorage: React.FC = () => {
           }
         });
 
+        const intersectedPokes: UserPokemonDto[] = [];
+        intersectedIds.forEach((id) => {
+          const p = activeBoxDetails?.pokemons.find((x) => x.id === id) || partyPokemons.find((x) => x.id === id);
+          if (p) intersectedPokes.push(p);
+        });
         setMultiSelectedIds(intersectedIds);
+        setMultiSelectedPokes((prev) => {
+          const otherBoxesPokes = prev.filter((x) => x.boxId !== activeBox?.id && intersectedIds.has(x.id));
+          return [...otherBoxesPokes, ...intersectedPokes];
+        });
         return;
       }
 
@@ -384,7 +457,7 @@ const PCStorage: React.FC = () => {
           if (!dc.fromParty && multiSelectedIds.has(dc.pokemon.id) && multiSelectedIds.size > 1) {
             const pokesToLift: UserPokemonDto[] = [];
             for (const id of multiSelectedIds) {
-              const p = activeBox?.pokemons.find((x) => x.id === id);
+              const p = activeBoxDetails?.pokemons.find((x) => x.id === id);
               if (p) pokesToLift.push(p);
             }
             setHeldGroup(
@@ -428,6 +501,7 @@ const PCStorage: React.FC = () => {
         if (!didDragSelectRef.current) {
           // Normal click on background/empty slot -> clear selection
           setMultiSelectedIds(new Set());
+          setMultiSelectedPokes([]);
           setSelectedPokemon(null);
           setHoveredPokemon(null);
         }
@@ -503,6 +577,7 @@ const PCStorage: React.FC = () => {
           setHeldPokemon(null);
           setHeldGroup(null);
           setMultiSelectedIds(new Set());
+          setMultiSelectedPokes([]);
           setSelectedPokemon(null);
           setHoveredPokemon(null);
           setContextMenu(null);
@@ -566,7 +641,7 @@ const PCStorage: React.FC = () => {
 
     if (isCell && typeof slotIdxAttr === "string") {
       const slotIdx = parseInt(slotIdxAttr);
-      const poke = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+      const poke = activeBoxDetails?.pokemons.find((p) => p.slotIndex === slotIdx);
       if (poke) return; // Has pokemon, standard drag instead of marquee select
     }
 
@@ -592,7 +667,7 @@ const PCStorage: React.FC = () => {
     if (e.button !== 0) return;
     const poke = isParty
       ? partyPokemons.find((p) => p.slotIndex === slotIdx)
-      : activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+      : activeBoxDetails?.pokemons.find((p) => p.slotIndex === slotIdx);
     if (!poke) return;
     e.preventDefault();
     dragCandidateRef.current = {
@@ -616,6 +691,7 @@ const PCStorage: React.FC = () => {
         toast.error("Cannot move a group of Pokémon into the party.");
         setHeldGroup(null);
         setMultiSelectedIds(new Set());
+        setMultiSelectedPokes([]);
       } else {
         handleDropGroup(slotIdx);
       }
@@ -637,7 +713,7 @@ const PCStorage: React.FC = () => {
     setContextMenu(null);
     const poke = isParty
       ? partyPokemons.find((p) => p.slotIndex === slotIdx)
-      : activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+      : activeBoxDetails?.pokemons.find((p) => p.slotIndex === slotIdx);
 
     if (e.ctrlKey || e.metaKey) {
       // Ctrl+Click: toggle multi-select (for group drag / compare)
@@ -651,22 +727,40 @@ const PCStorage: React.FC = () => {
         }
         return next;
       });
+      setMultiSelectedPokes((prev) => {
+        if (prev.some((p) => p.id === poke.id)) {
+          return prev.filter((p) => p.id !== poke.id);
+        } else {
+          return [...prev, poke];
+        }
+      });
       setLastClickedCtx({ slot: slotIdx, isParty });
     } else if (e.shiftKey && lastClickedCtx && lastClickedCtx.isParty === isParty) {
       // Shift+Click: range select within same context
       if (!poke) return;
       const min = Math.min(slotIdx, lastClickedCtx.slot);
       const max = Math.max(slotIdx, lastClickedCtx.slot);
-      const src = isParty ? partyPokemons : (activeBox?.pokemons ?? []);
+      const src = isParty ? partyPokemons : (activeBoxDetails?.pokemons ?? []);
+      const rangePokes = src.filter((p) => p.slotIndex >= min && p.slotIndex <= max);
       setMultiSelectedIds((prev) => {
         const next = new Set(prev);
-        src.filter((p) => p.slotIndex >= min && p.slotIndex <= max).forEach((p) => next.add(p.id));
+        rangePokes.forEach((p) => next.add(p.id));
+        return next;
+      });
+      setMultiSelectedPokes((prev) => {
+        const next = [...prev];
+        rangePokes.forEach((p) => {
+          if (!next.some((x) => x.id === p.id)) {
+            next.push(p);
+          }
+        });
         return next;
       });
       setLastClickedCtx({ slot: slotIdx, isParty });
     } else {
       // Normal click: single select → show detail, clear multi
       setMultiSelectedIds(new Set());
+      setMultiSelectedPokes([]);
       setSelectedPokemon(poke ?? null);
       if (poke) setLastClickedCtx({ slot: slotIdx, isParty });
     }
@@ -679,7 +773,7 @@ const PCStorage: React.FC = () => {
     const targetBoxId = toParty ? null : (activeBox?.id ?? null);
     const targetPokemon = toParty
       ? partyPokemons.find((p) => p.slotIndex === targetSlot)
-      : activeBox?.pokemons.find((p) => p.slotIndex === targetSlot);
+      : activeBoxDetails?.pokemons.find((p) => p.slotIndex === targetSlot);
 
     if (fromParty && !toParty && !targetPokemon && partyPokemons.length <= 1) {
       toast.error(getLocalizedStorageText("pc.toastPartyMinLimit", languageId));
@@ -689,11 +783,14 @@ const PCStorage: React.FC = () => {
 
     // Capture snapshots for rollback
     const prevBoxes = queryClient.getQueryData<UserBoxDto[]>(["boxes"]);
+    const prevFromBox = fromBoxId !== null ? queryClient.getQueryData<UserBoxDto>(["box", fromBoxId]) : null;
+    const prevTargetBox = targetBoxId !== null ? queryClient.getQueryData<UserBoxDto>(["box", targetBoxId]) : null;
     const prevParty = [...partyPokemons];
 
     // Clear drag state immediately to make UI feel instant
     setHeldPokemon(null);
     setMultiSelectedIds(new Set());
+    setMultiSelectedPokes([]);
 
     // Perform optimistic update
     const movedPoke = { ...pokemon, isInParty: toParty, slotIndex: targetSlot, boxId: targetBoxId };
@@ -708,18 +805,53 @@ const PCStorage: React.FC = () => {
       return next.sort((a, b) => a.slotIndex - b.slotIndex);
     });
 
+    if (fromBoxId !== null && targetBoxId !== null && fromBoxId === targetBoxId) {
+      queryClient.setQueryData<UserBoxDto>(["box", fromBoxId], (old) => {
+        if (!old) return old;
+        let pokes = old.pokemons.filter((p) => p.id !== movedPoke.id && (!swappedPoke || p.id !== swappedPoke.id));
+        pokes.push(movedPoke);
+        if (swappedPoke) pokes.push(swappedPoke);
+        return {
+          ...old,
+          pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+        };
+      });
+    } else {
+      if (fromBoxId !== null) {
+        queryClient.setQueryData<UserBoxDto>(["box", fromBoxId], (old) => {
+          if (!old) return old;
+          let pokes = old.pokemons.filter((p) => p.id !== movedPoke.id);
+          if (swappedPoke) pokes.push(swappedPoke);
+          return {
+            ...old,
+            pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+          };
+        });
+      }
+      if (targetBoxId !== null) {
+        queryClient.setQueryData<UserBoxDto>(["box", targetBoxId], (old) => {
+          if (!old) return old;
+          let pokes = old.pokemons.filter((p) => p.id !== (swappedPoke?.id ?? -1));
+          pokes.push(movedPoke);
+          return {
+            ...old,
+            pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+          };
+        });
+      }
+    }
+
     queryClient.setQueryData<UserBoxDto[]>(["boxes"], (old) => {
       if (!old) return old;
       return old.map((box) => {
-        let pokes = box.pokemons.filter(
-          (p) => p.id !== movedPoke.id && (!swappedPoke || p.id !== swappedPoke.id)
-        );
-        if (!toParty && box.id === targetBoxId) pokes.push(movedPoke);
-        if (!fromParty && box.id === fromBoxId && swappedPoke) pokes.push(swappedPoke);
-        return {
-          ...box,
-          pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
-        };
+        let count = box.pokemonCount;
+        if (box.id === fromBoxId) {
+          if (!swappedPoke) count--;
+        }
+        if (box.id === targetBoxId) {
+          if (!swappedPoke) count++;
+        }
+        return { ...box, pokemonCount: count };
       });
     });
 
@@ -731,11 +863,15 @@ const PCStorage: React.FC = () => {
       if (!result.success) {
         toast.error(result.message);
         if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
+        if (fromBoxId !== null && prevFromBox) queryClient.setQueryData(["box", fromBoxId], prevFromBox);
+        if (targetBoxId !== null && prevTargetBox) queryClient.setQueryData(["box", targetBoxId], prevTargetBox);
         setPartyPokemons(prevParty);
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || getLocalizedStorageText("pc.toastMoveFailed", languageId));
       if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
+      if (fromBoxId !== null && prevFromBox) queryClient.setQueryData(["box", fromBoxId], prevFromBox);
+      if (targetBoxId !== null && prevTargetBox) queryClient.setQueryData(["box", targetBoxId], prevTargetBox);
       setPartyPokemons(prevParty);
     }
   };
@@ -743,7 +879,7 @@ const PCStorage: React.FC = () => {
   const handleDropGroup = async (targetAnchorSlot: number) => {
     if (!heldGroup || !activeBox) return;
     const occupied = new Set<number>();
-    activeBox.pokemons.forEach((p) => {
+    activeBoxDetails?.pokemons.forEach((p) => {
       if (!heldGroup.some((m) => m.pokemon.id === p.id)) occupied.add(p.slotIndex);
     });
     const moves: MovePokemonItemDto[] = [];
@@ -763,35 +899,33 @@ const PCStorage: React.FC = () => {
       }
       moves.push({ userPokemonId: m.pokemon.id, targetBoxId: activeBox.id, toParty: false, slotIndex: tSlot });
     }
-    if (invalid) { setHeldGroup(null); setMultiSelectedIds(new Set()); return; }
+    if (invalid) { setHeldGroup(null); setMultiSelectedIds(new Set()); setMultiSelectedPokes([]); return; }
 
     const prevBoxes = queryClient.getQueryData<UserBoxDto[]>(["boxes"]);
+    const prevBoxDetails = queryClient.getQueryData<UserBoxDto>(["box", activeBox.id]);
     setHeldGroup(null);
     setMultiSelectedIds(new Set());
+    setMultiSelectedPokes([]);
 
-    // Optimistic update for group move
-    queryClient.setQueryData<UserBoxDto[]>(["boxes"], (old) => {
+    // Optimistic update for group move in active box details
+    queryClient.setQueryData<UserBoxDto>(["box", activeBox.id], (old) => {
       if (!old) return old;
-      return old.map((box) => {
-        let pokes = box.pokemons.filter((p) => !moves.some((mv) => mv.userPokemonId === p.id));
-        moves.forEach((mv) => {
-          if (box.id === mv.targetBoxId) {
-            const member = heldGroup.find((g) => g.pokemon.id === mv.userPokemonId);
-            if (member) {
-              pokes.push({
-                ...member.pokemon,
-                isInParty: false,
-                boxId: mv.targetBoxId,
-                slotIndex: mv.slotIndex,
-              });
-            }
-          }
-        });
-        return {
-          ...box,
-          pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
-        };
+      let pokes = old.pokemons.filter((p) => !moves.some((mv) => mv.userPokemonId === p.id));
+      moves.forEach((mv) => {
+        const member = heldGroup.find((g) => g.pokemon.id === mv.userPokemonId);
+        if (member) {
+          pokes.push({
+            ...member.pokemon,
+            isInParty: false,
+            boxId: mv.targetBoxId,
+            slotIndex: mv.slotIndex,
+          });
+        }
       });
+      return {
+        ...old,
+        pokemons: pokes.sort((a, b) => a.slotIndex - b.slotIndex),
+      };
     });
 
     try {
@@ -799,6 +933,7 @@ const PCStorage: React.FC = () => {
     } catch (err: any) {
       toast.error(err.response?.data?.message || getLocalizedStorageText("pc.toastMoveFailed", languageId));
       if (prevBoxes) queryClient.setQueryData(["boxes"], prevBoxes);
+      if (prevBoxDetails) queryClient.setQueryData(["box", activeBox.id], prevBoxDetails);
     }
   };
 
@@ -923,6 +1058,10 @@ const PCStorage: React.FC = () => {
       toast.success(`${p.displayName} ${getLocalizedStorageText("pc.toastReleaseSuccess", languageId)}`);
       if (selectedPokemon?.id === p.id) setSelectedPokemon(null);
       if (hoveredPokemon?.id === p.id) setHoveredPokemon(null);
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      if (p.boxId) {
+        queryClient.invalidateQueries({ queryKey: ["box", p.boxId] });
+      }
       loadParty();
     } catch { toast.error(getLocalizedStorageText("pc.toastReleaseFailed", languageId)); }
   };
@@ -951,12 +1090,10 @@ const PCStorage: React.FC = () => {
     if (!displayedPokemon) return null;
     const inParty = partyPokemons.find((p) => p.id === displayedPokemon.id);
     if (inParty) return inParty;
-    for (const box of boxes) {
-      const inBox = box.pokemons.find((p: any) => p.id === displayedPokemon.id);
-      if (inBox) return inBox;
-    }
+    const inActiveBox = activeBoxDetails?.pokemons.find((p) => p.id === displayedPokemon.id);
+    if (inActiveBox) return inActiveBox;
     return displayedPokemon;
-  }, [hoveredPokemon?.id, selectedPokemon?.id, boxes, partyPokemons]);
+  }, [hoveredPokemon?.id, selectedPokemon?.id, activeBoxDetails?.pokemons, partyPokemons]);
 
   // ── usePokemonCore for Moves & Abilities details ──
   const { detail, isLoading: isCoreLoading } = usePokemonCore(
@@ -1288,7 +1425,7 @@ const PCStorage: React.FC = () => {
 
               {/* Box count badge */}
               <div className="box-count-badge">
-                {activeBox?.pokemons.length ?? 0} / 30
+                {activeBoxDetails?.pokemons.length ?? activeBox?.pokemonCount ?? 0} / 30
               </div>
             </S.BoxControls>
 
@@ -1306,7 +1443,7 @@ const PCStorage: React.FC = () => {
                 />
               )}
               {Array.from({ length: 30 }).map((_, slotIdx) => {
-                const poke = activeBox?.pokemons.find((p) => p.slotIndex === slotIdx);
+                const poke = activeBoxDetails?.pokemons.find((p) => p.slotIndex === slotIdx);
                 const isSel = !!poke && !!(
                   (hoveredPokemon && poke.id === hoveredPokemon.id) ||
                   (!hoveredPokemon && selectedPokemon && poke.id === selectedPokemon.id)
@@ -2052,7 +2189,7 @@ const PCStorage: React.FC = () => {
                   key={box.id}
                   isActive={originalIndex === currentBoxIndex}
                   bgUrl={getBoxBgUrl(box.backgroundImage)}
-                  pokemonCount={box.pokemons.length}
+                  pokemonCount={box.pokemonCount}
                   draggable
                   onDragStart={(e) => handleBoxDragStart(e, box.id)}
                   onDragOver={(e) => e.preventDefault()}
@@ -2063,7 +2200,7 @@ const PCStorage: React.FC = () => {
                     <span className="box-name">
                       {originalIndex === currentBoxIndex && "▶ "}{getLocalizedBoxName(box.name, originalIndex)}
                     </span>
-                    <span className="box-count">{box.pokemons.length}/30</span>
+                    <span className="box-count">{box.pokemonCount}/30</span>
                   </div>
                 </S.BoxThumbnailItem>
               ))}

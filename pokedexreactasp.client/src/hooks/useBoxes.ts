@@ -16,8 +16,9 @@ export const useUpdateBox = () => {
   return useMutation({
     mutationFn: ({ boxId, data }: { boxId: number; data: UpdateBoxDto }) =>
       boxService.updateBox(boxId, data),
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["box", variables.boxId] });
     },
   });
 };
@@ -33,11 +34,15 @@ export const useMovePokemon = () => {
       userPokemonId: number;
       data: MovePokemonDto;
     }) => boxService.movePokemon(userPokemonId, data),
-    onSuccess: () => {
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["boxes"] }),
-        queryClient.invalidateQueries({ queryKey: ["collection"] }),
-      ]);
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      if (result.sourceBoxId) {
+        queryClient.invalidateQueries({ queryKey: ["box", result.sourceBoxId] });
+      }
+      if (result.targetBoxId) {
+        queryClient.invalidateQueries({ queryKey: ["box", result.targetBoxId] });
+      }
     },
   });
 };
@@ -47,11 +52,14 @@ export const useMovePokemonBatch = () => {
 
   return useMutation({
     mutationFn: (data: BatchMovePokemonDto) => boxService.movePokemonBatch(data),
-    onSuccess: () => {
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["boxes"] }),
-        queryClient.invalidateQueries({ queryKey: ["collection"] }),
-      ]);
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      if (result.success && result.affectedBoxIds) {
+        result.affectedBoxIds.forEach((boxId) => {
+          queryClient.invalidateQueries({ queryKey: ["box", boxId] });
+        });
+      }
     },
   });
 };
@@ -81,10 +89,8 @@ export const useUpdatePokemonMoves = () => {
       moveIds: number[];
     }) => collectionService.updateMoves(userPokemonId, moveIds),
     onSuccess: () => {
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["boxes"] }),
-        queryClient.invalidateQueries({ queryKey: ["collection"] }),
-      ]);
+      queryClient.invalidateQueries({ queryKey: ["box"] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
     },
   });
 };

@@ -5,6 +5,7 @@ export interface UserBoxDto {
   name: string;
   order: number;
   backgroundImage: string;
+  pokemonCount: number;
   pokemons: UserPokemonDto[];
 }
 
@@ -39,4 +40,13 @@ export interface MovePokemonResultDto {
   success: boolean;
   message: string;
   swappedPokemonId: number | null;
+  sourceBoxId?: number | null;
+  targetBoxId?: number | null;
+}
+
+export interface BatchMoveResultDto {
+  success: boolean;
+  message?: string;
+  affectedBoxIds?: number[];
+  partyAffected?: boolean;
 }

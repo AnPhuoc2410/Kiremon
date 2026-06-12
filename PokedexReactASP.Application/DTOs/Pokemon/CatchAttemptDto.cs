@@ -134,6 +134,8 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public bool IsUltraBeast { get; set; }
 
         public string Ability { get; set; } = string.Empty;
+        public int? BoxId { get; set; }
+        public bool IsInParty { get; set; }
     }
 }
 

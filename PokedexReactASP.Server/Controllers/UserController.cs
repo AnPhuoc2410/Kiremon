@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using PokedexReactASP.Application.DTOs.Pokemon;
 using PokedexReactASP.Application.DTOs.User;
 using PokedexReactASP.Application.DTOs.Achievement;
 using PokedexReactASP.Application.Interfaces;
+using PokedexReactASP.Server.Hubs;
 
 namespace PokedexReactASP.Server.Controllers
 {
@@ -15,19 +17,22 @@ namespace PokedexReactASP.Server.Controllers
         private readonly IPokemonCatchService _catchService;
         private readonly IAchievementService _achievementService;
         private readonly IPokemonBoxService _boxService;
+        private readonly IHubContext<PresenceHub> _presenceHubContext;
 
         public UserController(
             IUserProfileService profileService,
             IPokemonCollectionService collectionService,
             IPokemonCatchService catchService,
             IAchievementService achievementService,
-            IPokemonBoxService boxService)
+            IPokemonBoxService boxService,
+            IHubContext<PresenceHub> presenceHubContext)
         {
             _profileService    = profileService;
             _collectionService = collectionService;
             _catchService      = catchService;
             _achievementService = achievementService;
             _boxService        = boxService;
+            _presenceHubContext = presenceHubContext;
         }
 
         [HttpGet("profile")]
@@ -90,7 +95,21 @@ namespace PokedexReactASP.Server.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
-            return Ok(await _catchService.AttemptCatchPokemonAsync(CurrentUserId, catchAttemptDto));
+            
+            var result = await _catchService.AttemptCatchPokemonAsync(CurrentUserId, catchAttemptDto);
+            if (result.Result == PokedexReactASP.Domain.Enums.CatchAttemptResult.Success && result.CaughtPokemon != null)
+            {
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                if (result.CaughtPokemon.BoxId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", result.CaughtPokemon.BoxId.Value);
+                }
+                if (result.CaughtPokemon.IsInParty)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("PartyUpdated");
+                }
+            }
+            return Ok(result);
         }
 
         /// <summary>Catch a Pokemon and add it to collection (legacy — always succeeds)</summary>
@@ -99,7 +118,20 @@ namespace PokedexReactASP.Server.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            
             var result = await _catchService.CatchPokemonAsync(CurrentUserId, catchPokemonDto);
+            if (result.Success && result.CaughtPokemon != null)
+            {
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                if (result.CaughtPokemon.BoxId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", result.CaughtPokemon.BoxId.Value);
+                }
+                if (result.CaughtPokemon.IsInParty)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("PartyUpdated");
+                }
+            }
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -109,7 +141,21 @@ namespace PokedexReactASP.Server.Controllers
         public async Task<ActionResult> ReleasePokemon(int userPokemonId)
         {
             if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            
+            var pokemon = await _collectionService.GetUserPokemonByIdAsync(CurrentUserId, userPokemonId);
             var result = await _catchService.ReleasePokemonAsync(CurrentUserId, userPokemonId);
+            if (result && pokemon != null)
+            {
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                if (pokemon.BoxId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", pokemon.BoxId.Value);
+                }
+                if (pokemon.IsInParty)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("PartyUpdated");
+                }
+            }
             return result ? Ok(new { message = "Pokemon released successfully" }) : NotFound(new { message = "Pokemon not found in your collection" });
         }
 
@@ -187,6 +233,22 @@ namespace PokedexReactASP.Server.Controllers
             return Ok(await _boxService.GetBoxesAsync(CurrentUserId, cancellationToken));
         }
 
+        /// <summary>Get details of a specific box for the user</summary>
+        [HttpGet("boxes/{boxId}")]
+        public async Task<ActionResult<UserBoxDto>> GetBox(int boxId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+            try
+            {
+                var box = await _boxService.GetBoxDetailsAsync(CurrentUserId, boxId, cancellationToken);
+                return Ok(box);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         /// <summary>Update box details (name, background image)</summary>
         [HttpPut("boxes/{boxId}")]
         public async Task<ActionResult<UserBoxDto>> UpdateBox(int boxId, [FromBody] UpdateBoxDto dto, CancellationToken cancellationToken)
@@ -197,6 +259,9 @@ namespace PokedexReactASP.Server.Controllers
             try
             {
                 var result = await _boxService.UpdateBoxAsync(CurrentUserId, boxId, dto, cancellationToken);
+                // Real-time synchronization
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", boxId);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -213,6 +278,23 @@ namespace PokedexReactASP.Server.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var result = await _boxService.MovePokemonAsync(CurrentUserId, userPokemonId, dto, cancellationToken);
+            if (result.Success)
+            {
+                // Real-time synchronization
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                if (result.SourceBoxId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", result.SourceBoxId.Value);
+                }
+                if (result.TargetBoxId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", result.TargetBoxId.Value);
+                }
+                if (dto.ToParty || result.SwappedPokemonId.HasValue)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("PartyUpdated");
+                }
+            }
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -223,8 +305,21 @@ namespace PokedexReactASP.Server.Controllers
             if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var success = await _boxService.MovePokemonBatchAsync(CurrentUserId, dto, cancellationToken);
-            return success ? Ok(new { message = "Batch move completed successfully." }) : BadRequest(new { message = "Batch move failed. One or more target slots are occupied." });
+            var result = await _boxService.MovePokemonBatchAsync(CurrentUserId, dto, cancellationToken);
+            if (result.Success)
+            {
+                // Real-time synchronization
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+                foreach (var boxId in result.AffectedBoxIds)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxUpdated", boxId);
+                }
+                if (result.PartyAffected)
+                {
+                    await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("PartyUpdated");
+                }
+            }
+            return result.Success ? Ok(new { message = "Batch move completed successfully." }) : BadRequest(new { message = "Batch move failed. One or more target slots are occupied." });
         }
 
         /// <summary>Swaps the display order of two boxes.</summary>
@@ -235,6 +330,10 @@ namespace PokedexReactASP.Server.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var success = await _boxService.ReorderBoxesAsync(CurrentUserId, dto, cancellationToken);
+            if (success)
+            {
+                await _presenceHubContext.Clients.User(CurrentUserId).SendAsync("BoxListUpdated");
+            }
             return success ? Ok(new { message = "Boxes reordered successfully." }) : BadRequest(new { message = "Failed to reorder boxes." });
         }
 

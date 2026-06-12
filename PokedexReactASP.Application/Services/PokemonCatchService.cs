@@ -165,6 +165,8 @@ namespace PokedexReactASP.Application.Services
                 : $"{baseName} was caught!";
 
             creationResult.DisplayDto.Id = userPokemon.Id;
+            creationResult.DisplayDto.BoxId = userPokemon.BoxId;
+            creationResult.DisplayDto.IsInParty = userPokemon.IsInParty;
             result.CaughtPokemon = creationResult.DisplayDto;
 
             return result;
