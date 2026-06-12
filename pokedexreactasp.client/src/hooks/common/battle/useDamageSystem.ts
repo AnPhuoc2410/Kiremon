@@ -11,7 +11,7 @@ export interface IDamage {
 
 export const useDamageSystem = () => {
   const [damages, setDamages] = useState<Array<IDamage>>([]);
-  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const timeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   const showDamage = useCallback(
     (

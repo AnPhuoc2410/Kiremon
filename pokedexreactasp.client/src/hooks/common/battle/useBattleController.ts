@@ -37,6 +37,146 @@ const powerFromMoveName = (name: string) => {
   return 30 + (hash % 36);
 };
 
+const generateMovesForPokemon = (
+  name: string,
+  type1: string,
+  type2: string | null,
+) => {
+  const t1 = type1.toLowerCase();
+  const t2 = type2?.toLowerCase();
+
+  const movePool: Record<
+    string,
+    Array<{ name: string; power: number; type: string }>
+  > = {
+    fire: [
+      { name: "Ember", power: 40, type: "fire" },
+      { name: "Flame Wheel", power: 60, type: "fire" },
+      { name: "Flamethrower", power: 90, type: "fire" },
+      { name: "Fire Blast", power: 110, type: "fire" },
+    ],
+    water: [
+      { name: "Water Gun", power: 40, type: "water" },
+      { name: "Water Pulse", power: 60, type: "water" },
+      { name: "Surf", power: 90, type: "water" },
+      { name: "Hydro Pump", power: 110, type: "water" },
+    ],
+    grass: [
+      { name: "Vine Whip", power: 40, type: "grass" },
+      { name: "Razor Leaf", power: 55, type: "grass" },
+      { name: "Giga Drain", power: 75, type: "grass" },
+      { name: "Solar Beam", power: 120, type: "grass" },
+    ],
+    electric: [
+      { name: "Thunder Shock", power: 40, type: "electric" },
+      { name: "Spark", power: 65, type: "electric" },
+      { name: "Thunderbolt", power: 90, type: "electric" },
+      { name: "Thunder", power: 110, type: "electric" },
+    ],
+    ice: [
+      { name: "Powder Snow", power: 40, type: "ice" },
+      { name: "Aurora Beam", power: 65, type: "ice" },
+      { name: "Ice Beam", power: 90, type: "ice" },
+      { name: "Blizzard", power: 110, type: "ice" },
+    ],
+    fighting: [
+      { name: "Mach Punch", power: 40, type: "fighting" },
+      { name: "Karate Chop", power: 50, type: "fighting" },
+      { name: "Brick Break", power: 75, type: "fighting" },
+      { name: "Close Combat", power: 120, type: "fighting" },
+    ],
+    poison: [
+      { name: "Poison Sting", power: 30, type: "poison" },
+      { name: "Acid", power: 40, type: "poison" },
+      { name: "Sludge Bomb", power: 90, type: "poison" },
+      { name: "Gunk Shot", power: 120, type: "poison" },
+    ],
+    ground: [
+      { name: "Mud-Slap", power: 20, type: "ground" },
+      { name: "Mud Shot", power: 55, type: "ground" },
+      { name: "Dig", power: 80, type: "ground" },
+      { name: "Earthquake", power: 100, type: "ground" },
+    ],
+    flying: [
+      { name: "Gust", power: 40, type: "flying" },
+      { name: "Wing Attack", power: 60, type: "flying" },
+      { name: "Air Slash", power: 75, type: "flying" },
+      { name: "Hurricane", power: 110, type: "flying" },
+    ],
+    psychic: [
+      { name: "Confusion", power: 50, type: "psychic" },
+      { name: "Psybeam", power: 65, type: "psychic" },
+      { name: "Psychic", power: 90, type: "psychic" },
+      { name: "Psystrike", power: 100, type: "psychic" },
+    ],
+    bug: [
+      { name: "Struggle Bug", power: 50, type: "bug" },
+      { name: "Bug Bite", power: 60, type: "bug" },
+      { name: "Lunge", power: 80, type: "bug" },
+      { name: "Megahorn", power: 120, type: "bug" },
+    ],
+    rock: [
+      { name: "Rock Throw", power: 50, type: "rock" },
+      { name: "Rock Tomb", power: 60, type: "rock" },
+      { name: "Rock Slide", power: 75, type: "rock" },
+      { name: "Stone Edge", power: 100, type: "rock" },
+    ],
+    ghost: [
+      { name: "Lick", power: 30, type: "ghost" },
+      { name: "Shadow Sneak", power: 40, type: "ghost" },
+      { name: "Shadow Punch", power: 60, type: "ghost" },
+      { name: "Shadow Ball", power: 80, type: "ghost" },
+    ],
+    dragon: [
+      { name: "Dragon Breath", power: 60, type: "dragon" },
+      { name: "Dragon Claw", power: 80, type: "dragon" },
+      { name: "Dragon Pulse", power: 85, type: "dragon" },
+      { name: "Outrage", power: 120, type: "dragon" },
+    ],
+    dark: [
+      { name: "Bite", power: 60, type: "dark" },
+      { name: "Foul Play", power: 95, type: "dark" },
+      { name: "Dark Pulse", power: 80, type: "dark" },
+      { name: "Night Slash", power: 70, type: "dark" },
+    ],
+    steel: [
+      { name: "Metal Claw", power: 50, type: "steel" },
+      { name: "Iron Head", power: 80, type: "steel" },
+      { name: "Flash Cannon", power: 80, type: "steel" },
+      { name: "Meteor Mash", power: 90, type: "steel" },
+    ],
+    fairy: [
+      { name: "Fairy Wind", power: 40, type: "fairy" },
+      { name: "Draining Kiss", power: 50, type: "fairy" },
+      { name: "Dazzling Gleam", power: 80, type: "fairy" },
+      { name: "Moonblast", power: 95, type: "fairy" },
+    ],
+    normal: [
+      { name: "Tackle", power: 40, type: "normal" },
+      { name: "Scratch", power: 40, type: "normal" },
+      { name: "Slash", power: 70, type: "normal" },
+      { name: "Hyper Beam", power: 150, type: "normal" },
+    ],
+  };
+
+  const defaultNormal = [
+    { name: "Tackle", power: 40, type: "normal" },
+    { name: "Scratch", power: 40, type: "normal" },
+    { name: "Slash", power: 70, type: "normal" },
+    { name: "Hyper Beam", power: 150, type: "normal" },
+  ];
+
+  const moves1 = movePool[t1] || defaultNormal;
+  const moves2 = t2 ? movePool[t2] || defaultNormal : [];
+
+  return [
+    { name: "Tackle", power: 40, type: "normal" },
+    moves1[1] || moves1[0],
+    t2 && moves2[2] ? moves2[2] : moves1[2] || moves1[0],
+    moves1[3] || moves1[0],
+  ];
+};
+
 export const useBattleController = ({
   playerPokemon,
   enemy,
@@ -82,146 +222,6 @@ export const useBattleController = ({
   const { damages, showDamage } = useDamageSystem();
 
   const isBattleInitialized = useRef(false);
-
-  const generateMovesForPokemon = (
-    name: string,
-    type1: string,
-    type2: string | null,
-  ) => {
-    const t1 = type1.toLowerCase();
-    const t2 = type2?.toLowerCase();
-
-    const movePool: Record<
-      string,
-      Array<{ name: string; power: number; type: string }>
-    > = {
-      fire: [
-        { name: "Ember", power: 40, type: "fire" },
-        { name: "Flame Wheel", power: 60, type: "fire" },
-        { name: "Flamethrower", power: 90, type: "fire" },
-        { name: "Fire Blast", power: 110, type: "fire" },
-      ],
-      water: [
-        { name: "Water Gun", power: 40, type: "water" },
-        { name: "Water Pulse", power: 60, type: "water" },
-        { name: "Surf", power: 90, type: "water" },
-        { name: "Hydro Pump", power: 110, type: "water" },
-      ],
-      grass: [
-        { name: "Vine Whip", power: 40, type: "grass" },
-        { name: "Razor Leaf", power: 55, type: "grass" },
-        { name: "Giga Drain", power: 75, type: "grass" },
-        { name: "Solar Beam", power: 120, type: "grass" },
-      ],
-      electric: [
-        { name: "Thunder Shock", power: 40, type: "electric" },
-        { name: "Spark", power: 65, type: "electric" },
-        { name: "Thunderbolt", power: 90, type: "electric" },
-        { name: "Thunder", power: 110, type: "electric" },
-      ],
-      ice: [
-        { name: "Powder Snow", power: 40, type: "ice" },
-        { name: "Aurora Beam", power: 65, type: "ice" },
-        { name: "Ice Beam", power: 90, type: "ice" },
-        { name: "Blizzard", power: 110, type: "ice" },
-      ],
-      fighting: [
-        { name: "Mach Punch", power: 40, type: "fighting" },
-        { name: "Karate Chop", power: 50, type: "fighting" },
-        { name: "Brick Break", power: 75, type: "fighting" },
-        { name: "Close Combat", power: 120, type: "fighting" },
-      ],
-      poison: [
-        { name: "Poison Sting", power: 30, type: "poison" },
-        { name: "Acid", power: 40, type: "poison" },
-        { name: "Sludge Bomb", power: 90, type: "poison" },
-        { name: "Gunk Shot", power: 120, type: "poison" },
-      ],
-      ground: [
-        { name: "Mud-Slap", power: 20, type: "ground" },
-        { name: "Mud Shot", power: 55, type: "ground" },
-        { name: "Dig", power: 80, type: "ground" },
-        { name: "Earthquake", power: 100, type: "ground" },
-      ],
-      flying: [
-        { name: "Gust", power: 40, type: "flying" },
-        { name: "Wing Attack", power: 60, type: "flying" },
-        { name: "Air Slash", power: 75, type: "flying" },
-        { name: "Hurricane", power: 110, type: "flying" },
-      ],
-      psychic: [
-        { name: "Confusion", power: 50, type: "psychic" },
-        { name: "Psybeam", power: 65, type: "psychic" },
-        { name: "Psychic", power: 90, type: "psychic" },
-        { name: "Psystrike", power: 100, type: "psychic" },
-      ],
-      bug: [
-        { name: "Struggle Bug", power: 50, type: "bug" },
-        { name: "Bug Bite", power: 60, type: "bug" },
-        { name: "Lunge", power: 80, type: "bug" },
-        { name: "Megahorn", power: 120, type: "bug" },
-      ],
-      rock: [
-        { name: "Rock Throw", power: 50, type: "rock" },
-        { name: "Rock Tomb", power: 60, type: "rock" },
-        { name: "Rock Slide", power: 75, type: "rock" },
-        { name: "Stone Edge", power: 100, type: "rock" },
-      ],
-      ghost: [
-        { name: "Lick", power: 30, type: "ghost" },
-        { name: "Shadow Sneak", power: 40, type: "ghost" },
-        { name: "Shadow Punch", power: 60, type: "ghost" },
-        { name: "Shadow Ball", power: 80, type: "ghost" },
-      ],
-      dragon: [
-        { name: "Dragon Breath", power: 60, type: "dragon" },
-        { name: "Dragon Claw", power: 80, type: "dragon" },
-        { name: "Dragon Pulse", power: 85, type: "dragon" },
-        { name: "Outrage", power: 120, type: "dragon" },
-      ],
-      dark: [
-        { name: "Bite", power: 60, type: "dark" },
-        { name: "Foul Play", power: 95, type: "dark" },
-        { name: "Dark Pulse", power: 80, type: "dark" },
-        { name: "Night Slash", power: 70, type: "dark" },
-      ],
-      steel: [
-        { name: "Metal Claw", power: 50, type: "steel" },
-        { name: "Iron Head", power: 80, type: "steel" },
-        { name: "Flash Cannon", power: 80, type: "steel" },
-        { name: "Meteor Mash", power: 90, type: "steel" },
-      ],
-      fairy: [
-        { name: "Fairy Wind", power: 40, type: "fairy" },
-        { name: "Draining Kiss", power: 50, type: "fairy" },
-        { name: "Dazzling Gleam", power: 80, type: "fairy" },
-        { name: "Moonblast", power: 95, type: "fairy" },
-      ],
-      normal: [
-        { name: "Tackle", power: 40, type: "normal" },
-        { name: "Scratch", power: 40, type: "normal" },
-        { name: "Slash", power: 70, type: "normal" },
-        { name: "Hyper Beam", power: 150, type: "normal" },
-      ],
-    };
-
-    const defaultNormal = [
-      { name: "Tackle", power: 40, type: "normal" },
-      { name: "Scratch", power: 40, type: "normal" },
-      { name: "Slash", power: 70, type: "normal" },
-      { name: "Hyper Beam", power: 150, type: "normal" },
-    ];
-
-    const moves1 = movePool[t1] || defaultNormal;
-    const moves2 = t2 ? movePool[t2] || defaultNormal : [];
-
-    return [
-      { name: "Tackle", power: 40, type: "normal" },
-      moves1[1] || moves1[0],
-      t2 && moves2[2] ? moves2[2] : moves1[2] || moves1[0],
-      moves1[3] || moves1[0],
-    ];
-  };
 
   // Load player's combat team from database (isInParty) or fallback
   useEffect(() => {

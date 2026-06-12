@@ -2,19 +2,16 @@ import { useCallback } from "react";
 import { usePokemonStore } from "@/store/app/pokemonStore";
 import { scaleStat } from "@/components/utils/pokemon-utils";
 
+export const getExpForNextLevel = (level: number): number => {
+  return Math.pow(level + 1, 3);
+};
+
+export const calculateExpGain = (enemyLevel: number, enemyBaseExp = 60) => {
+  return Math.floor((enemyBaseExp * enemyLevel) / 5);
+};
+
 export const usePokemonExperience = () => {
   const { updatePokemon, getPokemonByNickname } = usePokemonStore();
-
-  const getExpForNextLevel = useCallback((level: number): number => {
-    return Math.pow(level + 1, 3);
-  }, []);
-
-  const calculateExpGain = useCallback(
-    (enemyLevel: number, enemyBaseExp = 60) => {
-      return Math.floor((enemyBaseExp * enemyLevel) / 5);
-    },
-    [],
-  );
 
   const addExp = useCallback(
     (nickname: string, expGained: number) => {
@@ -82,7 +79,7 @@ export const usePokemonExperience = () => {
         statsIncreased: leveled,
       };
     },
-    [getPokemonByNickname, updatePokemon, getExpForNextLevel],
+    [getPokemonByNickname, updatePokemon],
   );
 
   const getExpProgress = useCallback(
@@ -113,7 +110,7 @@ export const usePokemonExperience = () => {
         percentage: Math.min(Math.max(percentage, 0), 100),
       };
     },
-    [getPokemonByNickname, getExpForNextLevel],
+    [getPokemonByNickname],
   );
 
   return { addExp, calculateExpGain, getExpProgress, getExpForNextLevel };
