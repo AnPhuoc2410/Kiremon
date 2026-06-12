@@ -975,10 +975,10 @@ const Profile: React.FC = () => {
       setProfile((prev: UserProfile | null) =>
         prev
           ? {
-              ...prev,
-              firstName: editFormData.firstName?.trim() || null,
-              lastName: editFormData.lastName?.trim() || null,
-            }
+            ...prev,
+            firstName: editFormData.firstName?.trim() || null,
+            lastName: editFormData.lastName?.trim() || null,
+          }
           : null,
       );
 
@@ -1130,6 +1130,7 @@ const Profile: React.FC = () => {
   const level = profile?.level || authUser?.level || 1;
   const pokemonCaught = profile?.pokemonCaught || authUser?.pokemonCaught || 0;
   const experience = profile?.experience || 0;
+  const coins = profile?.coins || 0;
 
   if (!isInitialized) {
     return (
@@ -1314,6 +1315,14 @@ const Profile: React.FC = () => {
                             </S.StatValue>
                             <S.StatLabel textColor="#065F46">
                               Total XP
+                            </S.StatLabel>
+                          </S.StatCard>
+                          <S.StatCard color="#D1FAE5">
+                            <S.StatValue textColor="#047857">
+                              {coins}
+                            </S.StatValue>
+                            <S.StatLabel textColor="#065F46">
+                              Coins
                             </S.StatLabel>
                           </S.StatCard>
                         </S.StatsGrid>
@@ -1930,9 +1939,9 @@ const Profile: React.FC = () => {
                               percentage={
                                 achievements.length > 0
                                   ? (achievements.filter((a) => a.isUnlocked)
-                                      .length /
-                                      achievements.length) *
-                                    100
+                                    .length /
+                                    achievements.length) *
+                                  100
                                   : 0
                               }
                             />
@@ -1940,11 +1949,11 @@ const Profile: React.FC = () => {
                           <S.CircularProgressText>
                             {achievements.length > 0
                               ? Math.round(
-                                  (achievements.filter((a) => a.isUnlocked)
-                                    .length /
-                                    achievements.length) *
-                                    100,
-                                )
+                                (achievements.filter((a) => a.isUnlocked)
+                                  .length /
+                                  achievements.length) *
+                                100,
+                              )
                               : 0}
                             %
                           </S.CircularProgressText>
@@ -2179,113 +2188,113 @@ const Profile: React.FC = () => {
                       {/* General Achievements Bento Grid */}
                       {(achievementsSubTab === "all" ||
                         achievementsSubTab === "progression") && (
-                        <div
-                          style={{
-                            marginBottom: !!collapsedSections["general"]
-                              ? "0px"
-                              : "16px",
-                          }}
-                        >
-                          <S.RegionHeader
-                            onClick={() => toggleSection("general")}
+                          <div
+                            style={{
+                              marginBottom: !!collapsedSections["general"]
+                                ? "0px"
+                                : "16px",
+                            }}
                           >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                              }}
+                            <S.RegionHeader
+                              onClick={() => toggleSection("general")}
                             >
-                              <span
+                              <div
                                 style={{
-                                  display: "inline-block",
-                                  width: "8px",
-                                  height: "16px",
-                                  background: "#eab308",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
                                 }}
-                              ></span>
-                              <S.SectionTitle style={{ margin: 0 }}>
-                                General Achievements
-                              </S.SectionTitle>
-                            </div>
-                            <S.ToggleIcon
-                              $isCollapsed={!!collapsedSections["general"]}
-                            >
-                              <IconChevronDown size={20} />
-                            </S.ToggleIcon>
-                          </S.RegionHeader>
-                          {!collapsedSections["general"] && (
-                            <S.AchievementsBentoGrid>
-                              {achievements
-                                .filter((a) => !a.region)
-                                .map((ach) => {
-                                  const progressPercent =
-                                    ach.targetValue > 0
-                                      ? (ach.currentProgress /
+                              >
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    width: "8px",
+                                    height: "16px",
+                                    background: "#eab308",
+                                  }}
+                                ></span>
+                                <S.SectionTitle style={{ margin: 0 }}>
+                                  General Achievements
+                                </S.SectionTitle>
+                              </div>
+                              <S.ToggleIcon
+                                $isCollapsed={!!collapsedSections["general"]}
+                              >
+                                <IconChevronDown size={20} />
+                              </S.ToggleIcon>
+                            </S.RegionHeader>
+                            {!collapsedSections["general"] && (
+                              <S.AchievementsBentoGrid>
+                                {achievements
+                                  .filter((a) => !a.region)
+                                  .map((ach) => {
+                                    const progressPercent =
+                                      ach.targetValue > 0
+                                        ? (ach.currentProgress /
                                           ach.targetValue) *
                                         100
-                                      : 0;
-                                  return (
-                                    <S.AchievementBentoCard
-                                      key={ach.id}
-                                      $unlocked={ach.isUnlocked}
-                                    >
-                                      <S.AchievementBentoIcon
+                                        : 0;
+                                    return (
+                                      <S.AchievementBentoCard
+                                        key={ach.id}
                                         $unlocked={ach.isUnlocked}
-                                        $rarity={ach.rarity}
                                       >
-                                        {renderBadgeIcon(
-                                          ach.icon,
-                                          ach.isUnlocked,
-                                        )}
-                                      </S.AchievementBentoIcon>
-                                      <S.AchievementBentoContent>
-                                        <S.AchievementBentoHeader>
-                                          <S.AchievementTitle>
-                                            {ach.name}
-                                          </S.AchievementTitle>
-                                          <S.AchievementRarityBadge
-                                            $rarity={ach.rarity}
-                                          >
-                                            {ach.rarity}
-                                          </S.AchievementRarityBadge>
-                                        </S.AchievementBentoHeader>
-                                        <S.AchievementDesc>
-                                          {ach.description}
-                                        </S.AchievementDesc>
-                                        <S.AchievementFooter>
-                                          <S.AchievementProgressBarWrapper>
-                                            <S.AchievementProgressTrack>
-                                              <S.AchievementProgressFill
-                                                $percent={progressPercent}
-                                                $unlocked={ach.isUnlocked}
+                                        <S.AchievementBentoIcon
+                                          $unlocked={ach.isUnlocked}
+                                          $rarity={ach.rarity}
+                                        >
+                                          {renderBadgeIcon(
+                                            ach.icon,
+                                            ach.isUnlocked,
+                                          )}
+                                        </S.AchievementBentoIcon>
+                                        <S.AchievementBentoContent>
+                                          <S.AchievementBentoHeader>
+                                            <S.AchievementTitle>
+                                              {ach.name}
+                                            </S.AchievementTitle>
+                                            <S.AchievementRarityBadge
+                                              $rarity={ach.rarity}
+                                            >
+                                              {ach.rarity}
+                                            </S.AchievementRarityBadge>
+                                          </S.AchievementBentoHeader>
+                                          <S.AchievementDesc>
+                                            {ach.description}
+                                          </S.AchievementDesc>
+                                          <S.AchievementFooter>
+                                            <S.AchievementProgressBarWrapper>
+                                              <S.AchievementProgressTrack>
+                                                <S.AchievementProgressFill
+                                                  $percent={progressPercent}
+                                                  $unlocked={ach.isUnlocked}
+                                                />
+                                              </S.AchievementProgressTrack>
+                                              <S.AchievementProgressText>
+                                                {Math.min(
+                                                  ach.currentProgress,
+                                                  ach.targetValue,
+                                                )}{" "}
+                                                / {ach.targetValue}
+                                              </S.AchievementProgressText>
+                                            </S.AchievementProgressBarWrapper>
+                                            <S.RewardCoinsWrapper>
+                                              <IconCoin
+                                                size={14}
+                                                fill="#F59E0B"
+                                                color="#D97706"
                                               />
-                                            </S.AchievementProgressTrack>
-                                            <S.AchievementProgressText>
-                                              {Math.min(
-                                                ach.currentProgress,
-                                                ach.targetValue,
-                                              )}{" "}
-                                              / {ach.targetValue}
-                                            </S.AchievementProgressText>
-                                          </S.AchievementProgressBarWrapper>
-                                          <S.RewardCoinsWrapper>
-                                            <IconCoin
-                                              size={14}
-                                              fill="#F59E0B"
-                                              color="#D97706"
-                                            />
-                                            +{ach.rewardCoins}
-                                          </S.RewardCoinsWrapper>
-                                        </S.AchievementFooter>
-                                      </S.AchievementBentoContent>
-                                    </S.AchievementBentoCard>
-                                  );
-                                })}
-                            </S.AchievementsBentoGrid>
-                          )}
-                        </div>
-                      )}
+                                              +{ach.rewardCoins}
+                                            </S.RewardCoinsWrapper>
+                                          </S.AchievementFooter>
+                                        </S.AchievementBentoContent>
+                                      </S.AchievementBentoCard>
+                                    );
+                                  })}
+                              </S.AchievementsBentoGrid>
+                            )}
+                          </div>
+                        )}
                     </S.RegionsWrapper>
                   </S.AchievementsContainer>
                 )}
