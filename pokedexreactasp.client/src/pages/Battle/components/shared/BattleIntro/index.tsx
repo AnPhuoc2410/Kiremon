@@ -8,16 +8,22 @@ import {
   VsName,
   VsSide,
 } from "./index.style";
-import type { IMyPokemon } from "@/services/api/pokemons";
+import { IPokemon } from "@/types/pokemon";
 import { TypeCard } from "@/components/ui";
 
 interface IBattleIntroProps {
-  player: IMyPokemon | undefined;
-  enemy: IMyPokemon | null;
+  player: IPokemon | undefined;
+  enemy: IPokemon | null;
+  leader?: any;
   onComplete: () => void;
 }
 
-const BattleIntro = ({ player, enemy, onComplete }: IBattleIntroProps) => {
+const BattleIntro = ({
+  player,
+  enemy,
+  leader,
+  onComplete,
+}: IBattleIntroProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
@@ -25,6 +31,12 @@ const BattleIntro = ({ player, enemy, onComplete }: IBattleIntroProps) => {
 
     return () => clearTimeout(timer);
   }, [onComplete]);
+
+  // Determine display name and sprite for enemy side
+  const displayName = leader
+    ? `GYM LEADER ${leader.name.toUpperCase()}`
+    : enemy?.name || "ENEMY";
+  const displaySprite = leader ? leader.sprite : enemy?.sprite;
 
   return (
     <IntroOverlay
@@ -47,16 +59,11 @@ const BattleIntro = ({ player, enemy, onComplete }: IBattleIntroProps) => {
           transition={{ type: "spring", stiffness: 50, damping: 15 }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {player?.types.map((type) => (
-              <TypeCard
-                key={type}
-                hasIcon
-                config={{ size: 16, fontSize: "base" }}
-                type={type}
-              />
+            {player?.types?.map((type) => (
+              <TypeCard key={type} type={type} />
             ))}
           </div>
-          <VsName>{player?.nickname || "PLAYER"}</VsName>
+          <VsName>{player?.name || "PLAYER"}</VsName>
           <VsImage
             src={player?.sprite}
             alt="Player"
@@ -75,17 +82,22 @@ const BattleIntro = ({ player, enemy, onComplete }: IBattleIntroProps) => {
           transition={{ type: "spring", stiffness: 50, damping: 15 }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {enemy?.types.map((type) => (
-              <TypeCard
-                key={type}
-                hasIcon
-                config={{ size: 16, fontSize: "base" }}
-                type={type}
-              />
-            ))}
+            {!leader &&
+              enemy?.types?.map((type) => <TypeCard key={type} type={type} />)}
+            {leader && (
+              <span
+                style={{
+                  color: "#fbbf24",
+                  fontWeight: "bold",
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
+                {leader.region} Gym Leader
+              </span>
+            )}
           </div>
-          <VsName>{enemy?.name || "ENEMY"}</VsName>
-          <VsImage src={enemy?.sprite} alt="Enemy" />
+          <VsName>{displayName}</VsName>
+          <VsImage src={displaySprite} alt="Enemy" />
         </VsSide>
 
         {/* VS TEXT - Zoom In Effect */}

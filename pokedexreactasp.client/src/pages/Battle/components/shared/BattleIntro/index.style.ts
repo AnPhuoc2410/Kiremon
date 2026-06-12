@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
-import { colors } from "@/utils";
+import { colors } from "@/components/utils";
 
 export const IntroOverlay = styled(motion.div)({
   position: "fixed",

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { colors, skillColor } from "utils";
+import { colors, skillColor } from "@/components/utils";
 
 export const Container = styled("section")({
   width: "100vw",
