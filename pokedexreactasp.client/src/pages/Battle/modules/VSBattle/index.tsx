@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import * as T from "./index.style";
@@ -21,6 +21,41 @@ interface IVersusBattleModuleProps {
 }
 
 const LS_PLAYER_HP_KEY = "pokegames@battle-player-hp";
+
+const TypewriterText = ({ text }: { text: string }) => {
+  const [displayed, setDisplayed] = useState("");
+
+  useEffect(() => {
+    setDisplayed("");
+    if (!text) return;
+
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, 25);
+
+    return () => clearInterval(id);
+  }, [text]);
+
+  const done = displayed.length >= text.length;
+
+  return (
+    <>
+      {displayed}
+      {!done && (
+        <motion.span
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ repeat: Infinity, duration: 0.55 }}
+          style={{ marginLeft: 2 }}
+        >
+          ▌
+        </motion.span>
+      )}
+    </>
+  );
+};
 
 const VersusBattleModule = ({
   pokemonNicknameParam = "",
@@ -78,6 +113,61 @@ const VersusBattleModule = ({
     sendNextEnemy,
     clearGymBattle,
   });
+
+  const [introPhase, setIntroPhase] = useState<number | "complete">(() => {
+    return state.showIntro ? 0 : "complete";
+  });
+
+  useEffect(() => {
+    if (!state.showIntro && introPhase === 0) {
+      setIntroPhase(1);
+    }
+  }, [state.showIntro, introPhase]);
+
+  useEffect(() => {
+    if (introPhase === "complete" || introPhase === 0) return;
+
+    let timer: number;
+    if (introPhase === 1) {
+      timer = window.setTimeout(() => {
+        if (leaderId) {
+          setIntroPhase(2);
+        } else {
+          setIntroPhase(3);
+        }
+      }, 2800);
+    } else if (introPhase === 2) {
+      timer = window.setTimeout(() => {
+        setIntroPhase(3);
+      }, 1500);
+    } else if (introPhase === 3) {
+      timer = window.setTimeout(() => {
+        setIntroPhase(4);
+      }, 1500);
+    } else if (introPhase === 4) {
+      timer = window.setTimeout(() => {
+        setIntroPhase("complete");
+      }, 1500);
+    }
+
+    return () => window.clearTimeout(timer);
+  }, [introPhase, leaderId]);
+
+  const getDialogText = () => {
+    if (introPhase === 1 || introPhase === 2) {
+      if (leaderId && leader) {
+        return `Gym Leader ${leader.name} wants to battle!`;
+      }
+      return `A wild ${state.currentEnemy?.name || "Pokémon"} appeared!`;
+    }
+    if (introPhase === 3 || introPhase === 4) {
+      const p = state.currentPlayer;
+      return `Go! ${p?.nickname || p?.name || "Pokémon"}!`;
+    }
+    return "";
+  };
+
+  const dialogText = getDialogText();
 
   useEffect(() => {
     const img = new Image();
@@ -277,6 +367,12 @@ const VersusBattleModule = ({
 
   return (
     <T.Container>
+      <style>{`
+        @keyframes ash-throw-ball {
+          0% { background-position: 0px 0px; }
+          100% { background-position: -512px 0px; }
+        }
+      `}</style>
       <AnimatePresence>
         {state.showIntro && (
           <BattleIntro
@@ -292,67 +388,40 @@ const VersusBattleModule = ({
         <T.BattleField>
           {/* --- ENEMY SECTION --- */}
           <T.EnemySection>
-            {!state.gameOver && (
-              <T.EnemyInfo>
-                <T.InfoBox>
-                  {leader && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        marginBottom: "6px",
-                        borderBottom: "1px solid #ddd",
-                        paddingBottom: "4px",
-                      }}
-                    >
-                      <img
-                        src={leader.avatar}
-                        alt={leader.name}
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "50%",
-                          border: "2px solid #ef4444",
-                          backgroundColor: "#fff",
-                        }}
-                      />
-                      <div>
-                        <div
-                          style={{
-                            fontSize: "0.9rem",
-                            fontWeight: "bold",
-                            color: "#dc2626",
-                          }}
-                        >
-                          Gym Leader {leader.name}
-                        </div>
-                        <div style={{ fontSize: "0.7rem", color: "#4b5563" }}>
-                          {leader.badgeName}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <T.CharacterName>{activeEnemy.name}</T.CharacterName>
-                  {leaderId &&
-                    renderTeamStatus(
-                      enemyRoster,
-                      activeEnemyIndex,
-                      enemyRoster.map((p) => p.current_hp ?? p.stats.hp),
-                    )}
-                  <T.HPBarContainer>
-                    <T.HPBar width={enemyHPPercentage} color="#ef4444" />
-                  </T.HPBarContainer>
-                  <T.HPText>
-                    {state.enemyCurrentHP}/{maxEnemyHP} HP
-                  </T.HPText>
-                  <T.HPText>
-                    Lvl.{" "}
-                    {activeEnemy.level ?? activeEnemy.battle_state?.level ?? 5}
-                  </T.HPText>
-                </T.InfoBox>
-              </T.EnemyInfo>
-            )}
+            <AnimatePresence>
+              {!state.gameOver && introPhase === "complete" && (
+                <motion.div
+                  initial={{ x: 200, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 200, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                >
+                  <T.EnemyInfo>
+                    <T.InfoBox>
+                      <T.CharacterName>{activeEnemy.name}</T.CharacterName>
+                      {leaderId &&
+                        renderTeamStatus(
+                          enemyRoster,
+                          activeEnemyIndex,
+                          enemyRoster.map((p) => p.current_hp ?? p.stats.hp),
+                        )}
+                      <T.HPBarContainer>
+                        <T.HPBar width={enemyHPPercentage} color="#ef4444" />
+                      </T.HPBarContainer>
+                      <T.HPText>
+                        {state.enemyCurrentHP}/{maxEnemyHP} HP
+                      </T.HPText>
+                      <T.HPText>
+                        Lvl.{" "}
+                        {activeEnemy.level ??
+                          activeEnemy.battle_state?.level ??
+                          5}
+                      </T.HPText>
+                    </T.InfoBox>
+                  </T.EnemyInfo>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <T.EnemySpriteWrapper>
               {state.activeHitTarget === "enemy" && (
@@ -402,14 +471,85 @@ const VersusBattleModule = ({
                   ))}
               </AnimatePresence>
 
+              {/* Gym Leader Trainer Sprite during intro */}
+              {leaderId && (introPhase === 1 || introPhase === 2) && leader && (
+                <motion.div
+                  key="intro-gym-leader"
+                  initial={{ x: 200, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 200, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 50, damping: 14 }}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "flex-end",
+                    zIndex: 15,
+                  }}
+                >
+                  <img
+                    src={leader.sprite}
+                    alt={leader.name}
+                    style={{
+                      height: "140px",
+                      width: "auto",
+                      objectFit: "contain",
+                      imageRendering: "pixelated",
+                      transform: "scale(1.7)",
+                      transformOrigin: "bottom center",
+                    }}
+                  />
+                  <T.ShadowEnemy />
+                </motion.div>
+              )}
+
+              {/* Gym Leader Pokéball throw during intro */}
+              {leaderId && introPhase === 2 && (
+                <motion.img
+                  key="leader-pokeball"
+                  src="/static/pokeball.png"
+                  alt="Pokeball"
+                  initial={{ x: 40, y: -20, rotate: 0, scale: 0.8, opacity: 1 }}
+                  animate={{
+                    x: [-40, -100, -120],
+                    y: [-40, -80, 0],
+                    rotate: [0, -360, -720],
+                    scale: [0.8, 1, 0.5],
+                    opacity: [1, 1, 0],
+                  }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    width: "24px",
+                    height: "24px",
+                    bottom: "50px",
+                    left: "50%",
+                    zIndex: 20,
+                    imageRendering: "pixelated",
+                  }}
+                />
+              )}
+
               <AnimatePresence mode="wait">
                 {state.enemyCurrentHP > 0 &&
-                  !(state.gameOver && state.playerCurrentHP <= 0) && (
+                  !(state.gameOver && state.playerCurrentHP <= 0) &&
+                  (introPhase === "complete" ||
+                    (!leaderId && introPhase >= 1) ||
+                    (leaderId && introPhase >= 3)) && (
                     <motion.div
                       key={activeEnemy.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 150,
+                        damping: 12,
+                      }}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -580,277 +720,449 @@ const VersusBattleModule = ({
                   ))}
               </AnimatePresence>
 
-              <AnimatePresence mode="wait">
-                {state.playerCurrentHP > 0 && (
-                  <motion.div
-                    key={activePlayer.nickname}
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 50 }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <T.PokemonSprite
-                      src={playerDisplaySprite}
-                      alt="Player"
-                      style={{ transform: "scaleX(1)" }}
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        if (!target.dataset.fallback) {
-                          target.dataset.fallback = "1";
-                          // Fall back to static back sprite URL
-                          target.src =
-                            activePlayer.sprite_back
-                              ?.replace("/animated/", "/")
-                              .replace(".gif", ".png") ||
-                            activePlayer.sprite ||
-                            "";
-                        }
+              {/* Player Trainer Sprite during intro */}
+              {(introPhase === 1 || introPhase === 2 || introPhase === 3) && (
+                <motion.div
+                  key="intro-player-trainer"
+                  initial={{ x: -200, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -200, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 50, damping: 14 }}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "flex-end",
+                    zIndex: 15,
+                  }}
+                >
+                  {introPhase === 3 ? (
+                    <div
+                      style={{
+                        width: "128px",
+                        height: "128px",
+                        backgroundImage: "url('/trainer/ash_xuatchieu.png')",
+                        backgroundSize: "640px 128px",
+                        backgroundRepeat: "no-repeat",
+                        imageRendering: "pixelated",
+                        transform: "scale(1.8)",
+                        transformOrigin: "bottom center",
+                        animation: "ash-throw-ball 0.7s steps(4) forwards",
                       }}
                     />
-                    <T.Shadow />
-                  </motion.div>
-                )}
+                  ) : (
+                    <img
+                      src="/trainer/ash_back_sprited.png"
+                      alt="Player Trainer"
+                      style={{
+                        height: "128px",
+                        width: "auto",
+                        objectFit: "contain",
+                        imageRendering: "pixelated",
+                        transform: "scale(1.8)",
+                        transformOrigin: "bottom center",
+                      }}
+                    />
+                  )}
+                  <T.Shadow />
+                </motion.div>
+              )}
+
+              {/* Player Pokéball throw during intro */}
+              {introPhase === 3 && (
+                <motion.img
+                  key="player-pokeball"
+                  src="/static/pokeball.png"
+                  alt="Pokeball"
+                  initial={{
+                    x: -40,
+                    y: -20,
+                    rotate: 0,
+                    scale: 0.8,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    x: [-40, 40, 100, 120],
+                    y: [-20, -80, -40, 0],
+                    rotate: [0, 180, 360, 540],
+                    scale: [0.8, 1, 0.8, 0.5],
+                    opacity: [0, 1, 1, 0],
+                  }}
+                  transition={{ delay: 0.38, duration: 0.62, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    width: "24px",
+                    height: "24px",
+                    bottom: "50px",
+                    left: "50%",
+                    zIndex: 20,
+                    imageRendering: "pixelated",
+                  }}
+                />
+              )}
+
+              <AnimatePresence mode="wait">
+                {state.playerCurrentHP > 0 &&
+                  (introPhase === "complete" || introPhase >= 4) && (
+                    <motion.div
+                      key={activePlayer.nickname}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 150,
+                        damping: 12,
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "flex-end",
+                      }}
+                    >
+                      <T.PokemonSprite
+                        src={playerDisplaySprite}
+                        alt="Player"
+                        style={{ transform: "scaleX(1)" }}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (!target.dataset.fallback) {
+                            target.dataset.fallback = "1";
+                            // Fall back to static back sprite URL
+                            target.src =
+                              activePlayer.sprite_back
+                                ?.replace("/animated/", "/")
+                                .replace(".gif", ".png") ||
+                              activePlayer.sprite ||
+                              "";
+                          }
+                        }}
+                      />
+                      <T.Shadow />
+                    </motion.div>
+                  )}
               </AnimatePresence>
             </T.PlayerSpriteWrapper>
 
-            {!state.gameOver && state.playerCurrentHP > 0 && (
-              <T.PlayerInfo>
-                <T.PlayerInfoBox>
-                  <T.CharacterName>{activePlayer.nickname}</T.CharacterName>
-                  {state.playerTeam.length > 1 &&
-                    renderTeamStatus(
-                      state.playerTeam,
-                      state.activePlayerIdx,
-                      state.playerTeamHps,
-                    )}
-                  <T.HPBarContainer>
-                    <T.HPBar width={playerHPPercentage} color="#10b981" />
-                  </T.HPBarContainer>
-                  <T.HPText>
-                    {state.playerCurrentHP}/{maxPlayerHP} HP
-                  </T.HPText>
-                  <T.HPText>
-                    Lvl.{" "}
-                    {activePlayer.level ??
-                      activePlayer.battle_state?.level ??
-                      1}
-                  </T.HPText>
-                </T.PlayerInfoBox>
-              </T.PlayerInfo>
-            )}
+            <AnimatePresence>
+              {!state.gameOver &&
+                state.playerCurrentHP > 0 &&
+                introPhase === "complete" && (
+                  <motion.div
+                    initial={{ x: -200, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -200, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                  >
+                    <T.PlayerInfo>
+                      <T.PlayerInfoBox>
+                        <T.CharacterName>
+                          {activePlayer.nickname}
+                        </T.CharacterName>
+                        {state.playerTeam.length > 1 &&
+                          renderTeamStatus(
+                            state.playerTeam,
+                            state.activePlayerIdx,
+                            state.playerTeamHps,
+                          )}
+                        <T.HPBarContainer>
+                          <T.HPBar width={playerHPPercentage} color="#10b981" />
+                        </T.HPBarContainer>
+                        <T.HPText>
+                          {state.playerCurrentHP}/{maxPlayerHP} HP
+                        </T.HPText>
+                        <T.HPText>
+                          Lvl.{" "}
+                          {activePlayer.level ??
+                            activePlayer.battle_state?.level ??
+                            1}
+                        </T.HPText>
+                      </T.PlayerInfoBox>
+                    </T.PlayerInfo>
+                  </motion.div>
+                )}
+            </AnimatePresence>
           </T.PlayerSection>
 
           {/* --- INTERFACE --- */}
           <T.InterfaceWrapper>
-            <T.BattleLog ref={battleLogRef}>
-              <T.LogTitle>Battle Log</T.LogTitle>
-              {state.battleLog.map((log, idx) => (
-                <T.LogEntry
-                  key={idx}
+            <AnimatePresence mode="wait">
+              {introPhase !== "complete" ? (
+                <motion.div
+                  key="intro-dialog-box"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 50 }}
+                  transition={{ type: "spring", stiffness: 80, damping: 15 }}
                   style={{
-                    color: log.includes(">>>") ? "#fbbf24" : "inherit",
-                    fontWeight: log.includes(">>>") ? "bold" : "normal",
-                    textShadow: log.includes(">>>") ? "1px 1px 0 #000" : "none",
+                    width: "100%",
+                    backgroundColor: "#fff",
+                    border: "4px solid #1f2937",
+                    boxShadow: "6px 6px 0px #1f2937",
+                    padding: "20px 24px",
+                    fontFamily: "'VT323', Courier, monospace",
+                    imageRendering: "pixelated",
+                    minHeight: "140px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
                   }}
                 >
-                  &gt; {log}
-                </T.LogEntry>
-              ))}
-            </T.BattleLog>
-
-            <T.BattleMenu>
-              <T.MenuTitle>
-                {state.gameOver
-                  ? "Game Over"
-                  : state.isPlayerTurn
-                    ? `What will ${activePlayer.nickname} do?`
-                    : `${activeEnemy.name} is attacking...`}
-              </T.MenuTitle>
-
-              {!state.gameOver ? (
-                <T.AttackGrid>
-                  {/* --- ULTIMATE GAUGE BAR --- */}
-                  <div
+                  <span
                     style={{
-                      gridColumn: "span 2",
-                      marginBottom: "0.25rem",
-                      marginTop: "-0.25rem",
+                      fontSize: "1.6rem",
+                      color: "#1f2937",
+                      lineHeight: "1.4",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: "0.75rem",
-                        marginBottom: "0.1rem",
-                        fontWeight: "bold",
-                        color: "#374151",
-                      }}
-                    >
-                      <span>Ultimate Charge</span>
-                      <span>{state.ultimateGauge}%</span>
-                    </div>
-
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "0.6rem",
-                        backgroundColor: "#d1d5db",
-                        borderRadius: "999px",
-                        overflow: "hidden",
-                        border: "1px solid #9ca3af",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${state.ultimateGauge}%`,
-                          height: "100%",
-                          backgroundColor:
-                            state.ultimateGauge >= 100 ? "#fbbf24" : "#3b82f6",
-                          transition: "width 0.3s ease-out",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* --- ULTIMATE MOVES --- */}
-                  {activePlayer.moves?.map((move: any, idx: number) => {
-                    const isUltimateReady =
-                      !isInputLocked && state.ultimateGauge >= 100;
-
-                    return (
-                      <T.StyledButton
-                        key={idx}
-                        type="button"
-                        style={{
-                          fontSize: "1rem",
-                          gap: "0.5rem",
-                          opacity: isUltimateReady ? 1 : 0.6,
-                          filter: isUltimateReady ? "none" : "grayscale(100%)",
-                          cursor: isUltimateReady ? "pointer" : "not-allowed",
-                        }}
-                        onClick={() =>
-                          actions.useUltimate(
-                            move.name,
-                            move.power || 50,
-                            move.type || "normal",
-                          )
-                        }
-                        pokemonType={move.type || "normal"}
-                        disabled={!isUltimateReady}
-                      >
-                        {POKEMON_TYPE_ICONS[move.type || "normal"] && (
-                          <img
-                            alt={move.type || "normal"}
-                            src={POKEMON_TYPE_ICONS[move.type || "normal"]}
-                            width={24}
-                            height={24}
-                            loading="lazy"
-                          />
-                        )}
-                        <Text as="span" variant="outlined">
-                          {move.name}
-                        </Text>
-                      </T.StyledButton>
-                    );
-                  })}
-
-                  {/* --- BASIC ATTACK (CHARGER) --- */}
-                  <T.BasicAttackButton
-                    type="button"
-                    style={{ gridColumn: "span 2 / span 2" }}
-                    disabled={isInputLocked}
-                    onClick={actions.basicAttack}
-                  >
-                    <Text
-                      variant="outlined"
-                      size="lg"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          position: "relative",
-                          width: "1.75rem",
-                          height: "1.5rem",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Gloves
-                          style={{
-                            width: "1.5rem",
-                            height: "1.5rem",
-                            position: "absolute",
-                            left: 0,
-                            top: 0,
-                            zIndex: 2,
-                          }}
-                        />
-                        <Gloves
-                          style={{
-                            width: "1.5rem",
-                            height: "1.5rem",
-                            position: "absolute",
-                            left: "0.15rem",
-                            top: 0,
-                          }}
-                          color="#000"
-                        />
-                      </span>
-                      <span>Basic Attack (Charge)</span>
-                    </Text>
-                  </T.BasicAttackButton>
-
-                  {(!activePlayer.moves || activePlayer.moves.length === 0) && (
-                    <T.StyledButton
-                      type="button"
-                      onClick={actions.useStruggle}
-                      disabled={isInputLocked}
-                    >
-                      Struggle
-                    </T.StyledButton>
-                  )}
-                </T.AttackGrid>
+                    <TypewriterText text={dialogText} />
+                  </span>
+                </motion.div>
               ) : (
-                <>
-                  {state.playerCurrentHP <= 0 ? (
-                    <T.ResetButton
-                      type="button"
-                      onClick={actions.runAway}
-                      style={{ backgroundColor: "#ef4444" }}
-                    >
-                      <Text variant="outlined">Back to Profile</Text>
-                    </T.ResetButton>
-                  ) : (
-                    <T.ResetButton type="button" onClick={actions.runAway}>
-                      <Text as="span" variant="outlined">
-                        Back to Profile
-                      </Text>
-                    </T.ResetButton>
-                  )}
-                </>
-              )}
-            </T.BattleMenu>
-
-            <div style={{ paddingTop: "0.5rem", borderTop: "1px solid #ccc" }}>
-              {!state.gameOver && (
-                <T.ResetButton
-                  onClick={actions.surrender}
-                  style={{ backgroundColor: "#ef4444", marginTop: 16 }}
+                <motion.div
+                  key="battle-controls"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "15px",
+                    width: "100%",
+                  }}
                 >
-                  <Text variant="outlined">Surrender (Back to Profile)</Text>
-                </T.ResetButton>
+                  <T.BattleLog ref={battleLogRef}>
+                    <T.LogTitle>Battle Log</T.LogTitle>
+                    {state.battleLog.map((log, idx) => (
+                      <T.LogEntry
+                        key={idx}
+                        style={{
+                          color: log.includes(">>>") ? "#fbbf24" : "inherit",
+                          fontWeight: log.includes(">>>") ? "bold" : "normal",
+                          textShadow: log.includes(">>>")
+                            ? "1px 1px 0 #000"
+                            : "none",
+                        }}
+                      >
+                        &gt; {log}
+                      </T.LogEntry>
+                    ))}
+                  </T.BattleLog>
+
+                  <T.BattleMenu>
+                    <T.MenuTitle>
+                      {state.gameOver
+                        ? "Game Over"
+                        : state.isPlayerTurn
+                          ? `What will ${activePlayer.nickname} do?`
+                          : `${activeEnemy.name} is attacking...`}
+                    </T.MenuTitle>
+
+                    {!state.gameOver ? (
+                      <T.AttackGrid>
+                        {/* --- ULTIMATE GAUGE BAR --- */}
+                        <div
+                          style={{
+                            gridColumn: "span 2",
+                            marginBottom: "0.25rem",
+                            marginTop: "-0.25rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              fontSize: "0.75rem",
+                              marginBottom: "0.1rem",
+                              fontWeight: "bold",
+                              color: "#374151",
+                            }}
+                          >
+                            <span>Ultimate Charge</span>
+                            <span>{state.ultimateGauge}%</span>
+                          </div>
+
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "0.6rem",
+                              backgroundColor: "#d1d5db",
+                              borderRadius: "999px",
+                              overflow: "hidden",
+                              border: "1px solid #9ca3af",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${state.ultimateGauge}%`,
+                                height: "100%",
+                                backgroundColor:
+                                  state.ultimateGauge >= 100
+                                    ? "#fbbf24"
+                                    : "#3b82f6",
+                                transition: "width 0.3s ease-out",
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* --- ULTIMATE MOVES --- */}
+                        {activePlayer.moves?.map((move: any, idx: number) => {
+                          const isUltimateReady =
+                            !isInputLocked && state.ultimateGauge >= 100;
+
+                          return (
+                            <T.StyledButton
+                              key={idx}
+                              type="button"
+                              style={{
+                                fontSize: "1rem",
+                                gap: "0.5rem",
+                                opacity: isUltimateReady ? 1 : 0.6,
+                                filter: isUltimateReady
+                                  ? "none"
+                                  : "grayscale(100%)",
+                                cursor: isUltimateReady
+                                  ? "pointer"
+                                  : "not-allowed",
+                              }}
+                              onClick={() =>
+                                actions.useUltimate(
+                                  move.name,
+                                  move.power || 50,
+                                  move.type || "normal",
+                                )
+                              }
+                              pokemonType={move.type || "normal"}
+                              disabled={!isUltimateReady}
+                            >
+                              {POKEMON_TYPE_ICONS[move.type || "normal"] && (
+                                <img
+                                  alt={move.type || "normal"}
+                                  src={
+                                    POKEMON_TYPE_ICONS[move.type || "normal"]
+                                  }
+                                  width={24}
+                                  height={24}
+                                  loading="lazy"
+                                />
+                              )}
+                              <Text as="span" variant="outlined">
+                                {move.name}
+                              </Text>
+                            </T.StyledButton>
+                          );
+                        })}
+
+                        {/* --- BASIC ATTACK (CHARGER) --- */}
+                        <T.BasicAttackButton
+                          type="button"
+                          style={{ gridColumn: "span 2 / span 2" }}
+                          disabled={isInputLocked}
+                          onClick={actions.basicAttack}
+                        >
+                          <Text
+                            variant="outlined"
+                            size="lg"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                            }}
+                          >
+                            <span
+                              style={{
+                                position: "relative",
+                                width: "1.75rem",
+                                height: "1.5rem",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Gloves
+                                style={{
+                                  width: "1.5rem",
+                                  height: "1.5rem",
+                                  position: "absolute",
+                                  left: 0,
+                                  top: 0,
+                                  zIndex: 2,
+                                }}
+                              />
+                              <Gloves
+                                style={{
+                                  width: "1.5rem",
+                                  height: "1.5rem",
+                                  position: "absolute",
+                                  left: "0.15rem",
+                                  top: 0,
+                                }}
+                                color="#000"
+                              />
+                            </span>
+                            <span>Basic Attack (Charge)</span>
+                          </Text>
+                        </T.BasicAttackButton>
+
+                        {(!activePlayer.moves ||
+                          activePlayer.moves.length === 0) && (
+                          <T.StyledButton
+                            type="button"
+                            onClick={actions.useStruggle}
+                            disabled={isInputLocked}
+                          >
+                            Struggle
+                          </T.StyledButton>
+                        )}
+                      </T.AttackGrid>
+                    ) : (
+                      <>
+                        {state.playerCurrentHP <= 0 ? (
+                          <T.ResetButton
+                            type="button"
+                            onClick={actions.runAway}
+                            style={{ backgroundColor: "#ef4444" }}
+                          >
+                            <Text variant="outlined">Back to Profile</Text>
+                          </T.ResetButton>
+                        ) : (
+                          <T.ResetButton
+                            type="button"
+                            onClick={actions.runAway}
+                          >
+                            <Text as="span" variant="outlined">
+                              Back to Profile
+                            </Text>
+                          </T.ResetButton>
+                        )}
+                      </>
+                    )}
+                  </T.BattleMenu>
+
+                  <div
+                    style={{
+                      paddingTop: "0.5rem",
+                      borderTop: "1px solid #ccc",
+                    }}
+                  >
+                    {!state.gameOver && (
+                      <T.ResetButton
+                        onClick={actions.surrender}
+                        style={{ backgroundColor: "#ef4444", marginTop: 16 }}
+                      >
+                        <Text variant="outlined">
+                          Surrender (Back to Profile)
+                        </Text>
+                      </T.ResetButton>
+                    )}
+                  </div>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </T.InterfaceWrapper>
         </T.BattleField>
       </T.BattleWrapper>
