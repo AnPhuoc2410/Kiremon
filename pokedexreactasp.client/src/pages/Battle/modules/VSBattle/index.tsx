@@ -9,7 +9,10 @@ import {
   useSpawnEnemy,
 } from "@/hooks/common/battle/useSpawnEnemy";
 import { useSpawnGymLeader } from "@/hooks/common/battle/useSpawnGymLeader";
-import { useBattleController } from "@/hooks/common/battle/useBattleController";
+import {
+  useBattleController,
+  getGymLeaderDefeatQuote,
+} from "@/hooks/common/battle/useBattleController";
 import { Text } from "@/components/ui";
 import Gloves from "@/components/ui/Icon/Gloves";
 import { POKEMON_TYPE_ICONS } from "@/utils/constant";
@@ -88,21 +91,6 @@ const VersusBattleModule = ({
       battleLogRef.current.scrollTop = battleLogRef.current.scrollHeight;
     }
   }, [state.battleLog]);
-
-  // Loading safety checks
-  console.log("VersusBattleModule Render Debug:", {
-    leaderId,
-    pokemonNicknameParam,
-    playerPokemon,
-    gymActiveEnemy,
-    enemyRoster,
-    isLoadingGym,
-    isLoadingEnemyCombined,
-    enemy,
-    activePlayer: state.currentPlayer,
-    activeEnemy: state.currentEnemy,
-    playerTeam: state.playerTeam,
-  });
 
   if (leaderId && isLoadingGym) {
     return (
@@ -306,62 +294,67 @@ const VersusBattleModule = ({
         <T.BattleField>
           {/* --- ENEMY SECTION --- */}
           <T.EnemySection>
-            <T.EnemyInfo>
-              <T.InfoBox>
-                {leader && (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      marginBottom: "6px",
-                      borderBottom: "1px solid #ddd",
-                      paddingBottom: "4px",
-                    }}
-                  >
-                    <img
-                      src={leader.avatar}
-                      alt={leader.name}
+            {!state.gameOver && (
+              <T.EnemyInfo>
+                <T.InfoBox>
+                  {leader && (
+                    <div
                       style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        border: "2px solid #ef4444",
-                        backgroundColor: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginBottom: "6px",
+                        borderBottom: "1px solid #ddd",
+                        paddingBottom: "4px",
                       }}
-                    />
-                    <div>
-                      <div
+                    >
+                      <img
+                        src={leader.avatar}
+                        alt={leader.name}
                         style={{
-                          fontSize: "0.9rem",
-                          fontWeight: "bold",
-                          color: "#dc2626",
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          border: "2px solid #ef4444",
+                          backgroundColor: "#fff",
                         }}
-                      >
-                        Gym Leader {leader.name}
-                      </div>
-                      <div style={{ fontSize: "0.7rem", color: "#4b5563" }}>
-                        {leader.badgeName}
+                      />
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "0.9rem",
+                            fontWeight: "bold",
+                            color: "#dc2626",
+                          }}
+                        >
+                          Gym Leader {leader.name}
+                        </div>
+                        <div style={{ fontSize: "0.7rem", color: "#4b5563" }}>
+                          {leader.badgeName}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                <T.CharacterName>{activeEnemy.name}</T.CharacterName>
-                {leaderId &&
-                  renderTeamStatus(
-                    enemyRoster,
-                    activeEnemyIndex,
-                    enemyRoster.map((p) => p.current_hp ?? p.stats.hp),
                   )}
-                <T.HPBarContainer>
-                  <T.HPBar width={enemyHPPercentage} color="#ef4444" />
-                </T.HPBarContainer>
-                <T.HPText>
-                  {state.enemyCurrentHP}/{maxEnemyHP} HP
-                </T.HPText>
-                <T.HPText>Lvl. {activeEnemy.battle_state?.level}</T.HPText>
-              </T.InfoBox>
-            </T.EnemyInfo>
+                  <T.CharacterName>{activeEnemy.name}</T.CharacterName>
+                  {leaderId &&
+                    renderTeamStatus(
+                      enemyRoster,
+                      activeEnemyIndex,
+                      enemyRoster.map((p) => p.current_hp ?? p.stats.hp),
+                    )}
+                  <T.HPBarContainer>
+                    <T.HPBar width={enemyHPPercentage} color="#ef4444" />
+                  </T.HPBarContainer>
+                  <T.HPText>
+                    {state.enemyCurrentHP}/{maxEnemyHP} HP
+                  </T.HPText>
+                  <T.HPText>
+                    Lvl.{" "}
+                    {activeEnemy.level ?? activeEnemy.battle_state?.level ?? 5}
+                  </T.HPText>
+                </T.InfoBox>
+              </T.EnemyInfo>
+            )}
 
             <T.EnemySpriteWrapper>
               {state.activeHitTarget === "enemy" && (
@@ -412,27 +405,134 @@ const VersusBattleModule = ({
               </AnimatePresence>
 
               <AnimatePresence mode="wait">
-                {state.enemyCurrentHP > 0 && (
-                  <motion.div
-                    key={activeEnemy.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <T.PokemonSprite
-                      src={activeEnemy.sprite}
-                      alt="Enemy"
-                      style={{ transform: "scaleX(1)" }}
-                    />
-                    <T.ShadowEnemy />
-                  </motion.div>
+                {state.enemyCurrentHP > 0 &&
+                  !(state.gameOver && state.playerCurrentHP <= 0) && (
+                    <motion.div
+                      key={activeEnemy.name}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "flex-end",
+                      }}
+                    >
+                      <T.PokemonSprite
+                        src={activeEnemy.sprite}
+                        alt="Enemy"
+                        style={{ transform: "scaleX(1)" }}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (!target.dataset.fallback) {
+                            target.dataset.fallback = "1";
+                            // Fall back to static PokeAPI sprite using activeEnemy numeric id
+                            target.src =
+                              activeEnemy.sprite
+                                ?.replace("/animated/", "/")
+                                .replace(".gif", ".png") || "";
+                          }
+                        }}
+                      />
+                      <T.ShadowEnemy />
+                    </motion.div>
+                  )}
+
+                {state.gameOver && state.playerCurrentHP <= 0 && leader && (
+                  <>
+                    {/* Gym Leader Speech Bubble */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5, y: 30 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{
+                        delay: 0.6,
+                        type: "spring",
+                        stiffness: 90,
+                        damping: 14,
+                      }}
+                      style={{
+                        position: "absolute",
+                        bottom: "195px",
+                        left: "-60px",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "#ffffff",
+                        color: "#1f2937",
+                        padding: "10px 14px",
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.35)",
+                        width: "240px",
+                        fontSize: "0.95rem",
+                        fontWeight: "bold",
+                        lineHeight: "1.4",
+                        border: "3px solid #000000",
+                        zIndex: 35,
+                        textAlign: "center",
+                      }}
+                    >
+                      {/* Bubble Triangle Arrow pointing down */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "-12px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: 0,
+                          height: 0,
+                          borderLeft: "8px solid transparent",
+                          borderRight: "8px solid transparent",
+                          borderTop: "12px solid #000000",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "-8px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: 0,
+                          height: 0,
+                          borderLeft: "7px solid transparent",
+                          borderRight: "7px solid transparent",
+                          borderTop: "10px solid #ffffff",
+                        }}
+                      />
+                      {getGymLeaderDefeatQuote(leader.name)}
+                    </motion.div>
+
+                    {/* Animated, scaled Gym Leader sprite */}
+                    <motion.div
+                      key={leader.name}
+                      initial={{ opacity: 0, scale: 0.3, y: 80, x: 50 }}
+                      animate={{ opacity: 1, scale: 2.2, y: -20, x: -60 }}
+                      exit={{ opacity: 0, scale: 0.3, y: 80, x: 50 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 70,
+                        damping: 12,
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "flex-end",
+                        position: "relative",
+                        zIndex: 25,
+                      }}
+                    >
+                      <T.PokemonSprite
+                        src={leader.sprite}
+                        alt={leader.name}
+                        style={{
+                          height: "120px",
+                          width: "auto",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </T.EnemySpriteWrapper>
@@ -501,6 +601,19 @@ const VersusBattleModule = ({
                       src={playerDisplaySprite}
                       alt="Player"
                       style={{ transform: "scaleX(1)" }}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallback) {
+                          target.dataset.fallback = "1";
+                          // Fall back to static back sprite URL
+                          target.src =
+                            activePlayer.sprite_back
+                              ?.replace("/animated/", "/")
+                              .replace(".gif", ".png") ||
+                            activePlayer.sprite ||
+                            "";
+                        }
+                      }}
                     />
                     <T.Shadow />
                   </motion.div>
@@ -508,24 +621,31 @@ const VersusBattleModule = ({
               </AnimatePresence>
             </T.PlayerSpriteWrapper>
 
-            <T.PlayerInfo>
-              <T.PlayerInfoBox>
-                <T.CharacterName>{activePlayer.nickname}</T.CharacterName>
-                {state.playerTeam.length > 1 &&
-                  renderTeamStatus(
-                    state.playerTeam,
-                    state.activePlayerIdx,
-                    state.playerTeamHps,
-                  )}
-                <T.HPBarContainer>
-                  <T.HPBar width={playerHPPercentage} color="#10b981" />
-                </T.HPBarContainer>
-                <T.HPText>
-                  {state.playerCurrentHP}/{maxPlayerHP} HP
-                </T.HPText>
-                <T.HPText>Lvl. {activePlayer.battle_state?.level}</T.HPText>
-              </T.PlayerInfoBox>
-            </T.PlayerInfo>
+            {!state.gameOver && state.playerCurrentHP > 0 && (
+              <T.PlayerInfo>
+                <T.PlayerInfoBox>
+                  <T.CharacterName>{activePlayer.nickname}</T.CharacterName>
+                  {state.playerTeam.length > 1 &&
+                    renderTeamStatus(
+                      state.playerTeam,
+                      state.activePlayerIdx,
+                      state.playerTeamHps,
+                    )}
+                  <T.HPBarContainer>
+                    <T.HPBar width={playerHPPercentage} color="#10b981" />
+                  </T.HPBarContainer>
+                  <T.HPText>
+                    {state.playerCurrentHP}/{maxPlayerHP} HP
+                  </T.HPText>
+                  <T.HPText>
+                    Lvl.{" "}
+                    {activePlayer.level ??
+                      activePlayer.battle_state?.level ??
+                      1}
+                  </T.HPText>
+                </T.PlayerInfoBox>
+              </T.PlayerInfo>
+            )}
           </T.PlayerSection>
 
           {/* --- INTERFACE --- */}

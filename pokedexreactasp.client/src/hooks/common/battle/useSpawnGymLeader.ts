@@ -5,6 +5,20 @@ import {
   IGymPokemon,
 } from "@/constants/gymLeaders";
 import { battleService } from "@/services/battle/battle.service";
+import { POKEMON_IMAGE } from "@/config/api.config";
+
+const toAnimatedSprite = (staticUrl: string): string => {
+  if (!staticUrl) return staticUrl;
+  if (staticUrl.includes("animated") && staticUrl.endsWith(".gif")) {
+    return staticUrl;
+  }
+  const match = staticUrl.match(/\/pokemon\/(\d+)\.(?:png|gif)/);
+  if (match) {
+    const id = match[1];
+    return `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${id}.gif`;
+  }
+  return staticUrl;
+};
 
 export const useSpawnGymLeader = (leaderId: string) => {
   const [leader, setLeader] = useState<IGymLeader | null>(null);
@@ -45,6 +59,7 @@ export const useSpawnGymLeader = (leaderId: string) => {
           const gymRosterHps = savedState.gymRosterHps || [];
           const hydratedRoster = roster.map((p, idx) => ({
             ...p,
+            sprite: toAnimatedSprite(p.sprite),
             current_hp:
               gymRosterHps[idx] !== undefined ? gymRosterHps[idx] : p.stats.hp,
             is_defeated:
@@ -55,6 +70,7 @@ export const useSpawnGymLeader = (leaderId: string) => {
           setActiveEnemyIndex(0);
           const initialRoster = roster.map((p) => ({
             ...p,
+            sprite: toAnimatedSprite(p.sprite),
             current_hp: p.stats.hp,
             is_defeated: false,
           }));

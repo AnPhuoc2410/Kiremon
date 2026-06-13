@@ -172,7 +172,9 @@ export const useSpawnEnemy = ({
     });
 
     const spritedFront = enemyData.sprite;
-    const spritedBack = enemyData.sprites?.back_default;
+    const spritedBack =
+      enemyData.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
+        ?.back_default || enemyData.sprites?.back_default;
 
     const newEnemy: IExtendedEnemy = {
       name: localizedName || randomId,

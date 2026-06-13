@@ -7,6 +7,7 @@ import { userService } from "@/services/user/user.service";
 import { collectionService } from "@/services/collection/collection.service";
 import toast from "react-hot-toast";
 import { battleService } from "@/services/battle/battle.service";
+import { POKEMON_IMAGE } from "@/config/api.config";
 
 interface IBattleControllerProps {
   playerPokemon: any;
@@ -177,6 +178,32 @@ const generateMovesForPokemon = (
   ];
 };
 
+export const getGymLeaderDefeatQuote = (leaderName: string) => {
+  const quotes: Record<string, string> = {
+    Brock:
+      "Strong resistance is expected, but you still have much to learn. Train hard and challenge me again!",
+    Misty:
+      "My water Pokémon are too tough for you! Splash around and train some more before trying again.",
+    "Lt. Surge":
+      "You need more power, baby! Shock your system with some training and try again!",
+    Erika:
+      "My grass Pokémon require a delicate touch. Perhaps some more practice will bloom your skills?",
+    Koga: "Fwahahaha! My ninja techniques are too stealthy. Polish your strategy and try again.",
+    Sabrina:
+      "I foresaw your defeat. If you wish to change the future, train your mind and Pokémon and try again.",
+    Blaine:
+      "You need more fire in your heart! Don't burn out; heat up your training and try again!",
+    Giovanni:
+      "Is this the best you can do? Team Rocket has no time for weaklings. Go train.",
+  };
+
+  const baseName = leaderName.replace("Gym Leader ", "").trim();
+  return (
+    quotes[baseName] ||
+    `A good attempt, but you're not ready yet. Train your Pokémon and try again!`
+  );
+};
+
 export const useBattleController = ({
   playerPokemon,
   enemy,
@@ -222,6 +249,10 @@ export const useBattleController = ({
   const { damages, showDamage } = useDamageSystem();
 
   const isBattleInitialized = useRef(false);
+  // Always-fresh ref to handleLose to avoid stale closures inside useCallback
+  const handleLoseRef = useRef<((player?: any) => void) | null>(null);
+  // Always-fresh ref to performEnemyTurn to avoid stale closures in player attack setTimeout
+  const performEnemyTurnRef = useRef<(() => void) | null>(null);
 
   // Load player's combat team from database (isInParty) or fallback
   useEffect(() => {
@@ -248,12 +279,21 @@ export const useBattleController = ({
             p.type2,
           );
 
+          // Build animated sprite URLs using PokeAPI animated sprite convention
+          const pokemonApiId = p.pokemonApiId;
+          const animatedFront = pokemonApiId
+            ? `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/${pokemonApiId}.gif`
+            : p.spriteUrl;
+          const animatedBack = pokemonApiId
+            ? `${POKEMON_IMAGE}/versions/generation-v/black-white/animated/back/${pokemonApiId}.gif`
+            : p.spriteUrl;
+
           return {
             id: p.id,
             name: p.displayName || p.name,
             nickname: p.nickname || p.displayName || p.name,
-            sprite: p.spriteUrl,
-            sprite_back: p.spriteUrl,
+            sprite: animatedFront || p.spriteUrl,
+            sprite_back: animatedBack || p.spriteUrl,
             types: [p.type1, p.type2].filter(Boolean) as string[],
             stats: statsObj,
             level: p.currentLevel || 1,
@@ -297,7 +337,16 @@ export const useBattleController = ({
 
       try {
         const savedState = await battleService.getBattleState(keyName);
-        if (savedState) {
+
+        // Check if saved state is stale: ended battle or corrupt HP data
+        const isStaleState =
+          savedState &&
+          (savedState.gameOver === true ||
+            savedState.playerCurrentHP <= 0 ||
+            (Array.isArray(savedState.playerTeamHps) &&
+              savedState.playerTeamHps.every((hp: number) => hp <= 0)));
+
+        if (savedState && !isStaleState) {
           setActivePlayerIdx(savedState.activePlayerIdx);
           setPlayerTeamHps(savedState.playerTeamHps);
           setPlayerCurrentHP(savedState.playerCurrentHP);
@@ -306,8 +355,8 @@ export const useBattleController = ({
           setBattleLog(savedState.battleLog);
           setUltimateGauge(savedState.ultimateGauge);
           setEnemyUltimateGauge(savedState.enemyUltimateGauge);
-          setShowIntro(savedState.showIntro);
-          setGameOver(savedState.gameOver);
+          setShowIntro(savedState.showIntro ?? false);
+          setGameOver(false); // always start as not game-over when resuming
 
           if (
             leaderId &&
@@ -315,7 +364,7 @@ export const useBattleController = ({
             updateRosterPokemon
           ) {
             const gymRosterHps = savedState.gymRosterHps || [];
-            gymRosterHps.forEach((hp, idx) => {
+            gymRosterHps.forEach((hp: number, idx: number) => {
               updateRosterPokemon(idx, {
                 current_hp: hp,
                 is_defeated: hp <= 0,
@@ -323,6 +372,15 @@ export const useBattleController = ({
             });
           }
         } else {
+          // Stale or missing — clear and start fresh
+          if (isStaleState) {
+            try {
+              await battleService.clearBattleState(keyName);
+            } catch (_) {
+              /* ignore */
+            }
+          }
+
           // Initialize fresh battle
           const initialPlayerHP = playerTeam[0].stats.hp;
           const initialEnemyHP = leaderId
@@ -353,6 +411,7 @@ export const useBattleController = ({
 
           const initialPlayerHps = playerTeam.map((p) => p.stats.hp);
           setPlayerTeamHps(initialPlayerHps);
+          setActivePlayerIdx(0);
 
           const freshState: any = {
             activePlayerIdx: 0,
@@ -458,14 +517,14 @@ export const useBattleController = ({
     }, HIT_EFFECT_DURATION);
   };
 
-  const clearStorage = async () => {
+  const clearStorage = async (clearSpawnerState = true) => {
     const keyName = leaderId ? "gym_" + leaderId : "wild";
     try {
       await battleService.clearBattleState(keyName);
     } catch (err) {
       console.error("Failed to clear battle state from Redis:", err);
     }
-    if (clearGymBattle) clearGymBattle();
+    if (clearSpawnerState && clearGymBattle) clearGymBattle();
   };
 
   const currentEnemy = leaderId ? activeEnemy : enemy;
@@ -523,7 +582,7 @@ export const useBattleController = ({
       ]);
       safeSetState(setGameOver, true);
       setIsProcessingTurn(false);
-      clearStorage();
+      clearStorage(false);
     } else {
       // Wild Battle
       updateEnemyState({ current_hp: 0, is_defeated: true });
@@ -551,12 +610,16 @@ export const useBattleController = ({
     }
   };
 
-  const handleLose = () => {
-    if (!currentEnemy || !currentPlayer) return;
+  const handleLose = (lostPlayer?: any) => {
+    // Accept an optional snapshot of the current player to avoid stale-closure issues
+    const playerSnapshot = lostPlayer || currentPlayer;
+    if (!currentEnemy || !playerSnapshot) return;
 
     if (leaderId) {
+      const defeatQuote = getGymLeaderDefeatQuote(leader.name);
       const loseLogs = [
         "Your team fainted...",
+        `Gym Leader ${leader.name}: "${defeatQuote}"`,
         `Gym Leader ${leader.name} won the battle!`,
       ];
       safeSetState(setBattleLog, (prev: Array<string>) => [
@@ -565,21 +628,21 @@ export const useBattleController = ({
       ]);
       safeSetState(setGameOver, true);
       setIsProcessingTurn(false);
-      clearStorage();
+      clearStorage(false); // Clear Redis state but preserve spawner state for the UI
     } else {
       const baseExp = currentEnemy.base_experience || 60;
       const partialExp = Math.floor(
         calculateExpGain(currentEnemy.battle_state.level, baseExp) / 4,
       );
-      const result = addExp(currentPlayer.nickname, partialExp);
+      const result = addExp(playerSnapshot.nickname, partialExp);
 
       const loseLogs = [
-        `${currentPlayer.nickname} Fainted...`,
+        `${playerSnapshot.nickname} Fainted...`,
         `Gained ${partialExp} EXP.`,
       ];
       if (result.leveled) {
         loseLogs.push(
-          `${currentPlayer.nickname} grew to Level ${result.newLevel}!`,
+          `${playerSnapshot.nickname} grew to Level ${result.newLevel}!`,
         );
       }
 
@@ -593,110 +656,190 @@ export const useBattleController = ({
         is_defeated: false,
       });
       setIsProcessingTurn(false);
+      clearStorage(false); // Clear Redis state but preserve spawner state for the UI
     }
   };
 
+  // Keep handleLoseRef up-to-date every render (defined above, so safe to assign here)
+  handleLoseRef.current = handleLose;
+
   // --- ENEMY TURN ---
   const performEnemyTurn = useCallback(() => {
-    if (gameOver || !currentEnemy || !currentPlayer || !isMounted.current)
+    console.log(
+      "[useBattleController] performEnemyTurn initial checks - currentPlayer:",
+      currentPlayer?.nickname,
+      "playerCurrentHP:",
+      playerCurrentHP,
+      "activePlayerIdx:",
+      activePlayerIdx,
+      "enemy:",
+      currentEnemy?.name,
+      "gameOver:",
+      gameOver,
+      "isMounted:",
+      isMounted.current,
+    );
+    if (gameOver || !currentEnemy || !currentPlayer || !isMounted.current) {
+      console.log(
+        "[useBattleController] performEnemyTurn early return. Conditions: gameOver:",
+        gameOver,
+        "currentEnemy:",
+        !!currentEnemy,
+        "currentPlayer:",
+        !!currentPlayer,
+        "isMounted:",
+        isMounted.current,
+      );
       return;
+    }
 
     triggerHitEffect("player");
 
     setTimeout(() => {
-      if (!isMounted.current) return;
-
-      const isUltimateReady = enemyUltimateGauge >= 100;
-      let moveName = "";
-      let result;
-      let logHeader = "";
-
-      if (!isUltimateReady) {
-        moveName = "Basic Attack";
-        setEnemyUltimateGauge((prev) =>
-          Math.min(100, prev + GAUGE_CHARGE_PER_HIT),
+      if (!isMounted.current) {
+        console.log(
+          "[useBattleController] performEnemyTurn 200ms timer fired but component is unmounted.",
         );
-        result = calculateDamage(currentEnemy, currentPlayer, 20, "basic");
+        return;
+      }
 
-        const cleanDesc = [];
-        if (result.isCritical) cleanDesc.push("Critical hit!");
-        result.desc = cleanDesc;
+      try {
+        const isUltimateReady = enemyUltimateGauge >= 100;
+        let moveName = "";
+        let result;
+        let logHeader = "";
 
-        logHeader = `${currentEnemy.name} used Basic Attack!`;
-      } else {
-        const randomMove =
-          currentEnemy.moves[
-            Math.floor(Math.random() * currentEnemy.moves.length)
-          ];
-        moveName = randomMove?.name || "Tackle";
-        let movePower = randomMove?.power || 40;
-        const moveType = randomMove?.type || "normal";
+        if (!isUltimateReady) {
+          moveName = "Basic Attack";
+          setEnemyUltimateGauge((prev) =>
+            Math.min(100, prev + GAUGE_CHARGE_PER_HIT),
+          );
+          result = calculateDamage(currentEnemy, currentPlayer, 20, "basic");
 
-        if (currentEnemy.battle_state.level < 5 && movePower > 50) {
-          movePower = 50;
+          const cleanDesc = [];
+          if (result.isCritical) cleanDesc.push("Critical hit!");
+          result.desc = cleanDesc;
+
+          logHeader = `${currentEnemy.name} used Basic Attack!`;
+        } else {
+          const randomMove =
+            currentEnemy.moves[
+              Math.floor(Math.random() * currentEnemy.moves.length)
+            ];
+          moveName = randomMove?.name || "Tackle";
+          let movePower = randomMove?.power || 40;
+          const moveType = randomMove?.type || "normal";
+
+          // battle_state.level exists for wild Pokemon; gym Pokemon have level directly
+          const enemyLevel =
+            currentEnemy.battle_state?.level ?? currentEnemy.level ?? 5;
+          if (enemyLevel < 5 && movePower > 50) {
+            movePower = 50;
+          }
+
+          result = calculateDamage(
+            currentEnemy,
+            currentPlayer,
+            movePower,
+            moveType,
+          );
+          setEnemyUltimateGauge(0);
+          logHeader = `>>> ENEMY ULTIMATE: ${moveName.toUpperCase()}! <<<`;
         }
 
-        result = calculateDamage(
-          currentEnemy,
-          currentPlayer,
-          movePower,
-          moveType,
+        showDamage(
+          "player",
+          result.damage,
+          result.isCritical,
+          result.effectiveness,
         );
-        setEnemyUltimateGauge(0);
-        logHeader = `>>> ENEMY ULTIMATE: ${moveName.toUpperCase()}! <<<`;
-      }
 
-      showDamage(
-        "player",
-        result.damage,
-        result.isCritical,
-        result.effectiveness,
-      );
-
-      const newHP = Math.max(0, playerCurrentHP - result.damage);
-      setPlayerCurrentHP(newHP);
-
-      const updatedHps = [...playerTeamHps];
-      updatedHps[activePlayerIdx] = newHP;
-      setPlayerTeamHps(updatedHps);
-
-      const logMessages = [
-        logHeader,
-        ...result.desc,
-        ...(result.isMiss
-          ? []
-          : [`Dealt ${result.damage} damage to ${currentPlayer.nickname}.`]),
-      ];
-
-      if (!isUltimateReady) {
-        logMessages.push("Enemy is charging power...");
-      }
-
-      setBattleLog((prev) => [...prev, ...logMessages]);
-
-      if (newHP <= 0) {
-        // Player's active Pokemon fainted. Check if we have another conscious Pokemon
-        const nextConsciousIdx = updatedHps.findIndex(
-          (hp, idx) => idx > activePlayerIdx && hp > 0,
+        console.log(
+          "[useBattleController] performEnemyTurn calculating HP. playerCurrentHP:",
+          playerCurrentHP,
+          "damage:",
+          result.damage,
         );
-        if (nextConsciousIdx !== -1) {
-          const nextPoke = playerTeam[nextConsciousIdx];
-          setBattleLog((prev) => [
-            ...prev,
-            `${currentPlayer.nickname} fainted!`,
-            `Go, ${nextPoke.nickname}!`,
-          ]);
-          setActivePlayerIdx(nextConsciousIdx);
-          setPlayerCurrentHP(updatedHps[nextConsciousIdx]);
-          setUltimateGauge(0);
+        const newHP = Math.max(0, playerCurrentHP - result.damage);
+        setPlayerCurrentHP(newHP);
+
+        const updatedHps = [...playerTeamHps];
+        updatedHps[activePlayerIdx] = newHP;
+        setPlayerTeamHps(updatedHps);
+
+        console.log(
+          "[useBattleController] performEnemyTurn HP updated. playerTeamHps:",
+          updatedHps,
+          "activePlayerIdx:",
+          activePlayerIdx,
+          "newHP:",
+          newHP,
+        );
+
+        const logMessages = [
+          logHeader,
+          ...result.desc,
+          ...(result.isMiss
+            ? []
+            : [`Dealt ${result.damage} damage to ${currentPlayer.nickname}.`]),
+        ];
+
+        if (!isUltimateReady) {
+          logMessages.push("Enemy is charging power...");
+        }
+
+        setBattleLog((prev) => [...prev, ...logMessages]);
+
+        if (newHP <= 0) {
+          // Player's active Pokemon fainted. Check if we have another conscious Pokemon
+          // Search ALL team members (not just those after current index) so any surviving
+          // Pokemon earlier in the slot order can step in too.
+          const nextConsciousIdx = updatedHps.findIndex(
+            (hp, idx) => idx !== activePlayerIdx && hp > 0,
+          );
+          console.log(
+            "[useBattleController] Player fainted. nextConsciousIdx:",
+            nextConsciousIdx,
+          );
+          if (nextConsciousIdx !== -1) {
+            const nextPoke = playerTeam[nextConsciousIdx];
+            // Capture a snapshot of currentPlayer before state update changes it
+            const faintedName =
+              playerTeam[activePlayerIdx]?.nickname ?? "Pokémon";
+            setBattleLog((prev) => [
+              ...prev,
+              `${faintedName} fainted!`,
+              `Go, ${nextPoke.nickname}!`,
+            ]);
+            setActivePlayerIdx(nextConsciousIdx);
+            setPlayerCurrentHP(updatedHps[nextConsciousIdx]);
+            setUltimateGauge(0);
+            setIsPlayerTurn(true);
+            setIsProcessingTurn(false);
+          } else {
+            // Pass a snapshot so handleLose doesn't rely on stale closure
+            const faintedPlayer = playerTeam[activePlayerIdx] || currentPlayer;
+            handleLoseRef.current?.(faintedPlayer);
+          }
+        } else {
+          console.log(
+            "[useBattleController] Player survived, setting player turn back to true.",
+          );
           setIsPlayerTurn(true);
           setIsProcessingTurn(false);
-        } else {
-          handleLose();
         }
-      } else {
-        setIsPlayerTurn(true);
-        setIsProcessingTurn(false);
+      } catch (err) {
+        // Safety net: if anything crashes inside the enemy turn, reset the turn
+        // state so the game never permanently freezes.
+        console.error(
+          "[performEnemyTurn] Unexpected error during enemy turn:",
+          err,
+        );
+        if (isMounted.current) {
+          setIsPlayerTurn(true);
+          setIsProcessingTurn(false);
+          setBattleLog((prev) => [...prev, "Enemy fumbled the attack!"]);
+        }
       }
     }, 200);
   }, [
@@ -709,7 +852,11 @@ export const useBattleController = ({
     activePlayerIdx,
     playerTeam,
     leaderId,
+    leader,
   ]);
+
+  // Keep performEnemyTurnRef pointing at the latest version every render
+  performEnemyTurnRef.current = performEnemyTurn;
 
   // --- PLAYER ACTIONS ---
   const executePlayerAttack = (
@@ -778,9 +925,22 @@ export const useBattleController = ({
       if (newHP <= 0) {
         handleWin();
       } else {
+        console.log(
+          "[useBattleController] executePlayerAttack: Enemy survived, ending player turn and scheduling performEnemyTurn in 1500ms.",
+        );
         setIsPlayerTurn(false);
         setTimeout(() => {
-          if (isMounted.current) performEnemyTurn();
+          if (isMounted.current) {
+            console.log(
+              "[useBattleController] 1500ms timer fired. Calling performEnemyTurnRef.current. Exists:",
+              !!performEnemyTurnRef.current,
+            );
+            performEnemyTurnRef.current?.();
+          } else {
+            console.log(
+              "[useBattleController] 1500ms timer fired but component is unmounted.",
+            );
+          }
         }, 1500);
       }
     }, 200);
