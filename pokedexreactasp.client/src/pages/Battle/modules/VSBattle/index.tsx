@@ -114,6 +114,30 @@ const VersusBattleModule = ({
     clearGymBattle,
   });
 
+  // Play battle theme music (looping) on mount
+  useEffect(() => {
+    const audio = new Audio(
+      "https://play.pokemonshowdown.com/audio/bw2-kanto-gym-leader.ogg",
+    );
+    audio.loop = true;
+    audio.volume = 0.35; // Comfortable volume level
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn(
+          "Audio playback blocked by browser autocomplete/interaction policy:",
+          err,
+        );
+      });
+    }
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+    };
+  }, []);
+
   const [introPhase, setIntroPhase] = useState<number | "complete">(() => {
     return state.showIntro ? 0 : "complete";
   });

@@ -10,6 +10,7 @@ import {
 } from "./index.style";
 import { IPokemon } from "@/types/pokemon";
 import { TypeCard } from "@/components/ui";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface IBattleIntroProps {
   player: IPokemon | undefined;
@@ -24,6 +25,8 @@ const BattleIntro = ({
   leader,
   onComplete,
 }: IBattleIntroProps) => {
+  const { user } = useAuth();
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
@@ -31,6 +34,15 @@ const BattleIntro = ({
 
     return () => clearTimeout(timer);
   }, [onComplete]);
+
+  // Determine display details for player side
+  const playerDisplayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`.toUpperCase()
+      : (user?.username ?? "TRAINER").toUpperCase();
+  const playerAvatar =
+    user?.avatarUrl ??
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png";
 
   // Determine display name and sprite for enemy side
   const displayName = leader
@@ -59,16 +71,30 @@ const BattleIntro = ({
           transition={{ type: "spring", stiffness: 50, damping: 15 }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {player?.types?.map((type) => (
-              <TypeCard key={type} type={type} />
-            ))}
+            <span
+              style={{
+                color: "#fbbf24",
+                fontWeight: "bold",
+                textShadow: "1px 1px 0 #000",
+              }}
+            >
+              TRAINER
+            </span>
           </div>
-          <VsName>{player?.name || "PLAYER"}</VsName>
+          <VsName>{playerDisplayName}</VsName>
           <VsImage
-            src={player?.sprite}
-            alt="Player"
+            src={playerAvatar}
+            alt={playerDisplayName}
             style={{
-              transform: "scaleX(-1)",
+              borderRadius: user?.avatarUrl ? "50%" : "0px",
+              border: user?.avatarUrl ? "4px solid #fff" : "none",
+              boxShadow: user?.avatarUrl ? "0 0 10px rgba(0,0,0,0.3)" : "none",
+              backgroundColor: user?.avatarUrl
+                ? "rgba(255,255,255,0.8)"
+                : "transparent",
+              width: "240px",
+              height: "240px",
+              objectFit: "contain",
             }}
           />
         </VsSide>
