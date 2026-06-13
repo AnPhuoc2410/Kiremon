@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import Routes from "./routes";
 import { GlobalProvider, QueryProvider, LanguageProvider } from "./contexts";
 import NoSignal from "./components/ui/NoSignal";
+import ToastSoundPlayer from "./components/ui/ToastSoundPlayer";
 import { globalStyle } from "./emotion/global.style";
 import withOnlineStatus from "./components/utils/hoc/onlineStatus";
 
@@ -37,6 +38,7 @@ function App({ onlineStatus }: AppProps) {
         </LanguageProvider>
       </QueryProvider>
       <Toaster position="top-right" />
+      <ToastSoundPlayer />
     </>
   );
 }

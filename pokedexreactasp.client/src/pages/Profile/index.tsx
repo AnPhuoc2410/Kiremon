@@ -839,19 +839,9 @@ const Profile: React.FC = () => {
     }
   }, []);
 
-  // Simulate Gym Battle Unlock
-  const handleSimulateBattle = async (achievementId: string) => {
-    try {
-      toast.loading("Simulating gym battle...", { id: "gym-battle" });
-      await userService.unlockAchievement(achievementId);
-      toast.success("Gym Battle Won!", { id: "gym-battle" });
-
-      // Reload profile to update trainer level/coins, and reload achievements list
-      await Promise.all([fetchProfile(), loadAchievementsData()]);
-    } catch (error) {
-      console.error("Failed to simulate gym battle:", error);
-      toast.error("Gym battle simulation failed", { id: "gym-battle" });
-    }
+  // Start Gym Battle
+  const handleStartGymBattle = (achievementId: string) => {
+    navigate(`/battle?leaderId=${achievementId}`);
   };
 
   // Track if user was ever authenticated in this session
@@ -2171,10 +2161,10 @@ const Profile: React.FC = () => {
                                     {!badge.isUnlocked && (
                                       <S.SimulateBattleBtn
                                         onClick={() =>
-                                          handleSimulateBattle(badge.id)
+                                          handleStartGymBattle(badge.id)
                                         }
                                       >
-                                        Simulate Battle
+                                        Battle Leader
                                       </S.SimulateBattleBtn>
                                     )}
                                   </S.BadgeCard>

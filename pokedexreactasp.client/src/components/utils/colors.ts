@@ -11,6 +11,8 @@ export const colors = {
   ...Colors.Blue,
   ...Colors.Indigo,
   ...Colors.Cyan,
+  ...Colors.White,
+  ...Colors.Black,
 
   // Added nested text object for proper access
   text: {
