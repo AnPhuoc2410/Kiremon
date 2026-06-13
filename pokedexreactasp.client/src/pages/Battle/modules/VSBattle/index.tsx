@@ -9,10 +9,8 @@ import {
   useSpawnEnemy,
 } from "@/hooks/common/battle/useSpawnEnemy";
 import { useSpawnGymLeader } from "@/hooks/common/battle/useSpawnGymLeader";
-import {
-  useBattleController,
-  getGymLeaderDefeatQuote,
-} from "@/hooks/common/battle/useBattleController";
+import { useBattleController } from "@/hooks/common/battle/useBattleController";
+import { getGymLeaderDefeatQuote } from "@/hooks/common/battle/battleHelpers";
 import { Text } from "@/components/ui";
 import Gloves from "@/components/ui/Icon/Gloves";
 import { POKEMON_TYPE_ICONS } from "@/utils/constant";

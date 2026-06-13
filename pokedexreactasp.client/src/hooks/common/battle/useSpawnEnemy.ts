@@ -57,18 +57,7 @@ export interface IExtendedEnemy extends IMyPokemon {
   }>;
 }
 
-const getDifficultyParams = (playerLevel: number) => {
-  if (playerLevel < 12) {
-    return { statMultiplier: 1.0, minLevelAdd: -1, maxLevelAdd: 1 };
-  }
-  if (playerLevel < 20) {
-    return { statMultiplier: 1.05, minLevelAdd: 0, maxLevelAdd: 2 };
-  }
-  if (playerLevel < 40) {
-    return { statMultiplier: 1.08, minLevelAdd: 1, maxLevelAdd: 3 };
-  }
-  return { statMultiplier: 1.15, minLevelAdd: 2, maxLevelAdd: 4 };
-};
+import { getDifficultyParams } from "./battleHelpers";
 
 export const useSpawnEnemy = ({
   userPokemon = { level: 1, experience: 0 },
