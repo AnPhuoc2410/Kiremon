@@ -13,7 +13,7 @@ export const ProtectedRoute: React.FC<Props> = ({
   children,
   redirectPath = "/",
 }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   // If not authenticated, redirect to login
@@ -21,9 +21,15 @@ export const ProtectedRoute: React.FC<Props> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // TODO: Add role to AuthResponseDto on backend to enable role-based access
-  // For now, authenticated users default to Member role
-  const hasAccess = allowedRoles.includes(Role.Member);
+  // Map allowed Roles to backend role names
+  const allowedBackendRoles = allowedRoles.map(r => {
+    if (r === Role.Admin) return "Admin";
+    if (r === Role.Member) return "User";
+    if (r === Role.Employee) return "Employee";
+    return "User";
+  });
+
+  const hasAccess = user?.roles?.some(role => allowedBackendRoles.includes(role)) ?? false;
 
   // If user doesn't have access, redirect
   if (!hasAccess) {

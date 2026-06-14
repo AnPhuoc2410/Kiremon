@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { login, externalLogin, loginTwoFactor } from "@/config/auth.apis";
 import toast from "react-hot-toast";
@@ -49,6 +49,8 @@ const LoginForm: React.FC = () => {
   const [rememberDevice, setRememberDevice] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromPath = (location.state as any)?.from?.pathname;
   const { authLogin } = useAuth();
 
   const handleRecaptchaChange = (token: string | null) => {
@@ -88,10 +90,12 @@ const LoginForm: React.FC = () => {
             level: response.level,
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
+            roles: response.roles,
           },
         });
         toast.success(`Welcome back via ${provider}!`);
-        navigate("/pokemons");
+        const isAdmin = response.roles?.includes("Admin");
+        navigate(fromPath || (isAdmin ? "/admin" : "/pokemons"));
       } else if (response?.emailConfirmed === false) {
         toast.success(
           "Account created! Please check your email to verify your account.",
@@ -171,10 +175,12 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("2FA verification successful!");
-        navigate("/pokemons");
+        const isAdmin = response.roles?.includes("Admin");
+        navigate(fromPath || (isAdmin ? "/admin" : "/pokemons"));
       } else {
         toast.error("2FA verification failed.");
       }
@@ -241,10 +247,12 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("Login successful!");
-        navigate("/pokemons");
+        const isAdmin = response.roles?.includes("Admin");
+        navigate(fromPath || (isAdmin ? "/admin" : "/pokemons"));
       } else {
         toast.error("Login failed. Please check your credentials.");
       }

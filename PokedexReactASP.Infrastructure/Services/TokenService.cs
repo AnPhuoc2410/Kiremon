@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Options;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -21,9 +22,9 @@ namespace PokedexReactASP.Infrastructure.Services
             _signingCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
         }
 
-        public string GenerateJwtToken(string userId, string username, string email)
+        public string GenerateJwtToken(string userId, string username, string email, IList<string> roles)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub,        userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, username),
@@ -32,6 +33,11 @@ namespace PokedexReactASP.Infrastructure.Services
                 new Claim(ClaimTypes.NameIdentifier,          userId),
                 new Claim(ClaimTypes.Name,                    username)
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var token = new JwtSecurityToken(
                 issuer:             _jwtSettings.Issuer,

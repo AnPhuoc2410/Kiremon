@@ -6,7 +6,7 @@ using PokedexReactASP.Domain.Enums;
 namespace PokedexReactASP.Server.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [Route("api/admin/wild-area")]
     public class WildAreaAdminController : ControllerBase
     {

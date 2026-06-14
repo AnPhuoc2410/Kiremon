@@ -4,6 +4,8 @@ import { lazy, Suspense } from "react";
 import { StartScreen, NotFoundPage } from "@/pages";
 import { AuthProvider } from "@/contexts";
 import { TourGuide } from "@/components/ui";
+import { ProtectedRoute } from "@/guards/AuthGuard";
+import { Role } from "@/types/roles.type";
 
 const MyPokemon = lazy(() => import("@/pages/MyPokemon"));
 const PCStorage = lazy(() => import("@/pages/PCStorage"));
@@ -36,6 +38,7 @@ const Friends = lazy(() => import("@/pages/Friends"));
 const Pokemart = lazy(() => import("@/pages/Market"));
 const PokeTcg = lazy(() => import("@/pages/PokeTcg"));
 const PokeNews = lazy(() => import("@/pages/PokeNews"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 
 export default function Routes() {
   return (
@@ -294,6 +297,16 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <PokeNews />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProtectedRoute allowedRoles={[Role.Admin]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
               </Suspense>
             }
           />

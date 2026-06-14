@@ -82,7 +82,7 @@ namespace PokedexReactASP.Application.Services
 
                 return new AuthResultDto
                 {
-                    ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true),
+                    ResponseDto = await GenerateAuthResponseAsync(user, includeToken: false, requiresTwoFactor: true),
                     RefreshToken = null
                 };
             }
@@ -94,7 +94,7 @@ namespace PokedexReactASP.Application.Services
 
             return new AuthResultDto
             {
-                ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: false),
+                ResponseDto = await GenerateAuthResponseAsync(user, includeToken: false, requiresTwoFactor: false),
                 RefreshToken = null
             };
         }

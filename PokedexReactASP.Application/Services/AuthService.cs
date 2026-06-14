@@ -84,7 +84,7 @@ namespace PokedexReactASP.Application.Services
 
             await SendConfirmationEmail(user);
 
-            return GenerateAuthResponse(user, includeToken: false);
+            return await GenerateAuthResponseAsync(user, includeToken: false);
         }
 
         public async Task<AuthResultDto> LoginAsync(LoginDto loginDto, string? deviceInfo = null)
@@ -139,7 +139,7 @@ namespace PokedexReactASP.Application.Services
 
                 return new AuthResultDto
                 {
-                    ResponseDto = GenerateAuthResponse(user, includeToken: false, requiresTwoFactor: true),
+                    ResponseDto = await GenerateAuthResponseAsync(user, includeToken: false, requiresTwoFactor: true),
                     RefreshToken = null
                 };
             }
@@ -243,15 +243,18 @@ namespace PokedexReactASP.Application.Services
             return await _userManager.FindByNameAsync(usernameOrEmail) != null;
         }
 
-        private AuthResponseDto GenerateAuthResponse(ApplicationUser user, bool includeToken = true, bool requiresTwoFactor = false)
+        private async Task<AuthResponseDto> GenerateAuthResponseAsync(ApplicationUser user, bool includeToken = true, bool requiresTwoFactor = false)
         {
             var response = _mapper.Map<AuthResponseDto>(user);
             response.EmailConfirmed = user.EmailConfirmed;
             response.RequiresTwoFactor = requiresTwoFactor;
 
+            var roles = await _userManager.GetRolesAsync(user);
+            response.Roles = roles.ToList();
+
             if (includeToken && user.EmailConfirmed)
             {
-                response.Token = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
+                response.Token = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!, roles);
                 response.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
             }
 
@@ -265,7 +268,10 @@ namespace PokedexReactASP.Application.Services
             responseDto.RequiresTwoFactor = false;
             responseDto.TwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
 
-            var accessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
+            var roles = await _userManager.GetRolesAsync(user);
+            responseDto.Roles = roles.ToList();
+
+            var accessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!, roles);
             responseDto.Token = accessToken;
             responseDto.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
 
@@ -314,8 +320,10 @@ namespace PokedexReactASP.Application.Services
             dbToken.IsRevoked = true;
             _unitOfWork.RefreshToken.Update(dbToken);
 
+            var roles = await _userManager.GetRolesAsync(user);
+
             // Generate new token pair
-            var newAccessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!);
+            var newAccessToken = _tokenService.GenerateJwtToken(user.Id, user.UserName!, user.Email!, roles);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
             var expiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
 
@@ -336,6 +344,7 @@ namespace PokedexReactASP.Application.Services
             responseDto.Token = newAccessToken;
             responseDto.ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
             responseDto.EmailConfirmed = user.EmailConfirmed;
+            responseDto.Roles = roles.ToList();
 
             return new AuthResultDto
             {
