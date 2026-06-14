@@ -157,6 +157,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IPokemonCatchService, PokemonCatchService>();
             builder.Services.AddScoped<IAchievementService, AchievementService>();
             builder.Services.AddScoped<IAchievementNotificationService, AchievementNotificationService>();
+            builder.Services.AddScoped<ISystemConfigService, SystemConfigService>();
             builder.Services.AddScoped<IWildAreaService, WildAreaService>();
             builder.Services.AddScoped<ICardRewardService, CardRewardService>();
             builder.Services.AddScoped<IPokemonSpawnMetadataSyncService, PokemonSpawnMetadataSyncService>();
@@ -327,6 +328,12 @@ namespace PokedexReactASP.Server
 
 
             IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger).Wait();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var configService = scope.ServiceProvider.GetRequiredService<ISystemConfigService>();
+                configService.InitializeSeedAsync().Wait();
+            }
 
             app.UseDefaultFiles();
             app.UseStaticFiles();

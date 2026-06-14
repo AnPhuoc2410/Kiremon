@@ -25,6 +25,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<GymLeader> GymLeaders { get; set; } = null!;
+        public DbSet<SystemConfig> SystemConfigs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -335,6 +336,15 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.Avatar).HasMaxLength(500).IsRequired();
                 entity.Property(e => e.Sprite).HasMaxLength(500).IsRequired();
                 entity.Property(e => e.RosterJson).HasColumnType("jsonb").IsRequired();
+            });
+
+            // Configure SystemConfig entity
+            modelBuilder.Entity<SystemConfig>(entity =>
+            {
+                entity.HasKey(e => e.Key);
+                entity.Property(e => e.Key).HasMaxLength(100);
+                entity.Property(e => e.Value).HasColumnType("jsonb").IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
             });
         }
     }

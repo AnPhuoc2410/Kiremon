@@ -39,16 +39,16 @@ namespace PokedexReactASP.Infrastructure.Services
         };
 
         private readonly PokemonDbContext _context;
-        private readonly WildAreaSettings _settings;
+        private readonly ISystemConfigService _configService;
         private readonly BiomeSpawnCandidateService _candidateService;
 
         public PokemonBiomeTagService(
             PokemonDbContext context,
-            IOptions<WildAreaSettings> settings,
+            ISystemConfigService configService,
             BiomeSpawnCandidateService candidateService)
         {
             _context = context;
-            _settings = settings.Value;
+            _configService = configService;
             _candidateService = candidateService;
         }
 
@@ -160,8 +160,9 @@ namespace PokedexReactASP.Infrastructure.Services
             WildSpawnRarity rarity,
             CancellationToken cancellationToken = default)
         {
-            var area = ResolveArea(areaCode);
-            var candidates = await _candidateService.GetDebugCandidatesAsync(area, _settings, rarity, cancellationToken);
+            var settings = await _configService.GetWildAreaSettingsAsync();
+            var area = ResolveArea(settings, areaCode);
+            var candidates = await _candidateService.GetDebugCandidatesAsync(area, settings, rarity, cancellationToken);
 
             return candidates.Select(x => new WildAreaCandidateDebugDto
                 {
@@ -177,9 +178,9 @@ namespace PokedexReactASP.Infrastructure.Services
                 .ToList();
         }
 
-        private WildAreaConfig ResolveArea(string? areaCode)
+        private WildAreaConfig ResolveArea(WildAreaSettings settings, string? areaCode)
         {
-            var areas = _settings.WildAreas
+            var areas = settings.WildAreas
                 .Where(x => !string.IsNullOrWhiteSpace(x.Code))
                 .ToList();
 

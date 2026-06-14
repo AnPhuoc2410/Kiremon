@@ -13,7 +13,7 @@ namespace PokedexReactASP.Infrastructure.Services
     {
         private readonly PokemonDbContext _context;
         private readonly ITcgCardService _tcgCardService;
-        private readonly CardRewardSettings _settings;
+        private readonly ISystemConfigService _configService;
         private readonly Random _random = new();
 
         private static readonly TcgCardRarityTier[] TierOrder =
@@ -29,16 +29,17 @@ namespace PokedexReactASP.Infrastructure.Services
         public CardRewardService(
             PokemonDbContext context,
             ITcgCardService tcgCardService,
-            IOptions<CardRewardSettings> settings)
+            ISystemConfigService configService)
         {
             _context = context;
             _tcgCardService = tcgCardService;
-            _settings = settings.Value;
+            _configService = configService;
         }
 
         public async Task<WildCardRewardDto?> RollAndGrantCardAsync(string userId, int pokemonApiId, CardRewardSource source)
         {
-            var tier = RollTier(_settings.BuildWeights());
+            var settings = await _configService.GetCardRewardSettingsAsync();
+            var tier = RollTier(settings.BuildWeights());
             var cards = await _tcgCardService.GetCardsByPokemonAndTierAsync(pokemonApiId, tier);
 
             if (cards.Count == 0)
