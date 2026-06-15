@@ -235,6 +235,10 @@ namespace PokedexReactASP.Domain.Entities
         /// </summary>
         public int? HeldItemApiId { get; set; }
 
+        /// <summary>
+        /// The specific ability this Pokemon individual currently possesses.
+        /// </summary>
+        public string? Ability { get; set; }
         #endregion
     }
 }

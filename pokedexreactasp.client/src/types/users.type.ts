@@ -66,6 +66,7 @@ export interface UserProfile {
   pokemonCaught: number;
   level: number;
   experience: number;
+  coins: number;
 }
 
 export interface UpdateProfileRequest {

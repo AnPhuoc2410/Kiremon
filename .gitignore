@@ -740,3 +740,5 @@ secrets/
 docker-compose.yml
 DEPLOYMENT.md
 deploy/
+
+.codebase-memory

@@ -4,10 +4,16 @@ export interface ItemCategoryName {
   name: string;
 }
 
+export interface ItemPocket {
+  id: number;
+  name: string;
+}
+
 export interface ItemCategory {
   id: number;
   name: string;
   itemcategorynames: ItemCategoryName[];
+  itempocket?: ItemPocket | null;
 }
 
 export interface CategoriesResponse {
@@ -18,10 +24,10 @@ export interface CategoriesResponse {
 
 export interface ItemSprite {
   sprites:
-    | {
-        default: string;
-      }
-    | string; // API might return string or object
+  | {
+    default: string;
+  }
+  | string; // API might return string or object
 }
 
 export interface ItemEffectText {
@@ -60,6 +66,39 @@ export interface ItemsResponse {
 
 export interface HeldItemDetailsResponse {
   item: ItemWithHeldPokemon[];
+}
+
+// ============ Purchase Types ============
+
+export interface PurchaseItemPayload {
+  itemApiId: number;
+  quantity?: number;
+  name?: string;
+  spriteUrl?: string;
+  description?: string;
+  apiPocketName?: string;
+  categoryName?: string;
+  isHoldable?: boolean;
+  isConsumable?: boolean;
+  usableInBattle?: boolean;
+}
+
+export interface PurchaseResult {
+  success: boolean;
+  message: string;
+  unitCost: number;
+  quantity: number;
+  totalCost: number;
+  remainingCoins: number;
+  item: {
+    id: number;
+    itemApiId: number;
+    name: string;
+    spriteUrl: string;
+    quantity: number;
+    pocketName: string;
+    categoryName: string;
+  } | null;
 }
 
 // ============ Helper Functions ============
@@ -152,4 +191,76 @@ export function isHeldItemCategory(categoryId: number): boolean {
   // 42-46: Other held item categories
   const heldItemCategories = [1, 12, 17, 18, 19, 42, 43, 44, 45, 46];
   return heldItemCategories.includes(categoryId);
+}
+
+/** Visual metadata for bag category tabs (accent by item pocket). */
+export interface InventoryCategoryMeta {
+  accent: string;
+}
+
+const POCKET_ACCENT_BY_NAME: Record<string, string> = {
+  medicine: "#f5a962",
+  pokeballs: "#e8d5a3",
+  "battle-items": "#6b9bd1",
+  berries: "#7bc67e",
+  miscellaneous: "#e879a8",
+  machines: "#b8c97a",
+  items: "#e879a8",
+};
+
+const CATEGORY_ACCENT_BY_SLUG: Record<string, string> = {
+  healing: "#f5a962",
+  "status-cures": "#f5a962",
+  "medicine-flutes": "#f5a962",
+  revives: "#f5a962",
+  "pp-recovery": "#f5a962",
+  pokeballs: "#e8d5a3",
+  "special-balls": "#e8d5a3",
+  "battle-items": "#6b9bd1",
+  "stat-boosts": "#6b9bd1",
+  flutes: "#6b9bd1",
+  berries: "#7bc67e",
+  other: "#e879a8",
+  collectibles: "#e879a8",
+  evolution: "#e879a8",
+  spelunking: "#e879a8",
+  mulch: "#e879a8",
+  "all-machines": "#b8c97a",
+  machines: "#b8c97a",
+  treasure: "#f5d547",
+  loot: "#f5d547",
+  "curry-ingredients": "#c4785a",
+  "plot-advancement": "#9b7fd4",
+  unused: "#94a3b8",
+};
+
+const DEFAULT_CATEGORY_ACCENT = "#94a3b8";
+
+export function getInventoryCategoryMeta(
+  categorySlug: string,
+  pocketName?: string,
+): InventoryCategoryMeta {
+  const pocketAccent = pocketName
+    ? POCKET_ACCENT_BY_NAME[pocketName.toLowerCase()]
+    : undefined;
+
+  return {
+    accent:
+      pocketAccent ??
+      CATEGORY_ACCENT_BY_SLUG[categorySlug.toLowerCase()] ??
+      DEFAULT_CATEGORY_ACCENT,
+  };
+}
+
+export function resolveCategoryDisplayName(
+  categorySlug: string,
+  categories: ItemCategory[],
+): string {
+  const match = categories.find(
+    (c) => c.name.toLowerCase() === categorySlug.toLowerCase(),
+  );
+  if (match) {
+    return getCategoryDisplayName(match);
+  }
+  return formatItemName(categorySlug);
 }

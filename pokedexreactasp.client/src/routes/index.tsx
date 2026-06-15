@@ -17,9 +17,11 @@ const GenerationDetail = lazy(() => import("@/pages/Explore/GenerationDetail"));
 const Detail = lazy(() => import("@/pages/Detail"));
 const WhosThatPokemon = lazy(() => import("@/pages/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
+const Battle = lazy(() => import("@/pages/Battle"));
 const Search = lazy(() => import("@/pages/Search"));
 const WildArea = lazy(() => import("@/pages/WildArea"));
 const MyCards = lazy(() => import("@/pages/MyCards"));
+const Bag = lazy(() => import("@/pages/Bag"));
 // New games
 const TypeMatchup = lazy(() => import("@/pages/TypeMatchup/index.tsx"));
 const CatchChallenge = lazy(() => import("@/pages/CatchChallenge/index.tsx"));
@@ -140,6 +142,14 @@ export default function Routes() {
               </Suspense>
             }
           />
+          <Route
+            path="/battle"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Battle />
+              </Suspense>
+            }
+          />
           {/* New games routes */}
           <Route
             path="/games/type-matchup"
@@ -179,6 +189,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <MyCards />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/bag"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Bag />
               </Suspense>
             }
           />

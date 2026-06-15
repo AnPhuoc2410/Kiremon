@@ -24,6 +24,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
         public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+        public DbSet<GymLeader> GymLeaders { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -87,7 +88,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.UserId).IsRequired();
                 entity.Property(e => e.PokemonApiId).IsRequired();
                 entity.Property(e => e.CaughtDate).IsRequired();
-                
+
+                entity.Property(e => e.Ability).HasMaxLength(100);
             });
 
             // Configure UserBox entity
@@ -320,6 +322,19 @@ namespace PokedexReactASP.Infrastructure.Persistence
                     .WithMany(u => u.RefreshTokens)
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure GymLeader entity
+            modelBuilder.Entity<GymLeader>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasMaxLength(100);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.BadgeName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Region).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Avatar).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.Sprite).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.RosterJson).HasColumnType("jsonb").IsRequired();
             });
         }
     }

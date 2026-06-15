@@ -99,6 +99,7 @@ namespace PokedexReactASP.Application.DTOs.Pokemon
         public string? OfficialArtworkUrl { get; set; }
         public string? Category { get; set; }
         public List<string> Abilities { get; set; } = new();
+        public string Ability { get; set; } = string.Empty;
         
         // Base stats from PokeAPI
         public int BaseHp { get; set; }

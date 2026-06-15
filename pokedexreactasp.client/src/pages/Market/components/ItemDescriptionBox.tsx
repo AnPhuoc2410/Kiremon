@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
 import {
   DialogBox,
   DialogOverlay,
@@ -12,15 +13,24 @@ import {
   WildPokemonTitle,
   WildPokemonList,
   WildPokemonItem,
+  BuySection,
+  QuantityInput,
+  BuyButton,
 } from "../Market.styles";
-import { Item, PokemonBasic, getItemDisplayName } from "@/types/market.types";
-import { useHeldItemDetails } from "@/hooks/queries";
-import { useLanguage } from "@/contexts";
+import {
+  Item,
+  PokemonBasic,
+  getItemDisplayName,
+  getItemSpriteUrl,
+} from "@/types/market.types";
+import { useHeldItemDetails, useBuyItem } from "@/hooks/queries";
+import { useAuth, useLanguage } from "@/contexts";
 import { t } from "@/utils/uiI18n";
 
 interface ItemDescriptionBoxProps {
   item: Item | null;
   categoryId?: number | null;
+  categoryName?: string;
   onClose?: () => void;
 }
 
@@ -31,14 +41,52 @@ const getPokemonSprite = (pokemonId: number): string => {
 export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
   item,
   categoryId,
+  categoryName,
   onClose,
 }) => {
   const { languageId } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const buyItem = useBuyItem();
+  const [quantity, setQuantity] = useState(1);
   const {
     wildPokemon,
     itemEffect,
     isLoading: wildPokemonLoading,
   } = useHeldItemDetails(item?.id ?? null, !!item);
+
+  const handleBuy = async () => {
+    if (!item) return;
+
+    if (!isAuthenticated) {
+      toast.error(t("market.loginToBuy", languageId));
+      return;
+    }
+
+    try {
+      const result = await buyItem.mutateAsync({
+        itemApiId: item.id,
+        quantity,
+        name: item.name,
+        spriteUrl: getItemSpriteUrl(item),
+        description: itemEffect !== "No description available." ? itemEffect : undefined,
+        categoryName: categoryName || undefined,
+      });
+
+      toast.success(
+        `${result.message} (₽${result.remainingCoins.toLocaleString()} ${t(
+          "market.remaining",
+          languageId,
+        )})`,
+      );
+    } catch (error: unknown) {
+      // Business failures (not enough coins, not for sale...) come back as 4xx
+      // with a PurchaseResult body carrying the server message.
+      const serverMessage = (
+        error as { response?: { data?: { message?: string } } }
+      )?.response?.data?.message;
+      toast.error(serverMessage || t("market.buyFailed", languageId));
+    }
+  };
 
   if (!item) {
     return (
@@ -92,16 +140,46 @@ export const ItemDescriptionBox: React.FC<ItemDescriptionBoxProps> = ({
                 {itemEffect || t("market.noDescription", languageId)}
               </DialogDescription>
               {item.cost !== undefined && item.cost > 0 && (
-                <DialogDescription
-                  style={{
-                    marginTop: "16px",
-                    color: "#B45309",
-                    fontWeight: "600",
-                    fontSize: "16px",
-                  }}
-                >
-                  {t("market.price", languageId)}: ₽{item.cost.toLocaleString()}
-                </DialogDescription>
+                <>
+                  <DialogDescription
+                    style={{
+                      marginTop: "16px",
+                      color: "#B45309",
+                      fontWeight: "600",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {t("market.price", languageId)}: ₽
+                    {item.cost.toLocaleString()}
+                  </DialogDescription>
+
+                  <BuySection>
+                    <QuantityInput
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={quantity}
+                      onChange={(e) =>
+                        setQuantity(
+                          Math.max(
+                            1,
+                            Math.min(999, Number(e.target.value) || 1),
+                          ),
+                        )
+                      }
+                    />
+                    <BuyButton
+                      onClick={handleBuy}
+                      disabled={buyItem.isPending}
+                    >
+                      {buyItem.isPending
+                        ? t("market.buying", languageId)
+                        : `${t("market.buy", languageId)} · ₽${(
+                          item.cost * quantity
+                        ).toLocaleString()}`}
+                    </BuyButton>
+                  </BuySection>
+                </>
               )}
 
               {/* Wild Pokemon Section - Only show when data is loaded */}
