@@ -33,5 +33,24 @@ export default (env: Record<string, string>): UserConfig => {
     build: {
       sourcemap: true,
     },
+    optimizeDeps: {
+      // Warm up dependency cache để tăng tốc khởi động server và tránh reload trình duyệt giữa chừng
+      include: [
+        "react",
+        "react-dom",
+        "react-router-dom",
+        "@tanstack/react-query",
+        "@supabase/supabase-js",
+        "framer-motion",
+        "gsap",
+        "animejs",
+        "axios",
+        "recharts",
+        "@tabler/icons-react",
+        "zustand",
+        "@radix-ui/themes",
+        "date-fns",
+      ],
+    },
   };
 };
