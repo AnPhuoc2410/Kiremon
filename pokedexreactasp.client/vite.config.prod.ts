@@ -17,57 +17,21 @@ export default (env: Record<string, string>): UserConfig => ({
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
-        // Tối ưu hóa phân tách chunk (manualChunks) tránh file bundle tổng quá nặng
+        // Chỉ tách các thư viện độc lập không phụ thuộc vào React để tránh lỗi khởi tạo chéo (TDZ/CommonJS)
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
-            // Tách React core (chỉ react, react-dom, scheduler)
-            if (
-              id.includes("node_modules/react/") ||
-              id.includes("node_modules/react-dom/") ||
-              id.includes("node_modules/scheduler/")
-            ) {
-              return "vendor-react-core";
-            }
-            // Tách React Router / React Router DOM
-            if (
-              id.includes("node_modules/react-router/") ||
-              id.includes("node_modules/react-router-dom/")
-            ) {
-              return "vendor-react-router";
-            }
-            // Tách TanStack (Query, Router)
-            if (id.includes("node_modules/@tanstack/")) {
-              return "vendor-tanstack";
-            }
             // Tách Supabase
             if (id.includes("node_modules/@supabase/")) {
               return "vendor-supabase";
             }
-            // Tách React Joyride (thư viện hướng dẫn du lịch rất nặng)
-            if (id.includes("node_modules/react-joyride/")) {
-              return "vendor-joyride";
-            }
-            // Tách UI framework và icons
+            // Tách các thư viện Animation thuần (GSAP, AnimeJS)
             if (
-              id.includes("node_modules/@radix-ui/") ||
-              id.includes("node_modules/@tabler/icons-react/") ||
-              id.includes("node_modules/rpg-awesome/")
-            ) {
-              return "vendor-ui";
-            }
-            // Tách Recharts
-            if (id.includes("node_modules/recharts/")) {
-              return "vendor-charts";
-            }
-            // Tách các thư viện animation nặng
-            if (
-              id.includes("node_modules/framer-motion/") ||
               id.includes("node_modules/gsap/") ||
               id.includes("node_modules/animejs/")
             ) {
               return "vendor-animations";
             }
-            // Tách lodash, date-fns
+            // Tách các thư viện tiện ích (lodash, date-fns)
             if (
               id.includes("node_modules/lodash/") ||
               id.includes("node_modules/date-fns/")
