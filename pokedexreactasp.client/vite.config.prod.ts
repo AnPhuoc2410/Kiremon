@@ -74,8 +74,6 @@ export default (env: Record<string, string>): UserConfig => ({
             ) {
               return "vendor-utils";
             }
-            // Các thư viện khác
-            return "vendor";
           }
         },
       },
