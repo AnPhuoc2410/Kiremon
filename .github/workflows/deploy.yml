@@ -22,12 +22,12 @@ jobs:
       
       - name: Setup Deploy Folder
         run: |
-          mkdir -p /home/thang/Phuoc/Kiremon
-          cp docker-compose.prod.yml /home/thang/Phuoc/Kiremon/docker-compose.prod.yml
+          mkdir -p ~/apps/kiremon
+          cp docker-compose.prod.yml ~/apps/kiremon/docker-compose.prod.yml
       
       - name: Create .env file
         run: |
-          cat > /home/thang/Phuoc/Kiremon/.env << 'EOF'
+          cat > ~/apps/kiremon/.env << 'EOF'
           DOTNET_ENVIRONMENT=Production
           ASPNETCORE_URLS=http://0.0.0.0:8080
 
@@ -78,7 +78,7 @@ jobs:
 
       - name: Pull & run containers
         run: |
-          cd /home/thang/Phuoc/Kiremon
+          cd ~/apps/kiremon
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d
 
@@ -113,6 +113,6 @@ jobs:
         if: always()
         run: |
           echo "🧹 Cleaning up .env file..."
-          rm -f /home/thang/Phuoc/Kiremon/.env
+          rm -f ~/apps/kiremon/.env
           echo "✅ Cleanup completed"
 
