@@ -19,7 +19,7 @@ COPY . .
 WORKDIR /src/PokedexReactASP.Server
 
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
-    dotnet publish -c Release -o /app/publish --no-restore
+    dotnet publish -c Release -o /app/publish 
 
 # =====================
 # Runtime stage
