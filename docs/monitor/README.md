@@ -15,7 +15,7 @@
    - [docker-compose.yml](#docker-composeyml)
    - [prometheus.yml](#prometheusyml)
    - [loki-config.yml](#loki-configyml)
-   - [tempo.yaml](#tempoyaml)
+   - [tempo.yml](#tempoyaml)
    - [alloy-config.alloy](#alloy-configalloy)
    - [datasources.yaml](#datasourcesyaml)
 6. [Data flow](#6-data-flow)
@@ -55,7 +55,7 @@ LGTM_Stack/
     ├── datasources.yaml
     ├── loki-config.yml
     ├── prometheus.yml
-    └── tempo.yaml
+    └── tempo.yml
 ```
 
 > **Lưu ý:** Không cần tạo thư mục `data/`. Docker named volumes tự được quản lý tại `/var/lib/docker/volumes/`.
@@ -189,7 +189,7 @@ Compactor chạy nền, xóa data cũ hơn 31 ngày. `retention_delete_delay: 2h
 
 ---
 
-### tempo.yaml
+### tempo.yml
 
 **Các quyết định quan trọng:**
 
@@ -344,7 +344,7 @@ Nếu container `global_prometheus` có label đó, Alloy sẽ scrape và push m
 
 ### ℹ️ `generate_native_histograms` phải đồng bộ với Prometheus
 
-| Prometheus flag | Giá trị nên dùng trong tempo.yaml |
+| Prometheus flag | Giá trị nên dùng trong tempo.yml |
 |---|---|
 | `--enable-feature=native-histograms` có | `both` |
 | Không có flag trên | `classic` |

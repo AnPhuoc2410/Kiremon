@@ -1,6 +1,5 @@
 # =============================================================================
 # Tempo Configuration — Single Binary (Docker / VPS / LGTM Stack)
-# Optimized for: Alloy + Grafana + Prometheus + Loki integration
 # =============================================================================
 server:
   http_listen_port: 3200
@@ -18,14 +17,6 @@ distributor:
           endpoint: "0.0.0.0:4317"
         http:
           endpoint: "0.0.0.0:4318"
-
-# =============================================================================
-# Ingester (buffer traces before flushing to storage)
-# =============================================================================
-ingester:
-  max_block_bytes: 1000000         # ~1MB — safe for single VPS
-  max_block_duration: 5m
-  trace_idle_period: 10s
 
 # =============================================================================
 # Storage (local disk - single VPS mode)
@@ -54,24 +45,6 @@ metrics_generator:
     remote_write:
       - url: http://prometheus:9090/api/v1/write
         send_exemplars: true
-
-# =============================================================================
-# Query settings
-# =============================================================================
-query_frontend:
-  search:
-    duration_slo: 5s
-    throughput_bytes_slo: 1073741824  # 1GiB
-  trace_by_id:
-    duration_slo: 5s
-
-# =============================================================================
-# Compactor
-# =============================================================================
-compactor:
-  compaction:
-    block_retention: 336h           # 14 days
-    compacted_block_retention: 1h   # cleanup original blocks after compaction
 
 # =============================================================================
 # Overrides (enable modern trace analytics features)
