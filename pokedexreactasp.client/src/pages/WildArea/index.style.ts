@@ -38,7 +38,7 @@ const AREA_BACKGROUNDS: Record<string, { day: string; night: string }> = {
   },
   ancient_ruins: {
     day: "/assets/wild-area/bg-ancient-ruins-day.png",
-    night: "/assets/wild-area/bg-ancient-ruins-day.png", // Fallback to day due to image generation quota
+    night: "/assets/wild-area/bg-ancient-ruins-night.png",
   },
 };
 
