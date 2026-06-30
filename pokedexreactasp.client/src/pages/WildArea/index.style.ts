@@ -16,6 +16,30 @@ const AREA_BACKGROUNDS: Record<string, { day: string; night: string }> = {
     day: "/assets/wild-area/bg-beach-day.png",
     night: "/assets/wild-area/bg-beach-night.png",
   },
+  rock_tunnel: {
+    day: "/assets/wild-area/bg-rock-tunnel-day.png",
+    night: "/assets/wild-area/bg-rock-tunnel-night.png",
+  },
+  ember_volcano: {
+    day: "/assets/wild-area/bg-ember-volcano-day.png",
+    night: "/assets/wild-area/bg-ember-volcano-night.png",
+  },
+  haunted_woods: {
+    day: "/assets/wild-area/bg-haunted-woods-day.png",
+    night: "/assets/wild-area/bg-haunted-woods-night.png",
+  },
+  power_plant: {
+    day: "/assets/wild-area/bg-power-plant-day.png",
+    night: "/assets/wild-area/bg-power-plant-night.png",
+  },
+  frost_cavern: {
+    day: "/assets/wild-area/bg-frost-cavern-day.png",
+    night: "/assets/wild-area/bg-frost-cavern-night.png",
+  },
+  ancient_ruins: {
+    day: "/assets/wild-area/bg-ancient-ruins-day.png",
+    night: "/assets/wild-area/bg-ancient-ruins-day.png", // Fallback to day due to image generation quota
+  },
 };
 
 const getFallbackGradient = (areaCode: string, isDaytime: boolean) => {
