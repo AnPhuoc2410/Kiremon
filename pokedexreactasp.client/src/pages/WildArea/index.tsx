@@ -9,19 +9,108 @@ import { useAttemptWildCatch } from "@/hooks/mutations";
 import { wildAreaService } from "@/services/wild-area/wild-area.service";
 import { PokeballType } from "@/types/pokemon.enums";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
+import { toAnimatedSprite } from "@/hooks/common/battle/battleHelpers";
 
 import * as S from "./index.style";
 
 const DEFAULT_AREA_CODE = "viridian_field";
 
 const spawnPositions = [
-  { x: 80, y: 98 },
-  { x: 242, y: 76 },
-  { x: 420, y: 120 },
-  { x: 130, y: 260 },
-  { x: 318, y: 250 },
-  { x: 510, y: 292 },
+  { x: 40, y: 50 },
+  { x: 250, y: 80 },
+  { x: 460, y: 40 },
+  { x: 680, y: 70 },
+  { x: 120, y: 310 },
+  { x: 340, y: 280 },
+  { x: 540, y: 330 },
+  { x: 730, y: 270 },
 ];
+
+// ─── Day / Night icons (inline SVG) ─────────────────────────────────────────
+
+const SunIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="5" />
+    <line
+      x1="12"
+      y1="2"
+      x2="12"
+      y2="4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="12"
+      y1="20"
+      x2="12"
+      y2="22"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="4.22"
+      y1="4.22"
+      x2="5.64"
+      y2="5.64"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="18.36"
+      y1="18.36"
+      x2="19.78"
+      y2="19.78"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="2"
+      y1="12"
+      x2="4"
+      y2="12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="20"
+      y1="12"
+      x2="22"
+      y2="12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="4.22"
+      y1="19.78"
+      x2="5.64"
+      y2="18.36"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <line
+      x1="18.36"
+      y1="5.64"
+      x2="19.78"
+      y2="4.22"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
 
 const WildArea = () => {
   const navRef = createRef<HTMLDivElement>();
@@ -36,6 +125,10 @@ const WildArea = () => {
   );
   const [secondsUntilReset, setSecondsUntilReset] = useState(0);
   const [isCatching, setIsCatching] = useState(false);
+  const [isDaytime, setIsDaytime] = useState(() => {
+    const hours = new Date().getHours();
+    return hours >= 6 && hours < 18;
+  });
   const catchingRef = useRef(false);
   const { isAuthenticated, isInitialized } = useAuth();
   const selectedAreaCode = searchParams.get("areaCode") || DEFAULT_AREA_CODE;
@@ -55,6 +148,14 @@ const WildArea = () => {
     next.set("areaCode", DEFAULT_AREA_CODE);
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const hours = new Date().getHours();
+      setIsDaytime(hours >= 6 && hours < 18);
+    }, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setSelectedSpawn(null);
@@ -192,10 +293,9 @@ const WildArea = () => {
           title={`${spawn.pokemonName} (${spawn.spawnRarity})`}
         >
           <img
-            src={spawn.spriteUrl || "/substitute.png"}
+            src={toAnimatedSprite(spawn.spriteUrl) || "/substitute.png"}
             alt={spawn.pokemonName}
           />
-          <S.SpawnBadge>{spawn.attemptsLeft}</S.SpawnBadge>
         </S.SpawnButton>
       );
     });
@@ -211,9 +311,6 @@ const WildArea = () => {
 
         <S.TopRow>
           <S.AreaControls>
-            <Text as="h3">
-              {wildAreaQuery.data?.areaName || "Viridian Field"}
-            </Text>
             {isAuthenticated && (
               <S.AreaSelect
                 value={selectedAreaCode}
@@ -232,8 +329,21 @@ const WildArea = () => {
               </S.AreaSelect>
             )}
           </S.AreaControls>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Text>Reset in {timerDisplay}</Text>
+            {/* Day / Night Indicator */}
+            <S.DayNightIndicator
+              $isDay={isDaytime}
+              title={
+                isDaytime ? "Daytime (6 AM - 6 PM)" : "Nighttime (6 PM - 6 AM)"
+              }
+            >
+              {isDaytime ? <SunIcon /> : <MoonIcon />}
+              {isDaytime ? "Day" : "Night"}
+            </S.DayNightIndicator>
+
+            <S.TimerText>Reset in {timerDisplay}</S.TimerText>
+
             {isLocalEnv && isAuthenticated && (
               <Button
                 variant="light"
@@ -246,7 +356,7 @@ const WildArea = () => {
           </div>
         </S.TopRow>
 
-        <S.MapShell>
+        <S.MapShell $areaCode={selectedAreaCode} $isDay={isDaytime}>
           <S.GridOverlay />
           {renderContent()}
         </S.MapShell>
@@ -264,7 +374,9 @@ const WildArea = () => {
             <Text as="h3">Encounter</Text>
             <S.ModalRow>
               <img
-                src={selectedSpawn.spriteUrl || "/substitute.png"}
+                src={
+                  toAnimatedSprite(selectedSpawn.spriteUrl) || "/substitute.png"
+                }
                 alt={selectedSpawn.pokemonName}
               />
               <div>
