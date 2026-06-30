@@ -356,22 +356,69 @@ export const Actions = styled.div`
 `;
 
 export const RewardCard = styled.div`
-  margin-top: 12px;
-  border: 2px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 10px;
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 10px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  background: #f8fafc;
+  gap: 16px;
+  background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 24px 16px;
 
   img {
-    width: 56px;
-    height: 80px;
+    width: 200px;
+    height: auto;
     object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #94a3b8;
+    border-radius: 10px;
+    box-shadow:
+      0 10px 25px -5px rgba(0, 0, 0, 0.3),
+      0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow:
+        0 14px 30px -5px rgba(0, 0, 0, 0.4),
+        0 10px 12px -6px rgba(0, 0, 0, 0.2);
+    }
+  }
+`;
+
+export const RewardCardInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+
+  h3 {
+    margin: 0;
+    font-size: 22px;
+    color: #0f172a;
+    font-family: "VT323", monospace;
+    letter-spacing: 0.5px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #475569;
+  }
+
+  .rarity {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #1e293b;
+    color: #f8fafc;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 `;
 

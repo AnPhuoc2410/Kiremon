@@ -9,7 +9,7 @@ import {
 import toast from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { Button, Header, Loading, Modal, Navbar, Text } from "@/components/ui";
+import { Button, Header, Loading, Navbar, Text } from "@/components/ui";
 import { useAuth } from "@/contexts";
 import { useWildArea, useWildAreas } from "@/hooks/queries";
 import { useAttemptWildCatch } from "@/hooks/mutations";
@@ -17,6 +17,7 @@ import { wildAreaService } from "@/services/wild-area/wild-area.service";
 import { PokeballType } from "@/types/pokemon.enums";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
 import { toAnimatedSprite } from "@/hooks/common/battle/battleHelpers";
+import { EncounterModal, CatchingModal, ResultModal } from "./WildModals";
 
 import * as S from "./index.style";
 import { MAP_W, MAP_H, VIEWPORT_W, VIEWPORT_H } from "./index.style";
@@ -134,6 +135,9 @@ const WildArea = () => {
   );
   const [secondsUntilReset, setSecondsUntilReset] = useState(0);
   const [isCatching, setIsCatching] = useState(false);
+  const [shakeCount, setShakeCount] = useState(0);
+  const [catchingSprite, setCatchingSprite] = useState("");
+  const [catchingName, setCatchingName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   // Active keys for the visual KeyHint only (re-renders are intentionally
   // separate from the rAF loop so the loop stays smooth)
@@ -282,18 +286,40 @@ const WildArea = () => {
   }, [secondsUntilReset]);
 
   // ─── Catch handlers ───────────────────────────────────────────────────────
+  const animateShakes = async (shakes: number): Promise<void> => {
+    return new Promise((resolve) => {
+      let current = 0;
+      const interval = window.setInterval(() => {
+        current++;
+        setShakeCount(current);
+        if (current >= Math.min(shakes, 3)) {
+          window.clearInterval(interval);
+          resolve();
+        }
+      }, 650);
+    });
+  };
+
   const handleAttemptCatch = async () => {
     if (!isAuthenticated || !selectedSpawn || catchingRef.current) return;
     catchingRef.current = true;
+    setShakeCount(0);
+    // Preserve sprite/name before clearing selectedSpawn
+    setCatchingSprite(
+      toAnimatedSprite(selectedSpawn.spriteUrl) || "/substitute.png",
+    );
+    setCatchingName(selectedSpawn.pokemonName);
     setIsCatching(true);
+    setSelectedSpawn(null);
     try {
       const response = await catchMutation.mutateAsync({
         spawnId: selectedSpawn.spawnId,
         payload: { pokeballType },
       });
+      // Animate shakes before showing result
+      await animateShakes(response.shakeCount);
       setResult(response);
       setResultOpen(true);
-      setSelectedSpawn(null);
     } catch (error) {
       console.error(error);
       toast.error("Catch attempt failed. Please try again.");
@@ -505,108 +531,40 @@ const WildArea = () => {
         </S.Tip>
       </S.Page>
 
-      {/* ── Catch modal ── */}
-      <Modal open={!!selectedSpawn && isAuthenticated}>
-        {selectedSpawn && (
-          <S.ModalCard>
-            <Text as="h3">Encounter</Text>
-            <S.ModalRow>
-              <img
-                src={
-                  toAnimatedSprite(selectedSpawn.spriteUrl) || "/substitute.png"
-                }
-                alt={selectedSpawn.pokemonName}
-              />
-              <div>
-                <Text as="h3">{selectedSpawn.pokemonName}</Text>
-                <Text>
-                  {selectedSpawn.spawnRarity} · Attempts left:{" "}
-                  {selectedSpawn.attemptsLeft}
-                </Text>
-              </div>
-            </S.ModalRow>
+      {/* ── Encounter modal (new cinematic design) ── */}
+      {isAuthenticated && !isCatching && (
+        <EncounterModal
+          spawn={selectedSpawn}
+          pokeballType={pokeballType}
+          isCatching={catchMutation.isPending || isCatching}
+          onPokeballChange={setPokeballType}
+          onCancel={() => setSelectedSpawn(null)}
+          onThrow={handleAttemptCatch}
+          spriteSrc={
+            toAnimatedSprite(selectedSpawn?.spriteUrl ?? "") ||
+            "/substitute.png"
+          }
+        />
+      )}
 
-            <S.FormRow>
-              <S.Select
-                value={pokeballType}
-                onChange={(e) =>
-                  setPokeballType(Number(e.target.value) as PokeballType)
-                }
-                disabled={catchMutation.isPending || isCatching}
-              >
-                <option value={PokeballType.Pokeball}>Pokeball</option>
-                <option value={PokeballType.GreatBall}>Great Ball</option>
-                <option value={PokeballType.UltraBall}>Ultra Ball</option>
-              </S.Select>
-            </S.FormRow>
+      {/* ── Catching animation modal ── */}
+      <CatchingModal
+        open={isCatching}
+        spriteSrc={catchingSprite || "/substitute.png"}
+        shakeCount={shakeCount}
+        pokemonName={catchingName}
+      />
 
-            <S.Actions>
-              <Button
-                variant="light"
-                onClick={() => setSelectedSpawn(null)}
-                disabled={catchMutation.isPending || isCatching}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="dark"
-                onClick={handleAttemptCatch}
-                disabled={catchMutation.isPending || isCatching}
-              >
-                {catchMutation.isPending || isCatching
-                  ? "Catching..."
-                  : "Attempt Catch"}
-              </Button>
-            </S.Actions>
-          </S.ModalCard>
-        )}
-      </Modal>
-
-      {/* ── Result modal ── */}
-      <Modal open={resultOpen} overlay="light" solid>
-        {result && (
-          <S.ModalCard>
-            <Text as="h3">
-              {result.pokemonCaught ? "Catch Success" : "Catch Failed"}
-            </Text>
-            <Text style={{ marginTop: 8 }}>{result.message}</Text>
-            <Text>
-              Shake count: {result.shakeCount} · Attempts left:{" "}
-              {result.attemptsLeft}
-            </Text>
-            <Text>Spawn consumed: {result.spawnConsumed ? "Yes" : "No"}</Text>
-
-            {result.cardReward && (
-              <S.RewardCard>
-                <img
-                  src={result.cardReward.imageSmall || "/substitute.png"}
-                  alt={result.cardReward.name}
-                />
-                <div>
-                  <Text as="h3">Card Reward</Text>
-                  <Text>{result.cardReward.name}</Text>
-                  <Text>
-                    {result.cardReward.rarity || "Unknown"} ·{" "}
-                    {result.cardReward.rarityTier}
-                  </Text>
-                </div>
-              </S.RewardCard>
-            )}
-
-            <S.Actions>
-              <Button
-                variant="dark"
-                onClick={() => {
-                  setResultOpen(false);
-                  setResult(null);
-                }}
-              >
-                Close
-              </Button>
-            </S.Actions>
-          </S.ModalCard>
-        )}
-      </Modal>
+      {/* ── Result modal (new cinematic design) ── */}
+      <ResultModal
+        open={resultOpen}
+        result={result}
+        onClose={() => {
+          setResultOpen(false);
+          setResult(null);
+          setShakeCount(0);
+        }}
+      />
 
       <Navbar ref={navRef} />
     </>
