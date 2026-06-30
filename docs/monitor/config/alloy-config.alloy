@@ -272,10 +272,28 @@ otelcol.exporter.otlp "tempo" {
   }
 }
 
+// Relabel OTLP metrics to map exported_job -> job and exported_instance -> instance
+// This ensures standard dashboards designed for Prometheus scrape labels work out-of-the-box.
+prometheus.relabel "otel_metrics_formatter" {
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  rule {
+    source_labels = ["exported_job"]
+    regex         = "(.+)"
+    target_label  = "job"
+  }
+
+  rule {
+    source_labels = ["exported_instance"]
+    regex         = "(.+)"
+    target_label  = "instance"
+  }
+}
+
 // Forward OTLP metrics → Prometheus (via remote write)
 // Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.exporter.prometheus/
 otelcol.exporter.prometheus "default" {
-  forward_to = [prometheus.remote_write.default.receiver]
+  forward_to = [prometheus.relabel.otel_metrics_formatter.receiver]
 }
 
 // Forward OTLP logs → Loki
