@@ -1,7 +1,8 @@
 # LGTM Observability Stack
 
 > **L**oki · **G**rafana · **T**empo · **M**etrics (Prometheus)  
-> Single Binary Mode — Homelab / Single VPS
+
+![alt text](image.png)
 
 ---
 
