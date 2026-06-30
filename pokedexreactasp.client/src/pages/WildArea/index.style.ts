@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+export const MAP_W = 1600;
+export const MAP_H = 900;
+export const VIEWPORT_W = 1028;
+export const VIEWPORT_H = 560;
+
 // ─── Area background mapping ───────────────────────────────────────────────
 const AREA_BACKGROUNDS: Record<string, { day: string; night: string }> = {
   viridian_field: {
@@ -105,20 +111,36 @@ export const DayNightIndicator = styled.div<{ $isDay: boolean }>`
   }
 `;
 
-// ─── Map shell ────────────────────────────────────────────────────────────
-export const MapShell = styled.div<{ $areaCode: string; $isDay: boolean }>`
+// ─── Map viewport (the visible window, clipping everything outside) ──────────
+export const MapShell = styled.div<{ $focused: boolean }>`
   position: relative;
   width: 100%;
-  max-width: 860px;
-  height: 460px;
+  max-width: ${VIEWPORT_W}px;
+  height: ${VIEWPORT_H}px;
   margin: 0 auto;
   border: 4px solid #1f2937;
   box-shadow: 0 10px 0 #0f172a;
   border-radius: 8px;
   overflow: hidden;
-  image-rendering: pixelated;
+  /* Show keyboard-focus ring when the viewport is focused */
+  outline: ${(p) => (p.$focused ? "3px solid #facc15" : "none")};
+  outline-offset: 2px;
+  cursor: ${(p) => (p.$focused ? "grab" : "pointer")};
 
-  /* Day/night overlay tint on top of background image */
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+`;
+
+// ─── Map content (the large scrollable canvas that moves inside MapShell) ─────
+export const MapContent = styled.div<{ $areaCode: string; $isDay: boolean }>`
+  position: absolute;
+  width: ${MAP_W}px;
+  height: ${MAP_H}px;
+  /* will-change hints the browser to composite this layer on the GPU */
+  will-change: transform;
+
+  /* Day/night overlay tint */
   &::before {
     content: "";
     position: absolute;
@@ -129,24 +151,21 @@ export const MapShell = styled.div<{ $areaCode: string; $isDay: boolean }>`
     transition: background 0.6s ease;
   }
 
-  /* Background image, falls back to gradient */
+  /* Single stretched background — NO tiling */
   background-image: ${(p) => getBgImage(p.$areaCode, p.$isDay)};
-  background-size: cover;
-  background-position: center;
+  background-repeat: no-repeat;
+  background-size: ${MAP_W}px ${MAP_H}px;
+  background-position: 0 0;
   background-color: transparent;
 
-  /* Gradient fallback (shown when no image) */
+  /* Gradient fallback when no image */
   ${(p) =>
     getBgImage(p.$areaCode, p.$isDay) === "none"
       ? `background: ${getFallbackGradient(p.$areaCode, p.$isDay)};`
       : ""}
-
-  @media (max-width: 768px) {
-    height: 300px;
-  }
 `;
 
-// ─── Grid overlay ─────────────────────────────────────────────────────────
+// ─── Grid overlay (sits inside MapContent so it scrolls with the map) ─────────
 export const GridOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -171,7 +190,45 @@ export const CenterHint = styled.div`
   z-index: 10;
 `;
 
-// ─── Spawn button (transparent, sprite sitting on map) ────────────────────
+// ─── WASD / Arrow keys hint overlay (bottom-right of viewport) ────────────────
+export const KeyHint = styled.div`
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+`;
+
+export const KeyRow = styled.div`
+  display: flex;
+  gap: 2px;
+`;
+
+export const KeyCap = styled.span<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  background: ${(p) =>
+    p.$active ? "rgba(250,204,21,0.85)" : "rgba(0,0,0,0.45)"};
+  color: ${(p) => (p.$active ? "#111" : "rgba(255,255,255,0.85)")};
+  font-family: "VT323", monospace;
+  font-size: 13px;
+  line-height: 1;
+  transition:
+    background 0.06s,
+    color 0.06s;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+`;
+
+// ─── Spawn button (transparent, sprite sitting on MapContent) ─────────────────
 export const SpawnButton = styled.button<{
   x: number;
   y: number;

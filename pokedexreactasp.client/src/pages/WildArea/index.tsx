@@ -1,4 +1,11 @@
-import { createRef, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -12,97 +19,91 @@ import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
 import { toAnimatedSprite } from "@/hooks/common/battle/battleHelpers";
 
 import * as S from "./index.style";
+import { MAP_W, MAP_H, VIEWPORT_W, VIEWPORT_H } from "./index.style";
 
 const DEFAULT_AREA_CODE = "viridian_field";
+const PAN_SPEED = 6; // pixels per frame
 
+// Spawn positions — 32 slots spread evenly across the 1600×900 map,
+// shuffled so that low indexes (0-7) are scattered everywhere instead of bunched in row 1.
 const spawnPositions = [
-  { x: 40, y: 50 },
-  { x: 250, y: 80 },
-  { x: 460, y: 40 },
-  { x: 680, y: 70 },
-  { x: 120, y: 310 },
-  { x: 340, y: 280 },
-  { x: 540, y: 330 },
-  { x: 730, y: 270 },
+  { x: 220, y: 60 },
+  { x: 1280, y: 530 },
+  { x: 730, y: 80 },
+  { x: 260, y: 280 },
+  { x: 1070, y: 90 },
+  { x: 50, y: 530 },
+  { x: 1490, y: 280 },
+  { x: 700, y: 770 },
+  { x: 440, y: 320 },
+  { x: 1240, y: 70 },
+  { x: 80, y: 300 },
+  { x: 940, y: 510 },
+  { x: 1420, y: 60 },
+  { x: 410, y: 560 },
+  { x: 1150, y: 330 },
+  { x: 380, y: 740 },
+  { x: 800, y: 310 },
+  { x: 60, y: 70 },
+  { x: 1320, y: 300 },
+  { x: 560, y: 65 },
+  { x: 1110, y: 570 },
+  { x: 620, y: 290 },
+  { x: 1530, y: 100 },
+  { x: 230, y: 510 },
+  { x: 900, y: 60 },
+  { x: 1460, y: 520 },
+  { x: 390, y: 90 },
+  { x: 980, y: 280 },
+  { x: 120, y: 750 },
+  { x: 760, y: 550 },
+  { x: 1050, y: 750 },
+  { x: 590, y: 520 },
 ];
 
-// ─── Day / Night icons (inline SVG) ─────────────────────────────────────────
+// ─── Key state tracking ───────────────────────────────────────────────────────
+type KeyMap = { up: boolean; down: boolean; left: boolean; right: boolean };
+const EMPTY_KEYS: KeyMap = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+};
+
+const keyToDir = (key: string): keyof KeyMap | null => {
+  if (key === "ArrowUp" || key === "w" || key === "W") return "up";
+  if (key === "ArrowDown" || key === "s" || key === "S") return "down";
+  if (key === "ArrowLeft" || key === "a" || key === "A") return "left";
+  if (key === "ArrowRight" || key === "d" || key === "D") return "right";
+  return null;
+};
+
+// ─── Day / Night icons (inline SVG) ──────────────────────────────────────────
 
 const SunIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
     <circle cx="12" cy="12" r="5" />
-    <line
-      x1="12"
-      y1="2"
-      x2="12"
-      y2="4"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="12"
-      y1="20"
-      x2="12"
-      y2="22"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="4.22"
-      y1="4.22"
-      x2="5.64"
-      y2="5.64"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="18.36"
-      y1="18.36"
-      x2="19.78"
-      y2="19.78"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="2"
-      y1="12"
-      x2="4"
-      y2="12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="20"
-      y1="12"
-      x2="22"
-      y2="12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="4.22"
-      y1="19.78"
-      x2="5.64"
-      y2="18.36"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <line
-      x1="18.36"
-      y1="5.64"
-      x2="19.78"
-      y2="4.22"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
+    {[
+      ["12", "2", "12", "4"],
+      ["12", "20", "12", "22"],
+      ["4.22", "4.22", "5.64", "5.64"],
+      ["18.36", "18.36", "19.78", "19.78"],
+      ["2", "12", "4", "12"],
+      ["20", "12", "22", "12"],
+      ["4.22", "19.78", "5.64", "18.36"],
+      ["18.36", "5.64", "19.78", "4.22"],
+    ].map(([x1, y1, x2, y2], i) => (
+      <line
+        key={i}
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    ))}
   </svg>
 );
 
@@ -112,8 +113,16 @@ const MoonIcon = () => (
   </svg>
 );
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 const WildArea = () => {
   const navRef = createRef<HTMLDivElement>();
+  const mapContentRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const keysRef = useRef<KeyMap>({ ...EMPTY_KEYS });
+  const rafRef = useRef<number>(0);
+  const cameraRef = useRef({ x: 0, y: 0 });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedSpawn, setSelectedSpawn] = useState<WildPokemonSpawn | null>(
     null,
@@ -125,6 +134,11 @@ const WildArea = () => {
   );
   const [secondsUntilReset, setSecondsUntilReset] = useState(0);
   const [isCatching, setIsCatching] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  // Active keys for the visual KeyHint only (re-renders are intentionally
+  // separate from the rAF loop so the loop stays smooth)
+  const [activeKeys, setActiveKeys] = useState<KeyMap>({ ...EMPTY_KEYS });
+
   const [isDaytime, setIsDaytime] = useState(() => {
     const hours = new Date().getHours();
     return hours >= 6 && hours < 18;
@@ -141,65 +155,137 @@ const WildArea = () => {
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
 
+  // ─── rAF panning loop ────────────────────────────────────────────────────
+  const maxCamX = MAP_W - VIEWPORT_W;
+  const maxCamY = MAP_H - VIEWPORT_H;
+
+  const panLoop = useCallback(() => {
+    const k = keysRef.current;
+    const cam = cameraRef.current;
+    let moved = false;
+
+    if (k.left && cam.x > 0) {
+      cam.x = Math.max(0, cam.x - PAN_SPEED);
+      moved = true;
+    }
+    if (k.right && cam.x < maxCamX) {
+      cam.x = Math.min(maxCamX, cam.x + PAN_SPEED);
+      moved = true;
+    }
+    if (k.up && cam.y > 0) {
+      cam.y = Math.max(0, cam.y - PAN_SPEED);
+      moved = true;
+    }
+    if (k.down && cam.y < maxCamY) {
+      cam.y = Math.min(maxCamY, cam.y + PAN_SPEED);
+      moved = true;
+    }
+
+    if (moved && mapContentRef.current) {
+      mapContentRef.current.style.transform = `translate3d(${-cam.x}px, ${-cam.y}px, 0)`;
+    }
+
+    rafRef.current = requestAnimationFrame(panLoop);
+  }, [maxCamX, maxCamY]);
+
+  useEffect(() => {
+    rafRef.current = requestAnimationFrame(panLoop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [panLoop]);
+
+  // ─── Keyboard listeners (only active when map is focused) ─────────────────
+  useEffect(() => {
+    if (!isFocused) {
+      keysRef.current = { ...EMPTY_KEYS };
+      setActiveKeys({ ...EMPTY_KEYS });
+      return;
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const dir = keyToDir(e.key);
+      if (!dir) return;
+      e.preventDefault(); // stop page scroll
+      if (keysRef.current[dir]) return; // already pressed
+      keysRef.current[dir] = true;
+      setActiveKeys((prev) => ({ ...prev, [dir]: true }));
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      const dir = keyToDir(e.key);
+      if (!dir) return;
+      keysRef.current[dir] = false;
+      setActiveKeys((prev) => ({ ...prev, [dir]: false }));
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [isFocused]);
+
+  // ─── Day/night auto-update ────────────────────────────────────────────────
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const hours = new Date().getHours();
+      setIsDaytime(hours >= 6 && hours < 18);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ─── Reset state on area change ───────────────────────────────────────────
   useEffect(() => {
     if (searchParams.get("areaCode")) return;
-
     const next = new URLSearchParams(searchParams);
     next.set("areaCode", DEFAULT_AREA_CODE);
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const hours = new Date().getHours();
-      setIsDaytime(hours >= 6 && hours < 18);
-    }, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     setSelectedSpawn(null);
     setResultOpen(false);
     setResult(null);
     setPokeballType(PokeballType.Pokeball);
+    // Reset camera when switching areas
+    cameraRef.current = { x: 0, y: 0 };
+    if (mapContentRef.current) {
+      mapContentRef.current.style.transform = "translate3d(0,0,0)";
+    }
   }, [selectedAreaCode]);
 
+  // ─── Countdown timer ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!wildAreaQuery.data?.resetAt) {
       setSecondsUntilReset(0);
       return;
     }
-
     const calculateSecondsLeft = () => {
       const resetAtMs = new Date(wildAreaQuery.data!.resetAt).getTime();
       return Math.max(0, Math.ceil((resetAtMs - Date.now()) / 1000));
     };
-
     setSecondsUntilReset(calculateSecondsLeft());
-
     const timerId = window.setInterval(() => {
       setSecondsUntilReset(calculateSecondsLeft());
     }, 1000);
-
     return () => window.clearInterval(timerId);
   }, [wildAreaQuery.data?.resetAt]);
 
-  const secondsLeft = secondsUntilReset;
   const timerDisplay = useMemo(() => {
-    const mins = Math.floor(Math.max(secondsLeft, 0) / 60)
+    const mins = Math.floor(Math.max(secondsUntilReset, 0) / 60)
       .toString()
       .padStart(2, "0");
-    const secs = Math.floor(Math.max(secondsLeft, 0) % 60)
+    const secs = Math.floor(Math.max(secondsUntilReset, 0) % 60)
       .toString()
       .padStart(2, "0");
     return `${mins}:${secs}`;
-  }, [secondsLeft]);
+  }, [secondsUntilReset]);
 
+  // ─── Catch handlers ───────────────────────────────────────────────────────
   const handleAttemptCatch = async () => {
     if (!isAuthenticated || !selectedSpawn || catchingRef.current) return;
     catchingRef.current = true;
     setIsCatching(true);
-
     try {
       const response = await catchMutation.mutateAsync({
         spawnId: selectedSpawn.spawnId,
@@ -225,18 +311,15 @@ const WildArea = () => {
 
   const handleResetEncounter = async () => {
     if (!isAuthenticated) return;
-
     setSelectedSpawn(null);
     setResultOpen(false);
     setResult(null);
     setPokeballType(PokeballType.Pokeball);
-
     try {
       await wildAreaService.refreshCurrent(selectedAreaCode);
       await wildAreaQuery.refetch();
       toast.success("Encounter reset with refresh endpoint.");
     } catch {
-      // Fallback for local environments where refresh endpoint is not implemented yet.
       await wildAreaQuery.refetch();
       toast(
         "Encounter state reset locally. Spawn refresh API is not available yet.",
@@ -244,9 +327,14 @@ const WildArea = () => {
     }
   };
 
-  const renderContent = () => {
+  // ─── Map content (spawns / loading / error states) ────────────────────────
+  const renderMapContent = () => {
     if (!isInitialized) {
-      return <Loading label="Checking session..." />;
+      return (
+        <S.CenterHint>
+          <Loading label="Checking session..." />
+        </S.CenterHint>
+      );
     }
 
     if (!isAuthenticated) {
@@ -263,7 +351,11 @@ const WildArea = () => {
     }
 
     if (wildAreasQuery.isLoading || wildAreaQuery.isLoading) {
-      return <Loading label="Loading wild area..." />;
+      return (
+        <S.CenterHint>
+          <Loading label="Loading wild area..." />
+        </S.CenterHint>
+      );
     }
 
     if (wildAreasQuery.isError || wildAreaQuery.isError) {
@@ -301,6 +393,7 @@ const WildArea = () => {
     });
   };
 
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <>
       <S.Page style={{ marginBottom: navRef.current?.clientHeight ?? 120 }}>
@@ -331,7 +424,6 @@ const WildArea = () => {
           </S.AreaControls>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Day / Night Indicator */}
             <S.DayNightIndicator
               $isDay={isDaytime}
               title={
@@ -356,18 +448,64 @@ const WildArea = () => {
           </div>
         </S.TopRow>
 
-        <S.MapShell $areaCode={selectedAreaCode} $isDay={isDaytime}>
-          <S.GridOverlay />
-          {renderContent()}
+        {/* ── Map viewport ── */}
+        <S.MapShell
+          ref={shellRef}
+          $focused={isFocused}
+          tabIndex={0}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onClick={() => shellRef.current?.focus()}
+          aria-label="Wild Area map — click to focus, then use Arrow keys or WASD to pan"
+        >
+          {/* The large canvas that moves */}
+          <S.MapContent
+            ref={mapContentRef}
+            $areaCode={selectedAreaCode}
+            $isDay={isDaytime}
+          >
+            <S.GridOverlay />
+            {renderMapContent()}
+          </S.MapContent>
+
+          {/* Keyboard hint overlay (bottom-right) */}
+          {!isFocused && (
+            <S.CenterHint
+              style={{
+                bottom: 10,
+                top: "auto",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              <Text variant="light" style={{ fontSize: 14 }}>
+                🕹 Click map · then use Arrow keys or WASD to pan
+              </Text>
+            </S.CenterHint>
+          )}
+
+          {isFocused && (
+            <S.KeyHint aria-hidden="true">
+              <S.KeyRow>
+                <S.KeyCap $active={activeKeys.up}>▲</S.KeyCap>
+              </S.KeyRow>
+              <S.KeyRow>
+                <S.KeyCap $active={activeKeys.left}>◄</S.KeyCap>
+                <S.KeyCap $active={activeKeys.down}>▼</S.KeyCap>
+                <S.KeyCap $active={activeKeys.right}>►</S.KeyCap>
+              </S.KeyRow>
+            </S.KeyHint>
+          )}
         </S.MapShell>
 
         <S.Tip>
           {isAuthenticated
-            ? "Tip: Click a wild Pokemon sprite to start an encounter."
+            ? "Tip: Click a wild Pokémon sprite to start an encounter."
             : "Tip: Login is required before you can catch from Wild Area."}
         </S.Tip>
       </S.Page>
 
+      {/* ── Catch modal ── */}
       <Modal open={!!selectedSpawn && isAuthenticated}>
         {selectedSpawn && (
           <S.ModalCard>
@@ -424,6 +562,7 @@ const WildArea = () => {
         )}
       </Modal>
 
+      {/* ── Result modal ── */}
       <Modal open={resultOpen} overlay="light" solid>
         {result && (
           <S.ModalCard>
