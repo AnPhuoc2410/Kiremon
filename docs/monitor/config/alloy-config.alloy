@@ -1,0 +1,285 @@
+// =============================================================================
+// Grafana Alloy Configuration
+// Pipeline: Docker logs → Loki | Docker metrics → Prometheus | OTLP → Tempo
+// Docs: https://grafana.com/docs/alloy/latest/
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// SECTION 0: SYSTEM METRICS (UNIX / HOST)
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/
+// ---------------------------------------------------------------------------
+prometheus.exporter.unix "system" {}
+
+prometheus.scrape "system" {
+  targets    = prometheus.exporter.unix.system.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 1: DOCKER DISCOVERY (shared source for both metrics & logs)
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.docker/
+//
+// match_first_network=true (default): deduplicate containers with multiple
+// networks — prevents duplicate targets being collected.
+// ---------------------------------------------------------------------------
+discovery.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "30s"
+
+  filter {
+    name   = "status"
+    values = ["running"]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 2: METRICS — Docker container Prometheus scraping
+// Only scrapes containers that have label: prometheus.io/scrape=true
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/discovery/discovery.relabel/
+// ---------------------------------------------------------------------------
+discovery.relabel "docker_metrics" {
+  targets = discovery.docker.containers.targets
+
+  // Keep only containers opted-in for metrics scraping
+  rule {
+    source_labels = ["__meta_docker_container_label_prometheus_io_scrape"]
+    regex         = "true"
+    action        = "keep"
+  }
+
+  // Strip default port from __address__, keep only IP
+  rule {
+    source_labels = ["__address__"]
+    regex         = "([^:]+)(?::\\d+)?"
+    replacement   = "$1"
+    target_label  = "__address__"
+  }
+
+  // Append custom port from prometheus.io/port label
+  rule {
+    source_labels = ["__address__", "__meta_docker_container_label_prometheus_io_port"]
+    separator     = ":"
+    target_label  = "__address__"
+  }
+
+  // Custom metrics path from prometheus.io/path label (optional)
+  rule {
+    source_labels = ["__meta_docker_container_label_prometheus_io_path"]
+    regex         = "(.+)"
+    target_label  = "__metrics_path__"
+  }
+
+  // job label from container name
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "job"
+  }
+
+  // container label (strip leading slash)
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // compose service label
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  // compose project label
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+}
+
+prometheus.scrape "docker_containers" {
+  targets         = discovery.relabel.docker_metrics.output
+  forward_to      = [prometheus.remote_write.default.receiver]
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 3: METRICS — Alloy self-monitoring
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.self/
+// ---------------------------------------------------------------------------
+prometheus.exporter.self "alloy" {}
+
+prometheus.scrape "alloy_self" {
+  targets         = prometheus.exporter.self.alloy.targets
+  forward_to      = [prometheus.remote_write.default.receiver]
+  scrape_interval = "15s"
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 4: METRICS — Remote write to Prometheus
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.remote_write/
+// ---------------------------------------------------------------------------
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+
+    queue_config {
+      // Tune for single-VPS: lower concurrency, smaller batch
+      max_samples_per_send = 2000
+      batch_send_deadline  = "5s"
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 5: LOGS — Docker log collection → Loki
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/loki/loki.source.docker/
+//
+// NOTE: loki.source.docker uses discovery.docker.containers.targets directly
+// (not .output from discovery.relabel). Label enrichment is done inside
+// loki.source.docker via the relabel_rules argument if needed.
+// ---------------------------------------------------------------------------
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.containers.targets
+
+  // job label from container name
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "job"
+  }
+
+  // container label
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // compose service label
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  // compose project label
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+}
+
+// loki.source.docker tails container logs via Docker socket.
+// targets = enriched targets from discovery.relabel.docker_logs.output
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/loki/loki.source.docker/
+loki.source.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  targets          = discovery.relabel.docker_logs.output
+  forward_to       = [loki.process.containers.receiver]
+  refresh_interval = "30s"
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 6: LOGS — Processing pipeline before writing to Loki
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/loki/loki.process/
+// ---------------------------------------------------------------------------
+loki.process "containers" {
+  // Attempt to parse JSON log lines and extract known fields
+  stage.json {
+    expressions = {
+      level   = "level",
+      msg     = "msg",
+      logger  = "logger",
+      traceID = "traceID",
+    }
+  }
+
+  // Promote log level to a Loki label (low cardinality only)
+  stage.labels {
+    values = {
+      level = "level",
+    }
+  }
+
+  // Drop health-check noise to reduce storage cost
+  stage.drop {
+    expression          = "(?i).*(health.?check|healthcheck|/health|/ping|/ready|/live).*"
+    drop_counter_reason = "health_check_noise"
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SECTION 7: TRACES / METRICS / LOGS via OTLP
+// Apps on global_lgtm network instrument with OpenTelemetry SDK and send to:
+//   alloy:4317 (gRPC) or alloy:4318 (HTTP)
+//
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.receiver.otlp/
+// ---------------------------------------------------------------------------
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces  = [otelcol.processor.batch.default.input]
+    metrics = [otelcol.processor.batch.default.input]
+    logs    = [otelcol.processor.batch.default.input]
+  }
+}
+
+// Batch processor — reduces write amplification
+// Grafana Labs recommends batch processor on every OTLP pipeline.
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.processor.batch/
+//
+// Defaults (from docs):
+//   timeout             = "200ms"
+//   send_batch_size     = 2000
+//   send_batch_max_size = 3000
+// Tuned for single-VPS with lower traffic:
+otelcol.processor.batch "default" {
+  timeout             = "5s"
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+
+  output {
+    traces  = [otelcol.exporter.otlp.tempo.input]
+    metrics = [otelcol.exporter.prometheus.default.input]
+    logs    = [otelcol.exporter.loki.default.input]
+  }
+}
+
+// Forward OTLP traces → Tempo (internal, no TLS needed)
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.exporter.otlp/
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+
+    tls {
+      insecure = true
+    }
+  }
+}
+
+// Forward OTLP metrics → Prometheus (via remote write)
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.exporter.prometheus/
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+// Forward OTLP logs → Loki
+// Ref: https://grafana.com/docs/alloy/latest/reference/components/otelcol/otelcol.exporter.loki/
+otelcol.exporter.loki "default" {
+  forward_to = [loki.write.default.receiver]
+}

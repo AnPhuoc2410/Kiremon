@@ -22,6 +22,7 @@ using PokedexReactASP.Application.Common.Helpers;
 using Serilog;
 using Masking.Serilog;
 using Prometheus;
+using PokedexReactASP.Server.Extensions;
 
 namespace PokedexReactASP.Server
 {
@@ -140,9 +141,13 @@ namespace PokedexReactASP.Server
 
             builder.Services.AddSingleton<ICacheService, ResilientCacheService>();
 
+            // ── OpenTelemetry: Traces → Tempo, Metrics → Prometheus, Logs → Loki ──
+            builder.Services.AddKiremonObservability(builder.Configuration);
+
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
             // Add Application Services
+
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IPokeApiService, PokeApiService>();
             builder.Services.AddScoped<IPokemonService, PokemonService>();

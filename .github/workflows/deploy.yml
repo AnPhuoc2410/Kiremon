@@ -74,6 +74,10 @@ jobs:
           API_PORT=2410
 
           DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/kiremon-api
+
+          OpenTelemetry__Enabled=true
+          OpenTelemetry__OtlpEndpoint=http://global_alloy:4317
+          OpenTelemetry__ServiceName=kiremon_api
           EOF
 
       - name: Pull & run containers

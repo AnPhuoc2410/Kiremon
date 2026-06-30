@@ -5,6 +5,7 @@ Guidance for using Claude on this production-ready Pokémon project. Keep all ou
 - Stack: .NET 8 (API, SignalR), React + Vite (TS), Postgres (per docker-compose), PokeAPI ingestion via `PokeApiService`.
 - Domain: Trainers, Pokémon, UserPokémon ownership, authentication/authorization with JWT and roles.
 - Deploy: Docker-first; honor `appsettings` and env-based configuration. Production posture by default.
+- Observability: Full OpenTelemetry integration via LGTM stack (Loki·Grafana·Tempo·Prometheus). API joins `global_lgtm` Docker network and pushes Traces/Metrics/Logs to `global_alloy:4317` (gRPC OTLP).
 
 ## Guardrails (Must Follow)
 - Security: Never output secrets, tokens, connection strings, or example keys. Assume all data is sensitive. Prefer env vars over literals.
@@ -34,3 +35,11 @@ Guidance for using Claude on this production-ready Pokémon project. Keep all ou
 - Frontend feature: describe state shape, data-fetch hook, component responsibilities, loading/error UX, and test plan.
 - Bug triage: state root cause, fix, regression test, and migration/backfill needs.
 
+## Observability Patterns
+- OTel bootstrap: `builder.Services.AddKiremonObservability(builder.Configuration)` in `Program.cs` — see `Extensions/OpenTelemetryExtensions.cs`.
+- Configuration: `OpenTelemetry` section in appsettings / env vars. Key fields: `Enabled`, `OtlpEndpoint`, `ServiceName`.
+- Production: `OpenTelemetry__Enabled=true`, `OpenTelemetry__OtlpEndpoint=http://global_alloy:4317` (set in `docker-compose.prod.yml` environment block and `deploy.yml` .env).
+- Local dev: `Enabled=false` (default in appsettings.json) — no LGTM stack required.
+- Docker network: `api` service joins both `default` (for Redis) and `global_lgtm` (external, for Alloy). Redis stays on `default` only.
+- Metrics scraping: container has labels `prometheus.io/scrape=true`, `prometheus.io/port=8080`, `prometheus.io/path=/metrics` — picked up by Alloy discovery.
+- Do NOT re-declare the `global_lgtm` network in this project's docker-compose — it is already created and managed by the LGTM stack.

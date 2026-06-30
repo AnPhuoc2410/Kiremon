@@ -1,0 +1,82 @@
+# =============================================================================
+# Grafana Datasource Provisioning
+# Auto-configures all LGTM datasources on container startup.
+# Docs: https://grafana.com/docs/grafana/latest/administration/provisioning/
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+
+  # ---------------------------------------------------------------------------
+  # Prometheus — metrics
+  # ---------------------------------------------------------------------------
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: "15s"          # Match prometheus scrape_interval
+      httpMethod: "POST"           # POST is more efficient for large queries
+      exemplarTraceIdDestinations:
+        # Link metric exemplars → Tempo traces in Grafana Explore
+        - name: traceID
+          datasourceUid: tempo
+
+  # ---------------------------------------------------------------------------
+  # Loki — logs
+  # ---------------------------------------------------------------------------
+  - name: Loki
+    type: loki
+    uid: loki
+    url: http://loki:3100
+    access: proxy
+    editable: false
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        # Auto-link traceID fields in logs → Tempo traces
+        - matcherRegex: "traceID=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
+          datasourceUid: tempo
+
+  # ---------------------------------------------------------------------------
+  # Tempo — traces
+  # ---------------------------------------------------------------------------
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    url: http://tempo:3200
+    access: proxy
+    editable: false
+    jsonData:
+      httpMethod: "GET"
+      tracesToLogsV2:
+        # Link trace spans → Loki logs
+        datasourceUid: loki
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        filterByTraceID: true
+        filterBySpanID: false
+        tags:
+          - key: "service.name"
+            value: "service"
+          - key: "container"
+      tracesToMetrics:
+        # Link trace spans → Prometheus metrics
+        datasourceUid: prometheus
+        tags:
+          - key: "service.name"
+            value: "job"
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki

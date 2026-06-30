@@ -1,0 +1,65 @@
+# =============================================================================
+# Tempo Configuration — Single Binary (Docker / VPS / LGTM Stack)
+# =============================================================================
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+  log_level: info
+
+# =============================================================================
+# OTLP Receiver (primary ingestion method)
+# =============================================================================
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+# =============================================================================
+# Storage (local disk - single VPS mode)
+# =============================================================================
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+
+# =============================================================================
+# Metrics Generator (Service Graph + RED metrics)
+# Enables Grafana Service Map / Trace metrics
+# =============================================================================
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: local
+    max_label_value_length: 128
+    stale_duration: 15m
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+# =============================================================================
+# Overrides (enable modern trace analytics features)
+# =============================================================================
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks
+      generate_native_histograms: both
+
+# =============================================================================
+# Analytics (disabled)
+# =============================================================================
+usage_report:
+  reporting_enabled: false
