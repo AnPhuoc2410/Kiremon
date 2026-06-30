@@ -553,6 +553,7 @@ const WildArea = () => {
         spriteSrc={catchingSprite || "/substitute.png"}
         shakeCount={shakeCount}
         pokemonName={catchingName}
+        pokeballType={pokeballType}
       />
 
       {/* ── Result modal (new cinematic design) ── */}

@@ -286,12 +286,12 @@ const POKEBALL_OPTIONS: PokeballConfig[] = [
   {
     type: PokeballType.GreatBall,
     label: "Great Ball",
-    img: "/static/pokeball.png",
+    img: "/static/greatball.png",
   },
   {
     type: PokeballType.UltraBall,
     label: "Ultra Ball",
-    img: "/static/pokeball.png",
+    img: "/static/ultraball.png",
   },
 ];
 
@@ -415,6 +415,7 @@ const CatchingCard = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  width: min(400px, 94vw);
   padding: 36px 40px;
   background: #fff;
   border: 3px solid #1f2937;
@@ -465,6 +466,7 @@ interface CatchingModalProps {
   spriteSrc: string;
   shakeCount: number;
   pokemonName: string;
+  pokeballType: PokeballType;
 }
 
 export const CatchingModal = ({
@@ -472,6 +474,7 @@ export const CatchingModal = ({
   spriteSrc,
   shakeCount,
   pokemonName,
+  pokeballType,
 }: CatchingModalProps) => {
   const [animKey, setAnimKey] = useState(0);
 
@@ -502,7 +505,10 @@ export const CatchingModal = ({
         />
         <PokeballImg
           key={animKey}
-          src="/static/pokeball.png"
+          src={
+            POKEBALL_OPTIONS.find((p) => p.type === pokeballType)?.img ||
+            "/static/pokeball.png"
+          }
           alt="pokeball"
           $isShaking={shakeCount > 0}
           $key={animKey}
@@ -525,7 +531,6 @@ const ResultCard = styled.div`
   background: #fff;
   border: 3px solid #1f2937;
   box-shadow: 5px 5px 0 #1f2937;
-  animation: ${fadeInUp} 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 `;
 
 const ResultHeader = styled.div<{ $success: boolean }>`
