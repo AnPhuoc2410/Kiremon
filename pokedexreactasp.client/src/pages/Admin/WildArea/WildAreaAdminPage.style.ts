@@ -1,6 +1,14 @@
 import styled from "@emotion/styled";
 import { colors } from "@/components/utils";
 
+export const PageHeader = styled.h1`
+  font-family: "VT323", monospace;
+  font-size: 48px;
+  margin: 0 0 24px 0;
+  color: ${colors["gray-900"]};
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+`;
+
 export const Page = styled.section`
   max-width: 1200px;
   margin: 0 auto;

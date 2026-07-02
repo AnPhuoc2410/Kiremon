@@ -36,7 +36,11 @@ const Friends = lazy(() => import("@/pages/Friends"));
 const Pokemart = lazy(() => import("@/pages/Market"));
 const PokeTcg = lazy(() => import("@/pages/PokeTcg"));
 const PokeNews = lazy(() => import("@/pages/PokeNews"));
-const WildAreaAdmin = lazy(() => import("@/pages/Admin/WildAreaAdminPage"));
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"));
+const AdminDashboard = lazy(() => import("@/pages/Admin/Dashboard"));
+const WildAreaAdmin = lazy(
+  () => import("@/pages/Admin/WildArea/WildAreaAdminPage"),
+);
 import { ProtectedRoute } from "@/guards/AuthGuard";
 import { Role } from "@/types/roles.type";
 
@@ -305,11 +309,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <ProtectedRoute allowedRoles={[Role.Admin]}>
-                  <WildAreaAdmin />
+                  <AdminLayout />
                 </ProtectedRoute>
               </Suspense>
             }
-          />
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="wild-area" element={<WildAreaAdmin />} />
+          </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Switch>
       </AuthProvider>

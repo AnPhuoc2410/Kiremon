@@ -8,7 +8,7 @@ import {
   IconMap,
   IconBolt,
 } from "@tabler/icons-react";
-import { Header, Loading, Text, Button } from "@/components/ui";
+import { Loading, Text, Button } from "@/components/ui";
 import { wildAreaAdminService } from "@/services/admin/wild-area-admin.service";
 import * as S from "./WildAreaAdminPage.style";
 
@@ -90,10 +90,7 @@ export default function WildAreaAdminPage() {
 
   return (
     <S.Page>
-      <Header
-        title="Wild Area Configuration"
-        subtitle="Manage global spawning rules and area-specific behaviors"
-      />
+      <S.PageHeader>Wild Area Admin</S.PageHeader>
 
       <S.TopRow>
         <S.TabContainer>
