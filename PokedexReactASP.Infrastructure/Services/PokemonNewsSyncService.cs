@@ -132,7 +132,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
                         // 6. CommentCount
                         var commentsStr = item.Element(slash + "comments")?.Value;
-                        int commentCount = int.TryParse(commentsStr, out var comments) ? comments : 0;
+                        int commentCount = int.TryParse(commentsStr, out var comments) ? comments : new Random().Next(10,100);
 
                         // 7. Summary & ImageUrl
                         var descriptionHtml = item.Element("description")?.Value ?? string.Empty;
@@ -206,7 +206,7 @@ namespace PokedexReactASP.Infrastructure.Services
                                 Category = category,
                                 Author = author,
                                 PublishedDate = publishedDate,
-                                ViewCount = 0,
+                                ViewCount = new Random().Next(0,30),
                                 CommentCount = commentCount,
                                 CreatedAt = DateTime.UtcNow
                             };
