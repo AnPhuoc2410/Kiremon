@@ -25,6 +25,8 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<PokemonNews> PokemonNews { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<GymLeader> GymLeaders { get; set; } = null!;
+        public DbSet<WildAreaGlobalSetting> WildAreaGlobalSettings { get; set; } = null!;
+        public DbSet<WildAreaEntity> WildAreaConfigs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -335,6 +337,31 @@ namespace PokedexReactASP.Infrastructure.Persistence
                 entity.Property(e => e.Avatar).HasMaxLength(500).IsRequired();
                 entity.Property(e => e.Sprite).HasMaxLength(500).IsRequired();
                 entity.Property(e => e.RosterJson).HasColumnType("jsonb").IsRequired();
+            });
+
+            // Configure WildAreaGlobalSetting entity
+            modelBuilder.Entity<WildAreaGlobalSetting>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SpawnWeights)
+                      .HasColumnType("jsonb")
+                      .HasConversion(
+                          v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                          v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, double>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new Dictionary<string, double>()
+                      );
+            });
+
+            // Configure WildAreaEntity
+            modelBuilder.Entity<WildAreaEntity>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.RarityWeights)
+                      .HasColumnType("jsonb")
+                      .HasConversion(
+                          v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                          v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, double>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new Dictionary<string, double>()
+                      );
             });
         }
     }
