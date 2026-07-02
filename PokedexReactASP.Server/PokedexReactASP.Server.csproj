@@ -49,7 +49,12 @@
   <ProjectReference Include="..\pokedexreactasp.client\pokedexreactasp.client.esproj">
     <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
-</ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Data\wildareas.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 
 </Project>

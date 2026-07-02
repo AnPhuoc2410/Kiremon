@@ -21,9 +21,9 @@ namespace PokedexReactASP.Infrastructure.Services
             _signingCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
         }
 
-        public string GenerateJwtToken(string userId, string username, string email)
+        public string GenerateJwtToken(string userId, string username, string email, IList<string>? roles = null)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub,        userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, username),
@@ -32,6 +32,14 @@ namespace PokedexReactASP.Infrastructure.Services
                 new Claim(ClaimTypes.NameIdentifier,          userId),
                 new Claim(ClaimTypes.Name,                    username)
             };
+
+            if (roles != null)
+            {
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
 
             var token = new JwtSecurityToken(
                 issuer:             _jwtSettings.Issuer,

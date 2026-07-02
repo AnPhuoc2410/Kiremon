@@ -88,10 +88,15 @@ const LoginForm: React.FC = () => {
             level: response.level,
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
+            roles: response.roles,
           },
         });
         toast.success(`Welcome back via ${provider}!`);
-        navigate("/pokemons");
+        if (response.roles && response.roles.includes("Admin")) {
+          navigate("/admin");
+        } else {
+          navigate("/pokemons");
+        }
       } else if (response?.emailConfirmed === false) {
         toast.success(
           "Account created! Please check your email to verify your account.",
@@ -171,10 +176,15 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("2FA verification successful!");
-        navigate("/pokemons");
+        if (response.roles && response.roles.includes("Admin")) {
+          navigate("/admin");
+        } else {
+          navigate("/pokemons");
+        }
       } else {
         toast.error("2FA verification failed.");
       }
@@ -241,10 +251,15 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("Login successful!");
-        navigate("/pokemons");
+        if (response.roles && response.roles.includes("Admin")) {
+          navigate("/admin");
+        } else {
+          navigate("/pokemons");
+        }
       } else {
         toast.error("Login failed. Please check your credentials.");
       }

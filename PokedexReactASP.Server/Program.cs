@@ -165,6 +165,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IWildAreaService, WildAreaService>();
             builder.Services.AddScoped<ICardRewardService, CardRewardService>();
             builder.Services.AddScoped<IPokemonSpawnMetadataSyncService, PokemonSpawnMetadataSyncService>();
+            builder.Services.AddScoped<IWildAreaAdminService, WildAreaAdminService>();
             builder.Services.AddScoped<BiomeSpawnCandidateService>();
             builder.Services.AddScoped<IPokemonBiomeTagService, PokemonBiomeTagService>();
 
@@ -332,6 +333,7 @@ namespace PokedexReactASP.Server
 
 
             IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger).Wait();
+            WildAreaSeeder.SeedAsync(app.Services, app.Logger, app.Environment).Wait();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();

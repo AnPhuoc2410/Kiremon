@@ -1,13 +1,13 @@
 export const RoleName = {
   MEMBER: "MEMBER",
-  STAFF: "STAFF",
-  MANAGER: "MANAGER",
+  USER: "USER",
+  ADMIN: "ADMIN",
 } as const;
 
 export enum UserRole {
   MEMBER = "MEMBER",
-  STAFF = "STAFF",
-  MANAGER = "MANAGER",
+  USER = "USER",
+  ADMIN = "ADMIN",
 }
 
 // Define the Role type as an interface
@@ -17,7 +17,7 @@ export interface RoleModel {
 }
 
 export enum Role {
-  Member = 0,
-  Employee = 1,
-  Admin = 2,
+  Member = "MEMBER",
+  User = "USER",
+  Admin = "ADMIN",
 }

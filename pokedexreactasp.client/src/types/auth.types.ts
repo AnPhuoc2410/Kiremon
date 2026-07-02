@@ -9,6 +9,7 @@ export type AuthUser = {
   pokemonCaught: number;
   emailConfirmed: boolean;
   twoFactorEnabled?: boolean;
+  roles?: string[];
 };
 
 export type AuthResponse = AuthUser & {
