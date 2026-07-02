@@ -36,6 +36,9 @@ const Friends = lazy(() => import("@/pages/Friends"));
 const Pokemart = lazy(() => import("@/pages/Market"));
 const PokeTcg = lazy(() => import("@/pages/PokeTcg"));
 const PokeNews = lazy(() => import("@/pages/PokeNews"));
+const WildAreaAdmin = lazy(() => import("@/pages/Admin/WildAreaAdminPage"));
+import { ProtectedRoute } from "@/guards/AuthGuard";
+import { Role } from "@/types/roles.type";
 
 export default function Routes() {
   return (
@@ -294,6 +297,16 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <PokeNews />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProtectedRoute allowedRoles={[Role.Admin]}>
+                  <WildAreaAdmin />
+                </ProtectedRoute>
               </Suspense>
             }
           />

@@ -88,6 +88,7 @@ const LoginForm: React.FC = () => {
             level: response.level,
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
+            roles: response.roles,
           },
         });
         toast.success(`Welcome back via ${provider}!`);
@@ -171,6 +172,7 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("2FA verification successful!");
@@ -241,6 +243,7 @@ const LoginForm: React.FC = () => {
             pokemonCaught: response.pokemonCaught,
             emailConfirmed: response.emailConfirmed,
             twoFactorEnabled: response.twoFactorEnabled,
+            roles: response.roles,
           },
         });
         toast.success("Login successful!");
