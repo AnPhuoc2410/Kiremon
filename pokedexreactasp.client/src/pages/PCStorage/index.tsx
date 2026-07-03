@@ -14,7 +14,8 @@ import {
   IconLayout,
 } from "@tabler/icons-react";
 
-import { Navbar, Text, Button } from "@/components/ui";
+import { Navbar, Text, Button, StorageHeader } from "@/components/ui";
+
 import { useAuth } from "@/contexts";
 import { useSupabaseStorage } from "@/components/hooks/useSupabaseStorage";
 import {
@@ -1410,27 +1411,23 @@ const PCStorage: React.FC = () => {
     <>
       <Navbar />
       <S.Page>
-        {/* ── Header ── */}
-        <S.StorageHeader className="pxl-border no-inset">
-          <div className="title-section">
-            <Text as="h1" variant="outlined" size="xl" color="yellow">
-              Pokémon PC Storage
-            </Text>
-          </div>
-          <S.HeaderActions>
-            <S.KeyboardInfoBtn onClick={() => setShowHelp(true)} title="Help">
-              <IconHelp size={18} />
-              <span className="btn-text">Help</span>
-            </S.KeyboardInfoBtn>
-            <S.KeyboardInfoBtn
-              onClick={() => setShowBoxList(true)}
-              title="Boxes (B)"
-            >
-              <IconLayout size={18} />
-              <span className="btn-text">Boxes (B)</span>
-            </S.KeyboardInfoBtn>
-          </S.HeaderActions>
-        </S.StorageHeader>
+        <StorageHeader
+          actions={
+            <>
+              <S.KeyboardInfoBtn onClick={() => setShowHelp(true)} title="Help">
+                <IconHelp size={18} />
+                <span className="btn-text">Help</span>
+              </S.KeyboardInfoBtn>
+              <S.KeyboardInfoBtn
+                onClick={() => setShowBoxList(true)}
+                title="Boxes (B)"
+              >
+                <IconLayout size={18} />
+                <span className="btn-text">Boxes (B)</span>
+              </S.KeyboardInfoBtn>
+            </>
+          }
+        />
 
         <S.Workspace>
           {/* ── LEFT: Party ── */}

@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts";
 import { TourGuide } from "@/components/ui";
 
 const PCStorage = lazy(() => import("@/pages/PCStorage"));
+const TCGManagement = lazy(() => import("@/pages/TCGManagement"));
 
 const Explore = lazy(() => import("@/pages/Explore"));
 const RegionsExplore = lazy(() => import("@/pages/Explore/Regions"));
@@ -121,6 +122,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <PCStorage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/tcg-management"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <TCGManagement />
               </Suspense>
             }
           />
