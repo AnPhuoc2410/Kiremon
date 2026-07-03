@@ -5,8 +5,6 @@ import gsap from "gsap";
 import {
   IconSearch,
   IconPhoto,
-  IconArrowLeft,
-  IconArrowRight,
   IconX,
   IconStar,
   IconHelp,
@@ -34,156 +32,19 @@ import { MyPokemonCardsView } from "./components/MyPokemonCardsView";
 
 import * as S from "./index.style";
 
-// ── Constants ────────────────────────────────────────────────
-const DRAG_THRESHOLD = 8; // px before drag starts
-
-const NATURE_EFFECTS: Record<
-  string,
-  { increased: string; decreased: string } | null
-> = {
-  lonely: { increased: "ATK", decreased: "DEF" },
-  brave: { increased: "ATK", decreased: "SPD" },
-  adamant: { increased: "ATK", decreased: "SpA" },
-  naughty: { increased: "ATK", decreased: "SpD" },
-  bold: { increased: "DEF", decreased: "ATK" },
-  relaxed: { increased: "DEF", decreased: "SPD" },
-  impish: { increased: "DEF", decreased: "SpA" },
-  lax: { increased: "DEF", decreased: "SpD" },
-  timid: { increased: "SPD", decreased: "ATK" },
-  hasty: { increased: "SPD", decreased: "DEF" },
-  jolly: { increased: "SPD", decreased: "SpA" },
-  naive: { increased: "SPD", decreased: "SpD" },
-  modest: { increased: "SpA", decreased: "ATK" },
-  mild: { increased: "SpA", decreased: "DEF" },
-  quiet: { increased: "SpA", decreased: "SPD" },
-  rash: { increased: "SpA", decreased: "SpD" },
-  calm: { increased: "SpD", decreased: "ATK" },
-  gentle: { increased: "SpD", decreased: "DEF" },
-  sassy: { increased: "SpD", decreased: "SPD" },
-  careful: { increased: "SpD", decreased: "SpA" },
-};
-
-const getIvJudgeText = (iv: number | null): string => {
-  if (iv === null) return "Decent";
-  if (iv === 31) return "Best";
-  if (iv === 30) return "Fantastic";
-  if (iv >= 26) return "Very Good";
-  if (iv >= 16) return "Pretty Good";
-  if (iv >= 1) return "Decent";
-  return "No Good";
-};
-
-const getPokeballSpriteUrl = (ball: number): string => {
-  const ballNames: Record<number, string> = {
-    0: "poke-ball",
-    1: "great-ball",
-    2: "ultra-ball",
-    3: "master-ball",
-    10: "quick-ball",
-    11: "timer-ball",
-    12: "dusk-ball",
-    13: "net-ball",
-    14: "dive-ball",
-    15: "nest-ball",
-    16: "repeat-ball",
-    17: "luxury-ball",
-    18: "premier-ball",
-    19: "heal-ball",
-  };
-  const name = ballNames[ball] || "poke-ball";
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${name}.png`;
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  fire: "#FF6B35",
-  water: "#4A90E2",
-  grass: "#5CB85C",
-  electric: "#F0C040",
-  ice: "#74CEC0",
-  fighting: "#C03028",
-  poison: "#A040A0",
-  ground: "#E0C068",
-  flying: "#A890F0",
-  psychic: "#F85888",
-  bug: "#A8B820",
-  rock: "#B8A038",
-  ghost: "#705898",
-  dragon: "#7038F8",
-  dark: "#705848",
-  steel: "#B8B8D0",
-  fairy: "#EE99AC",
-  normal: "#A8A878",
-};
-
-const DEFAULT_WALLPAPERS = [
-  // Base BDSP
-  "Box_Forest_BDSP.png",
-  "Box_Cave_BDSP.png",
-  "Box_Beach_BDSP.png",
-  "Box_Desert_BDSP.png",
-  "Box_City_BDSP.png",
-  "Box_Crag_BDSP.png",
-  "Box_Legend_BDSP.png",
-  "Box_Machine_BDSP.png",
-  "Box_River_BDSP.png",
-  "Box_Savanna_BDSP.png",
-  "Box_Seafloor_BDSP.png",
-  "Box_Sky_BDSP.png",
-  "Box_Snow_BDSP.png",
-  "Box_Space_BDSP.png",
-  "Box_Volcano_BDSP.png",
-  "Box_Backyard_BDSP.png",
-  "Box_Checks_BDSP.png",
-  "Box_Nostalgic_BDSP.png",
-  "Box_Pikapika_BDSP.png",
-  "Box_Pokemon_Center_BDSP.png",
-  "Box_Simple_BDSP.png",
-  "Box_Team_Galactic_BDSP.png",
-  "Box_Torchic_BDSP.png",
-  "Box_Trio_BDSP.png",
-  // Platinum variants
-  "Box_Contest_Platinum_BDSP.png",
-  "Box_Croagunk_Platinum_BDSP.png",
-  "Box_Distortion_Platinum_BDSP.png",
-  "Box_Legend_Platinum_BDSP.png",
-  "Box_Nostalgic_Platinum_BDSP.png",
-  "Box_Pikapika_Platinum_BDSP.png",
-  "Box_Team_Galactic_Platinum_BDSP.png",
-  "Box_Trio_Platinum_BDSP.png",
-  // Special
-  "Box_Slowpoke_BDSP.jpg",
-];
-
-// ── Interfaces ───────────────────────────────────────────────
-interface Position {
-  x: number;
-  y: number;
-}
-
-interface HeldPokemonInfo {
-  pokemon: UserPokemonDto;
-  fromParty: boolean;
-  fromSlot: number;
-  fromBoxId: number | null;
-}
-
-interface GroupMemberInfo {
-  pokemon: UserPokemonDto;
-  rowOffset: number;
-  colOffset: number;
-  fromParty: boolean;
-  fromSlot: number;
-  fromBoxId: number | null;
-}
-
-interface DragCandidate {
-  pokemon: UserPokemonDto;
-  fromParty: boolean;
-  fromSlot: number;
-  fromBoxId: number | null;
-  startX: number;
-  startY: number;
-}
+import {
+  Position,
+  HeldPokemonInfo,
+  GroupMemberInfo,
+  DragCandidate,
+} from "./types";
+import {
+  DRAG_THRESHOLD,
+  NATURE_EFFECTS,
+  TYPE_COLORS,
+  DEFAULT_WALLPAPERS,
+} from "./constants";
+import { getIvJudgeText, getPokeballSpriteUrl } from "./utils";
 
 // ─────────────────────────────────────────────────────────────
 

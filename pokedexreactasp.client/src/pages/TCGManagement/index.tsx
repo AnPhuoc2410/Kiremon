@@ -16,7 +16,6 @@ import {
   IconChevronRight,
   IconRefresh,
   IconPackage,
-  IconStars,
   IconTrophy,
   IconDatabase,
 } from "@tabler/icons-react";
@@ -33,31 +32,8 @@ import * as S from "./index.style";
 import { InteractiveCard } from "./components/InteractiveCard";
 import { ExpandedCardOverlay } from "./components/ExpandedCardOverlay";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-const PAGE_SIZE = 30;
-
-const RARITY_OPTIONS = [
-  { value: "", label: "All Rarities" },
-  { value: "Common", label: "Common" },
-  { value: "Uncommon", label: "Uncommon" },
-  { value: "Rare", label: "Rare" },
-  { value: "HoloRare", label: "Holo Rare" },
-  { value: "UltraRare", label: "Ultra Rare" },
-  { value: "SecretRare", label: "Secret Rare" },
-  { value: "Promo", label: "Promo" },
-  { value: "Unknown", label: "Unknown" },
-];
-
-const SORT_OPTIONS: { value: TcgSort; label: string }[] = [
-  { value: "obtained-desc", label: "Newest first" },
-  { value: "obtained-asc", label: "Oldest first" },
-  { value: "rarity-desc", label: "Rarity ▼" },
-  { value: "rarity-asc", label: "Rarity ▲" },
-];
-
-type ActiveTab = "collection" | "deck" | "market";
+import { ActiveTab } from "./types";
+import { PAGE_SIZE, RARITY_OPTIONS, SORT_OPTIONS } from "./constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
