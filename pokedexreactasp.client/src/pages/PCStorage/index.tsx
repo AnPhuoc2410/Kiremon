@@ -12,7 +12,13 @@ import {
   IconLayout,
 } from "@tabler/icons-react";
 
-import { Navbar, Text, Button, StorageHeader } from "@/components/ui";
+import {
+  Navbar,
+  Text,
+  Button,
+  StorageHeader,
+  EnhancedAbilityTooltip,
+} from "@/components/ui";
 
 import { useAuth } from "@/contexts";
 import { useSupabaseStorage } from "@/components/hooks/useSupabaseStorage";
@@ -987,9 +993,7 @@ const PCStorage: React.FC = () => {
     activePokemonDetails?.name || "",
     undefined,
     {
-      enabled:
-        !!activePokemonDetails &&
-        (activeMainTab === "moves" || showMoveManager),
+      enabled: !!activePokemonDetails,
     },
   );
 
@@ -1045,14 +1049,6 @@ const PCStorage: React.FC = () => {
     );
     return sorted.slice(0, 4);
   }, [activePokemonDetails, detail?.moveDetails, allLearnedMoves]);
-
-  const getAbilityDesc = (abilityName: string) => {
-    if (!detail?.abilities) return null;
-    const found = detail.abilities.find(
-      (a: any) => a.ability.name.toLowerCase() === abilityName.toLowerCase(),
-    );
-    return found?.description || "No description available.";
-  };
 
   // ── Radar Chart Calculations ──────────────────────────────
   const natureKey =
@@ -1771,10 +1767,15 @@ const PCStorage: React.FC = () => {
                       >
                         {activePokemonDetails.ability ? (
                           (() => {
-                            const desc = getAbilityDesc(
-                              activePokemonDetails.ability,
+                            const fullAbility = detail?.abilities?.find(
+                              (a) =>
+                                a.internalName?.toLowerCase() ===
+                                  activePokemonDetails.ability.toLowerCase() ||
+                                a.ability.name.toLowerCase() ===
+                                  activePokemonDetails.ability.toLowerCase(),
                             );
-                            return (
+
+                            const abilityPill = (
                               <S.AbilityPill key={activePokemonDetails.ability}>
                                 <span className="label">Ability</span>
                                 <span className="value">
@@ -1783,11 +1784,21 @@ const PCStorage: React.FC = () => {
                                     " ",
                                   )}
                                 </span>
-                                {desc && (
-                                  <span className="tooltip">{desc}</span>
-                                )}
                               </S.AbilityPill>
                             );
+
+                            if (fullAbility) {
+                              return (
+                                <EnhancedAbilityTooltip
+                                  key={activePokemonDetails.ability}
+                                  abilityData={fullAbility}
+                                >
+                                  {abilityPill}
+                                </EnhancedAbilityTooltip>
+                              );
+                            }
+
+                            return abilityPill;
                           })()
                         ) : (
                           <S.InfoItemBox>

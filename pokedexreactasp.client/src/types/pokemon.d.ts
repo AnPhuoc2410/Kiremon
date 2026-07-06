@@ -119,9 +119,12 @@ export interface IPokemonDetailResponse {
 
 export interface IAbility {
   ability: INameUrlPair;
+  internalName: string;
   is_hidden: boolean;
   slot: number;
   description?: string | null;
+  effect?: string | null;
+  shortEffect?: string | null;
 }
 
 export interface IMove {
