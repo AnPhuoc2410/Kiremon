@@ -1,71 +1,64 @@
-using System.Net;
-using System.Net.Mail;
-using System.Text;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Application.Options;
 using PokedexReactASP.Domain.Entities;
+using System.Net;
 
 namespace PokedexReactASP.Infrastructure.Services
 {
-    public class EmailService : IEmailService
+    public class EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger) : IEmailService
     {
-        private readonly EmailSettings _settings;
-        private readonly ILogger<EmailService> _logger;
-
-        public EmailService(IOptions<EmailSettings> options, ILogger<EmailService> logger)
-        {
-            _settings = options.Value;
-            _logger = logger;
-        }
+        private readonly EmailSettings _settings = options.Value;
+        private readonly ILogger<EmailService> _logger = logger;
 
         public async Task SendWelcomeConfirmationAsync(ApplicationUser user, string confirmationLink)
         {
             var subject = "🎮 Welcome, Trainer! Your Kiremon Adventure Awaits!";
             var htmlBody = BuildWelcomeTemplate(user, confirmationLink);
-            await SendEmailAsync(user.Email!, subject, htmlBody);
+            await SendEmailAsync(user.Email!, subject, htmlBody).ConfigureAwait(false);
         }
 
         public async Task SendExternalWelcomeConfirmationAsync(ApplicationUser user, string confirmationLink, string provider)
         {
             var subject = $"🌟 Welcome via {provider}! Your Kiremon Adventure Awaits!";
             var htmlBody = BuildExternalWelcomeTemplate(user, confirmationLink, provider);
-            await SendEmailAsync(user.Email!, subject, htmlBody);
+            await SendEmailAsync(user.Email!, subject, htmlBody).ConfigureAwait(false);
         }
 
         public async Task SendPasswordResetAsync(ApplicationUser user, string resetLink, string token)
         {
             var subject = "⚡ Password Recovery - Kiremon Trainer Center";
             var htmlBody = BuildResetPasswordTemplate(user, resetLink, token);
-            await SendEmailAsync(user.Email!, subject, htmlBody);
+            await SendEmailAsync(user.Email!, subject, htmlBody).ConfigureAwait(false);
         }
 
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
-            using var client = new SmtpClient(_settings.SmtpServer, _settings.SmtpPort)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(_settings.Username, _settings.Password)
-            };
-
-            using var message = new MailMessage
-            {
-                From = new MailAddress(_settings.FromEmail, _settings.FromName),
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true,
-                BodyEncoding = Encoding.UTF8,
-                SubjectEncoding = Encoding.UTF8
-            };
-
-            message.To.Add(toEmail);
-
             try
             {
-                await client.SendMailAsync(message);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromEmail));
+                message.To.Add(new MailboxAddress("", toEmail));
+                message.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder
+                {
+                    HtmlBody = htmlBody
+                };
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using var client = new SmtpClient();
+
+                await client.ConnectAsync(_settings.SmtpServer, _settings.SmtpPort, SecureSocketOptions.SslOnConnect).ConfigureAwait(false);
+                await client.AuthenticateAsync(_settings.Username, _settings.Password).ConfigureAwait(false);
+                await client.SendAsync(message).ConfigureAwait(false);
+                await client.DisconnectAsync(true).ConfigureAwait(false);
             }
-            catch (SmtpException ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send email to {Recipient}", toEmail);
                 throw;

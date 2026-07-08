@@ -14,7 +14,7 @@ export const EnhancedAbilityTooltip: React.FC<EnhancedAbilityTooltipProps> = ({
   const { ability, description, effect, shortEffect } = abilityData;
   const abilityName = ability.name.replace(/-/g, " ");
 
-  const cleanText = (str: string | null) =>
+  const cleanText = (str: string | null | undefined) =>
     str ? str.replace(/[\n\f]/g, " ") : "";
 
   const cleanShortEffect = cleanText(shortEffect);
