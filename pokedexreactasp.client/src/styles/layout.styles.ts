@@ -17,22 +17,7 @@ export const CenteredPage = styled.div`
 `;
 
 export const GradientPage = styled(CenteredPage)`
-  background: linear-gradient(
-    180deg,
-    ${colors["red-100"]} 0%,
-    ${colors["gray-100"]} 100%
-  );
-  background-image:
-    radial-gradient(
-      circle at 82% 18%,
-      rgba(239, 68, 68, 0.06) 0,
-      transparent 18%
-    ),
-    radial-gradient(
-      circle at 18% 82%,
-      rgba(59, 130, 246, 0.03) 0,
-      transparent 20%
-    );
+  background: #f7f6f3;
 `;
 
 // ============ CONTENT WRAPPERS ============

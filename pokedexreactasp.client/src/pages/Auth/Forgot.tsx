@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { forgotPassword } from "@/config/auth.apis";
 import toast from "react-hot-toast";
+import { IconMail } from "@tabler/icons-react";
 
 // Import shared styles
 import {
@@ -76,9 +77,18 @@ const Forgot: React.FC = () => {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>📧</div>
-            <AuthTitle style={{ color: "#10b981", marginBottom: "8px" }}>
-              Email Sent!
+            <div
+              style={{
+                marginBottom: "16px",
+                color: "#111111",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <IconMail size={48} stroke={1.5} />
+            </div>
+            <AuthTitle style={{ color: "#111111", marginBottom: "8px" }}>
+              Email Sent
             </AuthTitle>
             <AuthSubtitle style={{ marginBottom: "20px" }}>
               Check your inbox for password reset instructions.
