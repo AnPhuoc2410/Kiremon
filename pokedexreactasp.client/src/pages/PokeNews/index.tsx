@@ -28,7 +28,9 @@ const PokeNews: React.FC = () => {
     null,
   );
   const [navHeight, setNavHeight] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const navRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 12;
 
   // Fetch news on mount
   const fetchNews = async (showToast: boolean = false) => {
@@ -129,22 +131,36 @@ const PokeNews: React.FC = () => {
     });
   }, [news, selectedCategory, searchQuery]);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
+
+  const totalPages = Math.ceil(filteredNews.length / ITEMS_PER_PAGE);
+  const paginatedNews = useMemo(() => {
+    return filteredNews.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE,
+    );
+  }, [filteredNews, currentPage]);
+
   const featuredArticle = useMemo(() => {
     if (
-      filteredNews.length === 0 ||
+      currentPage > 1 ||
+      paginatedNews.length === 0 ||
       searchQuery ||
       selectedCategory !== "All"
     ) {
       return null;
     }
-    return filteredNews[0];
-  }, [filteredNews, searchQuery, selectedCategory]);
+    return paginatedNews[0];
+  }, [paginatedNews, currentPage, searchQuery, selectedCategory]);
 
   // Rest of the news articles for the grid
   const gridArticles = useMemo(() => {
-    if (!featuredArticle) return filteredNews;
-    return filteredNews.slice(1);
-  }, [filteredNews, featuredArticle]);
+    if (!featuredArticle) return paginatedNews;
+    return paginatedNews.slice(1);
+  }, [paginatedNews, featuredArticle]);
 
   // Format Date utility
   const formatDate = (dateStr: string) => {
@@ -413,6 +429,67 @@ const PokeNews: React.FC = () => {
                   </S.Card>
                 ))}
               </S.NewsGrid>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "16px",
+                  marginTop: "32px",
+                }}
+              >
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => {
+                    setCurrentPage((prev) => prev - 1);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    background: currentPage === 1 ? "#e5e7eb" : "#dc0a2d",
+                    color: currentPage === 1 ? "#9ca3af" : "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Previous
+                </button>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#4b5563",
+                  }}
+                >
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => {
+                    setCurrentPage((prev) => prev + 1);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    background:
+                      currentPage === totalPages ? "#e5e7eb" : "#dc0a2d",
+                    color: currentPage === totalPages ? "#9ca3af" : "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor:
+                      currentPage === totalPages ? "not-allowed" : "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Next
+                </button>
+              </div>
             )}
           </>
         )}

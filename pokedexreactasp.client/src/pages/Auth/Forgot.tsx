@@ -101,7 +101,10 @@ const Forgot: React.FC = () => {
 
         <div style={{ marginTop: 12 }}>
           <SmallText>
-            Remembered? <Link to="/login">Sign in</Link>
+            Remembered?{" "}
+            <Link to="/login" style={{ color: "#2563EB", fontWeight: 600 }}>
+              Sign in
+            </Link>
           </SmallText>
         </div>
       </AuthCard>

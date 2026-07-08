@@ -1,9 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
@@ -188,8 +182,11 @@ namespace PokedexReactASP.Infrastructure.Services
 
                         if (existingNews != null)
                         {
-                            // Update CommentCount, keep existing ViewCount
                             existingNews.CommentCount = commentCount;
+                            if (existingNews.ViewCount == 0)
+                            {
+                                existingNews.ViewCount = new Random().Next(50, 500);
+                            }
                             _context.PokemonNews.Update(existingNews);
                             result.Updated++;
                             _logger.LogInformation("Updated stats for existing article: {Title} (Comments: {Comments})", title, commentCount);
@@ -206,7 +203,7 @@ namespace PokedexReactASP.Infrastructure.Services
                                 Category = category,
                                 Author = author,
                                 PublishedDate = publishedDate,
-                                ViewCount = new Random().Next(0,30),
+                                ViewCount = new Random().Next(50, 500),
                                 CommentCount = commentCount,
                                 CreatedAt = DateTime.UtcNow
                             };
