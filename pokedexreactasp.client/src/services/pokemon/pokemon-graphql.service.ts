@@ -88,6 +88,11 @@ export interface PokemonAbility {
       name: string;
       language_id: number;
     }>;
+    abilityeffecttexts: Array<{
+      effect: string;
+      short_effect: string;
+      language_id: number;
+    }>;
     abilityflavortexts: Array<{
       flavor_text: string;
       language_id: number;
@@ -320,7 +325,7 @@ export interface RelatedPokemonGraphQL {
 // ============ GraphQL Queries ============
 
 const GET_POKEMON_DETAIL_QUERY = `
-  query getPokemonDetail($name: String!) {
+  query getPokemonDetail($name: String!, $languageId: Int!) {
     pokemon(where: {name: {_eq: $name}}) {
       id
       name
@@ -371,7 +376,7 @@ const GET_POKEMON_DETAIL_QUERY = `
             name
             language_id
           }
-          moveflavortexts(where: {language_id: {_eq: 9}}, limit: 1, order_by: {version_group_id: asc}) {
+          moveflavortexts(where: {language_id: {_eq: $languageId}}, limit: 1, order_by: {version_group_id: asc}) {
             flavor_text
           }
           movemeta {
@@ -416,7 +421,12 @@ const GET_POKEMON_DETAIL_QUERY = `
             name
             language_id
           }
-          abilityflavortexts(where: {language_id: {_eq: 9}}, limit: 1) {
+          abilityeffecttexts(where: {language_id: {_eq: $languageId}}, limit: 1) {
+            effect
+            short_effect
+            language_id
+          }
+          abilityflavortexts(where: {language_id: {_eq: $languageId}}, limit: 1) {
             flavor_text
             language_id
           }
@@ -783,7 +793,7 @@ export const pokemonGraphQLService = {
       return await cacheUtils.getOrSet(cacheKey, async () => {
         const data = await executeGraphQLQuery<{
           pokemon: PokemonDetailGraphQL[];
-        }>(GET_POKEMON_DETAIL_QUERY, { name: name.toLowerCase() });
+        }>(GET_POKEMON_DETAIL_QUERY, { name: name.toLowerCase(), languageId });
 
         return data.pokemon[0] || null;
       });

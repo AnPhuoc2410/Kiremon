@@ -50,34 +50,40 @@ export const AuthForm = styled.form`
 `;
 
 export const AuthInput = styled.input`
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid ${colors["gray-300"]};
+  padding: 12px 14px;
+  border-radius: 4px;
+  border: 1px solid #eaeaea;
   outline: none;
   font-size: 14px;
+  font-family: inherit;
 
   &:focus {
-    border-color: ${colors["blue-500"]};
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.06);
+    border-color: ${colors["red-500"]};
   }
 `;
 
 export const AuthSubmit = styled.button`
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 4px;
   border: none;
-  background: ${colors["blue-600"]};
+  background: ${colors["red-500"]};
   color: white;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 120ms ease;
 
   &:hover {
-    background: ${colors["blue-700"]};
+    background: ${colors["red-600"]};
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -103,11 +109,11 @@ export const AuthDivider = styled.div`
 export const SocialButton = styled.button<{
   $provider?: "google" | "facebook" | "github";
 }>`
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid ${colors["gray-200"]};
+  padding: 12px 14px;
+  border-radius: 4px;
+  border: 1px solid #eaeaea;
   background: white;
-  color: ${colors["gray-800"]};
+  color: #111111;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -115,13 +121,16 @@ export const SocialButton = styled.button<{
   cursor: pointer;
   font-weight: 600;
   transition:
-    box-shadow 120ms ease,
-    transform 120ms ease;
+    transform 120ms ease,
+    background 120ms ease;
   width: 100%;
 
   &:hover {
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-    transform: translateY(-2px);
+    background: #f7f6f3;
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   &:disabled {

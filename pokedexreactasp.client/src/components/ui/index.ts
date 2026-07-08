@@ -19,3 +19,5 @@ export { default as GenerationDetail } from "./GenerationDetail";
 export { default as AvatarChangeModal } from "./AvatarChangeModal";
 export { default as PokeballChangeModal } from "./PokeballChangeModal";
 export { default as TourGuide } from "./TourGuide";
+export { default as StorageHeader } from "./StorageHeader";
+export * from "./AbilityTooltip";

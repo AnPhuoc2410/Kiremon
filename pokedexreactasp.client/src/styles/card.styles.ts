@@ -37,17 +37,19 @@ export const AuthCard = styled(BaseCard)<{
 }>`
   width: ${(props) => props.width || "420px"};
   max-width: 100%;
-  background: linear-gradient(180deg, #ffffff, #fbfdff);
-  padding: 28px;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
-  border-top: 6px solid ${(props) => props.accentColor || colors["red-500"]};
+  background: #ffffff;
+  padding: 40px;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  box-shadow: none;
+  border-top: 4px solid ${(props) => props.accentColor || colors["red-500"]};
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.14);
+    transform: none;
+    box-shadow: none;
   }
 `;
 

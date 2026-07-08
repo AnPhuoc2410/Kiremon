@@ -21,17 +21,9 @@ import {
 } from "@/styles";
 
 // Page-specific animations
-const successBounce = keyframes`
-  0%, 100% { transform: translateY(0) scale(1); }
-  25% { transform: translateY(-15px) scale(1.05); }
-  50% { transform: translateY(0) scale(1); }
-  75% { transform: translateY(-8px) scale(1.02); }
-`;
-
-const shimmer = keyframes`
-  0% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0.6; transform: scale(1); }
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 `;
 
 // Page-specific styled components
@@ -46,35 +38,25 @@ const SuccessIcon = styled.div`
   margin-bottom: 24px;
 `;
 
-const BadgeImage = styled.img`
-  width: 120px;
-  height: 120px;
-  filter: drop-shadow(0 8px 20px rgba(239, 68, 68, 0.3));
-  animation: ${successBounce} 2s ease-in-out infinite;
-`;
-
-const SparkleIndicator = styled.div`
-  position: absolute;
-  top: -15px;
-  right: -15px;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+const BadgeImage = styled.div`
+  width: 80px;
+  height: 80px;
+  background: #e1f3fe;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.5);
-  animation: ${shimmer} 2s ease-in-out infinite;
+  color: #1f6c9f;
+  margin: 0 auto;
+  animation: ${fadeIn} 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #eaeaea;
 `;
 
 const SuccessTitle = styled(Paragraph)`
-  color: #10b981;
+  color: #111111;
   font-weight: 700;
   font-size: 26px;
   margin-bottom: 12px;
-  text-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 `;
 
 const ErrorTitle = styled(Paragraph)`
@@ -104,13 +86,12 @@ const Dot = styled.div<{ color: string }>`
   height: 12px;
   border-radius: 50%;
   background: ${(props) => props.color};
-  box-shadow: 0 2px 8px ${(props) => props.color}66;
 `;
 
 const WarningBox = styled.div`
-  background: #fef3c7;
-  border: 1px solid #fbbf24;
-  border-radius: 8px;
+  background: #f7f6f3;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
   padding: 16px;
   margin-bottom: 20px;
 `;
@@ -196,14 +177,31 @@ const ConfirmEmail: React.FC = () => {
         )}
 
         {status === "success" && (
-          <StatusContainer>
+          <StatusContainer
+            style={{
+              animation: `${fadeIn} 600ms cubic-bezier(0.16, 1, 0.3, 1)`,
+            }}
+          >
             <SuccessIcon>
-              <BadgeImage src="/badge.png" alt="Pokéball" />
-              <SparkleIndicator>✨</SparkleIndicator>
+              <BadgeImage>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12l5 5l10 -10"></path>
+                </svg>
+              </BadgeImage>
             </SuccessIcon>
-            <SuccessTitle>Trainer Verified!</SuccessTitle>
+            <SuccessTitle>Trainer Verified</SuccessTitle>
             <Paragraph color="muted" style={{ marginBottom: 20 }}>
-              Your account Kiremon is ready to use!
+              Your account is ready to use.
             </Paragraph>
             <DotsContainer>
               <Dot color="#ef4444" />
@@ -214,14 +212,43 @@ const ConfirmEmail: React.FC = () => {
         )}
 
         {status === "error" && (
-          <div style={{ padding: "20px" }}>
+          <div
+            style={{
+              padding: "20px",
+              animation: `${fadeIn} 600ms cubic-bezier(0.16, 1, 0.3, 1)`,
+            }}
+          >
             <StatusContainer style={{ padding: "0 0 20px 0" }}>
-              <img
-                src="/teamRocket.png"
-                alt="Error"
-                style={{ width: 80, height: 80, marginBottom: 20 }}
-              />
-              <ErrorTitle>Verification Failed!</ErrorTitle>
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  margin: "0 auto 20px",
+                  background: "#FDEBEC",
+                  color: "#9F2F2D",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid #EAEAEA",
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 6l-12 12"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </div>
+              <ErrorTitle>Verification Failed</ErrorTitle>
               <Paragraph color="muted">{errorMessage}</Paragraph>
             </StatusContainer>
 

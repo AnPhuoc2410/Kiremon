@@ -316,7 +316,7 @@ const VersusBattleModule = ({
         </p>
         {!activePlayer && (
           <button
-            onClick={() => navigate("/my-pokemon/pc")}
+            onClick={() => navigate("/my-pokemon")}
             style={{
               padding: "14px 28px",
               backgroundColor: "#ef4444",

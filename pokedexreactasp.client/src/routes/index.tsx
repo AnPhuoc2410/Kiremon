@@ -5,8 +5,8 @@ import { StartScreen, NotFoundPage } from "@/pages";
 import { AuthProvider } from "@/contexts";
 import { TourGuide } from "@/components/ui";
 
-const MyPokemon = lazy(() => import("@/pages/MyPokemon"));
 const PCStorage = lazy(() => import("@/pages/PCStorage"));
+const TCGManagement = lazy(() => import("@/pages/TCGManagement"));
 
 const Explore = lazy(() => import("@/pages/Explore"));
 const RegionsExplore = lazy(() => import("@/pages/Explore/Regions"));
@@ -121,15 +121,15 @@ export default function Routes() {
             path="/my-pokemon"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <MyPokemon />
+                <PCStorage />
               </Suspense>
             }
           />
           <Route
-            path="/my-pokemon/pc"
+            path="/tcg-management"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <PCStorage />
+                <TCGManagement />
               </Suspense>
             }
           />

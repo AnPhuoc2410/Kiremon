@@ -7,15 +7,14 @@ using PokedexReactASP.Application.Options;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
-using Http = System.Net.Http;
 
 namespace PokedexReactASP.Infrastructure.Services
 {
     public class SocialVerifyService : ISocialAuthService
     {
         private readonly OAuth2Settings _oAuth2Settings;
-        private readonly Http.IHttpClientFactory _httpClientFactory;
-        public SocialVerifyService(IOptions<OAuth2Settings> configuration, Http.IHttpClientFactory httpClientFactory)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public SocialVerifyService(IOptions<OAuth2Settings> configuration, IHttpClientFactory httpClientFactory)
         {
             _oAuth2Settings = configuration.Value;
             _httpClientFactory = httpClientFactory;

@@ -80,7 +80,7 @@ export const KeyboardInfoBtn = styled("button")({
   textTransform: "uppercase",
   whiteSpace: "nowrap",
   position: "relative",
-  
+
   "&:hover": {
     background: "#facc15",
     transform: "translateY(-2px)",
@@ -319,7 +319,6 @@ export const PartySlot = styled("div")<{
   },
 }));
 
-
 /* ================== Box Area ================== */
 export const BoxWrapper = styled("div")({
   display: "flex",
@@ -464,21 +463,23 @@ export const BoxRenameInput = styled("input")({
   },
 });
 
-export const BoxGridContainer = styled("div")<{ bgUrl?: string }>(({ bgUrl }) => ({
-  aspectRatio: "1.2",
-  borderRadius: "0px",
-  backgroundImage: bgUrl ? `url(${bgUrl})` : "none",
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  boxShadow: "inset 0 0 50px rgba(0,0,0,0.15)",
-  padding: "20px",
-  position: "relative",
-  overflow: "hidden",
-  display: "grid",
-  gridTemplateColumns: "repeat(6, 1fr)",
-  gridTemplateRows: "repeat(5, 1fr)",
-  gap: "12px",
-}));
+export const BoxGridContainer = styled("div")<{ bgUrl?: string }>(
+  ({ bgUrl }) => ({
+    aspectRatio: "1.2",
+    borderRadius: "0px",
+    backgroundImage: bgUrl ? `url(${bgUrl})` : "none",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    boxShadow: "inset 0 0 50px rgba(0,0,0,0.15)",
+    padding: "20px",
+    position: "relative",
+    overflow: "hidden",
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
+    gridTemplateRows: "repeat(5, 1fr)",
+    gap: "12px",
+  }),
+);
 
 export const BoxSlotCell = styled("div")<{
   isEmpty: boolean;
@@ -488,114 +489,124 @@ export const BoxSlotCell = styled("div")<{
   isShiny?: boolean;
   isCompareSelected?: boolean;
   isSelected?: boolean;
-}>(({ isEmpty, isDraggingOver, isDimmed, isHighlighted, isShiny, isCompareSelected, isSelected }) => ({
-  borderRadius: "8px",
-  border: isCompareSelected
-    ? "2.5px solid #7c3aed"
-    : isSelected
-      ? "2.5px solid #0f172a"
-      : isDraggingOver
-        ? "2px dashed #0f172a"
-        : isHighlighted
-          ? "2.5px solid #0f172a"
-          : "1px solid rgba(148, 163, 184, 0.15)",
-  background: isCompareSelected
-    ? "rgba(124, 58, 237, 0.08)"
-    : isSelected
-      ? "#eff6ff"
-      : isDraggingOver
-        ? "rgba(15, 23, 42, 0.03)"
-        : isHighlighted
-          ? "rgba(254, 240, 138, 0.85)"
-          : isEmpty
-            ? "rgba(255, 255, 255, 0.35)"
-            : "rgba(255, 255, 255, 0.85)",
-  // Removed background Pokéball watermarks
-  backdropFilter: "blur(4px)",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "4px",
-  position: "relative",
-  cursor: isEmpty ? "default" : "grab",
-  opacity: isDimmed ? 0.3 : 1,
-  boxShadow: isCompareSelected
-    ? "2.5px 2.5px 0px #7c3aed"
-    : isSelected
-      ? "none"
-      : isHighlighted
-        ? "2.5px 2.5px 0px #ef4444"
-        : isShiny && !isEmpty
-          ? "inset 0 0 6px rgba(251, 191, 36, 0.2)"
-          : "none",
-  transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
-  "&:active": {
-    cursor: isEmpty ? "default" : "grabbing",
-  },
-  "&:hover": {
-    transform: isEmpty ? "none" : "scale(1.05) translateY(-2px)",
-    background: isEmpty
-      ? "rgba(255, 255, 255, 0.55)"
+}>(
+  ({
+    isEmpty,
+    isDraggingOver,
+    isDimmed,
+    isHighlighted,
+    isShiny,
+    isCompareSelected,
+    isSelected,
+  }) => ({
+    borderRadius: "8px",
+    border: isCompareSelected
+      ? "2.5px solid #7c3aed"
+      : isSelected
+        ? "2.5px solid #0f172a"
+        : isDraggingOver
+          ? "2px dashed #0f172a"
+          : isHighlighted
+            ? "2.5px solid #0f172a"
+            : "1px solid rgba(148, 163, 184, 0.15)",
+    background: isCompareSelected
+      ? "rgba(124, 58, 237, 0.08)"
       : isSelected
         ? "#eff6ff"
-        : isHighlighted
-          ? "#fef08a"
-          : "#ffffff",
-    borderColor: isEmpty ? "rgba(148, 163, 184, 0.15)" : "#0f172a",
-    boxShadow: isEmpty
-      ? "none"
+        : isDraggingOver
+          ? "rgba(15, 23, 42, 0.03)"
+          : isHighlighted
+            ? "rgba(254, 240, 138, 0.85)"
+            : isEmpty
+              ? "rgba(255, 255, 255, 0.35)"
+              : "rgba(255, 255, 255, 0.85)",
+    // Removed background Pokéball watermarks
+    backdropFilter: "blur(4px)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "4px",
+    position: "relative",
+    cursor: isEmpty ? "default" : "grab",
+    opacity: isDimmed ? 0.3 : 1,
+    boxShadow: isCompareSelected
+      ? "2.5px 2.5px 0px #7c3aed"
       : isSelected
         ? "none"
         : isHighlighted
-          ? "2.5px 4.5px 0px #ef4444"
-          : "2px 4px 0px rgba(15, 23, 42, 0.15)",
-    zIndex: 10,
-  },
-  ".sprite": {
-    width: "95%",
-    height: "95%",
-    maxHeight: "68px",
-    objectFit: "contain",
-    imageRendering: "pixelated",
-    filter: isDimmed ? "grayscale(80%)" : "none",
-  },
-  ".mini-info": {
-    position: "absolute",
-    bottom: "2px",
-    left: "2px",
-    right: "2px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "7px",
-    fontFamily: '"Press Start 2P", monospace',
-    color: "#0f172a",
-    "@media (max-width: 639px)": {
-      display: "none",
+          ? "2.5px 2.5px 0px #ef4444"
+          : isShiny && !isEmpty
+            ? "inset 0 0 6px rgba(251, 191, 36, 0.2)"
+            : "none",
+    transition: "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&:active": {
+      cursor: isEmpty ? "default" : "grabbing",
     },
-  },
-  ".markings-dots": {
-    position: "absolute",
-    top: "2px",
-    right: "2px",
-    display: "flex",
-    gap: "1px",
-    fontSize: "7px",
-    color: "#2563eb",
-  },
-  // Badge when ctrl-selected for compare
-  ".compare-badge": {
-    position: "absolute",
-    top: "2px",
-    left: "2px",
-    fontSize: "7px",
-    fontFamily: '"Press Start 2P", monospace',
-    color: "#7c3aed",
-    lineHeight: 1,
-    textShadow: "0 0 3px rgba(255,255,255,0.9)",
-  },
-}));
+    "&:hover": {
+      transform: isEmpty ? "none" : "scale(1.05) translateY(-2px)",
+      background: isEmpty
+        ? "rgba(255, 255, 255, 0.55)"
+        : isSelected
+          ? "#eff6ff"
+          : isHighlighted
+            ? "#fef08a"
+            : "#ffffff",
+      borderColor: isEmpty ? "rgba(148, 163, 184, 0.15)" : "#0f172a",
+      boxShadow: isEmpty
+        ? "none"
+        : isSelected
+          ? "none"
+          : isHighlighted
+            ? "2.5px 4.5px 0px #ef4444"
+            : "2px 4px 0px rgba(15, 23, 42, 0.15)",
+      zIndex: 10,
+    },
+    ".sprite": {
+      width: "95%",
+      height: "95%",
+      maxHeight: "68px",
+      objectFit: "contain",
+      imageRendering: "pixelated",
+      filter: isDimmed ? "grayscale(80%)" : "none",
+    },
+    ".mini-info": {
+      position: "absolute",
+      bottom: "2px",
+      left: "2px",
+      right: "2px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: "7px",
+      fontFamily: '"Press Start 2P", monospace',
+      color: "#0f172a",
+      "@media (max-width: 639px)": {
+        display: "none",
+      },
+    },
+    ".markings-dots": {
+      position: "absolute",
+      top: "2px",
+      right: "2px",
+      display: "flex",
+      gap: "1px",
+      fontSize: "7px",
+      color: "#2563eb",
+    },
+    // Badge when ctrl-selected for compare
+    ".compare-badge": {
+      position: "absolute",
+      top: "2px",
+      left: "2px",
+      fontSize: "7px",
+      fontFamily: '"Press Start 2P", monospace',
+      color: "#7c3aed",
+      lineHeight: 1,
+      textShadow: "0 0 3px rgba(255,255,255,0.9)",
+    },
+  }),
+);
 
 /* ================== Right Panel ================== */
 export const RightPanelCard = styled("div")({
@@ -729,75 +740,85 @@ export const WallpaperItem = styled("button")<{
   },
 }));
 
-export const UploadWallpaperZone = styled("div")<{ isDragging: boolean }>(({ isDragging }) => ({
-  border: isDragging ? "2px dashed #3b82f6" : "1px dashed rgba(148, 163, 184, 0.4)",
-  background: isDragging ? "rgba(59, 130, 246, 0.05)" : "rgba(255, 255, 255, 0.4)",
-  borderRadius: "8px",
-  padding: "12px",
-  textAlign: "center",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: "6px",
-  "&:hover": {
-    background: "rgba(255, 255, 255, 0.7)",
-    borderColor: "rgba(148, 163, 184, 0.6)",
-  },
-  svg: {
-    color: "#64748b",
-  },
-  span: {
-    fontSize: "0.95rem",
-    color: "#334155",
-    fontWeight: "bold",
-  },
-  p: {
-    margin: 0,
-    fontSize: "0.8rem",
-    color: "#64748b",
-  },
-}));
+export const UploadWallpaperZone = styled("div")<{ isDragging: boolean }>(
+  ({ isDragging }) => ({
+    border: isDragging
+      ? "2px dashed #3b82f6"
+      : "1px dashed rgba(148, 163, 184, 0.4)",
+    background: isDragging
+      ? "rgba(59, 130, 246, 0.05)"
+      : "rgba(255, 255, 255, 0.4)",
+    borderRadius: "8px",
+    padding: "12px",
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "6px",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.7)",
+      borderColor: "rgba(148, 163, 184, 0.6)",
+    },
+    svg: {
+      color: "#64748b",
+    },
+    span: {
+      fontSize: "0.95rem",
+      color: "#334155",
+      fontWeight: "bold",
+    },
+    p: {
+      margin: 0,
+      fontSize: "0.8rem",
+      color: "#64748b",
+    },
+  }),
+);
 
 /* ================== floating cursor preview ================== */
-export const FloatingHeldPokemon = styled("div")<{ x: number; y: number }>(({ x, y }) => ({
-  position: "fixed",
-  top: y,
-  left: x,
-  pointerEvents: "none",
-  zIndex: 9999,
-  transform: "translate(-50%, -50%) scale(1.15)",
-  filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.35))",
-  img: {
-    width: "64px",
-    height: "64px",
-    objectFit: "contain",
-    opacity: 0.9,
-  },
-}));
+export const FloatingHeldPokemon = styled("div")<{ x: number; y: number }>(
+  ({ x, y }) => ({
+    position: "fixed",
+    top: y,
+    left: x,
+    pointerEvents: "none",
+    zIndex: 9999,
+    transform: "translate(-50%, -50%) scale(1.15)",
+    filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.35))",
+    img: {
+      width: "64px",
+      height: "64px",
+      objectFit: "contain",
+      opacity: 0.9,
+    },
+  }),
+);
 
-export const FloatingGroupPreview = styled("div")<{ x: number; y: number }>(({ x, y }) => ({
-  position: "fixed",
-  top: y,
-  left: x,
-  pointerEvents: "none",
-  zIndex: 9999,
-  transform: "translate(-50%, -50%)",
-  background: "rgba(255, 255, 255, 0.8)",
-  border: "2px dashed #fbbf24",
-  borderRadius: "12px",
-  padding: "10px",
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 48px)",
-  gap: "6px",
-  boxShadow: "0 8px 30px rgba(15, 23, 42, 0.15)",
-  img: {
-    width: "36px",
-    height: "36px",
-    objectFit: "contain",
-  },
-}));
+export const FloatingGroupPreview = styled("div")<{ x: number; y: number }>(
+  ({ x, y }) => ({
+    position: "fixed",
+    top: y,
+    left: x,
+    pointerEvents: "none",
+    zIndex: 9999,
+    transform: "translate(-50%, -50%)",
+    background: "rgba(255, 255, 255, 0.8)",
+    border: "2px dashed #fbbf24",
+    borderRadius: "12px",
+    padding: "10px",
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 48px)",
+    gap: "6px",
+    boxShadow: "0 8px 30px rgba(15, 23, 42, 0.15)",
+    img: {
+      width: "36px",
+      height: "36px",
+      objectFit: "contain",
+    },
+  }),
+);
 
 export const SelectionRectangle = styled("div")<{
   startX: number;
@@ -824,12 +845,16 @@ export const SelectionRectangle = styled("div")<{
     linear-gradient(to top, #ef4444 8px, transparent 8px),
     linear-gradient(to top, #ef4444 8px, transparent 8px)
   `,
-  backgroundPosition: "0 0, 0 0, 0 0, 0 100%, 100% 0, 100% 100%, 0 0, 100% 0, 0 100%, 100% 100%",
-  backgroundRepeat: "repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat",
-  backgroundSize: "12px 12px, 12px 12px, 8px 2px, 8px 2px, 8px 2px, 8px 2px, 2px 8px, 2px 8px, 2px 8px, 2px 8px",
+  backgroundPosition:
+    "0 0, 0 0, 0 0, 0 100%, 100% 0, 100% 100%, 0 0, 100% 0, 0 100%, 100% 100%",
+  backgroundRepeat:
+    "repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat",
+  backgroundSize:
+    "12px 12px, 12px 12px, 8px 2px, 8px 2px, 8px 2px, 8px 2px, 2px 8px, 2px 8px, 2px 8px, 2px 8px",
   pointerEvents: "none",
   zIndex: 100,
-  boxShadow: "inset 0 0 12px rgba(59, 130, 246, 0.2), 0 4px 20px rgba(0, 0, 0, 0.15)",
+  boxShadow:
+    "inset 0 0 12px rgba(59, 130, 246, 0.2), 0 4px 20px rgba(0, 0, 0, 0.15)",
   borderRadius: "4px",
   animation: "marqueePulse 2s infinite linear",
   "@keyframes marqueePulse": {
@@ -845,22 +870,23 @@ export const SelectionRectangle = styled("div")<{
   },
 }));
 
-
 /* ================== Context Menu ================== */
-export const ContextMenu = styled("div")<{ x: number; y: number }>(({ x, y }) => ({
-  position: "fixed",
-  top: y,
-  left: x,
-  background: "#fdfdfd",
-  border: "2px solid #0f172a",
-  padding: "4px",
-  boxShadow: "4px 4px 0px #0f172a",
-  zIndex: 1000,
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-  minWidth: "170px",
-}));
+export const ContextMenu = styled("div")<{ x: number; y: number }>(
+  ({ x, y }) => ({
+    position: "fixed",
+    top: y,
+    left: x,
+    background: "#fdfdfd",
+    border: "2px solid #0f172a",
+    padding: "4px",
+    boxShadow: "4px 4px 0px #0f172a",
+    zIndex: 1000,
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+    minWidth: "170px",
+  }),
+);
 
 export const ContextMenuItem = styled("button")({
   background: "transparent",
@@ -1009,17 +1035,18 @@ export const StatCompareRow = styled("div")({
   },
 });
 
-export const StatCompareBar = styled("div")<{ percent: number; isWinner: boolean }>(
-  ({ percent, isWinner }) => ({
-    height: "100%",
-    width: `${percent}%`,
-    background: isWinner
-      ? "linear-gradient(90deg, #10b981 0%, #059669 100%)"
-      : "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
-    borderRadius: "6px",
-    boxShadow: isWinner ? "0 0 8px rgba(16, 185, 129, 0.3)" : "none",
-  })
-);
+export const StatCompareBar = styled("div")<{
+  percent: number;
+  isWinner: boolean;
+}>(({ percent, isWinner }) => ({
+  height: "100%",
+  width: `${percent}%`,
+  background: isWinner
+    ? "linear-gradient(90deg, #10b981 0%, #059669 100%)"
+    : "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
+  borderRadius: "6px",
+  boxShadow: isWinner ? "0 0 8px rgba(16, 185, 129, 0.3)" : "none",
+}));
 
 /* ================== Modal Box List ================== */
 export const BoxListModalOverlay = styled("div")({
@@ -1117,9 +1144,7 @@ export const BoxThumbnailItem = styled("div")<{
     : "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)",
   backgroundSize: "cover",
   backgroundPosition: "center",
-  border: isActive
-    ? "2.5px solid #facc15"
-    : "2px solid #0f172a",
+  border: isActive ? "2.5px solid #facc15" : "2px solid #0f172a",
   borderRadius: "5px",
   transition: "all 0.12s ease",
   "&:hover": {
@@ -1188,27 +1213,29 @@ export const BoxFilterTabsContainer = styled("div")({
   },
 });
 
-export const FilterTabButton = styled("button")<{ isActive: boolean }>(({ isActive }) => ({
-  background: isActive ? "#0f172a" : "#fdfdfd",
-  color: isActive ? "#facc15" : "#0f172a",
-  fontFamily: '"Press Start 2P", monospace',
-  fontSize: "0.6rem",
-  fontWeight: "bold",
-  padding: "6px 12px",
-  border: "2px solid #0f172a",
-  cursor: "pointer",
-  textTransform: "uppercase",
-  boxShadow: isActive ? "none" : "2px 2px 0px #0f172a",
-  transform: isActive ? "translate(2px, 2px)" : "none",
-  transition: "all 0.1s ease",
-  "&:hover": {
-    background: isActive ? "#0f172a" : "#f1f5f9",
-  },
-  "&:active": {
-    transform: "translate(2px, 2px)",
-    boxShadow: "none",
-  },
-}));
+export const FilterTabButton = styled("button")<{ isActive: boolean }>(
+  ({ isActive }) => ({
+    background: isActive ? "#0f172a" : "#fdfdfd",
+    color: isActive ? "#facc15" : "#0f172a",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.6rem",
+    fontWeight: "bold",
+    padding: "6px 12px",
+    border: "2px solid #0f172a",
+    cursor: "pointer",
+    textTransform: "uppercase",
+    boxShadow: isActive ? "none" : "2px 2px 0px #0f172a",
+    transform: isActive ? "translate(2px, 2px)" : "none",
+    transition: "all 0.1s ease",
+    "&:hover": {
+      background: isActive ? "#0f172a" : "#f1f5f9",
+    },
+    "&:active": {
+      transform: "translate(2px, 2px)",
+      boxShadow: "none",
+    },
+  }),
+);
 
 /* ================== Shortcuts Info Help Overlay ================== */
 export const HelpOverlay = styled("div")({
@@ -1474,7 +1501,8 @@ export const DetailArtworkArea = styled("div")({
   display: "flex",
   justifyContent: "center",
   padding: "10px 0",
-  background: "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%)",
+  background:
+    "radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%)",
   ".artwork": {
     width: "min(28vw, 120px)",
     height: "auto",
@@ -1610,23 +1638,25 @@ export const DetailTabContainer = styled("div")({
   border: "1px solid rgba(15, 23, 42, 0.06)",
 });
 
-export const DetailTabButton = styled("button")<{ active: boolean }>(({ active }) => ({
-  flex: 1,
-  background: active ? "#ffffff" : "transparent",
-  color: active ? "#2563eb" : "#64748b",
-  border: "none",
-  borderRadius: "4px",
-  padding: "6px 0",
-  fontSize: "0.7rem",
-  fontFamily: '"Press Start 2P", monospace',
-  fontWeight: "bold",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-  boxShadow: active ? "0 2px 6px rgba(15, 23, 42, 0.08)" : "none",
-  "&:hover": {
-    color: active ? "#2563eb" : "#0f172a",
-  },
-}));
+export const DetailTabButton = styled("button")<{ active: boolean }>(
+  ({ active }) => ({
+    flex: 1,
+    background: active ? "#ffffff" : "transparent",
+    color: active ? "#2563eb" : "#64748b",
+    border: "none",
+    borderRadius: "4px",
+    padding: "6px 0",
+    fontSize: "0.7rem",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    boxShadow: active ? "0 2px 6px rgba(15, 23, 42, 0.08)" : "none",
+    "&:hover": {
+      color: active ? "#2563eb" : "#0f172a",
+    },
+  }),
+);
 
 // Removed unused DetailStatsGrid
 
@@ -1641,23 +1671,25 @@ export const DetailMainTabContainer = styled("div")({
   border: "2px solid #0f172a",
 });
 
-export const DetailMainTabButton = styled("button")<{ active: boolean }>(({ active }) => ({
-  flex: 1,
-  background: active ? "#0f172a" : "transparent",
-  color: active ? "#facc15" : "#334155",
-  border: "none",
-  padding: "7px 0",
-  fontSize: "0.6rem",
-  fontFamily: '"Press Start 2P", monospace',
-  fontWeight: "bold",
-  cursor: "pointer",
-  transition: "all 0.12s ease",
-  textTransform: "uppercase",
-  "&:hover": {
-    color: active ? "#facc15" : "#0f172a",
-    background: active ? "#0f172a" : "rgba(15, 23, 42, 0.05)",
-  },
-}));
+export const DetailMainTabButton = styled("button")<{ active: boolean }>(
+  ({ active }) => ({
+    flex: 1,
+    background: active ? "#0f172a" : "transparent",
+    color: active ? "#facc15" : "#334155",
+    border: "none",
+    padding: "7px 0",
+    fontSize: "0.6rem",
+    fontFamily: '"Press Start 2P", monospace',
+    fontWeight: "bold",
+    cursor: "pointer",
+    transition: "all 0.12s ease",
+    textTransform: "uppercase",
+    "&:hover": {
+      color: active ? "#facc15" : "#0f172a",
+      background: active ? "#0f172a" : "rgba(15, 23, 42, 0.05)",
+    },
+  }),
+);
 
 export const StatusTabContainer = styled("div")({
   width: "100%",
@@ -1681,12 +1713,14 @@ export const HpBarWrapper = styled("div")({
   alignItems: "center",
 });
 
-export const HpBarInner = styled("div")<{ percent: number; colorCode: string }>(({ percent, colorCode }) => ({
-  height: "100%",
-  width: `${percent}%`,
-  backgroundColor: colorCode,
-  transition: "width 0.3s ease, background-color 0.3s ease",
-}));
+export const HpBarInner = styled("div")<{ percent: number; colorCode: string }>(
+  ({ percent, colorCode }) => ({
+    height: "100%",
+    width: `${percent}%`,
+    backgroundColor: colorCode,
+    transition: "width 0.3s ease, background-color 0.3s ease",
+  }),
+);
 
 export const HpBarText = styled("div")({
   position: "absolute",
@@ -1744,11 +1778,6 @@ export const AbilityPill = styled("div")({
   "&:hover": {
     background: "rgba(59, 130, 246, 0.12)",
     borderColor: "rgba(59, 130, 246, 0.3)",
-    ".tooltip": {
-      opacity: 1,
-      visibility: "visible",
-      transform: "translateX(-50%) translateY(0)",
-    },
   },
   ".label": {
     fontSize: "0.55rem",
@@ -1762,71 +1791,45 @@ export const AbilityPill = styled("div")({
     color: "#1d4ed8",
     fontWeight: "bold",
   },
-  ".tooltip": {
-    position: "absolute",
-    bottom: "100%",
-    left: "50%",
-    transform: "translateX(-50%) translateY(5px)",
-    background: "#1e293b",
-    color: "#ffffff",
-    padding: "8px 12px",
-    borderRadius: "8px",
-    fontSize: "0.75rem",
-    fontFamily: '"Outfit", "Inter", sans-serif',
-    width: "220px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-    zIndex: 100,
-    opacity: 0,
-    visibility: "hidden",
-    transition: "all 0.15s ease",
-    pointerEvents: "none",
-    textAlign: "center",
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      top: "100%",
-      left: "50%",
-      marginLeft: "-6px",
-      borderWidth: "6px",
-      borderStyle: "solid",
-      borderColor: "#1e293b transparent transparent transparent",
-    },
-  },
 });
 
-export const HeldItemPill = styled("div")<{ hasItem: boolean }>(({ hasItem }) => ({
-  background: hasItem ? "rgba(16, 185, 129, 0.08)" : "rgba(15, 23, 42, 0.02)",
-  border: hasItem ? "1px solid rgba(16, 185, 129, 0.2)" : "1px solid rgba(148, 163, 184, 0.15)",
-  borderRadius: "8px",
-  padding: "8px 10px",
-  width: "100%",
-  boxSizing: "border-box",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  ".icon": {
-    width: "24px",
-    height: "24px",
-    objectFit: "contain",
-  },
-  ".info": {
+export const HeldItemPill = styled("div")<{ hasItem: boolean }>(
+  ({ hasItem }) => ({
+    background: hasItem ? "rgba(16, 185, 129, 0.08)" : "rgba(15, 23, 42, 0.02)",
+    border: hasItem
+      ? "1px solid rgba(16, 185, 129, 0.2)"
+      : "1px solid rgba(148, 163, 184, 0.15)",
+    borderRadius: "8px",
+    padding: "8px 10px",
+    width: "100%",
+    boxSizing: "border-box",
     display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-    ".label": {
-      fontSize: "0.55rem",
-      fontFamily: '"Press Start 2P", monospace',
-      color: hasItem ? "#059669" : "#64748b",
-      textTransform: "uppercase",
+    alignItems: "center",
+    gap: "8px",
+    ".icon": {
+      width: "24px",
+      height: "24px",
+      objectFit: "contain",
     },
-    ".value": {
-      fontSize: "0.75rem",
-      fontFamily: '"Press Start 2P", monospace',
-      color: hasItem ? "#065f46" : "#475569",
-      fontWeight: "bold",
+    ".info": {
+      display: "flex",
+      flexDirection: "column",
+      gap: "2px",
+      ".label": {
+        fontSize: "0.55rem",
+        fontFamily: '"Press Start 2P", monospace',
+        color: hasItem ? "#059669" : "#64748b",
+        textTransform: "uppercase",
+      },
+      ".value": {
+        fontSize: "0.75rem",
+        fontFamily: '"Press Start 2P", monospace',
+        color: hasItem ? "#065f46" : "#475569",
+        fontWeight: "bold",
+      },
     },
-  },
-}));
+  }),
+);
 
 /* ================== Tab 2: Moves ================== */
 export const MovesTabContainer = styled("div")({
@@ -1845,34 +1848,36 @@ export const MovesGrid = styled("div")({
   width: "100%",
 });
 
-export const MoveItemCard = styled("div")<{ typeColor: string }>(({ typeColor }) => ({
-  background: "#ffffff",
-  border: `1.5px solid rgba(15, 23, 42, 0.1)`,
-  borderLeft: `6px solid ${typeColor}`,
-  padding: "8px 12px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "4px",
-  boxSizing: "border-box",
-  ".move-header": {
+export const MoveItemCard = styled("div")<{ typeColor: string }>(
+  ({ typeColor }) => ({
+    background: "#ffffff",
+    border: `1.5px solid rgba(15, 23, 42, 0.1)`,
+    borderLeft: `6px solid ${typeColor}`,
+    padding: "8px 12px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    ".move-name": {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: "0.65rem",
-      fontWeight: "bold",
-      color: "#0f172a",
-      textTransform: "uppercase",
+    flexDirection: "column",
+    gap: "4px",
+    boxSizing: "border-box",
+    ".move-header": {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      ".move-name": {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: "0.65rem",
+        fontWeight: "bold",
+        color: "#0f172a",
+        textTransform: "uppercase",
+      },
+      ".pp-val": {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: "0.5rem",
+        color: "#334155",
+        fontWeight: "bold",
+      },
     },
-    ".pp-val": {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: "0.5rem",
-      color: "#334155",
-      fontWeight: "bold",
-    },
-  },
-}));
+  }),
+);
 
 export const MoveMetaRow = styled("div")({
   display: "flex",
@@ -1944,32 +1949,34 @@ export const StatBarRow = styled("div")({
   width: "100%",
 });
 
-export const StatLabelRow = styled("div")<{ textColor: string }>(({ textColor }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-end",
-  ".stat-name": {
-    fontFamily: '"Press Start 2P", monospace',
-    fontSize: "0.55rem",
-    color: textColor,
-    textTransform: "uppercase",
-    fontWeight: "bold",
-  },
-  ".stat-values": {
-    fontFamily: '"VT323", monospace',
-    fontSize: "0.95rem",
-    color: "#475569",
-    fontWeight: "bold",
-    ".curr": {
+export const StatLabelRow = styled("div")<{ textColor: string }>(
+  ({ textColor }) => ({
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    ".stat-name": {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: "0.55rem",
       color: textColor,
-      fontSize: "1.1rem",
+      textTransform: "uppercase",
+      fontWeight: "bold",
     },
-    ".max": {
-      color: "#94a3b8",
-      fontSize: "0.85rem",
+    ".stat-values": {
+      fontFamily: '"VT323", monospace',
+      fontSize: "0.95rem",
+      color: "#475569",
+      fontWeight: "bold",
+      ".curr": {
+        color: textColor,
+        fontSize: "1.1rem",
+      },
+      ".max": {
+        color: "#94a3b8",
+        fontSize: "0.85rem",
+      },
     },
-  },
-}));
+  }),
+);
 
 export const StatBarWrapper = styled("div")({
   width: "100%",
@@ -1980,13 +1987,15 @@ export const StatBarWrapper = styled("div")({
   overflow: "hidden",
 });
 
-export const StatBarInner = styled("div")<{ percent: number; color: string }>(({ percent, color }) => ({
-  height: "100%",
-  width: `${percent}%`,
-  backgroundColor: color,
-  borderRadius: "4px",
-  transition: "width 0.3s ease",
-}));
+export const StatBarInner = styled("div")<{ percent: number; color: string }>(
+  ({ percent, color }) => ({
+    height: "100%",
+    width: `${percent}%`,
+    backgroundColor: color,
+    borderRadius: "4px",
+    transition: "width 0.3s ease",
+  }),
+);
 
 export const RadarToggleBtn = styled("button")({
   width: "100%",
@@ -2106,7 +2115,10 @@ export const ActiveMovesColumn = styled("div")({
   gap: "12px",
 });
 
-export const ActiveMoveSlot = styled("div")<{ isEmpty: boolean; typeColor?: string }>(({ isEmpty, typeColor }) => ({
+export const ActiveMoveSlot = styled("div")<{
+  isEmpty: boolean;
+  typeColor?: string;
+}>(({ isEmpty, typeColor }) => ({
   minHeight: "72px",
   borderRadius: "8px",
   display: "flex",
@@ -2119,29 +2131,29 @@ export const ActiveMoveSlot = styled("div")<{ isEmpty: boolean; typeColor?: stri
   gap: "6px",
   ...(isEmpty
     ? {
-      border: "3px dashed #cbd5e1",
-      background: "rgba(15, 23, 42, 0.02)",
-      alignItems: "center",
-      color: "#94a3b8",
-      fontSize: "0.6rem",
-      fontFamily: '"Press Start 2P", monospace',
-      textTransform: "uppercase",
-      cursor: "default",
-    }
+        border: "3px dashed #cbd5e1",
+        background: "rgba(15, 23, 42, 0.02)",
+        alignItems: "center",
+        color: "#94a3b8",
+        fontSize: "0.6rem",
+        fontFamily: '"Press Start 2P", monospace',
+        textTransform: "uppercase",
+        cursor: "default",
+      }
     : {
-      border: "2px solid #0f172a", // Retro outline
-      borderLeft: `6px solid ${typeColor || "#888"}`,
-      background: "#ffffff",
-      cursor: "pointer",
-      "&:hover": {
-        borderColor: "#ef4444",
-        background: "rgba(239, 68, 68, 0.03)",
-        ".remove-indicator": {
-          opacity: 1,
-          transform: "scale(1)",
+        border: "2px solid #0f172a", // Retro outline
+        borderLeft: `6px solid ${typeColor || "#888"}`,
+        background: "#ffffff",
+        cursor: "pointer",
+        "&:hover": {
+          borderColor: "#ef4444",
+          background: "rgba(239, 68, 68, 0.03)",
+          ".remove-indicator": {
+            opacity: 1,
+            transform: "scale(1)",
+          },
         },
-      },
-    }),
+      }),
   ".active-move-header": {
     display: "flex",
     justifyContent: "space-between",
@@ -2240,29 +2252,34 @@ export const MovesListContainer = styled("div")({
   },
 });
 
-export const PixelCheckbox = styled("div")<{ checked: boolean }>(({ checked }) => ({
-  width: "18px",
-  height: "18px",
-  border: "2px solid #0f172a",
-  background: checked ? "#10b981" : "#ffffff", // Retro green when checked
-  position: "relative",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxShadow: "inset -2px -2px rgba(0,0,0,0.1)",
-  flexShrink: 0,
-  "&::after": checked
-    ? {
-      content: '"✓"',
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: "8px",
-      color: "#ffffff",
-      fontWeight: "bold",
-    }
-    : {},
-}));
+export const PixelCheckbox = styled("div")<{ checked: boolean }>(
+  ({ checked }) => ({
+    width: "18px",
+    height: "18px",
+    border: "2px solid #0f172a",
+    background: checked ? "#10b981" : "#ffffff", // Retro green when checked
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "inset -2px -2px rgba(0,0,0,0.1)",
+    flexShrink: 0,
+    "&::after": checked
+      ? {
+          content: '"✓"',
+          fontFamily: '"Press Start 2P", monospace',
+          fontSize: "8px",
+          color: "#ffffff",
+          fontWeight: "bold",
+        }
+      : {},
+  }),
+);
 
-export const MoveRowItem = styled("div")<{ checked: boolean; disabled: boolean }>(({ checked, disabled }) => ({
+export const MoveRowItem = styled("div")<{
+  checked: boolean;
+  disabled: boolean;
+}>(({ checked, disabled }) => ({
   display: "flex",
   alignItems: "center",
   gap: "12px",
@@ -2278,9 +2295,21 @@ export const MoveRowItem = styled("div")<{ checked: boolean; disabled: boolean }
   boxSizing: "border-box",
   boxShadow: checked ? "2px 2px 0px #0f172a" : "none", // Nice pixel shadow when selected
   "&:hover": {
-    borderColor: disabled ? (checked ? "#0f172a" : "rgba(15, 23, 42, 0.1)") : "#0f172a",
-    background: disabled ? (checked ? "rgba(16, 185, 129, 0.03)" : "#ffffff") : "rgba(15, 23, 42, 0.02)",
-    boxShadow: disabled ? (checked ? "2px 2px 0px #0f172a" : "none") : "2px 2px 0px #0f172a",
+    borderColor: disabled
+      ? checked
+        ? "#0f172a"
+        : "rgba(15, 23, 42, 0.1)"
+      : "#0f172a",
+    background: disabled
+      ? checked
+        ? "rgba(16, 185, 129, 0.03)"
+        : "#ffffff"
+      : "rgba(15, 23, 42, 0.02)",
+    boxShadow: disabled
+      ? checked
+        ? "2px 2px 0px #0f172a"
+        : "none"
+      : "2px 2px 0px #0f172a",
   },
   ".lvl-badge": {
     background: "#0f172a",
@@ -2322,5 +2351,3 @@ export const MoveRowItem = styled("div")<{ checked: boolean; disabled: boolean }
     },
   },
 }));
-
-

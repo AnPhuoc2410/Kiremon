@@ -236,9 +236,12 @@ function transformPokemonDetail(
           ) || a.ability.name,
         url: "",
       },
+      internalName: a.ability.name,
       is_hidden: a.is_hidden,
       slot: a.slot,
       description: a.ability.abilityflavortexts?.[0]?.flavor_text || null,
+      effect: a.ability.abilityeffecttexts?.[0]?.effect || null,
+      shortEffect: a.ability.abilityeffecttexts?.[0]?.short_effect || null,
     }));
 
   const transformedHeldItems: IPokemonDetailResponse["held_items"] = [];
@@ -460,7 +463,9 @@ function transformPokemonDetailFromRest(
   const transformedMoves = data.moves.map((m) => m.move.name);
 
   const transformedMoveDetails: MoveDetailData[] = data.moves.map((m) => {
-    const moveId = m.move.url ? parseInt(m.move.url.split("/").filter(Boolean).pop() || "0", 10) : undefined;
+    const moveId = m.move.url
+      ? parseInt(m.move.url.split("/").filter(Boolean).pop() || "0", 10)
+      : undefined;
     return {
       id: moveId,
       name: m.move.name,
@@ -471,7 +476,8 @@ function transformPokemonDetailFromRest(
       pp: null,
       priority: 0,
       damageClass: "status",
-      learnMethod: m.version_group_details?.[0]?.move_learn_method?.name || "unknown",
+      learnMethod:
+        m.version_group_details?.[0]?.move_learn_method?.name || "unknown",
       level: m.version_group_details?.[0]?.level_learned_at ?? null,
       generation: null,
       description: null,
@@ -483,9 +489,12 @@ function transformPokemonDetailFromRest(
 
   const transformedAbilities = data.abilities.map((a) => ({
     ability: { name: a.ability.name, url: a.ability.url },
+    internalName: a.ability.name,
     is_hidden: a.is_hidden,
     slot: a.slot,
     description: null,
+    effect: null,
+    shortEffect: null,
   }));
 
   const transformedForms: PokemonForm[] = data.forms.map((f, idx) => ({
@@ -512,7 +521,10 @@ function transformPokemonDetailFromRest(
     baseExperience: data.base_experience,
     heldItems: data.held_items,
     specialForms: transformedForms.length > 1 ? transformedForms : [],
-    speciesId: parseInt(data.species.url.split("/").filter(Boolean).pop() || "0", 10),
+    speciesId: parseInt(
+      data.species.url.split("/").filter(Boolean).pop() || "0",
+      10,
+    ),
     generationId: 0,
   };
 }
@@ -530,7 +542,9 @@ function transformSpeciesDataFromRest(
       : "";
 
   const localizedNameEntry = data.names.find((n) => n.language?.name === "en");
-  const localizedGenusEntry = data.genera.find((g) => g.language?.name === "en");
+  const localizedGenusEntry = data.genera.find(
+    (g) => g.language?.name === "en",
+  );
 
   return {
     species: data,
@@ -568,7 +582,7 @@ function transformSpeciesDataFromRest(
 export function usePokemonCore(
   name: string,
   languageId: LanguageId = LANGUAGE_IDS.ENGLISH,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const isEnabled = options?.enabled ?? true;
 
@@ -604,14 +618,16 @@ export function usePokemonCore(
 
   // Transform data using memoization
   const transformedDetail = useMemo(() => {
-    if (detailQuery.data) return transformPokemonDetail(detailQuery.data, languageId);
+    if (detailQuery.data)
+      return transformPokemonDetail(detailQuery.data, languageId);
     if (restDetailQuery.data)
       return transformPokemonDetailFromRest(restDetailQuery.data, languageId);
     return null;
   }, [detailQuery.data, restDetailQuery.data, languageId]);
 
   const transformedSpecies = useMemo(() => {
-    if (speciesQuery.data) return transformSpeciesData(speciesQuery.data, languageId);
+    if (speciesQuery.data)
+      return transformSpeciesData(speciesQuery.data, languageId);
     if (restSpeciesQuery.data)
       return transformSpeciesDataFromRest(restSpeciesQuery.data, languageId);
     return null;

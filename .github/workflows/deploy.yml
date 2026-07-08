@@ -39,8 +39,8 @@ jobs:
           JwtSettings__ExpirationMinutes=${{ secrets.JWT_EXPIRATION_MINUTES }}
           JwtSettings__RefreshTokenExpirationDays=${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
 
-          Email__SmtpServer=smtp.gmail.com
-          Email__SmtpPort=587
+          Email__SmtpServer=${{ secrets.SMTP_SERVER }}
+          Email__SmtpPort=${{ secrets.SMTP_PORT }}
           Email__SmtpUsername=${{ secrets.SMTP_USERNAME }}
           Email__SmtpPassword=${{ secrets.SMTP_PASSWORD }}
           Email__FromEmail=${{ secrets.SMTP_FROM_EMAIL }}

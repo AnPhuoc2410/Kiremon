@@ -155,7 +155,10 @@ const ResetPassword: React.FC = () => {
 
         <div style={{ marginTop: 12, textAlign: "center" }}>
           <SmallText>
-            Remember your password? <Link to="/login">Sign in</Link>
+            Remember your password?{" "}
+            <Link to="/login" style={{ color: "#2563EB", fontWeight: 600 }}>
+              Sign in
+            </Link>
           </SmallText>
         </div>
       </AuthCard>
