@@ -41,6 +41,9 @@ const AdminDashboard = lazy(() => import("@/pages/Admin/Dashboard"));
 const WildAreaAdmin = lazy(
   () => import("@/pages/Admin/WildArea/WildAreaAdminPage"),
 );
+const CardRewardAdmin = lazy(
+  () => import("@/pages/Admin/CardReward/CardRewardAdminPage"),
+);
 import { ProtectedRoute } from "@/guards/AuthGuard";
 import { Role } from "@/types/roles.type";
 
@@ -316,6 +319,7 @@ export default function Routes() {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="wild-area" element={<WildAreaAdmin />} />
+            <Route path="card-reward" element={<CardRewardAdmin />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Switch>

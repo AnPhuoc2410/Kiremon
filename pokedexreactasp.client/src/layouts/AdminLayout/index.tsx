@@ -1,5 +1,10 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { IconDashboard, IconMap, IconArrowLeft } from "@tabler/icons-react";
+import {
+  IconDashboard,
+  IconMap,
+  IconArrowLeft,
+  IconCards,
+} from "@tabler/icons-react";
 import * as S from "./index.style";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -37,6 +42,16 @@ export default function AdminLayout() {
                 <S.NavLinkContent $active={isActive}>
                   <IconMap size={20} />
                   <span>Wild Area Config</span>
+                </S.NavLinkContent>
+              )}
+            </NavLink>
+          </S.NavItem>
+          <S.NavItem>
+            <NavLink to="/admin/card-reward">
+              {({ isActive }) => (
+                <S.NavLinkContent $active={isActive}>
+                  <IconCards size={20} />
+                  <span>Card Reward Config</span>
                 </S.NavLinkContent>
               )}
             </NavLink>

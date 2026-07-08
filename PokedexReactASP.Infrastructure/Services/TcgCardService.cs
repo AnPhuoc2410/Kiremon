@@ -164,43 +164,56 @@ namespace PokedexReactASP.Infrastructure.Services
 
             var normalized = $" {rarity.ToLowerInvariant()} ";
 
-            if (normalized.Contains("secret") || normalized.Contains("rainbow") || normalized.Contains("hyper"))
+            // 1. Secret Rare (Highest tier: Hyper, Rainbow, Secret, Special Illustration, Shiny Ultra)
+            if (normalized.Contains("secret") || 
+                normalized.Contains("rainbow") || 
+                normalized.Contains("hyper") || 
+                normalized.Contains("special illustration") ||
+                normalized.Contains("shiny ultra"))
             {
                 return TcgCardRarityTier.SecretRare;
             }
 
+            // 2. Ultra Rare (ex, gx, v, vmax, vstar, Double Rare, Illustration Rare, Shiny Rare)
             if (normalized.Contains("ultra") ||
                 normalized.Contains("vmax") ||
                 normalized.Contains("vstar") ||
-                normalized.Contains(" ex ") ||
-                normalized.Contains(" gx ") ||
-                normalized.Contains("rare holo ex") ||
-                normalized.Contains("rare holo gx"))
+                normalized.Contains(" ex ") || normalized.EndsWith(" ex ") ||
+                normalized.Contains(" gx ") || normalized.EndsWith(" gx ") ||
+                normalized.Contains(" double ") ||
+                normalized.Contains("illustration") ||
+                normalized.Contains("shiny rare") ||
+                normalized.Contains(" v ") || normalized.EndsWith(" v "))
             {
                 return TcgCardRarityTier.UltraRare;
             }
 
-            if (normalized.Contains("holo"))
+            // 3. Holo Rare
+            if (normalized.Contains("holo") || normalized.Contains("star"))
             {
                 return TcgCardRarityTier.HoloRare;
             }
 
+            // 4. Rare
             if (normalized.Contains("rare"))
             {
                 return TcgCardRarityTier.Rare;
             }
 
+            // 5. Uncommon
             if (normalized.Contains("uncommon"))
             {
                 return TcgCardRarityTier.Uncommon;
             }
 
+            // 6. Common
             if (normalized.Contains("common"))
             {
                 return TcgCardRarityTier.Common;
             }
 
-            if (normalized.Contains("promo"))
+            // 7. Promo & reprint sets
+            if (normalized.Contains("promo") || normalized.Contains("classic"))
             {
                 return TcgCardRarityTier.Promo;
             }
