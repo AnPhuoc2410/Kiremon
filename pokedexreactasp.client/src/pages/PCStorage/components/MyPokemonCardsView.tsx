@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useMyTcgCards } from "@/hooks/queries";
 import { Loading, Text, Modal } from "@/components/ui";
 import { IconPhoto, IconX } from "@tabler/icons-react";
+import { getTcgCardRarityTierDisplay } from "@/types/pokemon.enums";
 
 export const MyPokemonCardsView: React.FC<{
   pokemonApiId?: number;
@@ -218,7 +219,7 @@ export const MyPokemonCardsView: React.FC<{
                           fontWeight: 500,
                         }}
                       >
-                        {card.rarityTier}
+                        {getTcgCardRarityTierDisplay(card.rarityTier)}
                       </Text>
                       <div
                         style={{

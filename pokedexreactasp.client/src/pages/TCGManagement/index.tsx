@@ -27,6 +27,10 @@ import {
   TcgSort,
   MyTcgCardItem,
 } from "@/types/tcg-card-collection.types";
+import {
+  TcgCardRarityTier,
+  getTcgCardRarityTierDisplay,
+} from "@/types/pokemon.enums";
 
 import * as S from "./index.style";
 import { InteractiveCard } from "./components/InteractiveCard";
@@ -43,7 +47,7 @@ const TCGManagement: React.FC = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [rarityTier, setRarityTier] = useState("");
+  const [rarityTier, setRarityTier] = useState<TcgCardRarityTier | "">("");
   const [sort, setSort] = useState<TcgSort>("obtained-desc");
   const [activeTab, setActiveTab] = useState<ActiveTab>("collection");
 
@@ -94,7 +98,7 @@ const TCGManagement: React.FC = () => {
     return cards.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
-        c.rarityTier.toLowerCase().includes(q) ||
+        getTcgCardRarityTierDisplay(c.rarityTier).toLowerCase().includes(q) ||
         c.tcgCardId.toLowerCase().includes(q),
     );
   }, [cards, debouncedSearch]);
@@ -104,7 +108,11 @@ const TCGManagement: React.FC = () => {
     const unique = new Set(cards.map((c) => c.pokemonApiId)).size;
     const totalQty = cards.reduce((acc, c) => acc + c.quantity, 0);
     const rareCount = cards.filter((c) =>
-      ["UltraRare", "SecretRare", "HoloRare"].includes(c.rarityTier),
+      [
+        TcgCardRarityTier.UltraRare,
+        TcgCardRarityTier.SecretRare,
+        TcgCardRarityTier.HoloRare,
+      ].includes(c.rarityTier),
     ).length;
     return { totalCount, unique, totalQty, rareCount };
   }, [cards, totalCount]);
@@ -257,7 +265,7 @@ const TCGManagement: React.FC = () => {
                   value={rarityTier}
                   onChange={(e) => {
                     setPage(1);
-                    setRarityTier(e.target.value);
+                    setRarityTier(e.target.value ? Number(e.target.value) : "");
                   }}
                   aria-label="Filter by rarity"
                 >

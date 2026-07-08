@@ -1,20 +1,24 @@
 import React, { useRef, useState } from "react";
 import styled from "@emotion/styled";
+import {
+  TcgCardRarityTier,
+  getTcgCardRarityTierDisplay,
+} from "@/types/pokemon.enums";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens matching index.style.ts
 // ─────────────────────────────────────────────────────────────────────────────
 const C_INK = "#0f172a";
 
-const RARITY_ACCENT: Record<string, string> = {
-  Common: "#94a3b8",
-  Uncommon: "#22c55e",
-  Rare: "#3b82f6",
-  HoloRare: "#8b5cf6",
-  UltraRare: "#f97316",
-  SecretRare: "#ec4899",
-  Promo: "#facc15",
-  Unknown: "#64748b",
+const RARITY_ACCENT: Record<number, string> = {
+  [TcgCardRarityTier.Common]: "#94a3b8",
+  [TcgCardRarityTier.Uncommon]: "#22c55e",
+  [TcgCardRarityTier.Rare]: "#3b82f6",
+  [TcgCardRarityTier.HoloRare]: "#8b5cf6",
+  [TcgCardRarityTier.UltraRare]: "#f97316",
+  [TcgCardRarityTier.SecretRare]: "#ec4899",
+  [TcgCardRarityTier.Promo]: "#facc15",
+  [TcgCardRarityTier.Unknown]: "#64748b",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,10 +32,10 @@ export const CardContainer = styled("div")({
 });
 
 export const CardInner = styled("div")<{
-  rarity: string;
+  rarity: TcgCardRarityTier;
   isSelected?: boolean;
-}>(({ rarity = "Common", isSelected }) => {
-  const accent = RARITY_ACCENT[rarity] ?? "#94a3b8";
+}>(({ rarity = TcgCardRarityTier.Common, isSelected }) => {
+  const accent = RARITY_ACCENT[rarity as number] ?? "#94a3b8";
   return {
     width: "100%",
     height: "100%",
@@ -350,17 +354,17 @@ const GlareOverlay = styled("div")({
 // ─────────────────────────────────────────────────────────────────────────────
 type HoloTier = "secret" | "ultra" | "holo" | "rare" | "promo" | "none";
 
-function getHoloTier(rarityTier: string): HoloTier {
+function getHoloTier(rarityTier: TcgCardRarityTier): HoloTier {
   switch (rarityTier) {
-    case "SecretRare":
+    case TcgCardRarityTier.SecretRare:
       return "secret";
-    case "UltraRare":
+    case TcgCardRarityTier.UltraRare:
       return "ultra";
-    case "HoloRare":
+    case TcgCardRarityTier.HoloRare:
       return "holo";
-    case "Rare":
+    case TcgCardRarityTier.Rare:
       return "rare";
-    case "Promo":
+    case TcgCardRarityTier.Promo:
       return "promo";
     default:
       return "none";
@@ -374,7 +378,7 @@ interface InteractiveCardProps {
   card: {
     userCardId: number;
     name: string;
-    rarityTier: string;
+    rarityTier: TcgCardRarityTier;
     quantity: number;
     imageLarge?: string | null;
     imageSmall?: string | null;
@@ -461,7 +465,7 @@ export const InteractiveCard: React.FC<InteractiveCardProps> = ({
       role="button"
       tabIndex={0}
       onKeyDown={onKeyDown}
-      aria-label={`${card.name} — ${card.rarityTier}, qty ${card.quantity}`}
+      aria-label={`${card.name} — ${getTcgCardRarityTierDisplay(card.rarityTier)}, qty ${card.quantity}`}
     >
       <CardInner
         rarity={card.rarityTier}
@@ -481,7 +485,9 @@ export const InteractiveCard: React.FC<InteractiveCardProps> = ({
         <div className="card-body">
           <span className="card-name">{card.name}</span>
           <div className="card-meta">
-            <span className="card-rarity">{card.rarityTier}</span>
+            <span className="card-rarity">
+              {getTcgCardRarityTierDisplay(card.rarityTier)}
+            </span>
             <span className="card-qty">×{card.quantity}</span>
           </div>
         </div>

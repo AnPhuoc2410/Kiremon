@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
-import { PokeballType } from "@/types/pokemon.enums";
+import {
+  PokeballType,
+  getWildSpawnRarityDisplay,
+  getTcgCardRarityTierDisplay,
+} from "@/types/pokemon.enums";
 import { WildCardReward, WildPokemonSpawn } from "@/types/wild-area.types";
 
 // ─── Keyframes ────────────────────────────────────────────────────────────────
@@ -348,7 +352,9 @@ export const EncounterModal = ({
         {/* Header */}
         <EncounterHeader>
           <PixelTitle>Wild Encounter</PixelTitle>
-          <RarityTag $rarity={spawn.spawnRarity}>{spawn.spawnRarity}</RarityTag>
+          <RarityTag $rarity={getWildSpawnRarityDisplay(spawn.spawnRarity)}>
+            {getWildSpawnRarityDisplay(spawn.spawnRarity)}
+          </RarityTag>
         </EncounterHeader>
 
         {/* Pokemon Display */}
@@ -840,7 +846,9 @@ export const ResultModal = ({ open, result, onClose }: ResultModalProps) => {
                 />
                 <CardInfoBlock className="gsap-card-info">
                   <CardName>{result.cardReward.name}</CardName>
-                  <CardRarityTag>{result.cardReward.rarityTier}</CardRarityTag>
+                  <CardRarityTag>
+                    {getTcgCardRarityTierDisplay(result.cardReward.rarityTier)}
+                  </CardRarityTag>
                   {result.cardReward.rarity && (
                     <PixelText style={{ fontSize: 16, marginTop: 4 }}>
                       {result.cardReward.rarity}

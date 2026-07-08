@@ -68,6 +68,10 @@ export enum PokeballType {
   LuxuryBall = 17,
   PremierBall = 18,
   HealBall = 19,
+  SafariBall = 30,
+  SportBall = 31,
+  DreamBall = 32,
+  BeastBall = 33,
 }
 
 /**
@@ -145,6 +149,9 @@ export enum CatchAttemptResult {
   Success = 0,
   Escaped = 1,
   Fled = 2,
+  BallBroke = 3,
+  AlreadyOwned = 4,
+  InventoryFull = 5,
 }
 
 /**
@@ -166,6 +173,116 @@ export function getPokeballName(ball: PokeballType): string {
     [PokeballType.LuxuryBall]: "Luxury Ball",
     [PokeballType.PremierBall]: "Premier Ball",
     [PokeballType.HealBall]: "Heal Ball",
+    [PokeballType.SafariBall]: "Safari Ball",
+    [PokeballType.SportBall]: "Sport Ball",
+    [PokeballType.DreamBall]: "Dream Ball",
+    [PokeballType.BeastBall]: "Beast Ball",
   };
   return names[ball] || "Poké Ball";
+}
+
+/**
+ * Wild Spawn Rarity
+ */
+export enum WildSpawnRarity {
+  Common = 1,
+  Uncommon = 2,
+  Rare = 3,
+  Epic = 4,
+  Legendary = 5,
+}
+
+/**
+ * TCG Card Rarity Tier
+ */
+export enum TcgCardRarityTier {
+  Common = 1,
+  Uncommon = 2,
+  Rare = 3,
+  HoloRare = 4,
+  UltraRare = 5,
+  SecretRare = 6,
+  Promo = 7,
+  Unknown = 99,
+}
+
+/**
+ * Card Reward Source
+ */
+export enum CardRewardSource {
+  WildAreaCatch = 1,
+  DailyReward = 2,
+  EventReward = 3,
+  AchievementReward = 4,
+}
+
+/**
+ * Pokemon Location
+ */
+export enum PokemonLocation {
+  Party = 1,
+  Box = 2,
+}
+
+/**
+ * Time of Day
+ */
+export enum TimeOfDay {
+  Morning = 0,
+  Day = 1,
+  Evening = 2,
+  Night = 3,
+}
+
+/**
+ * Location Type
+ */
+export enum LocationType {
+  Grassland = 0,
+  Forest = 1,
+  Cave = 2,
+  Water = 3,
+  Mountain = 4,
+  Desert = 5,
+  Snow = 6,
+  Urban = 7,
+  Safari = 8,
+}
+
+export function getWildSpawnRarityDisplay(rarity: WildSpawnRarity): string {
+  switch (rarity) {
+    case WildSpawnRarity.Common:
+      return "Common";
+    case WildSpawnRarity.Uncommon:
+      return "Uncommon";
+    case WildSpawnRarity.Rare:
+      return "Rare";
+    case WildSpawnRarity.Epic:
+      return "Epic";
+    case WildSpawnRarity.Legendary:
+      return "Legendary";
+    default:
+      return "Unknown";
+  }
+}
+
+export function getTcgCardRarityTierDisplay(tier: TcgCardRarityTier): string {
+  switch (tier) {
+    case TcgCardRarityTier.Common:
+      return "Common";
+    case TcgCardRarityTier.Uncommon:
+      return "Uncommon";
+    case TcgCardRarityTier.Rare:
+      return "Rare";
+    case TcgCardRarityTier.HoloRare:
+      return "Holo Rare";
+    case TcgCardRarityTier.UltraRare:
+      return "Ultra Rare";
+    case TcgCardRarityTier.SecretRare:
+      return "Secret Rare";
+    case TcgCardRarityTier.Promo:
+      return "Promo";
+    default:
+      return "Unknown";
+  }
 }

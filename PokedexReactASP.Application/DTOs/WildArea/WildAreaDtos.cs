@@ -25,7 +25,7 @@ namespace PokedexReactASP.Application.DTOs.WildArea
         public string PokemonName { get; set; } = string.Empty;
         public string SpriteUrl { get; set; } = string.Empty;
         public int SlotIndex { get; set; }
-        public string SpawnRarity { get; set; } = string.Empty;
+        public WildSpawnRarity SpawnRarity { get; set; }
         public int AttemptsLeft { get; set; }
         public bool IsCaught { get; set; }
         public bool IsConsumed { get; set; }
@@ -57,7 +57,7 @@ namespace PokedexReactASP.Application.DTOs.WildArea
         public int PokemonApiId { get; set; }
         public string? Nickname { get; set; }
         public bool IsShiny { get; set; }
-        public string Nature { get; set; } = string.Empty;
+        public Nature Nature { get; set; }
         public int CaughtLevel { get; set; }
         public string Ability { get; set; } = string.Empty;
     }
@@ -68,7 +68,7 @@ namespace PokedexReactASP.Application.DTOs.WildArea
         public string TcgCardId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string? Rarity { get; set; }
-        public string RarityTier { get; set; } = string.Empty;
+        public TcgCardRarityTier RarityTier { get; set; }
         public string? ImageSmall { get; set; }
         public string? ImageLarge { get; set; }
     }

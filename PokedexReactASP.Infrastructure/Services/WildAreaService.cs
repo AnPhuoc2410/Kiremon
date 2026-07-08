@@ -265,7 +265,7 @@ namespace PokedexReactASP.Infrastructure.Services
                         PokemonApiId = catchResult.CaughtPokemon.PokemonApiId,
                         Nickname = catchResult.CaughtPokemon.Nickname,
                         IsShiny = catchResult.CaughtPokemon.IsShiny,
-                        Nature = catchResult.CaughtPokemon.Nature.ToString(),
+                        Nature = catchResult.CaughtPokemon.Nature,
                         CaughtLevel = catchResult.CaughtPokemon.Level,
                         Ability = catchResult.CaughtPokemon.Ability
                     },
@@ -354,7 +354,7 @@ namespace PokedexReactASP.Infrastructure.Services
                             PokemonName = displayName,
                             SpriteUrl = spriteUrl,
                             SlotIndex = spawn.SlotIndex,
-                            SpawnRarity = spawn.SpawnRarity.ToString(),
+                            SpawnRarity = spawn.SpawnRarity,
                             AttemptsLeft = Math.Max(0, spawn.MaxAttempts - spawn.AttemptsUsed),
                             IsCaught = spawn.IsCaught,
                             IsConsumed = spawn.IsConsumed

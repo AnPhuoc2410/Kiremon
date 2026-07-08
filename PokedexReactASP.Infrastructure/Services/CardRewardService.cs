@@ -144,7 +144,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 TcgCardId = card.TcgCardId,
                 Name = card.Name,
                 Rarity = card.Rarity,
-                RarityTier = card.RarityTier.ToString(),
+                RarityTier = card.RarityTier,
                 ImageSmall = card.ImageSmall,
                 ImageLarge = card.ImageLarge
             };

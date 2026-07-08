@@ -1,8 +1,12 @@
-﻿import { createRef, useMemo, useState } from "react";
+import { createRef, useMemo, useState } from "react";
 
 import { Button, Header, Loading, Navbar, Text } from "@/components/ui";
 import { useMyTcgCards } from "@/hooks/queries";
 import { MyTcgCardsQuery, TcgSort } from "@/types/tcg-card-collection.types";
+import {
+  TcgCardRarityTier,
+  getTcgCardRarityTierDisplay,
+} from "@/types/pokemon.enums";
 
 import * as S from "./index.style";
 
@@ -13,7 +17,7 @@ const MyCards = () => {
 
   const [page, setPage] = useState(1);
   const [pokemonApiIdInput, setPokemonApiIdInput] = useState("");
-  const [rarityTier, setRarityTier] = useState("");
+  const [rarityTier, setRarityTier] = useState<TcgCardRarityTier | "">("");
   const [sort, setSort] = useState<TcgSort>("obtained-desc");
 
   const query: MyTcgCardsQuery = useMemo(
@@ -54,18 +58,18 @@ const MyCards = () => {
             value={rarityTier}
             onChange={(e) => {
               setPage(1);
-              setRarityTier(e.target.value);
+              setRarityTier(e.target.value ? Number(e.target.value) : "");
             }}
           >
             <option value="">All Rarity Tiers</option>
-            <option value="Common">Common</option>
-            <option value="Uncommon">Uncommon</option>
-            <option value="Rare">Rare</option>
-            <option value="HoloRare">Holo Rare</option>
-            <option value="UltraRare">Ultra Rare</option>
-            <option value="SecretRare">Secret Rare</option>
-            <option value="Promo">Promo</option>
-            <option value="Unknown">Unknown</option>
+            <option value={TcgCardRarityTier.Common}>Common</option>
+            <option value={TcgCardRarityTier.Uncommon}>Uncommon</option>
+            <option value={TcgCardRarityTier.Rare}>Rare</option>
+            <option value={TcgCardRarityTier.HoloRare}>Holo Rare</option>
+            <option value={TcgCardRarityTier.UltraRare}>Ultra Rare</option>
+            <option value={TcgCardRarityTier.SecretRare}>Secret Rare</option>
+            <option value={TcgCardRarityTier.Promo}>Promo</option>
+            <option value={TcgCardRarityTier.Unknown}>Unknown</option>
           </S.Select>
 
           <S.Select
@@ -117,7 +121,8 @@ const MyCards = () => {
                     <Text as="h3">{card.name}</Text>
                     <Text>ID: {card.tcgCardId}</Text>
                     <Text>
-                      {card.rarity || "Unknown"} · {card.rarityTier}
+                      {card.rarity || "Unknown"} ·{" "}
+                      {getTcgCardRarityTierDisplay(card.rarityTier)}
                     </Text>
                     <Text>Qty: {card.quantity}</Text>
                   </S.CardBody>

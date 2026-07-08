@@ -1,14 +1,16 @@
-﻿export type TcgSort =
+export type TcgSort =
   | "obtained-desc"
   | "obtained-asc"
   | "rarity-desc"
   | "rarity-asc";
 
+import { TcgCardRarityTier } from "./pokemon.enums";
+
 export interface MyTcgCardsQuery {
   page?: number;
   pageSize?: number;
   pokemonApiId?: number;
-  rarityTier?: string;
+  rarityTier?: TcgCardRarityTier;
   sort?: TcgSort;
 }
 
@@ -18,7 +20,7 @@ export interface MyTcgCardItem {
   pokemonApiId: number;
   name: string;
   rarity?: string | null;
-  rarityTier: string;
+  rarityTier: TcgCardRarityTier;
   quantity: number;
   imageSmall?: string | null;
   imageLarge?: string | null;
@@ -36,7 +38,7 @@ export interface PokemonTcgPreviewCard {
   pokemonApiId: number;
   name: string;
   rarity?: string | null;
-  rarityTier: string;
+  rarityTier: TcgCardRarityTier;
   imageSmall?: string | null;
   imageLarge?: string | null;
 }

@@ -32,6 +32,12 @@ import {
 } from "@/hooks/useBoxes";
 import { usePokemonCore } from "@/hooks/queries";
 import { collectionService } from "@/services/collection/collection.service";
+import {
+  getNatureDisplay,
+  getRankDisplay,
+  PokemonGender,
+  getGenderSymbol,
+} from "@/types/pokemon.enums";
 import { UserPokemonDto } from "@/types/userspokemon.types";
 import { UserBoxDto, MovePokemonItemDto } from "@/types/box.types";
 import { MyPokemonCardsView } from "./components/MyPokemonCardsView";
@@ -1582,13 +1588,9 @@ const PCStorage: React.FC = () => {
                         Lv.{activePokemonDetails.currentLevel}
                       </span>
                       <span
-                        className={`gender-badge ${activePokemonDetails.gender === 0 ? "male" : activePokemonDetails.gender === 1 ? "female" : "genderless"}`}
+                        className={`gender-badge ${activePokemonDetails.gender === PokemonGender.Male ? "male" : activePokemonDetails.gender === PokemonGender.Female ? "female" : "genderless"}`}
                       >
-                        {activePokemonDetails.gender === 0
-                          ? "♂"
-                          : activePokemonDetails.gender === 1
-                            ? "♀"
-                            : "⚲"}
+                        {getGenderSymbol(activePokemonDetails.gender)}
                       </span>
                     </div>
                   </S.DetailTopBar>
@@ -1748,9 +1750,10 @@ const PCStorage: React.FC = () => {
                         <S.InfoItemBox>
                           <span className="label">Gender</span>
                           <span className="value">
-                            {activePokemonDetails.gender === 0
+                            {activePokemonDetails.gender === PokemonGender.Male
                               ? "Male (♂)"
-                              : activePokemonDetails.gender === 1
+                              : activePokemonDetails.gender ===
+                                  PokemonGender.Female
                                 ? "Female (♀)"
                                 : "Unknown (⚲)"}
                           </span>

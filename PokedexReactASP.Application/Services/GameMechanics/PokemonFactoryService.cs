@@ -103,6 +103,7 @@ namespace PokedexReactASP.Application.Services.GameMechanics
                 
                 Notes = $"Nature: {nature}",
                 Nature = nature,
+                Gender = gender,
             };
 
             // 9. Create display DTO
