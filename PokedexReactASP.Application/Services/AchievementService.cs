@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
 using PokedexReactASP.Application.DTOs.Achievement;
 using PokedexReactASP.Application.Interfaces;
 using PokedexReactASP.Domain.Entities;
@@ -14,7 +13,6 @@ namespace PokedexReactASP.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ICacheService _cache;
         private readonly IAchievementNotificationService _notificationService;
-        private readonly ILogger<AchievementService> _logger;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(24);
 
@@ -146,14 +144,12 @@ namespace PokedexReactASP.Application.Services
             IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
             ICacheService cache,
-            IAchievementNotificationService notificationService,
-            ILogger<AchievementService> logger)
+            IAchievementNotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _cache = cache;
             _notificationService = notificationService;
-            _logger = logger;
         }
 
         /// <inheritdoc/>
