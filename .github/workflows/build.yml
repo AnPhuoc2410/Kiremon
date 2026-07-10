@@ -42,8 +42,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          _JAVA_OPTIONS: "-Xmx2g -Xms512m"
+          SONAR_SCANNER_OPTS: "-Xmx2g -Xms512m"
         shell: powershell
         run: |
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectBaseDir="${{ github.workspace }}" /d:sonar.exclusions=".agents/**/*,.github/**/*,docs/**/*,pokedexreactasp.client/public/**/*,**/node_modules/**/*,**/bin/**/*,**/obj/**/*,.vs/**/*"
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" '/d:sonar.exclusions=**/node_modules/**/*,**/bin/**/*,**/obj/**/*,**/.agents/**/*,**/.github/**/*,**/docs/**/*,**/pokedexreactasp.client/public/**/*,**/.vs/**/*'
           dotnet build
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
