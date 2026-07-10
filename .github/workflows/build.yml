@@ -44,6 +44,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectBaseDir="${{ github.workspace }}" /d:sonar.exclusions=".agents/**/*,.github/**/*,docs/**/*,pokedexreactasp.client/public/**/*,.vs/**/*"
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectBaseDir="${{ github.workspace }}" /d:sonar.exclusions=".agents/**/*,.github/**/*,docs/**/*,pokedexreactasp.client/public/**/*,**/node_modules/**/*,**/bin/**/*,**/obj/**/*,.vs/**/*"
           dotnet build
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
