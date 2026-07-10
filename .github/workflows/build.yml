@@ -56,10 +56,13 @@ jobs:
           $ErrorActionPreference = "Stop"
           $PSNativeCommandUseErrorActionPreference = $true
           
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectBaseDir="${{ github.workspace }}" /d:sonar.scanner.scanAll=false /d:sonar.cs.opencover.reportsPaths="*/TestResults/**/coverage.opencover.xml"
+          # 1. BEGIN STEP
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"AnPhuoc2410_Kiremon" /o:"anphuoc2410" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectBaseDir="${{ github.workspace }}" /d:sonar.scanner.scanAll=false /d:sonar.cs.opencover.reportsPaths="TestResults\*\coverage.opencover.xml" /d:sonar.exclusions="**/node_modules/**/*,**/bin/**/*,**/obj/**/*,**/.agents/**/*,**/.github/**/*,**/docs/**/*,**/pokedexreactasp.client/public/**/*,**/pokedexreactasp.client/src/assets/**/*,**/.vs/**/*"
           
+          # 2. BUILD STEP
           dotnet build --no-incremental --disable-build-servers
           
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
+          # 3. RUN TESTS
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover" --results-directory .\TestResults
           
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
