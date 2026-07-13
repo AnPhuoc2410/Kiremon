@@ -74,5 +74,96 @@ namespace PokedexReactASP.Application.Tests.Services
             // Assert
             result.Should().BeFalse();
         }
+
+        [Fact]
+        public async Task GetUserAchievementsAsync_ShouldFetchFromDbAndCalculate_WhenNoCache()
+        {
+            // Arrange
+            var userId = "user1";
+            var cacheKey = $"achievements:{userId}";
+            var user = new ApplicationUser { Id = userId, TrainerLevel = 6, PokemonCaught = 15 };
+
+            _mockCache.Setup(c => c.GetAsync<List<UserAchievementStatusDto>>(cacheKey))
+                      .ReturnsAsync((List<UserAchievementStatusDto>)null);
+
+            _mockUserManager.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(user);
+
+            var dbAchievements = new List<UserAchievement>
+            {
+                new UserAchievement { AchievementId = "level_5", Progress = 5, IsUnlocked = true }
+            };
+
+            _mockUnitOfWork.Setup(u => u.UserAchievement.FindAsync(
+                It.IsAny<System.Linq.Expressions.Expression<System.Func<UserAchievement, bool>>>(),
+                true))
+                .ReturnsAsync(dbAchievements);
+
+            // Act
+            var result = (await _achievementService.GetUserAchievementsAsync(userId)).ToList();
+
+            // Assert
+            result.Should().NotBeEmpty();
+            var level5 = result.FirstOrDefault(a => a.Id == "level_5");
+            level5.Should().NotBeNull();
+            level5.IsUnlocked.Should().BeTrue();
+
+            var level10 = result.FirstOrDefault(a => a.Id == "level_10");
+            level10.Should().NotBeNull();
+            level10.IsUnlocked.Should().BeFalse();
+            level10.CurrentProgress.Should().Be(6); // Dynamically calculated from TrainerLevel
+            
+            _mockCache.Verify(c => c.SetAsync(cacheKey, It.IsAny<List<UserAchievementStatusDto>>(), It.IsAny<System.TimeSpan>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CheckAndUnlockAchievementsAsync_ShouldUnlockNewAchievements_WhenConditionsMet()
+        {
+            // Arrange
+            var userId = "user1";
+            var user = new ApplicationUser { Id = userId, TrainerLevel = 5, Coins = 0 };
+
+            _mockUserManager.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(user);
+
+            // No previous achievements
+            _mockUnitOfWork.Setup(u => u.UserAchievement.FindAsync(
+                It.IsAny<System.Linq.Expressions.Expression<System.Func<UserAchievement, bool>>>(),
+                false))
+                .ReturnsAsync(new List<UserAchievement>());
+
+            // Act
+            await _achievementService.CheckAndUnlockAchievementsAsync(userId);
+
+            // Assert
+            _mockUnitOfWork.Verify(u => u.UserAchievement.AddAsync(It.IsAny<UserAchievement>()), Times.AtLeastOnce);
+            _mockUserManager.Verify(u => u.UpdateAsync(user), Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+            
+            user.Coins.Should().BeGreaterThan(0); // Should have received coins for level 5
+        }
+
+        [Fact]
+        public async Task UnlockAchievementManuallyAsync_ShouldUnlock_WhenValid()
+        {
+            // Arrange
+            var userId = "user1";
+            var achievementId = "level_5";
+            var user = new ApplicationUser { Id = userId, Coins = 0 };
+
+            _mockUserManager.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(user);
+
+            _mockUnitOfWork.Setup(u => u.UserAchievement.FirstOrDefaultAsync(
+                It.IsAny<System.Linq.Expressions.Expression<System.Func<UserAchievement, bool>>>(),
+                false))
+                .ReturnsAsync((UserAchievement)null);
+
+            // Act
+            var result = await _achievementService.UnlockAchievementManuallyAsync(userId, achievementId);
+
+            // Assert
+            result.Should().BeTrue();
+            _mockUnitOfWork.Verify(u => u.UserAchievement.AddAsync(It.IsAny<UserAchievement>()), Times.Once);
+            _mockUserManager.Verify(u => u.UpdateAsync(user), Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        }
     }
 }
