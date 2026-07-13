@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts";
 import { useWildArea, useWildAreas } from "@/hooks/queries";
 import { useAttemptWildCatch } from "@/hooks/mutations";
 import { wildAreaService } from "@/services/wild-area/wild-area.service";
-import { PokeballType } from "@/types/pokemon.enums";
+import { PokeballType, getWildSpawnRarityDisplay } from "@/types/pokemon.enums";
 import { WildCatchResult, WildPokemonSpawn } from "@/types/wild-area.types";
 import { toAnimatedSprite } from "@/hooks/common/battle/battleHelpers";
 import { EncounterModal, CatchingModal, ResultModal } from "./WildModals";
@@ -408,7 +408,7 @@ const WildArea = () => {
           onClick={() => {
             if (!disabled) setSelectedSpawn(spawn);
           }}
-          title={`${spawn.pokemonName} (${spawn.spawnRarity})`}
+          title={`${spawn.pokemonName} (${getWildSpawnRarityDisplay(spawn.spawnRarity)})`}
         >
           <img
             src={toAnimatedSprite(spawn.spriteUrl) || "/substitute.png"}

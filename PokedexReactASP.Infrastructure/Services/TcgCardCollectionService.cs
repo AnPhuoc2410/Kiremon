@@ -51,7 +51,7 @@ namespace PokedexReactASP.Infrastructure.Services
                     PokemonApiId = x.PokemonApiId,
                     Name = x.Name,
                     Rarity = x.Rarity,
-                    RarityTier = x.RarityTier.ToString(),
+                    RarityTier = x.RarityTier,
                     Quantity = x.Quantity,
                     ImageSmall = x.ImageSmall,
                     ImageLarge = x.ImageLarge

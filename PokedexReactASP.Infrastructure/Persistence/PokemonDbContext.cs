@@ -27,6 +27,7 @@ namespace PokedexReactASP.Infrastructure.Persistence
         public DbSet<GymLeader> GymLeaders { get; set; } = null!;
         public DbSet<WildAreaGlobalSetting> WildAreaGlobalSettings { get; set; } = null!;
         public DbSet<WildAreaEntity> WildAreaConfigs { get; set; } = null!;
+        public DbSet<CardRewardGlobalSetting> CardRewardGlobalSettings { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -356,6 +357,18 @@ namespace PokedexReactASP.Infrastructure.Persistence
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.RarityWeights)
+                      .HasColumnType("jsonb")
+                      .HasConversion(
+                          v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                          v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, double>>(v, (System.Text.Json.JsonSerializerOptions)null) ?? new Dictionary<string, double>()
+                      );
+            });
+
+            // Configure CardRewardGlobalSetting entity
+            modelBuilder.Entity<CardRewardGlobalSetting>(entity =>
+            {
+                entity.HasKey(e => e.Id);
                 entity.Property(e => e.RarityWeights)
                       .HasColumnType("jsonb")
                       .HasConversion(

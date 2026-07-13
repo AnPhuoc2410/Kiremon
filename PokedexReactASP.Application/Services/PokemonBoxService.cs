@@ -98,9 +98,57 @@ namespace PokedexReactASP.Application.Services
             return boxDto;
         }
 
+        /// <summary>
+        /// Moves a Pokémon to a new slot in the party or a box, swapping with an existing Pokémon if the target slot is occupied.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="userPokemonId">The ID of the Pokémon to move.</param>
+        /// <param name="dto">The destination details.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The result of the move operation.</returns>
         public async Task<MovePokemonResultDto> MovePokemonAsync(string userId, int userPokemonId, MovePokemonDto dto, CancellationToken cancellationToken = default)
         {
-            // Input validation
+            var validationResult = ValidateMoveRequest(dto);
+            if (validationResult != null)
+            {
+                return validationResult;
+            }
+
+            var (pokemon, targetPokemon) = await FetchPokemonsForMoveAsync(userId, userPokemonId, dto);
+
+            if (pokemon == null)
+            {
+                return new MovePokemonResultDto { Success = false, Message = "Pokémon not found." };
+            }
+
+            var constraintResult = await ValidatePartyConstraintAsync(userId, pokemon, targetPokemon, dto);
+            if (constraintResult != null)
+            {
+                return constraintResult;
+            }
+
+            int? swappedPokemonId = ExecutePokemonMove(pokemon, targetPokemon, dto);
+
+            _unitOfWork.UserPokemon.Update(pokemon);
+            if (targetPokemon != null)
+            {
+                _unitOfWork.UserPokemon.Update(targetPokemon);
+            }
+            
+            await _unitOfWork.SaveChangesAsync();
+
+            return new MovePokemonResultDto
+            {
+                Success = true,
+                SwappedPokemonId = swappedPokemonId
+            };
+        }
+
+        /// <summary>
+        /// Validates the destination parameters of the move request.
+        /// </summary>
+        private MovePokemonResultDto? ValidateMoveRequest(MovePokemonDto dto)
+        {
             if (dto.ToParty)
             {
                 if (dto.SlotIndex < 0 || dto.SlotIndex > 5)
@@ -120,8 +168,15 @@ namespace PokedexReactASP.Application.Services
                 }
             }
 
-            // Batch fetch the moving pokemon and any target pokemon in the destination slot in a single query
-            var pokemonList = (await _unitOfWork.UserPokemon.FindAsync(
+            return null;
+        }
+
+        /// <summary>
+        /// Fetches the moving Pokémon and the target Pokémon occupying the destination slot, if any.
+        /// </summary>
+        private async Task<(UserPokemon? pokemon, UserPokemon? targetPokemon)> FetchPokemonsForMoveAsync(string userId, int userPokemonId, MovePokemonDto dto)
+        {
+            var pokemonList = await _unitOfWork.UserPokemon.FindAsync(
                 p => p.UserId == userId && (p.Id == userPokemonId || 
                     (dto.ToParty 
                         ? (p.IsInParty && p.SlotIndex == dto.SlotIndex)
@@ -129,90 +184,95 @@ namespace PokedexReactASP.Application.Services
                     )
                 ),
                 disableTracking: false
-            )).ToList();
+            );
 
             var pokemon = pokemonList.FirstOrDefault(p => p.Id == userPokemonId);
-            if (pokemon == null)
-            {
-                return new MovePokemonResultDto { Success = false, Message = "Pokémon not found." };
-            }
-
             var targetPokemon = pokemonList.FirstOrDefault(p => p.Id != userPokemonId);
-            int? swappedPokemonId = null;
 
-            if (dto.ToParty)
-            {
-                if (targetPokemon != null)
-                {
-                    swappedPokemonId = targetPokemon.Id;
-
-                    // Swap
-                    targetPokemon.IsInParty = pokemon.IsInParty;
-                    targetPokemon.BoxId = pokemon.BoxId;
-                    targetPokemon.SlotIndex = pokemon.SlotIndex;
-
-                    pokemon.IsInParty = true;
-                    pokemon.BoxId = null;
-                    pokemon.SlotIndex = dto.SlotIndex;
-
-                    _unitOfWork.UserPokemon.Update(targetPokemon);
-                }
-                else
-                {
-                    pokemon.IsInParty = true;
-                    pokemon.BoxId = null;
-                    pokemon.SlotIndex = dto.SlotIndex;
-                }
-            }
-            else
-            {
-                if (targetPokemon != null)
-                {
-                    swappedPokemonId = targetPokemon.Id;
-
-                    // Swap
-                    targetPokemon.IsInParty = pokemon.IsInParty;
-                    targetPokemon.BoxId = pokemon.BoxId;
-                    targetPokemon.SlotIndex = pokemon.SlotIndex;
-
-                    pokemon.IsInParty = false;
-                    pokemon.BoxId = dto.TargetBoxId;
-                    pokemon.SlotIndex = dto.SlotIndex;
-
-                    _unitOfWork.UserPokemon.Update(targetPokemon);
-                }
-                else
-                {
-                    // Straight move to Box: check if leaving Party empty (only query db count if moving from party)
-                    if (pokemon.IsInParty)
-                    {
-                        int partyCount = await _unitOfWork.UserPokemon.CountAsync(p => p.UserId == userId && p.IsInParty);
-                        if (partyCount <= 1)
-                        {
-                            return new MovePokemonResultDto { Success = false, Message = "You must keep at least 1 Pokémon in your party." };
-                        }
-                    }
-
-                    pokemon.IsInParty = false;
-                    pokemon.BoxId = dto.TargetBoxId;
-                    pokemon.SlotIndex = dto.SlotIndex;
-                }
-            }
-
-            _unitOfWork.UserPokemon.Update(pokemon);
-            await _unitOfWork.SaveChangesAsync();
-
-            return new MovePokemonResultDto
-            {
-                Success = true,
-                SwappedPokemonId = swappedPokemonId
-            };
+            return (pokemon, targetPokemon);
         }
 
+        /// <summary>
+        /// Validates that moving the Pokémon will not leave the user's party empty.
+        /// </summary>
+        private async Task<MovePokemonResultDto?> ValidatePartyConstraintAsync(string userId, UserPokemon pokemon, UserPokemon? targetPokemon, MovePokemonDto dto)
+        {
+            // If the pokemon is leaving the party, and there is no target pokemon replacing it in the party
+            if (pokemon.IsInParty && !dto.ToParty && targetPokemon == null)
+            {
+                int partyCount = await _unitOfWork.UserPokemon.CountAsync(p => p.UserId == userId && p.IsInParty);
+                if (partyCount <= 1)
+                {
+                    return new MovePokemonResultDto { Success = false, Message = "You must keep at least 1 Pokémon in your party." };
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Executes the state swap between the moving Pokémon and the target slot, updating entity properties in-memory.
+        /// </summary>
+        private int? ExecutePokemonMove(UserPokemon pokemon, UserPokemon? targetPokemon, MovePokemonDto dto)
+        {
+            int? swappedPokemonId = null;
+
+            if (targetPokemon != null)
+            {
+                swappedPokemonId = targetPokemon.Id;
+
+                // The target takes the source pokemon's original spot
+                targetPokemon.IsInParty = pokemon.IsInParty;
+                targetPokemon.BoxId = pokemon.BoxId;
+                targetPokemon.SlotIndex = pokemon.SlotIndex;
+            }
+
+            // The source pokemon moves to the destination
+            pokemon.IsInParty = dto.ToParty;
+            pokemon.BoxId = dto.ToParty ? null : dto.TargetBoxId;
+            pokemon.SlotIndex = dto.SlotIndex;
+
+            return swappedPokemonId;
+        }
+
+        /// <summary>
+        /// Moves a batch of Pokémon simultaneously, enforcing party constraints and avoiding collisions.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="dto">The batch move details.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>True if the batch move succeeded, otherwise false.</returns>
         public async Task<bool> MovePokemonBatchAsync(string userId, BatchMovePokemonDto dto, CancellationToken cancellationToken = default)
         {
+            var pokemons = await FetchPokemonsForBatchMoveAsync(userId, dto);
+            if (pokemons == null)
+            {
+                return false;
+            }
+
+            if (!await ValidateBatchPartyConstraintAsync(userId, pokemons, dto))
+            {
+                return false;
+            }
+
+            var movingIds = dto.Moves.Select(m => m.UserPokemonId).ToHashSet();
+            if (!await ValidateBatchOccupancyAsync(userId, movingIds, dto))
+            {
+                return false;
+            }
+
+            ExecuteBatchPokemonMoves(pokemons, dto);
+            
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Fetches the Pokémon to be moved and ensures all requested Pokémon exist and belong to the user.
+        /// </summary>
+        private async Task<Dictionary<int, UserPokemon>?> FetchPokemonsForBatchMoveAsync(string userId, BatchMovePokemonDto dto)
+        {
             var pokemonIds = dto.Moves.Select(m => m.UserPokemonId).ToList();
-            var movingIds = pokemonIds.ToHashSet();
 
             var pokemons = (await _unitOfWork.UserPokemon.FindAsync(
                 p => p.UserId == userId && pokemonIds.Contains(p.Id),
@@ -221,10 +281,17 @@ namespace PokedexReactASP.Application.Services
 
             if (pokemons.Count != dto.Moves.Count)
             {
-                return false;
+                return null;
             }
 
-            // Party size check
+            return pokemons;
+        }
+
+        /// <summary>
+        /// Validates that the batch move does not leave the user's party completely empty.
+        /// </summary>
+        private async Task<bool> ValidateBatchPartyConstraintAsync(string userId, Dictionary<int, UserPokemon> pokemons, BatchMovePokemonDto dto)
+        {
             int currentPartyCount = await _unitOfWork.UserPokemon.CountAsync(p => p.UserId == userId && p.IsInParty);
             int leavingPartyCount = 0;
             int enteringPartyCount = 0;
@@ -242,12 +309,14 @@ namespace PokedexReactASP.Application.Services
                 }
             }
 
-            if (currentPartyCount - leavingPartyCount + enteringPartyCount < 1)
-            {
-                return false; // Rule: at least 1 pokemon in party
-            }
+            return (currentPartyCount - leavingPartyCount + enteringPartyCount) >= 1;
+        }
 
-            // Occupancy check - destination must not be occupied by non-moving pokemon
+        /// <summary>
+        /// Validates that destination slots are not occupied by Pokémon outside of the current batch move.
+        /// </summary>
+        private async Task<bool> ValidateBatchOccupancyAsync(string userId, HashSet<int> movingIds, BatchMovePokemonDto dto)
+        {
             var targetBoxIds = dto.Moves.Where(m => !m.ToParty && m.TargetBoxId.HasValue)
                                          .Select(m => m.TargetBoxId!.Value)
                                          .Distinct()
@@ -278,7 +347,14 @@ namespace PokedexReactASP.Application.Services
                 }
             }
 
-            // Execute moves
+            return true;
+        }
+
+        /// <summary>
+        /// Applies the move updates to the tracked Pokémon entities.
+        /// </summary>
+        private void ExecuteBatchPokemonMoves(Dictionary<int, UserPokemon> pokemons, BatchMovePokemonDto dto)
+        {
             foreach (var move in dto.Moves)
             {
                 var p = pokemons[move.UserPokemonId];
@@ -287,9 +363,6 @@ namespace PokedexReactASP.Application.Services
                 p.SlotIndex = move.SlotIndex;
                 _unitOfWork.UserPokemon.Update(p);
             }
-
-            await _unitOfWork.SaveChangesAsync();
-            return true;
         }
 
         public async Task<bool> ReorderBoxesAsync(string userId, ReorderBoxesDto dto, CancellationToken cancellationToken = default)

@@ -1,6 +1,7 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { tcgCardCollectionService } from "@/services/tcg-card-collection/tcg-card-collection.service";
 import { MyTcgCardsQuery, TcgSort } from "@/types/tcg-card-collection.types";
+import { TcgCardRarityTier } from "@/types/pokemon.enums";
 
 export const myTcgCardsQueryKeys = {
   all: ["tcg-cards"] as const,
@@ -21,7 +22,7 @@ interface NormalizedMyTcgCardsQuery {
   pageSize: number;
   sort: TcgSort;
   pokemonApiId?: number;
-  rarityTier?: string;
+  rarityTier?: TcgCardRarityTier;
 }
 
 const sanitizeQuery = (query: MyTcgCardsQuery): NormalizedMyTcgCardsQuery => ({

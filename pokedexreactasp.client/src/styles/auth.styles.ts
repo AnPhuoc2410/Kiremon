@@ -66,14 +66,14 @@ export const AuthSubmit = styled.button`
   padding: 12px 14px;
   border-radius: 4px;
   border: none;
-  background: ${colors["red-500"]};
+  background: ${colors["red-600"]};
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: transform 120ms ease;
 
   &:hover {
-    background: ${colors["red-600"]};
+    background: ${colors["red-700"]};
   }
 
   &:active {

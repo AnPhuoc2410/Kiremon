@@ -9,6 +9,13 @@
   <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript"/>
 </p>
 
+<p align="center">
+  <a href="https://sonarcloud.io/summary/new_code?id=AnPhuoc2410_Kiremon">
+    <img src="https://sonarcloud.io/api/project_badges/quality_gate?project=AnPhuoc2410_Kiremon" alt="Quality Gate"/>
+  </a>
+</p>
+
+
 **Ứng dụng web game Pokemon fullstack với .NET 8, React 19, SignalR - Clean Architecture & Modern Tech Stack**
 
 [🎮 Live Demo](https://kiremon.vercel.app) • [🐛 Report Bug](https://github.com/AnPhuoc2410/Kiremon/issues)

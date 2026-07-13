@@ -18,7 +18,7 @@ namespace PokedexReactASP.Application.DTOs.TcgCards
         public int PokemonApiId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Rarity { get; set; }
-        public string RarityTier { get; set; } = string.Empty;
+        public TcgCardRarityTier RarityTier { get; set; }
         public int Quantity { get; set; }
         public string? ImageSmall { get; set; }
         public string? ImageLarge { get; set; }

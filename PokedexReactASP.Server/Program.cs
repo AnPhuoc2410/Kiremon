@@ -164,6 +164,7 @@ namespace PokedexReactASP.Server
             builder.Services.AddScoped<IAchievementNotificationService, AchievementNotificationService>();
             builder.Services.AddScoped<IWildAreaService, WildAreaService>();
             builder.Services.AddScoped<ICardRewardService, CardRewardService>();
+            builder.Services.AddScoped<ICardRewardAdminService, CardRewardAdminService>();
             builder.Services.AddScoped<IPokemonSpawnMetadataSyncService, PokemonSpawnMetadataSyncService>();
             builder.Services.AddScoped<IWildAreaAdminService, WildAreaAdminService>();
             builder.Services.AddScoped<BiomeSpawnCandidateService>();

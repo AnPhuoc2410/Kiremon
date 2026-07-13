@@ -1,16 +1,11 @@
-﻿export type WildSpawnRarity =
-  | "Common"
-  | "Uncommon"
-  | "Rare"
-  | "Epic"
-  | "Legendary";
+import { WildSpawnRarity, TcgCardRarityTier, Nature } from "./pokemon.enums";
 
 export interface WildPokemonSummary {
   id: number;
   pokemonApiId: number;
   nickname?: string | null;
   isShiny?: boolean;
-  nature?: string;
+  nature?: Nature;
   caughtLevel?: number;
 }
 
@@ -19,7 +14,7 @@ export interface WildCardReward {
   tcgCardId: string;
   name: string;
   rarity?: string | null;
-  rarityTier: string;
+  rarityTier: TcgCardRarityTier;
   imageSmall?: string | null;
   imageLarge?: string | null;
 }

@@ -13,7 +13,8 @@ namespace PokedexReactASP.Infrastructure.Services
     {
         private readonly PokemonDbContext _context;
         private readonly ITcgCardService _tcgCardService;
-        private readonly CardRewardSettings _settings;
+        private readonly CardRewardSettings _fallbackSettings;
+        private readonly ICardRewardAdminService _adminService;
         private readonly Random _random = new();
 
         private static readonly TcgCardRarityTier[] TierOrder =
@@ -23,22 +24,30 @@ namespace PokedexReactASP.Infrastructure.Services
             TcgCardRarityTier.Rare,
             TcgCardRarityTier.HoloRare,
             TcgCardRarityTier.UltraRare,
-            TcgCardRarityTier.SecretRare
+            TcgCardRarityTier.SecretRare,
+            TcgCardRarityTier.Promo,
+            TcgCardRarityTier.Unknown
         ];
 
         public CardRewardService(
             PokemonDbContext context,
             ITcgCardService tcgCardService,
-            IOptions<CardRewardSettings> settings)
+            IOptions<CardRewardSettings> fallbackSettings,
+            ICardRewardAdminService adminService)
         {
             _context = context;
             _tcgCardService = tcgCardService;
-            _settings = settings.Value;
+            _fallbackSettings = fallbackSettings.Value;
+            _adminService = adminService;
         }
 
         public async Task<WildCardRewardDto?> RollAndGrantCardAsync(string userId, int pokemonApiId, CardRewardSource source)
         {
-            var tier = RollTier(_settings.BuildWeights());
+            // Prefer DB settings; fall back to appsettings.json values when no DB row exists.
+            var dbSettings = await _adminService.GetSettingsAsync();
+            var activeSettings = dbSettings.RarityWeights.Count > 0 ? dbSettings : _fallbackSettings;
+
+            var tier = RollTier(activeSettings.BuildWeights());
             var cards = await _tcgCardService.GetCardsByPokemonAndTierAsync(pokemonApiId, tier);
 
             if (cards.Count == 0)
@@ -135,7 +144,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 TcgCardId = card.TcgCardId,
                 Name = card.Name,
                 Rarity = card.Rarity,
-                RarityTier = card.RarityTier.ToString(),
+                RarityTier = card.RarityTier,
                 ImageSmall = card.ImageSmall,
                 ImageLarge = card.ImageLarge
             };
