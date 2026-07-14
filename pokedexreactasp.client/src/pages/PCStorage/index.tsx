@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, MouseEvent } from "react";
 import toast from "react-hot-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import gsap from "gsap";
 import {
   IconSearch,
@@ -207,23 +207,21 @@ const PCStorage: React.FC = () => {
   }, [boxes]);
 
   // ── 1. Party load ─────────────────────────────────────────
-  const loadParty = async () => {
-    if (!isAuthenticated) return;
-    try {
-      const coll = await collectionService.getCollection();
+  const { data: collectionData } = useQuery({
+    queryKey: ["collection"],
+    queryFn: () => collectionService.getCollection(),
+    enabled: isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (collectionData) {
       setPartyPokemons(
-        coll
+        collectionData
           .filter((p) => p.isInParty)
           .sort((a, b) => a.slotIndex - b.slotIndex),
       );
-    } catch {
-      /* silent */
     }
-  };
-
-  useEffect(() => {
-    loadParty();
-  }, [isAuthenticated, boxes]);
+  }, [collectionData]);
 
   // ── 2. Drag detection ─────────────────────────────────────
   useEffect(() => {
@@ -940,7 +938,8 @@ const PCStorage: React.FC = () => {
     setContextMenu(null);
     try {
       await collectionService.toggleFavorite(p.id);
-      loadParty();
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
     } catch {
       toast.error("Action failed.");
     }
@@ -957,7 +956,8 @@ const PCStorage: React.FC = () => {
       toast.success(`${p.displayName} was released.`);
       if (selectedPokemon?.id === p.id) setSelectedPokemon(null);
       if (hoveredPokemon?.id === p.id) setHoveredPokemon(null);
-      loadParty();
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
     } catch {
       toast.error("Release failed.");
     }
@@ -1122,25 +1122,27 @@ const PCStorage: React.FC = () => {
     return 10 + (val / 252) * 45; // maps 0..252 to 10..55 range
   };
 
-  const radii = activePokemonDetails
-    ? activeStatTab === "iv"
-      ? [
-          getStatRadius(activePokemonDetails.ivHp),
-          getStatRadius(activePokemonDetails.ivAttack),
-          getStatRadius(activePokemonDetails.ivDefense),
-          getStatRadius(activePokemonDetails.ivSpeed),
-          getStatRadius(activePokemonDetails.ivSpecialDefense),
-          getStatRadius(activePokemonDetails.ivSpecialAttack),
-        ]
-      : [
-          getEvRadius(activePokemonDetails.evHp),
-          getEvRadius(activePokemonDetails.evAttack),
-          getEvRadius(activePokemonDetails.evDefense),
-          getEvRadius(activePokemonDetails.evSpeed),
-          getEvRadius(activePokemonDetails.evSpecialDefense),
-          getEvRadius(activePokemonDetails.evSpecialAttack),
-        ]
-    : [];
+  let radii: number[] = [];
+  if (activePokemonDetails) {
+    radii =
+      activeStatTab === "iv"
+        ? [
+            getStatRadius(activePokemonDetails.ivHp),
+            getStatRadius(activePokemonDetails.ivAttack),
+            getStatRadius(activePokemonDetails.ivDefense),
+            getStatRadius(activePokemonDetails.ivSpeed),
+            getStatRadius(activePokemonDetails.ivSpecialDefense),
+            getStatRadius(activePokemonDetails.ivSpecialAttack),
+          ]
+        : [
+            getEvRadius(activePokemonDetails.evHp),
+            getEvRadius(activePokemonDetails.evAttack),
+            getEvRadius(activePokemonDetails.evDefense),
+            getEvRadius(activePokemonDetails.evSpeed),
+            getEvRadius(activePokemonDetails.evSpecialDefense),
+            getEvRadius(activePokemonDetails.evSpecialAttack),
+          ];
+  }
 
   const cx = 140;
   const cy = 110;
@@ -1161,73 +1163,79 @@ const PCStorage: React.FC = () => {
     })
     .join(" ");
 
-  const statItems = activePokemonDetails
-    ? activeStatTab === "iv"
-      ? [
-          {
-            label: "HP",
-            displayName: "HP",
-            judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})`,
-          },
-          {
-            label: "ATK",
-            displayName: "Attack",
-            judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})`,
-          },
-          {
-            label: "DEF",
-            displayName: "Defense",
-            judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})`,
-          },
-          {
-            label: "SPD",
-            displayName: "Speed",
-            judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})`,
-          },
-          {
-            label: "SpD",
-            displayName: "Sp. Def",
-            judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})`,
-          },
-          {
-            label: "SpA",
-            displayName: "Sp. Atk",
-            judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})`,
-          },
-        ]
-      : [
-          {
-            label: "HP",
-            displayName: "HP",
-            judge: `EV: ${activePokemonDetails.evHp}`,
-          },
-          {
-            label: "ATK",
-            displayName: "Attack",
-            judge: `EV: ${activePokemonDetails.evAttack}`,
-          },
-          {
-            label: "DEF",
-            displayName: "Defense",
-            judge: `EV: ${activePokemonDetails.evDefense}`,
-          },
-          {
-            label: "SPD",
-            displayName: "Speed",
-            judge: `EV: ${activePokemonDetails.evSpeed}`,
-          },
-          {
-            label: "SpD",
-            displayName: "Sp. Def",
-            judge: `EV: ${activePokemonDetails.evSpecialDefense}`,
-          },
-          {
-            label: "SpA",
-            displayName: "Sp. Atk",
-            judge: `EV: ${activePokemonDetails.evSpecialAttack}`,
-          },
-        ]
-    : [];
+  const getStatItems = () => {
+    if (!activePokemonDetails) return [];
+
+    if (activeStatTab === "iv") {
+      return [
+        {
+          label: "HP",
+          displayName: "HP",
+          judge: `${getIvJudgeText(activePokemonDetails.ivHp)} (${activePokemonDetails.ivHp ?? 0})`,
+        },
+        {
+          label: "ATK",
+          displayName: "Attack",
+          judge: `${getIvJudgeText(activePokemonDetails.ivAttack)} (${activePokemonDetails.ivAttack ?? 0})`,
+        },
+        {
+          label: "DEF",
+          displayName: "Defense",
+          judge: `${getIvJudgeText(activePokemonDetails.ivDefense)} (${activePokemonDetails.ivDefense ?? 0})`,
+        },
+        {
+          label: "SPD",
+          displayName: "Speed",
+          judge: `${getIvJudgeText(activePokemonDetails.ivSpeed)} (${activePokemonDetails.ivSpeed ?? 0})`,
+        },
+        {
+          label: "SpD",
+          displayName: "Sp. Def",
+          judge: `${getIvJudgeText(activePokemonDetails.ivSpecialDefense)} (${activePokemonDetails.ivSpecialDefense ?? 0})`,
+        },
+        {
+          label: "SpA",
+          displayName: "Sp. Atk",
+          judge: `${getIvJudgeText(activePokemonDetails.ivSpecialAttack)} (${activePokemonDetails.ivSpecialAttack ?? 0})`,
+        },
+      ];
+    }
+
+    return [
+      {
+        label: "HP",
+        displayName: "HP",
+        judge: `EV: ${activePokemonDetails.evHp}`,
+      },
+      {
+        label: "ATK",
+        displayName: "Attack",
+        judge: `EV: ${activePokemonDetails.evAttack}`,
+      },
+      {
+        label: "DEF",
+        displayName: "Defense",
+        judge: `EV: ${activePokemonDetails.evDefense}`,
+      },
+      {
+        label: "SPD",
+        displayName: "Speed",
+        judge: `EV: ${activePokemonDetails.evSpeed}`,
+      },
+      {
+        label: "SpD",
+        displayName: "Sp. Def",
+        judge: `EV: ${activePokemonDetails.evSpecialDefense}`,
+      },
+      {
+        label: "SpA",
+        displayName: "Sp. Atk",
+        judge: `EV: ${activePokemonDetails.evSpecialAttack}`,
+      },
+    ];
+  };
+
+  const statItems = getStatItems();
 
   const handleOpenMoveManager = () => {
     if (!activePokemonDetails) return;
@@ -1265,6 +1273,26 @@ const PCStorage: React.FC = () => {
     } catch (err: any) {
       toast.error(err.message || "Failed to update moveset.");
     }
+  };
+
+  const renderStatJudgmentBar = () => {
+    if (activeStatTab === "iv" && activePokemonDetails?.ivRating) {
+      return (
+        <S.DetailIvJudgmentBar style={{ margin: "8px 0 0", width: "100%" }}>
+          <span className="rating-text">{activePokemonDetails.ivRating}</span>
+        </S.DetailIvJudgmentBar>
+      );
+    }
+    if (activeStatTab === "ev") {
+      return (
+        <S.DetailIvJudgmentBar style={{ margin: "8px 0 0", width: "100%" }}>
+          <span className="rating-text">
+            Total EVs: {activePokemonDetails?.evTotal}/510
+          </span>
+        </S.DetailIvJudgmentBar>
+      );
+    }
+    return null;
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1309,10 +1337,8 @@ const PCStorage: React.FC = () => {
                 const isSel =
                   !!poke &&
                   !!(
-                    (hoveredPokemon && poke.id === hoveredPokemon.id) ||
-                    (!hoveredPokemon &&
-                      selectedPokemon &&
-                      poke.id === selectedPokemon.id)
+                    poke.id === hoveredPokemon?.id ||
+                    (!hoveredPokemon && poke.id === selectedPokemon?.id)
                   );
                 const isMultiSel = poke ? multiSelectedIds.has(poke.id) : false;
                 return (
@@ -2240,24 +2266,7 @@ const PCStorage: React.FC = () => {
                             </div>
                           </S.DetailStatsArea>
 
-                          {activeStatTab === "iv" &&
-                          activePokemonDetails.ivRating ? (
-                            <S.DetailIvJudgmentBar
-                              style={{ margin: "8px 0 0", width: "100%" }}
-                            >
-                              <span className="rating-text">
-                                {activePokemonDetails.ivRating}
-                              </span>
-                            </S.DetailIvJudgmentBar>
-                          ) : activeStatTab === "ev" ? (
-                            <S.DetailIvJudgmentBar
-                              style={{ margin: "8px 0 0", width: "100%" }}
-                            >
-                              <span className="rating-text">
-                                Total EVs: {activePokemonDetails.evTotal}/510
-                              </span>
-                            </S.DetailIvJudgmentBar>
-                          ) : null}
+                          {renderStatJudgmentBar()}
                         </>
                       )}
                     </S.StatsTabContainer>
