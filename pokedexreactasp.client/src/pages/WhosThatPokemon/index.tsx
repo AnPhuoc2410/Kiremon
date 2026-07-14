@@ -23,6 +23,9 @@ const POKEMON_MAX_ID = 898;
 const getRandomPokemonId = () => Math.floor(Math.random() * POKEMON_MAX_ID) + 1;
 
 const WhosThatPokemon: React.FC = () => {
+  const [pokemonList, setPokemonList] = useState<
+    { name: string; url: string }[]
+  >([]);
   const [pokemonName, setPokemonName] = useState<string>("");
   const [spriteUrl, setSpriteUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,25 @@ const WhosThatPokemon: React.FC = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const navigate = useNavigate();
 
+  // Load the full list of pokemon once to prevent exposing the current pokemon's name in network tab
+  useEffect(() => {
+    const fetchList = async () => {
+      try {
+        const res = await fetch(
+          "https://pokeapi.co/api/v2/pokemon?limit=" + POKEMON_MAX_ID,
+        );
+        const data = await res.json();
+        setPokemonList(data.results);
+      } catch (err) {
+        console.error("Failed to load pokemon list:", err);
+      }
+    };
+    fetchList();
+  }, []);
+
   const loadRandomPokemon = async () => {
+    if (pokemonList.length === 0) return;
+
     setLoading(true);
     setRevealed(false);
     setIsCorrect(undefined);
@@ -41,14 +62,11 @@ const WhosThatPokemon: React.FC = () => {
 
     try {
       const randomId = getRandomPokemonId();
-      const details = await pokemonService.getPokemonDetail(randomId);
+      const pokemon = pokemonList[randomId - 1]; // 0-indexed
 
-      if (details) {
-        setPokemonName(details.name);
-        const sprite =
-          details.sprites?.other?.["official-artwork"]?.front_default ||
-          details.sprites?.front_default ||
-          "";
+      if (pokemon) {
+        setPokemonName(pokemon.name);
+        const sprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${randomId}.png`;
         setSpriteUrl(sprite);
       }
     } catch (error) {
@@ -59,8 +77,10 @@ const WhosThatPokemon: React.FC = () => {
   };
 
   useEffect(() => {
-    loadRandomPokemon();
-  }, []);
+    if (pokemonList.length > 0 && !pokemonName) {
+      loadRandomPokemon();
+    }
+  }, [pokemonList]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
