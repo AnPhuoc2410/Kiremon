@@ -372,6 +372,44 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]:
       "目标是最大化分配属性的总和。找到能够产生最高可能得分的最佳组合，即可获得满分！",
   },
+  "games.pokedle": {
+    [LANGUAGE_IDS.ENGLISH]: "Pokedle",
+    [LANGUAGE_IDS.JAPANESE]: "Pokedle",
+    [LANGUAGE_IDS.KOREAN]: "Pokedle",
+    [LANGUAGE_IDS.FRENCH]: "Pokedle",
+    [LANGUAGE_IDS.GERMAN]: "Pokedle",
+    [LANGUAGE_IDS.SPANISH]: "Pokedle",
+    [LANGUAGE_IDS.ITALIAN]: "Pokedle",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "Pokedle",
+  },
+  "games.pokedle.howToPlay": {
+    [LANGUAGE_IDS.ENGLISH]: "How to Play",
+    [LANGUAGE_IDS.JAPANESE]: "遊び方",
+    [LANGUAGE_IDS.KOREAN]: "게임 방법",
+    [LANGUAGE_IDS.FRENCH]: "Comment Jouer",
+    [LANGUAGE_IDS.GERMAN]: "Spielanleitung",
+    [LANGUAGE_IDS.SPANISH]: "Cómo Jugar",
+    [LANGUAGE_IDS.ITALIAN]: "Come Giocare",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "怎么玩",
+  },
+  "games.pokedle.howToPlayDesc": {
+    [LANGUAGE_IDS.ENGLISH]:
+      "Guess the Pokémon based on clues. Green means correct, Red means incorrect. Up/Down arrows mean higher or lower.",
+    [LANGUAGE_IDS.JAPANESE]:
+      "ヒントをもとにポケモンを推測します。緑は正解、赤は不正解です。上下の矢印はそれより高いか低いかを示します。",
+    [LANGUAGE_IDS.KOREAN]:
+      "힌트를 기반으로 포켓몬을 추측하세요. 초록색은 정답, 빨간색은 오답입니다. 위/아래 화살표는 더 높거나 낮음을 의미합니다.",
+    [LANGUAGE_IDS.FRENCH]:
+      "Devinez le Pokémon en fonction des indices. Vert signifie correct, rouge signifie incorrect. Les flèches haut/bas signifient plus haut ou plus bas.",
+    [LANGUAGE_IDS.GERMAN]:
+      "Errate das Pokémon anhand von Hinweisen. Grün bedeutet richtig, Rot bedeutet falsch. Auf-/Ab-Pfeile bedeuten höher oder niedriger.",
+    [LANGUAGE_IDS.SPANISH]:
+      "Adivina el Pokémon basándote en las pistas. Verde significa correcto, rojo significa incorrecto. Las flechas arriba/abajo significan mayor o menor.",
+    [LANGUAGE_IDS.ITALIAN]:
+      "Indovina il Pokémon in base agli indizi. Verde significa corretto, rosso significa errato. Le frecce su/giù indicano maggiore o minore.",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]:
+      "根据线索猜测宝可梦。绿色表示正确，红色表示错误。上下箭头表示更高或更低。",
+  },
 
   // Explore dropdown
   "explore.regions": {

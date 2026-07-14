@@ -49,18 +49,23 @@ class SpeciesService extends ApiService {
   }
 
   /**
-   * Convenience method to get species and evolution in one call
+   * Convenience method to get species and evolution in one call.
+   * Species is fetched first (needed to get the evolution URL),
+   * then evolution chain is fetched immediately after — total = 2 sequential
+   * external requests on first call, but both are cached for subsequent calls.
    */
   async getSpeciesWithEvolution(nameOrId: string | number): Promise<{
     species: IPokemonSpecies | null;
     evolution: IEvolutionChain | null;
   }> {
+    // getPokemonSpecies already uses cacheUtils, so repeated calls are free
     const species = await this.getPokemonSpecies(nameOrId);
 
-    if (!species || !species.evolution_chain?.url) {
+    if (!species?.evolution_chain?.url) {
       return { species, evolution: null };
     }
 
+    // getEvolutionChain also uses cacheUtils — only slow on first fetch
     const evolution = await this.getEvolutionChain(species.evolution_chain.url);
     return { species, evolution };
   }

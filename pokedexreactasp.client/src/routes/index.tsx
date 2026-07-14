@@ -21,6 +21,7 @@ const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
 const TypeMatchup = lazy(() => import("@/pages/MiniGame/TypeMatchup"));
 const CatchChallenge = lazy(() => import("@/pages/MiniGame/CatchChallenge"));
 const StatOptimizer = lazy(() => import("@/pages/MiniGame/StatIV"));
+const Pokedle = lazy(() => import("@/pages/MiniGame/Pokedle"));
 
 const Battle = lazy(() => import("@/pages/Battle"));
 const Search = lazy(() => import("@/pages/Search"));
@@ -177,6 +178,14 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <StatOptimizer />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/games/pokedle"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Pokedle />
               </Suspense>
             }
           />
