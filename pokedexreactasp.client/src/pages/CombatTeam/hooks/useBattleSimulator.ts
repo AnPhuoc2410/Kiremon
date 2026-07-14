@@ -231,7 +231,7 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
             : "Defeat! Better luck next time!",
         );
       }
-    }, 400);
+    }, 1000);
   };
 
   const resetBattle = () => {

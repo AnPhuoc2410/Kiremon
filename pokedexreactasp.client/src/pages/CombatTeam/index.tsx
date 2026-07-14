@@ -26,6 +26,8 @@ const CombatTeam: React.FC = () => {
   const computerSpriteRef = useRef<HTMLImageElement>(null);
   const prevPlayerId = useRef<number | null>(null);
   const prevComputerId = useRef<number | null>(null);
+  const prevPlayerHp = useRef<number | null>(null);
+  const prevComputerHp = useRef<number | null>(null);
   const { isAuthenticated } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>("teams");
@@ -73,11 +75,40 @@ const CombatTeam: React.FC = () => {
     } else if (prevPlayerId.current !== activePlayer.id) {
       gsap.fromTo(
         playerSpriteRef.current,
-        { x: -100, opacity: 0, y: 0 },
+        { x: -100, opacity: 0, y: 0, filter: "brightness(1)" },
         { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
       );
+    } else if (
+      prevPlayerHp.current !== null &&
+      playerHp < prevPlayerHp.current
+    ) {
+      gsap
+        .timeline()
+        .set(playerSpriteRef.current, { filter: "brightness(2) contrast(1.5)" })
+        .to(playerSpriteRef.current, { x: -10, duration: 0.05 })
+        .to(playerSpriteRef.current, { x: 10, duration: 0.05 })
+        .set(playerSpriteRef.current, { filter: "brightness(1) contrast(1)" })
+        .to(playerSpriteRef.current, { x: -10, duration: 0.05 })
+        .to(playerSpriteRef.current, { x: 10, duration: 0.05 })
+        .to(playerSpriteRef.current, { x: 0, duration: 0.05 });
+
+      if (computerSpriteRef.current) {
+        gsap
+          .timeline()
+          .to(computerSpriteRef.current, {
+            x: -30,
+            duration: 0.1,
+            ease: "power1.in",
+          })
+          .to(computerSpriteRef.current, {
+            x: 0,
+            duration: 0.2,
+            ease: "power1.out",
+          });
+      }
     }
     prevPlayerId.current = activePlayer.id;
+    prevPlayerHp.current = playerHp;
   }, [activePlayer, playerHp]);
 
   useEffect(() => {
@@ -88,11 +119,42 @@ const CombatTeam: React.FC = () => {
     } else if (prevComputerId.current !== activeComputer.id) {
       gsap.fromTo(
         computerSpriteRef.current,
-        { x: 100, opacity: 0, y: 0 },
+        { x: 100, opacity: 0, y: 0, filter: "brightness(1)" },
         { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
       );
+    } else if (
+      prevComputerHp.current !== null &&
+      computerHp < prevComputerHp.current
+    ) {
+      gsap
+        .timeline()
+        .set(computerSpriteRef.current, {
+          filter: "brightness(2) contrast(1.5)",
+        })
+        .to(computerSpriteRef.current, { x: -10, duration: 0.05 })
+        .to(computerSpriteRef.current, { x: 10, duration: 0.05 })
+        .set(computerSpriteRef.current, { filter: "brightness(1) contrast(1)" })
+        .to(computerSpriteRef.current, { x: -10, duration: 0.05 })
+        .to(computerSpriteRef.current, { x: 10, duration: 0.05 })
+        .to(computerSpriteRef.current, { x: 0, duration: 0.05 });
+
+      if (playerSpriteRef.current) {
+        gsap
+          .timeline()
+          .to(playerSpriteRef.current, {
+            x: 30,
+            duration: 0.1,
+            ease: "power1.in",
+          })
+          .to(playerSpriteRef.current, {
+            x: 0,
+            duration: 0.2,
+            ease: "power1.out",
+          });
+      }
     }
     prevComputerId.current = activeComputer.id;
+    prevComputerHp.current = computerHp;
   }, [activeComputer, computerHp]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
