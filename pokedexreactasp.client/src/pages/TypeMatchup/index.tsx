@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, Button } from "@/components/ui";
+import { Text, Button, Header } from "@/components/ui";
 import TypeIcon from "@/components/ui/Card/TypeIcon";
 import { typesService } from "@/services";
 import { IPokemonType } from "@/types/pokemon";
@@ -19,6 +19,13 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+const effectLabel = (v: number): string => {
+  if (v === 2) return "Super effective (2×)";
+  if (v === 1) return "Normal (1×)";
+  if (v === 0.5) return "Not very effective (0.5×)";
+  return "No effect (0×)";
+};
+
 const TypeMatchup: React.FC = () => {
   const [types, setTypes] = useState<IPokemonType[]>([]);
   const [attacking, setAttacking] = useState<IPokemonType | null>(null);
@@ -33,6 +40,7 @@ const TypeMatchup: React.FC = () => {
   );
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+
   const difficulty =
     (localStorage.getItem("pokegames@difficulty") as
       | "easy"
@@ -59,6 +67,7 @@ const TypeMatchup: React.FC = () => {
 
   const computeMultiplier = (atk: IPokemonType, defName: string): number => {
     const dr = atk.damageRelations;
+    if (!dr) return 1;
     const n = defName.toLowerCase();
     if (dr?.no_damage_to?.some((x) => x.name === n)) return 0;
     if (dr?.double_damage_to?.some((x) => x.name === n)) return 2;
@@ -68,10 +77,8 @@ const TypeMatchup: React.FC = () => {
 
   const nextQuestion = () => {
     if (!types.length) return;
-    const atk = pick(types);
-    const def = pick(types);
-    setAttacking(atk);
-    setDefending(def);
+    setAttacking(pick(types));
+    setDefending(pick(types));
     setSelected(null);
     setCorrect(null);
     setTimeLeft(questionTime);
@@ -81,6 +88,7 @@ const TypeMatchup: React.FC = () => {
     if (!loading) nextQuestion();
   }, [loading]);
 
+  // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0 || selected !== null) return;
     const id = setTimeout(() => {
@@ -90,6 +98,7 @@ const TypeMatchup: React.FC = () => {
     return () => clearTimeout(id);
   }, [timeLeft, selected]);
 
+  // Timeout → auto wrong
   useEffect(() => {
     if (
       timeLeft === 0 &&
@@ -98,7 +107,6 @@ const TypeMatchup: React.FC = () => {
       attacking &&
       defending
     ) {
-      // time out -> wrong
       handleSelect(-1);
     }
   }, [timeLeft]);
@@ -125,8 +133,8 @@ const TypeMatchup: React.FC = () => {
     setCorrect(mult);
     setTotal((t) => t + 1);
 
-    const isCorrect = opt === mult;
-    if (isCorrect) {
+    const isRight = opt === mult;
+    if (isRight) {
       sfx.success();
       setScore((s) => s + 1);
       setStreak((s) => s + 1);
@@ -136,96 +144,93 @@ const TypeMatchup: React.FC = () => {
       saveLeaderboard(score);
     }
 
-    // best streak
     setBest((b) => {
-      const nb = Math.max(b, isCorrect ? streak + 1 : 0);
+      const nb = Math.max(b, isRight ? streak + 1 : 0);
       localStorage.setItem("pokegames@typeBest", String(nb));
       return nb;
     });
   };
 
+  const handleReset = () => {
+    setScore(0);
+    setTotal(0);
+    setStreak(0);
+    nextQuestion();
+  };
+
   return (
-    <GameContainer>
-      <Text as="h1" variant="outlined" size="xl">
-        Type Matchup Quiz
-      </Text>
-      <GameCard className="pxl-border">
-        {loading || !attacking || !defending ? (
-          <Text>Loading...</Text>
-        ) : (
-          <>
-            <ScoreBar>
-              <Text as="span">
-                Score: {score} / {total}
-              </Text>
-              <Text as="span">
-                Streak: {streak} (Best {best})
-              </Text>
-              <Text as="span">Time: {timeLeft}s</Text>
-              <Button
-                variant="light"
-                onClick={() => {
-                  setScore(0);
-                  setTotal(0);
-                  setStreak(0);
-                  nextQuestion();
-                }}
-              >
-                Reset
-              </Button>
-            </ScoreBar>
-
-            <div style={{ marginTop: 12 }}>
-              <Text as="h3">If an attack of type</Text>
-              <div
-                style={{
-                  display: "inline-flex",
-                  gap: 8,
-                  alignItems: "center",
-                  marginTop: 4,
-                }}
-              >
-                <TypeIcon type={attacking.name} />
-                <Text as="span">hits a</Text>
-                <TypeIcon type={defending.name} />
-                <Text as="span">Pokémon, what's the effectiveness?</Text>
-              </div>
-            </div>
-
-            <OptionsGrid>
-              {EFFECT_OPTIONS.map((v) => (
-                <OptionButton
-                  key={v}
-                  onClick={() => {
-                    sfx.click();
-                    handleSelect(v);
-                  }}
-                  correct={selected !== null && v === correct}
-                  wrong={selected !== null && v === selected && v !== correct}
-                  className="pxl-border"
-                >
-                  {v === 2
-                    ? "Super effective (2x)"
-                    : v === 1
-                      ? "Normal (1x)"
-                      : v === 0.5
-                        ? "Not very effective (0.5x)"
-                        : "No effect (0x)"}
-                </OptionButton>
-              ))}
-            </OptionsGrid>
-
-            {selected !== null && (
-              <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                <Button variant="sky" onClick={nextQuestion}>
-                  Next Question
+    <>
+      <Header
+        title="Type Matchup Quiz"
+        subtitle="How well do you know Pokémon type effectiveness?"
+        backTo="/"
+      />
+      <GameContainer>
+        <GameCard className="pxl-border">
+          {loading || !attacking || !defending ? (
+            <Text>Loading...</Text>
+          ) : (
+            <>
+              <ScoreBar>
+                <Text as="span">
+                  Score: {score} / {total}
+                </Text>
+                <Text as="span">
+                  Streak: {streak} (Best {best})
+                </Text>
+                <Text as="span">Time: {timeLeft}s</Text>
+                <Button variant="light" onClick={handleReset}>
+                  Reset
                 </Button>
+              </ScoreBar>
+
+              <div style={{ marginTop: 12 }}>
+                <Text as="h3">If an attack of type</Text>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    gap: 8,
+                    alignItems: "center",
+                    marginTop: 4,
+                  }}
+                >
+                  <TypeIcon type={attacking.name} />
+                  <Text as="span">hits a</Text>
+                  <TypeIcon type={defending.name} />
+                  <Text as="span">Pokémon, what's the effectiveness?</Text>
+                </div>
               </div>
-            )}
-          </>
-        )}
-      </GameCard>
-    </GameContainer>
+
+              <OptionsGrid>
+                {EFFECT_OPTIONS.map((v) => (
+                  <OptionButton
+                    key={v}
+                    onClick={() => {
+                      sfx.click();
+                      handleSelect(v);
+                    }}
+                    correct={selected !== null && v === correct}
+                    wrong={selected !== null && v === selected && v !== correct}
+                    className="pxl-border"
+                    disabled={selected !== null}
+                  >
+                    {effectLabel(v)}
+                  </OptionButton>
+                ))}
+              </OptionsGrid>
+
+              {selected !== null && (
+                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                  <Button variant="sky" onClick={nextQuestion}>
+                    Next Question
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </GameCard>
+      </GameContainer>
+    </>
   );
 };
 

@@ -4,9 +4,12 @@ import { CenteredPage, GameCard as BaseGameCard, FlexCenter } from "@/styles";
 
 // ============ LAYOUT ============
 export const GameContainer = styled(CenteredPage)`
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
+  padding-top: ${units.spacing.lg};
   background-color: ${colors["sky-100"]};
+  align-items: center;
+  justify-content: flex-start;
 `;
 
 export const GameCard = styled(BaseGameCard)`
@@ -42,6 +45,9 @@ export const PokemonSprite = styled.img<{ x: number; y: number }>`
   height: 96px;
   transform: translate(-50%, -50%);
   user-select: none;
+  transition:
+    left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    top 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
 // ============ THROW AREA ============

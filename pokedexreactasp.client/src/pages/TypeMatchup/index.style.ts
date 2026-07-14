@@ -5,9 +5,10 @@ export const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  justify-content: flex-start;
+  min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
+  padding-top: ${units.spacing.lg};
   background-color: ${colors["sky-100"]};
 `;
 

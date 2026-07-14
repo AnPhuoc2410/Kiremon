@@ -2,10 +2,9 @@ import React, { useState, useEffect, FormEvent } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useNavigate } from "react-router-dom";
 
-import { Text } from "@/components/ui";
+import { Text, Header } from "@/components/ui";
 import Button from "@/components/ui/Button";
 import { pokemonService } from "@/services";
-import { IPokemon } from "@/types/pokemon";
 import {
   GameContainer,
   GameCard,
@@ -18,21 +17,14 @@ import {
   ButtonsContainer,
 } from "./index.style";
 
-// Extend the base IPokemon interface with the sprites property we need for this game
-interface GamePokemon extends IPokemon {
-  sprites?: {
-    other: {
-      "official-artwork": {
-        front_default: string;
-      };
-    };
-  };
-}
+// Pokémon gen 1-8 range (stable sprites)
+const POKEMON_MAX_ID = 898;
+
+const getRandomPokemonId = () => Math.floor(Math.random() * POKEMON_MAX_ID) + 1;
 
 const WhosThatPokemon: React.FC = () => {
-  const [currentPokemon, setCurrentPokemon] = useState<GamePokemon | null>(
-    null,
-  );
+  const [pokemonName, setPokemonName] = useState<string>("");
+  const [spriteUrl, setSpriteUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [guess, setGuess] = useState("");
   const [revealed, setRevealed] = useState(false);
@@ -41,7 +33,6 @@ const WhosThatPokemon: React.FC = () => {
   const [totalAttempts, setTotalAttempts] = useState(0);
   const navigate = useNavigate();
 
-  // Load a random pokemon
   const loadRandomPokemon = async () => {
     setLoading(true);
     setRevealed(false);
@@ -49,25 +40,16 @@ const WhosThatPokemon: React.FC = () => {
     setGuess("");
 
     try {
-      // Get a list of all pokemon
-      const response = await pokemonService.getAllPokemon();
+      const randomId = getRandomPokemonId();
+      const details = await pokemonService.getPokemonDetail(randomId);
 
-      if (response && response.results && response.results.length) {
-        const randomIndex = Math.floor(Math.random() * response.results.length);
-        const randomPokemon = response.results[randomIndex];
-
-        // Get detailed pokemon info
-        const pokemonDetails = await pokemonService.getPokemonDetail(
-          randomPokemon.name,
-        );
-
-        if (pokemonDetails && randomPokemon.url) {
-          setCurrentPokemon({
-            ...randomPokemon,
-            id: pokemonDetails.id,
-            sprites: pokemonDetails.sprites,
-          });
-        }
+      if (details) {
+        setPokemonName(details.name);
+        const sprite =
+          details.sprites?.other?.["official-artwork"]?.front_default ||
+          details.sprites?.front_default ||
+          "";
+        setSpriteUrl(sprite);
       }
     } catch (error) {
       console.error("Failed to load Pokemon:", error);
@@ -76,21 +58,18 @@ const WhosThatPokemon: React.FC = () => {
     }
   };
 
-  // Initialize the game
   useEffect(() => {
     loadRandomPokemon();
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (!currentPokemon || revealed) return;
+    if (!pokemonName || revealed) return;
 
     setTotalAttempts((prev) => prev + 1);
     const normalizedGuess = guess.trim().toLowerCase();
-    const normalizedPokemonName = currentPokemon.name.toLowerCase();
+    const correct = normalizedGuess === pokemonName.toLowerCase();
 
-    const correct = normalizedGuess === normalizedPokemonName;
     setIsCorrect(correct);
     setRevealed(true);
 
@@ -99,82 +78,76 @@ const WhosThatPokemon: React.FC = () => {
     }
   };
 
-  const handleNextPokemon = () => {
-    loadRandomPokemon();
-  };
-
-  const handleViewDetails = () => {
-    if (currentPokemon) {
-      navigate(`/pokemon/${currentPokemon.name}`);
-    }
-  };
-
   return (
-    <GameContainer>
-      <Text as="h1" variant="outlined" size="xl">
-        Who's That Pokémon?
-      </Text>
+    <>
+      <Header
+        title="Who's That Pokémon?"
+        subtitle="Guess the Pokémon from its silhouette!"
+        backTo="/"
+      />
+      <GameContainer>
+        <GameCard className="pxl-border">
+          {loading ? (
+            <Text>Loading...</Text>
+          ) : (
+            <>
+              <ScoreDisplay>
+                Score: {score} / {totalAttempts}
+              </ScoreDisplay>
 
-      <GameCard className="pxl-border">
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          <>
-            <ScoreDisplay>
-              Score: {score} / {totalAttempts}
-            </ScoreDisplay>
+              <PokemonImage>
+                {spriteUrl && (
+                  <SilhouetteWrapper className={revealed ? "revealed" : ""}>
+                    <LazyLoadImage
+                      src={spriteUrl}
+                      alt="Mystery Pokemon"
+                      width={250}
+                      height={250}
+                    />
+                  </SilhouetteWrapper>
+                )}
+              </PokemonImage>
 
-            <PokemonImage>
-              {currentPokemon?.sprites && (
-                <SilhouetteWrapper className={revealed ? "revealed" : ""}>
-                  <LazyLoadImage
-                    src={
-                      currentPokemon.sprites.other["official-artwork"]
-                        .front_default
-                    }
-                    alt="Mystery Pokemon"
-                    width={250}
-                    height={250}
+              {!revealed ? (
+                <GuessForm onSubmit={handleSubmit}>
+                  <GuessInput
+                    type="text"
+                    value={guess}
+                    onChange={(e) => setGuess(e.target.value)}
+                    placeholder="Enter Pokemon name"
+                    className="pxl-border"
+                    autoComplete="off"
                   />
-                </SilhouetteWrapper>
+                  <Button type="submit" variant="sky">
+                    Submit Guess
+                  </Button>
+                </GuessForm>
+              ) : (
+                <>
+                  <ResultMessage isCorrect={isCorrect}>
+                    {isCorrect
+                      ? "Correct! Well done!"
+                      : `Incorrect. It's ${pokemonName.toUpperCase()}!`}
+                  </ResultMessage>
+
+                  <ButtonsContainer>
+                    <Button onClick={loadRandomPokemon} variant="sky">
+                      Next Pokemon
+                    </Button>
+                    <Button
+                      onClick={() => navigate(`/pokemon/${pokemonName}`)}
+                      variant="light"
+                    >
+                      View Details
+                    </Button>
+                  </ButtonsContainer>
+                </>
               )}
-            </PokemonImage>
-
-            {!revealed ? (
-              <GuessForm onSubmit={handleSubmit}>
-                <GuessInput
-                  type="text"
-                  value={guess}
-                  onChange={(e) => setGuess(e.target.value)}
-                  placeholder="Enter Pokemon name"
-                  className="pxl-border"
-                />
-                <Button type="submit" variant="sky">
-                  Submit Guess
-                </Button>
-              </GuessForm>
-            ) : (
-              <>
-                <ResultMessage isCorrect={isCorrect}>
-                  {isCorrect
-                    ? "Correct! Well done!"
-                    : `Incorrect. It's ${currentPokemon?.name.toUpperCase()}!`}
-                </ResultMessage>
-
-                <ButtonsContainer>
-                  <Button onClick={handleNextPokemon} variant="sky">
-                    Next Pokemon
-                  </Button>
-                  <Button onClick={handleViewDetails} variant="light">
-                    View Details
-                  </Button>
-                </ButtonsContainer>
-              </>
-            )}
-          </>
-        )}
-      </GameCard>
-    </GameContainer>
+            </>
+          )}
+        </GameCard>
+      </GameContainer>
+    </>
   );
 };
 

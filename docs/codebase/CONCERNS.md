@@ -1,8 +1,10 @@
 # CONCERNS
 
-## 1) Missing Automated Test Coverage
-- The repository currently appears to rely on build/lint/manual checks only.
-- Impact: higher chance of regressions in auth/game/social flows and UI behaviors.
+## 1) Incomplete Automated Test Coverage
+- Backend unit tests exist (`PokedexReactASP.Application.Tests`) for auth, catch, box, achievement, and user services.
+- Frontend has no Vitest/RTL test runner configured in `package.json`.
+- SonarQube/SonarCloud CI workflows exist but full coverage thresholds are [TODO].
+- Impact: regressions still likely in UI, SignalR, and admin flows without frontend/integration tests.
 
 ## 2) High-Churn Frontend Areas
 - `TcgTab.tsx` and `TcgTab.style.ts` are among the most frequently changed files recently.
@@ -16,10 +18,18 @@
 - Explicit TODO markers remain in production code (e.g., catch streak tracking, shiny charm inventory check, friend gift/pokemon API placeholders).
 - Impact: some features are partially implemented and may expose inconsistent UX.
 
-## 5) Security/Compliance Artifacts Not Explicitly Present
-- Scan did not detect dedicated security policy/config files.
-- Impact: operational security posture may depend on external process not visible in repo.
-- [ASK USER] Is there an external security baseline/runbook (for secrets, incident response, dependency scanning) maintained outside this repo?
+## 5) Security Gaps vs README Claims
+- README advertises "CSRF prevention" but no `Antiforgery`/`ValidateAntiForgeryToken` middleware was found; mitigation relies on `SameSite` cookies + Bearer tokens.
+- `GlobalPolicy` rate limiter is registered but not applied via `[EnableRateLimiting]` on controllers (only `AuthPolicy` and `WildCatchPolicy` confirmed).
+- `RequireHttpsMetadata = false` on JWT bearer options — acceptable for dev proxy but should be `true` in strict production.
+- No HSTS, CSP, or security headers middleware detected in repo.
+- Scan did not detect `SECURITY.md`, Dependabot, or Snyk configs.
+- [ASK USER] Is there an external security baseline/runbook (secrets rotation, incident response, dependency scanning) maintained outside this repo?
+
+## 7) Performance Risks
+- Large static assets in `public/` (e.g. `monastiraki_square.gif` ~12MB) can hurt LCP on pages that load them.
+- In-memory frontend cache (`cacheStore`) does not survive page refresh and is not shared across tabs.
+- Redis fallback to per-instance memory cache can cause cache inconsistency in multi-instance deployments until Redis recovers.
 
 ## 6) Documentation Encoding Quality
 - Existing root README shows mojibake/encoding issues in multiple sections.
