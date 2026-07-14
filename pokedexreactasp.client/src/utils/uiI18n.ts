@@ -306,6 +306,16 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.ITALIAN]: "Sfida di Cattura",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "捕获挑战",
   },
+  "games.statOptimizer": {
+    [LANGUAGE_IDS.ENGLISH]: "Stat Optimizer",
+    [LANGUAGE_IDS.JAPANESE]: "ステータス最適化",
+    [LANGUAGE_IDS.KOREAN]: "스탯 최적화",
+    [LANGUAGE_IDS.FRENCH]: "Optimiseur de Statistiques",
+    [LANGUAGE_IDS.GERMAN]: "Statistik-Optimierer",
+    [LANGUAGE_IDS.SPANISH]: "Optimizador de Estadísticas",
+    [LANGUAGE_IDS.ITALIAN]: "Ottimizzatore Statistiche",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "属性优化",
+  },
 
   // Explore dropdown
   "explore.regions": {

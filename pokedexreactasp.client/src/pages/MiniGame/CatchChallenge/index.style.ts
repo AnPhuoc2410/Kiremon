@@ -3,13 +3,15 @@ import { colors, units } from "@/components/utils";
 import { CenteredPage, GameCard as BaseGameCard, FlexCenter } from "@/styles";
 
 // ============ LAYOUT ============
-export const GameContainer = styled(CenteredPage)`
+export const GameContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
   padding-top: ${units.spacing.lg};
-  background-color: ${colors["sky-100"]};
-  align-items: center;
-  justify-content: flex-start;
+  position: relative;
 `;
 
 export const GameCard = styled(BaseGameCard)`

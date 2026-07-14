@@ -9,7 +9,7 @@ export const GameContainer = styled.div`
   min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
   padding-top: ${units.spacing.lg};
-  background-color: ${colors["sky-100"]};
+  position: relative;
 `;
 
 export const GameCard = styled.div`
