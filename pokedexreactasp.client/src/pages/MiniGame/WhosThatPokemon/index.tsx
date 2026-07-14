@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import { Text, Header } from "@/components/ui";
 import Button from "@/components/ui/Button";
-import { pokemonService } from "@/services";
 import {
   GameContainer,
   GameCard,
