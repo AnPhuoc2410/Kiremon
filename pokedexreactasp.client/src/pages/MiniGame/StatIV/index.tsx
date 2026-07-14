@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useLanguage } from "@/contexts";
+import { t } from "@/utils/uiI18n";
 import { Header, Text, Button } from "@/components/ui";
 import { pokemonService } from "@/services";
 import { IPokemonDetailResponse } from "@/types/pokemon";
@@ -16,6 +18,9 @@ import {
   ScoreItem,
   ScoreLabel,
   ScoreValue,
+  RulesContainer,
+  RuleTitle,
+  RuleText,
 } from "./index.style";
 import { FlexCenter } from "@/styles";
 
@@ -50,6 +55,7 @@ function getPermutations(arr: string[]): string[][] {
 }
 
 export const StatIV = () => {
+  const { languageId } = useLanguage();
   const [pokemons, setPokemons] = useState<IPokemonDetailResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignedStats, setAssignedStats] = useState<Record<number, string>>(
@@ -143,13 +149,35 @@ export const StatIV = () => {
 
   return (
     <>
-      <Header
-        title="Stat Optimizer"
-        subtitle="Pick a different stat for each Pokémon so that together they add up to the highest possible sum."
-        backTo="/"
-      />
+      <Header title={t("games.statOptimizer", languageId)} backTo="/" />
       <GameContainer>
         <GameCard className="pxl-border">
+          <RulesContainer className="pxl-border">
+            <RuleTitle>
+              {t("games.statOptimizer.howToPlay", languageId)}
+            </RuleTitle>
+            <RuleText>
+              {t("games.statOptimizer.howToPlayDesc", languageId)}
+            </RuleText>
+            <RuleText>
+              HP + Atk + Def + SpA + SpD + Spe ={" "}
+              <strong>your total score</strong>
+            </RuleText>
+            <RuleText>
+              <em>
+                <strong>Hint:</strong> You should try to put the highest base
+                stat to the Pokemon that is good at that stat.
+              </em>
+            </RuleText>
+
+            <RuleTitle style={{ marginTop: "8px" }}>
+              {t("games.statOptimizer.howToWin", languageId)}
+            </RuleTitle>
+            <RuleText>
+              {t("games.statOptimizer.howToWinDesc", languageId)}
+            </RuleText>
+          </RulesContainer>
+
           {loading ? (
             <FlexCenter style={{ height: 400 }}>
               <Text>Loading Pokémon...</Text>
@@ -176,7 +204,13 @@ export const StatIV = () => {
                   const sprite =
                     pokemon.sprites?.other?.["official-artwork"]
                       ?.front_default || pokemon.sprites?.front_default;
+                  const allStats = pokemon.stats.map((s) => s.base_stat);
+                  const maxStat = Math.max(...allStats);
+                  const minStat = Math.min(...allStats);
                   const selectedStatKey = assignedStats[index];
+                  const selectedStatColor = selectedStatKey
+                    ? STATS.find((s) => s.key === selectedStatKey)?.color
+                    : undefined;
                   const actualStatValue =
                     gameState === "revealed" && selectedStatKey
                       ? pokemon.stats.find(
@@ -185,7 +219,11 @@ export const StatIV = () => {
                       : null;
 
                   return (
-                    <StatCard key={index} isComplete={!!selectedStatKey}>
+                    <StatCard
+                      key={index}
+                      isComplete={!!selectedStatKey}
+                      colorHex={selectedStatColor}
+                    >
                       <PokemonImage src={sprite} alt={pokemon.name} />
                       <Text
                         style={{
@@ -206,6 +244,12 @@ export const StatIV = () => {
                           const isUsedByOther =
                             isStatUsed(stat.key) && !isSelected;
 
+                          const statValue =
+                            pokemon.stats.find((s) => s.stat.name === stat.key)
+                              ?.base_stat || 0;
+                          const isMax = statValue === maxStat;
+                          const isMin = statValue === minStat;
+
                           return (
                             <StatPill
                               key={stat.key}
@@ -213,10 +257,36 @@ export const StatIV = () => {
                               isDisabled={
                                 isUsedByOther || gameState === "revealed"
                               }
+                              isRevealed={gameState === "revealed"}
                               colorHex={stat.color}
                               onClick={() => handleStatSelect(index, stat.key)}
                             >
                               {stat.label}
+                              {gameState === "revealed" && (
+                                <span style={{ marginLeft: 4 }}>
+                                  : {statValue}
+                                  {isMax && (
+                                    <span
+                                      style={{
+                                        color: isSelected ? "white" : "#4ADE80",
+                                        marginLeft: 4,
+                                      }}
+                                    >
+                                      ▲
+                                    </span>
+                                  )}
+                                  {isMin && !isMax && (
+                                    <span
+                                      style={{
+                                        color: isSelected ? "white" : "#F87171",
+                                        marginLeft: 4,
+                                      }}
+                                    >
+                                      ▼
+                                    </span>
+                                  )}
+                                </span>
+                              )}
                             </StatPill>
                           );
                         })}
