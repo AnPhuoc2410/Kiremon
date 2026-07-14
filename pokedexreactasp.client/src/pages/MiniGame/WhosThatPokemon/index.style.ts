@@ -5,11 +5,11 @@ export const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  justify-content: flex-start;
+  min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
-  background-color: ${colors["sky-100"]};
-  position: relative; /* Add position context */
+  padding-top: ${units.spacing.lg};
+  position: relative;
 `;
 
 export const GameCard = styled.div`
@@ -42,10 +42,10 @@ export const SilhouetteWrapper = styled.div`
   width: 100%;
   height: 100%;
   filter: brightness(0);
-  transition: filter 0.5s ease;
 
   &.revealed {
     filter: brightness(1);
+    transition: filter 0.5s ease;
   }
   /* Images should not capture pointer events */
   pointer-events: none;
@@ -63,6 +63,7 @@ export const ScoreDisplay = styled.div`
 export const GuessForm = styled.form`
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 100%;
   max-width: 320px;
   gap: ${units.spacing.xs};

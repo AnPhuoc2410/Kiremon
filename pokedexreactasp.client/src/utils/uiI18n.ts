@@ -306,6 +306,110 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.ITALIAN]: "Sfida di Cattura",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "捕获挑战",
   },
+  "games.statOptimizer": {
+    [LANGUAGE_IDS.ENGLISH]: "Stat Optimizer",
+    [LANGUAGE_IDS.JAPANESE]: "ステータス最適化",
+    [LANGUAGE_IDS.KOREAN]: "스탯 최적화",
+    [LANGUAGE_IDS.FRENCH]: "Optimiseur de Statistiques",
+    [LANGUAGE_IDS.GERMAN]: "Statistik-Optimierer",
+    [LANGUAGE_IDS.SPANISH]: "Optimizador de Estadísticas",
+    [LANGUAGE_IDS.ITALIAN]: "Ottimizzatore Statistiche",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "属性优化",
+  },
+  "games.statOptimizer.howToPlay": {
+    [LANGUAGE_IDS.ENGLISH]: "How to Play",
+    [LANGUAGE_IDS.JAPANESE]: "遊び方",
+    [LANGUAGE_IDS.KOREAN]: "게임 방법",
+    [LANGUAGE_IDS.FRENCH]: "Comment Jouer",
+    [LANGUAGE_IDS.GERMAN]: "Spielanleitung",
+    [LANGUAGE_IDS.SPANISH]: "Cómo Jugar",
+    [LANGUAGE_IDS.ITALIAN]: "Come Giocare",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "怎么玩",
+  },
+  "games.statOptimizer.howToPlayDesc": {
+    [LANGUAGE_IDS.ENGLISH]:
+      "You are given 6 random Pokémon. Assign exactly one unique stat (HP, Attack, Defense, Sp. Atk, Sp. Def, Speed) to each Pokémon.",
+    [LANGUAGE_IDS.JAPANESE]:
+      "6匹のランダムなポケモンが与えられます。それぞれのポケモンに重複しないステータスを1つずつ割り当ててください。",
+    [LANGUAGE_IDS.KOREAN]:
+      "무작위로 6마리의 포켓몬이 주어집니다. 각 포켓몬에게 고유한 스탯을 하나씩 할당하세요.",
+    [LANGUAGE_IDS.FRENCH]:
+      "Vous recevez 6 Pokémon aléatoires. Attribuez une statistique unique à chaque Pokémon.",
+    [LANGUAGE_IDS.GERMAN]:
+      "Ihnen werden 6 zufällige Pokémon gegeben. Weisen Sie jedem Pokémon einen eindeutigen Statuswert zu.",
+    [LANGUAGE_IDS.SPANISH]:
+      "Se te dan 6 Pokémon aleatorios. Asigna una estadística única a cada Pokémon.",
+    [LANGUAGE_IDS.ITALIAN]:
+      "Ti vengono dati 6 Pokémon casuali. Assegna una statistica unica a ciascun Pokémon.",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]:
+      "您将获得6只随机宝可梦。请为每只宝可梦分配一项独特的属性。",
+  },
+  "games.statOptimizer.howToWin": {
+    [LANGUAGE_IDS.ENGLISH]: "How to Win",
+    [LANGUAGE_IDS.JAPANESE]: "勝つためには",
+    [LANGUAGE_IDS.KOREAN]: "승리 방법",
+    [LANGUAGE_IDS.FRENCH]: "Comment Gagner",
+    [LANGUAGE_IDS.GERMAN]: "Wie man gewinnt",
+    [LANGUAGE_IDS.SPANISH]: "Cómo Ganar",
+    [LANGUAGE_IDS.ITALIAN]: "Come Vincere",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "如何获胜",
+  },
+  "games.statOptimizer.howToWinDesc": {
+    [LANGUAGE_IDS.ENGLISH]:
+      "The goal is to maximize the total sum of the assigned stats. Find the optimal combination that yields the highest possible score to get a perfect score!",
+    [LANGUAGE_IDS.JAPANESE]:
+      "割り当てられたステータスの合計値を最大化することが目標です。最高得点を出す最適な組み合わせを見つけてください！",
+    [LANGUAGE_IDS.KOREAN]:
+      "할당된 스탯의 총합을 최대화하는 것이 목표입니다. 가장 높은 점수를 얻을 수 있는 최적의 조합을 찾으세요!",
+    [LANGUAGE_IDS.FRENCH]:
+      "Le but est de maximiser la somme totale des statistiques attribuées. Trouvez la combinaison optimale pour obtenir le score parfait !",
+    [LANGUAGE_IDS.GERMAN]:
+      "Das Ziel ist es, die Gesamtsumme der zugewiesenen Statuswerte zu maximieren. Finden Sie die optimale Kombination für die höchste Punktzahl!",
+    [LANGUAGE_IDS.SPANISH]:
+      "El objetivo es maximizar la suma total de las estadísticas asignadas. ¡Encuentra la combinación óptima que dé la mayor puntuación posible!",
+    [LANGUAGE_IDS.ITALIAN]:
+      "L'obiettivo è massimizzare la somma totale delle statistiche assegnate. Trova la combinazione ottimale per ottenere il punteggio perfetto!",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]:
+      "目标是最大化分配属性的总和。找到能够产生最高可能得分的最佳组合，即可获得满分！",
+  },
+  "games.pokedle": {
+    [LANGUAGE_IDS.ENGLISH]: "Pokedle",
+    [LANGUAGE_IDS.JAPANESE]: "Pokedle",
+    [LANGUAGE_IDS.KOREAN]: "Pokedle",
+    [LANGUAGE_IDS.FRENCH]: "Pokedle",
+    [LANGUAGE_IDS.GERMAN]: "Pokedle",
+    [LANGUAGE_IDS.SPANISH]: "Pokedle",
+    [LANGUAGE_IDS.ITALIAN]: "Pokedle",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "Pokedle",
+  },
+  "games.pokedle.howToPlay": {
+    [LANGUAGE_IDS.ENGLISH]: "How to Play",
+    [LANGUAGE_IDS.JAPANESE]: "遊び方",
+    [LANGUAGE_IDS.KOREAN]: "게임 방법",
+    [LANGUAGE_IDS.FRENCH]: "Comment Jouer",
+    [LANGUAGE_IDS.GERMAN]: "Spielanleitung",
+    [LANGUAGE_IDS.SPANISH]: "Cómo Jugar",
+    [LANGUAGE_IDS.ITALIAN]: "Come Giocare",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "怎么玩",
+  },
+  "games.pokedle.howToPlayDesc": {
+    [LANGUAGE_IDS.ENGLISH]:
+      "Guess the Pokémon based on clues. Green means correct, Red means incorrect. Up/Down arrows mean higher or lower.",
+    [LANGUAGE_IDS.JAPANESE]:
+      "ヒントをもとにポケモンを推測します。緑は正解、赤は不正解です。上下の矢印はそれより高いか低いかを示します。",
+    [LANGUAGE_IDS.KOREAN]:
+      "힌트를 기반으로 포켓몬을 추측하세요. 초록색은 정답, 빨간색은 오답입니다. 위/아래 화살표는 더 높거나 낮음을 의미합니다.",
+    [LANGUAGE_IDS.FRENCH]:
+      "Devinez le Pokémon en fonction des indices. Vert signifie correct, rouge signifie incorrect. Les flèches haut/bas signifient plus haut ou plus bas.",
+    [LANGUAGE_IDS.GERMAN]:
+      "Errate das Pokémon anhand von Hinweisen. Grün bedeutet richtig, Rot bedeutet falsch. Auf-/Ab-Pfeile bedeuten höher oder niedriger.",
+    [LANGUAGE_IDS.SPANISH]:
+      "Adivina el Pokémon basándote en las pistas. Verde significa correcto, rojo significa incorrecto. Las flechas arriba/abajo significan mayor o menor.",
+    [LANGUAGE_IDS.ITALIAN]:
+      "Indovina il Pokémon in base agli indizi. Verde significa corretto, rosso significa errato. Le frecce su/giù indicano maggiore o minore.",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]:
+      "根据线索猜测宝可梦。绿色表示正确，红色表示错误。上下箭头表示更高或更低。",
+  },
 
   // Explore dropdown
   "explore.regions": {

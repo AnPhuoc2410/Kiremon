@@ -15,7 +15,7 @@ import {
 // ============ LAYOUT ============
 export const Container = styled(BaseContainer)`
   padding: 0 16px;
-  margin-bottom: 60px;
+  margin-bottom: 120px;
 
   @media (min-width: 1024px) {
     padding: 0 128px;
@@ -258,18 +258,78 @@ export const BattleLog = styled.div`
 
 export const LogEntry = styled.div<{
   type?: "attack" | "info" | "critical" | "heal";
+  attacker?: "player" | "computer";
 }>`
   padding: 0.25rem 0;
   color: ${(props) => {
-    switch (props.type) {
-      case "attack":
-        return colors["red-600"];
-      case "critical":
-        return colors["orange-600"];
-      case "heal":
-        return colors["green-600"];
-      default:
-        return colors["gray-700"];
-    }
+    if (props.type === "info") return colors["gray-700"];
+    if (props.type === "heal") return colors["green-600"];
+    if (props.attacker === "player") return colors["sky-600"];
+    if (props.attacker === "computer") return colors["red-600"];
+    return colors["gray-700"];
   }};
+  font-weight: ${(props) => (props.type === "critical" ? 700 : 400)};
+`;
+
+export const ArenaContainer = styled.div`
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  margin: 1rem auto;
+  border-radius: 12px;
+  border: 4px solid ${colors["gray-800"]};
+  background-image: url("/static/arena_bg.png");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+`;
+
+export const BattlerContainer = styled.div<{ isPlayer: boolean }>`
+  position: absolute;
+  bottom: ${(props) => (props.isPlayer ? "10px" : "120px")};
+  ${(props) => (props.isPlayer ? "left: 130px;" : "right: 110px;")}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: ${(props) => (props.isPlayer ? 10 : 5)};
+`;
+
+export const BattlerSprite = styled.img<{ isPlayer: boolean }>`
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  image-rendering: pixelated;
+`;
+
+export const HpBox = styled.div`
+  background: white;
+  border: 2px solid ${colors["gray-800"]};
+  border-radius: 8px;
+  padding: 4px 8px;
+  min-width: 120px;
+  text-align: center;
+  margin-bottom: 8px;
+`;
+
+export const HpBarOuter = styled.div`
+  width: 100%;
+  height: 8px;
+  background: ${colors["gray-300"]};
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+  border: 1px solid ${colors["gray-600"]};
+`;
+
+export const HpBarInner = styled.div<{ percentage: number }>`
+  width: ${(props) => props.percentage}%;
+  height: 100%;
+  background-color: ${(props) => {
+    if (props.percentage > 50) return colors["green-500"];
+    if (props.percentage > 20) return colors["yellow-500"];
+    return colors["red-500"];
+  }};
+  transition: width 0.3s ease-out;
 `;

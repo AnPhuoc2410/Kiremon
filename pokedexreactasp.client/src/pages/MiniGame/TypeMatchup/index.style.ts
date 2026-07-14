@@ -5,10 +5,11 @@ export const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  justify-content: flex-start;
+  min-height: calc(100vh - 80px);
   padding: ${units.spacing.xl};
-  background-color: ${colors["sky-100"]};
+  padding-top: ${units.spacing.lg};
+  position: relative;
 `;
 
 export const GameCard = styled.div`

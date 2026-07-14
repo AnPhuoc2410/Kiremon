@@ -399,6 +399,14 @@ const Header: React.FC<HeaderProps> = ({
                 {t("games.catchChallenge", languageId)}
               </S.DropdownItem>
             </Link>
+            <Link to="/games/stat-optimizer">
+              <S.DropdownItem>
+                {t("games.statOptimizer", languageId)}
+              </S.DropdownItem>
+            </Link>
+            <Link to="/games/pokedle">
+              <S.DropdownItem>{t("games.pokedle", languageId)}</S.DropdownItem>
+            </Link>
           </NavItemWithDropdown>
 
           <NavItemWithDropdown

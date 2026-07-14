@@ -15,16 +15,20 @@ const TypesExplore = lazy(() => import("@/pages/Explore/Types"));
 const GenerationsExplore = lazy(() => import("@/pages/Explore/Generations"));
 const GenerationDetail = lazy(() => import("@/pages/Explore/GenerationDetail"));
 const Detail = lazy(() => import("@/pages/Detail"));
-const WhosThatPokemon = lazy(() => import("@/pages/WhosThatPokemon"));
+// Mini-game
+const WhosThatPokemon = lazy(() => import("@/pages/MiniGame/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
+const TypeMatchup = lazy(() => import("@/pages/MiniGame/TypeMatchup"));
+const CatchChallenge = lazy(() => import("@/pages/MiniGame/CatchChallenge"));
+const StatOptimizer = lazy(() => import("@/pages/MiniGame/StatIV"));
+const Pokedle = lazy(() => import("@/pages/MiniGame/Pokedle"));
+
 const Battle = lazy(() => import("@/pages/Battle"));
 const Search = lazy(() => import("@/pages/Search"));
 const WildArea = lazy(() => import("@/pages/WildArea"));
 const MyCards = lazy(() => import("@/pages/MyCards"));
 const Bag = lazy(() => import("@/pages/Bag"));
 // New games
-const TypeMatchup = lazy(() => import("@/pages/TypeMatchup/index.tsx"));
-const CatchChallenge = lazy(() => import("@/pages/CatchChallenge/index.tsx"));
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Register = lazy(() => import("@/pages/Auth/Register"));
 const Forgot = lazy(() => import("@/pages/Auth/Forgot"));
@@ -152,14 +156,6 @@ export default function Routes() {
               </Suspense>
             }
           />
-          <Route
-            path="/battle"
-            element={
-              <Suspense fallback={<div>Loading...</div>}>
-                <Battle />
-              </Suspense>
-            }
-          />
           {/* New games routes */}
           <Route
             path="/games/type-matchup"
@@ -174,6 +170,30 @@ export default function Routes() {
             element={
               <Suspense fallback={<div>Loading...</div>}>
                 <CatchChallenge />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/games/stat-optimizer"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <StatOptimizer />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/games/pokedle"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Pokedle />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/battle"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Battle />
               </Suspense>
             }
           />

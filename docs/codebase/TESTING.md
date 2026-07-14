@@ -1,8 +1,9 @@
 # TESTING
 
 ## Current State
-- No dedicated automated test projects were detected in the solution (no `*.Tests` projects, no frontend test runner scripts).
-- No CI test stage was confirmed from current onboarding scan output.
+- Backend: `PokedexReactASP.Application.Tests` (xUnit) with service-level unit tests for auth, pokemon catch/box, achievements, and user flows.
+- Frontend: no dedicated test runner script in `package.json` (no Vitest/Jest detected).
+- CI: GitHub Actions workflows exist (`build.yml`, `build-image.yml`, `deploy.yml`); SonarQube analysis workflows added in recent commits.
 
 ## What Exists Instead
 - Build/lint oriented validation:
