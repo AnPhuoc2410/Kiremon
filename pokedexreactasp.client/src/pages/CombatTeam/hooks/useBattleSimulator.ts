@@ -5,6 +5,13 @@ import { ICombatPokemon } from "@/types/pokemon";
 export type LogEntry = {
   text: string;
   type?: "attack" | "info" | "critical" | "heal";
+  attacker?: "player" | "computer";
+  activePlayer?: ICombatPokemon;
+  activeComputer?: ICombatPokemon;
+  playerHp?: number;
+  computerHp?: number;
+  playerMaxHp?: number;
+  computerMaxHp?: number;
 };
 
 // Computer team preset — fallback when storage < 6
@@ -93,11 +100,35 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
   const simulateBattle = (
     userTeam: ICombatPokemon[],
     cpuTeam: ICombatPokemon[],
-  ): boolean => {
+  ): { fullLog: LogEntry[]; userWon: boolean } => {
     const userCopy = [...userTeam];
     const cpuCopy = [...cpuTeam];
-    const log: LogEntry[] = [{ text: "Battle started!", type: "info" }];
+    const log: LogEntry[] = [];
     let userTurn = true;
+
+    let userActiveHp =
+      userCopy.length > 0 ? getStatValue(userCopy[0], "hp") : 0;
+    let cpuActiveHp = cpuCopy.length > 0 ? getStatValue(cpuCopy[0], "hp") : 0;
+
+    const pushLog = (
+      text: string,
+      type?: LogEntry["type"],
+      attacker?: "player" | "computer",
+    ) => {
+      log.push({
+        text,
+        type,
+        attacker,
+        activePlayer: userCopy.length > 0 ? userCopy[0] : undefined,
+        activeComputer: cpuCopy.length > 0 ? cpuCopy[0] : undefined,
+        playerHp: Math.max(0, userActiveHp),
+        computerHp: Math.max(0, cpuActiveHp),
+        playerMaxHp: userCopy.length > 0 ? getStatValue(userCopy[0], "hp") : 0,
+        computerMaxHp: cpuCopy.length > 0 ? getStatValue(cpuCopy[0], "hp") : 0,
+      });
+    };
+
+    pushLog("Battle started!", "info");
 
     while (userCopy.length > 0 && cpuCopy.length > 0) {
       const attackingTeam = userTurn ? userCopy : cpuCopy;
@@ -115,21 +146,41 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
       damage = damage / 50 + 2;
       if (isCritical) damage *= 1.5;
       damage *= 0.85 + Math.random() * 0.15;
-      damage = Math.floor(damage);
+      damage = Math.max(1, Math.floor(damage));
 
-      log.push({
-        text: `${attacker.name} attacks ${defender.name} for ${damage} damage${isCritical ? " (CRITICAL HIT!)" : ""}`,
-        type: isCritical ? "critical" : "attack",
-      });
+      const attackerOwner = userTurn ? "Your" : "Computer's";
+      const defenderOwner = userTurn ? "Computer's" : "Your";
+      const attackerType = userTurn ? "player" : "computer";
 
-      if (damage > getStatValue(defender, "hp")) {
-        log.push({ text: `${defender.name} fainted!`, type: "info" });
-        defendingTeam.shift();
-        if (defendingTeam.length > 0) {
-          log.push({
-            text: `${userTurn ? "Computer" : "You"} sent out ${defendingTeam[0].name}!`,
-            type: "info",
-          });
+      if (userTurn) {
+        cpuActiveHp -= damage;
+        pushLog(
+          `${attackerOwner} ${attacker.name} attacks ${defenderOwner} ${defender.name} for ${damage} damage${isCritical ? " (CRITICAL HIT!)" : ""}`,
+          isCritical ? "critical" : "attack",
+          attackerType,
+        );
+        if (cpuActiveHp <= 0) {
+          pushLog(`Computer's ${defender.name} fainted!`, "info");
+          cpuCopy.shift();
+          if (cpuCopy.length > 0) {
+            cpuActiveHp = getStatValue(cpuCopy[0], "hp");
+            pushLog(`Computer sent out ${cpuCopy[0].name}!`, "info");
+          }
+        }
+      } else {
+        userActiveHp -= damage;
+        pushLog(
+          `${attackerOwner} ${attacker.name} attacks ${defenderOwner} ${defender.name} for ${damage} damage${isCritical ? " (CRITICAL HIT!)" : ""}`,
+          isCritical ? "critical" : "attack",
+          attackerType,
+        );
+        if (userActiveHp <= 0) {
+          pushLog(`Your ${defender.name} fainted!`, "info");
+          userCopy.shift();
+          if (userCopy.length > 0) {
+            userActiveHp = getStatValue(userCopy[0], "hp");
+            pushLog(`You sent out ${userCopy[0].name}!`, "info");
+          }
         }
       }
 
@@ -137,14 +188,13 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
     }
 
     const userWon = userCopy.length > 0;
-    log.push({ text: "Battle finished!", type: "info" });
-    log.push({
-      text: userWon ? "You won the battle!" : "Computer won the battle!",
-      type: userWon ? "heal" : "attack",
-    });
+    pushLog("Battle finished!", "info");
+    pushLog(
+      userWon ? "You won the battle!" : "Computer won the battle!",
+      userWon ? "heal" : "attack",
+    );
 
-    setSimulationLog(log);
-    return userWon;
+    return { fullLog: log, userWon };
   };
 
   const runBattle = (activeTeam: ICombatPokemon[]) => {
@@ -164,16 +214,29 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
     }
 
     setIsBattling(true);
-    const userWon = simulateBattle(activeTeam, cpuTeam);
+    setSimulationLog([]); // Clear log before starting
+    const { fullLog, userWon } = simulateBattle(activeTeam, cpuTeam);
 
-    setTimeout(() => {
-      setIsBattling(false);
-      toast(
-        userWon
-          ? "Victory! Your team won the battle!"
-          : "Defeat! Better luck next time!",
-      );
-    }, 500);
+    let currentIndex = 0;
+    const intervalId = setInterval(() => {
+      currentIndex++;
+      setSimulationLog(fullLog.slice(0, currentIndex));
+
+      if (currentIndex >= fullLog.length) {
+        clearInterval(intervalId);
+        setIsBattling(false);
+        toast(
+          userWon
+            ? "Victory! Your team won the battle!"
+            : "Defeat! Better luck next time!",
+        );
+      }
+    }, 400);
+  };
+
+  const resetBattle = () => {
+    setSimulationLog([]);
+    generateComputerTeam(storageTeam);
   };
 
   return {
@@ -182,5 +245,6 @@ export function useBattleSimulator(storageTeam: ICombatPokemon[]) {
     computerTeam,
     generateComputerTeam,
     runBattle,
+    resetBattle,
   };
 }

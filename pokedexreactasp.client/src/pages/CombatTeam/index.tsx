@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import toast from "react-hot-toast";
+import gsap from "gsap";
 
 import {
   Button,
@@ -21,6 +21,11 @@ import * as S from "./index.style";
 const CombatTeam: React.FC = () => {
   const navigate = useNavigate();
   const navRef = useRef<HTMLDivElement>(null);
+  const battleLogRef = useRef<HTMLDivElement>(null);
+  const playerSpriteRef = useRef<HTMLImageElement>(null);
+  const computerSpriteRef = useRef<HTMLImageElement>(null);
+  const prevPlayerId = useRef<number | null>(null);
+  const prevComputerId = useRef<number | null>(null);
   const { isAuthenticated } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>("teams");
@@ -35,7 +40,6 @@ const CombatTeam: React.FC = () => {
 
   const {
     teamData,
-    setTeamData,
     isLoading,
     movePokemon,
     removePokemon,
@@ -43,13 +47,53 @@ const CombatTeam: React.FC = () => {
     activateDreamTeam,
   } = useTeamData(isAuthenticated);
 
-  const {
-    simulationLog,
-    isBattling,
-    computerTeam,
-    generateComputerTeam,
-    runBattle,
-  } = useBattleSimulator(teamData.storage);
+  const { simulationLog, isBattling, computerTeam, runBattle, resetBattle } =
+    useBattleSimulator(teamData.storage);
+
+  const latestLog =
+    simulationLog.length > 0 ? simulationLog[simulationLog.length - 1] : null;
+  const activePlayer = latestLog?.activePlayer;
+  const activeComputer = latestLog?.activeComputer;
+  const playerHp = latestLog?.playerHp ?? 0;
+  const computerHp = latestLog?.computerHp ?? 0;
+  const playerMaxHp = latestLog?.playerMaxHp ?? 1;
+  const computerMaxHp = latestLog?.computerMaxHp ?? 1;
+
+  useEffect(() => {
+    if (battleLogRef.current) {
+      battleLogRef.current.scrollTop = battleLogRef.current.scrollHeight;
+    }
+  }, [simulationLog]);
+
+  useEffect(() => {
+    if (!playerSpriteRef.current || !activePlayer) return;
+
+    if (playerHp <= 0) {
+      gsap.to(playerSpriteRef.current, { y: 50, opacity: 0, duration: 0.5 });
+    } else if (prevPlayerId.current !== activePlayer.id) {
+      gsap.fromTo(
+        playerSpriteRef.current,
+        { x: -100, opacity: 0, y: 0 },
+        { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
+      );
+    }
+    prevPlayerId.current = activePlayer.id;
+  }, [activePlayer, playerHp]);
+
+  useEffect(() => {
+    if (!computerSpriteRef.current || !activeComputer) return;
+
+    if (computerHp <= 0) {
+      gsap.to(computerSpriteRef.current, { y: 50, opacity: 0, duration: 0.5 });
+    } else if (prevComputerId.current !== activeComputer.id) {
+      gsap.fromTo(
+        computerSpriteRef.current,
+        { x: 100, opacity: 0, y: 0 },
+        { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" },
+      );
+    }
+    prevComputerId.current = activeComputer.id;
+  }, [activeComputer, computerHp]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -793,7 +837,15 @@ const CombatTeam: React.FC = () => {
                       </S.TeamSide>
                     </S.CombatSimulatorContainer>
 
-                    <div style={{ textAlign: "center", margin: "2rem 0" }}>
+                    <div
+                      style={{
+                        textAlign: "center",
+                        margin: "2rem 0",
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "1rem",
+                      }}
+                    >
                       <Button
                         onClick={() => runBattle(teamData.active)}
                         variant="primary"
@@ -802,14 +854,100 @@ const CombatTeam: React.FC = () => {
                       >
                         {isBattling ? "Battle in progress..." : "Start Battle"}
                       </Button>
+                      {simulationLog.length > 0 && !isBattling && (
+                        <Button
+                          onClick={resetBattle}
+                          variant="secondary"
+                          size="lg"
+                        >
+                          Next Battle
+                        </Button>
+                      )}
                     </div>
 
                     {simulationLog.length > 0 && (
                       <>
+                        <S.ArenaContainer>
+                          {activePlayer && (
+                            <S.BattlerContainer isPlayer={true}>
+                              <S.HpBox>
+                                <Text
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {activePlayer.name}
+                                </Text>
+                                <S.HpBarOuter>
+                                  <S.HpBarInner
+                                    percentage={(playerHp / playerMaxHp) * 100}
+                                  />
+                                </S.HpBarOuter>
+                                <Text
+                                  style={{
+                                    fontSize: "0.75rem",
+                                    marginTop: "4px",
+                                    textShadow: "none",
+                                  }}
+                                >
+                                  {playerHp} / {playerMaxHp} HP
+                                </Text>
+                              </S.HpBox>
+                              <S.BattlerSprite
+                                ref={playerSpriteRef}
+                                src={activePlayer.sprite}
+                                alt={activePlayer.name}
+                                isPlayer={true}
+                              />
+                            </S.BattlerContainer>
+                          )}
+                          {activeComputer && (
+                            <S.BattlerContainer isPlayer={false}>
+                              <S.HpBox>
+                                <Text
+                                  style={{
+                                    fontSize: "0.875rem",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {activeComputer.name}
+                                </Text>
+                                <S.HpBarOuter>
+                                  <S.HpBarInner
+                                    percentage={
+                                      (computerHp / computerMaxHp) * 100
+                                    }
+                                  />
+                                </S.HpBarOuter>
+                                <Text
+                                  style={{
+                                    fontSize: "0.75rem",
+                                    marginTop: "4px",
+                                    textShadow: "none",
+                                  }}
+                                >
+                                  {computerHp} / {computerMaxHp} HP
+                                </Text>
+                              </S.HpBox>
+                              <S.BattlerSprite
+                                ref={computerSpriteRef}
+                                src={activeComputer.sprite}
+                                alt={activeComputer.name}
+                                isPlayer={false}
+                              />
+                            </S.BattlerContainer>
+                          )}
+                        </S.ArenaContainer>
+
                         <Text as="h4">Battle Log</Text>
-                        <S.BattleLog>
+                        <S.BattleLog ref={battleLogRef}>
                           {simulationLog.map((entry, index) => (
-                            <S.LogEntry key={index} type={entry.type}>
+                            <S.LogEntry
+                              key={index}
+                              type={entry.type}
+                              attacker={entry.attacker}
+                            >
                               {entry.text}
                             </S.LogEntry>
                           ))}
