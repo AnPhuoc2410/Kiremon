@@ -5,6 +5,7 @@ import { Header, Navbar, Loading } from "@/components/ui";
 import * as S from "./index.style";
 import { regionsService, pokedexService } from "@/services";
 import { getRegionTheme } from "@/components/utils/regionThemes";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 type RegionCardData = {
   id?: number;
@@ -121,6 +122,11 @@ const RegionsExplore = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Vùng Đất Pokémon - Kiremon"
+        description="Khám phá các vùng đất trong thế giới Pokémon: Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea. Tìm Pokémon theo từng vùng tại Kiremon."
+        url="https://kiremon.vercel.app/regions"
+      />
       <S.RegionContainer style={{ marginBottom: navHeight }}>
         <Header
           title="Explore by Region"

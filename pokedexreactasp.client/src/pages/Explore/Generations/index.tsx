@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Header, Navbar, Loading } from "@/components/ui";
 import * as S from "./index.style";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const pokemonGenerations = [
   {
@@ -125,6 +126,11 @@ const GenerationsExplore = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Khám phá theo Thế hệ Pokémon - Kiremon"
+        description="Khám phá các thế hệ Pokémon từ Generation I (Kanto) đến Generation IX (Paldea). Xem các game, vùng, và số lượng Pokémon theo từng thế hệ."
+        url="https://kiremon.vercel.app/explore/generations"
+      />
       <S.GenerationsContainer style={{ marginBottom: navHeight }}>
         <Header
           title="Explore by Generation"

@@ -6,6 +6,7 @@ import * as T from "@/pages/Explore/index.style";
 import { IPokemon } from "@/types/pokemon";
 import { getPokemonId } from "@/components/utils";
 import { useAllPokemon } from "@/components/hooks/usePokeAPI";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -27,6 +28,11 @@ const SearchPage: React.FC = () => {
 
   return (
     <>
+      <SEOWrapper
+        title={q ? `Tìm kiếm "${q}" - Kiremon` : "Tìm kiếm Pokémon - Kiremon"}
+        description="Tìm kiếm nhanh tên Pokémon bạn muốn. Bộ sưu tập với hơn 1000 Pokémon và đầy đủ thông tin về chỉ số, hệ, và kỹ năng tại Kiremon."
+        url="https://kiremon.vercel.app/search"
+      />
       <T.Container>
         <Header
           title="Search Pokémon"

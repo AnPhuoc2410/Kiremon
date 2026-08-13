@@ -21,6 +21,7 @@ import { pokeItemService } from "@/services";
 import { Item } from "@/types/market.types";
 import { useLanguage } from "@/contexts";
 import { t } from "@/utils/uiI18n";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const Market: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,6 +99,11 @@ const Market: React.FC = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Poké Mart - Kiremon"
+        description="Mua sắm vật phẩm, PokéBall, Thuốc hồi phục và các item hiếm tại cửa hàng Poké Mart của Kiremon. Trang bị đầy đủ để bắt và huấn luyện Pokémon!"
+        url="https://kiremon.vercel.app/poke-mart"
+      />
       <ShopContainer>
         <Header
           title={t("market.title", languageId)}
