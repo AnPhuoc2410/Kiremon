@@ -16,17 +16,20 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly NewsSyncSettings _settings;
         private readonly ILogger<PokemonNewsSyncService> _logger;
+        private readonly IIndexNowService _indexNowService;
 
         public PokemonNewsSyncService(
             PokemonDbContext context,
             HttpClient httpClient,
             IOptions<NewsSyncSettings> settings,
-            ILogger<PokemonNewsSyncService> logger)
+            ILogger<PokemonNewsSyncService> logger,
+            IIndexNowService indexNowService)
         {
             _context = context;
             _httpClient = httpClient;
             _settings = settings.Value;
             _logger = logger;
+            _indexNowService = indexNowService;
         }
 
         public async Task<PokemonNewsSyncResultDto> SyncNewsAsync(CancellationToken cancellationToken = default)
@@ -222,6 +225,12 @@ namespace PokedexReactASP.Infrastructure.Services
                 await _context.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation("Synchronized PokéJungle news successfully. Scraped={TotalScraped}, Inserted={Inserted}, Updated={Updated}, Failed={Failed}",
                     result.TotalScraped, result.Inserted, result.Updated, result.Failed);
+
+                if (result.Inserted > 0 || result.Updated > 0)
+                {
+                    _logger.LogInformation("Triggering IndexNow ping for news updates...");
+                    await _indexNowService.SubmitUrlsAsync(new[] { "https://kiremon.vercel.app/poke-news" }, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
