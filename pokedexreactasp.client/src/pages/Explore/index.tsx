@@ -5,6 +5,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useGlobalContext, useAuth, useLanguage } from "@/contexts";
 import { IPokemon } from "@/types/pokemon";
 import { Text, Navbar, PokeCard, Header, SkeletonCard } from "@/components/ui";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 import { getPokemonId } from "@/components/utils";
 import { POKEMON_API } from "@/config/api.config";
@@ -131,6 +132,11 @@ const Explore = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Khám phá Pokédex - Kiremon"
+        description="Duyệt toàn bộ Pokédex với hơn 1000 Pokémon. Xem thông tin chi tiết về hệ, chỉ số IV, tiến hóa và cách bắt từng Pokémon tại Kiremon."
+        url="https://kiremon.vercel.app/pokemons"
+      />
       <T.Container style={{ marginBottom: navHeight }}>
         <Header
           title={t("explore.title", languageId)}

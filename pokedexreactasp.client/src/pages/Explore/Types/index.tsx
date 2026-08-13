@@ -13,6 +13,7 @@ import { IPokemonType } from "@/types/pokemon";
 import * as S from "./index.style";
 import { POKEMON_IMAGE } from "@/config/api.config";
 import { getPokemonId } from "@/components/utils";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 import bugIcon from "@/assets/type-icon/bug.png";
 import darkIcon from "@/assets/type-icon/dark.png";
@@ -203,6 +204,11 @@ const TypesExplore = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Khám phá theo Hệ Pokémon - Kiremon"
+        description="Tìm Pokémon theo hệ (Type): Lửa, Nước, Cỏ, Điện, Tiên, Rồng... Xem thông tin các Pokémon thuộc từng hệ tại Kiremon Pokédex."
+        url="https://kiremon.vercel.app/explore/types"
+      />
       <S.PageWrapper
         style={
           selectedType

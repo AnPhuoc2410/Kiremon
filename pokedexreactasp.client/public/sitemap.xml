@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Pages -->
   <url>
     <loc>https://kiremon.vercel.app/</loc>
     <changefreq>daily</changefreq>
@@ -10,6 +11,8 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Explore -->
   <url>
     <loc>https://kiremon.vercel.app/regions</loc>
     <changefreq>weekly</changefreq>
@@ -24,5 +27,70 @@
     <loc>https://kiremon.vercel.app/explore/generations</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- News & TCG -->
+  <url>
+    <loc>https://kiremon.vercel.app/poke-news</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/poke-tcg</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Market -->
+  <url>
+    <loc>https://kiremon.vercel.app/poke-mart</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Mini Games -->
+  <url>
+    <loc>https://kiremon.vercel.app/games/whos-that-pokemon</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/games/type-matchup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/games/catch-challenge</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/games/stat-optimizer</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/games/pokedle</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Battle & Wild Area -->
+  <url>
+    <loc>https://kiremon.vercel.app/battle</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kiremon.vercel.app/wild-area</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Search -->
+  <url>
+    <loc>https://kiremon.vercel.app/search</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>
