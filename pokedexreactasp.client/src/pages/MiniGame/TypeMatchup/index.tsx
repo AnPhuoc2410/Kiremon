@@ -11,6 +11,7 @@ import {
   ScoreBar,
 } from "./index.style";
 import { sfx } from "@/components/utils/sfx";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const EFFECT_OPTIONS = [2, 1, 0.5, 0];
 const LEADERBOARD_KEY = "pokegames@typeLeaderboard";
@@ -160,6 +161,10 @@ const TypeMatchup: React.FC = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Type Matchup Quiz - Kiremon"
+        description="Trò chơi trắc nghiệm hệ Pokémon. Kiểm tra kiến thức của bạn về tính tương khắc hệ (Type Matchup)."
+      />
       <Header
         title="Type Matchup Quiz"
         subtitle="How well do you know Pokémon type effectiveness?"

@@ -9,6 +9,7 @@ import {
   ThrowArea,
 } from "./index.style";
 import { sfx } from "@/components/utils/sfx";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 // Pokémon gen 1-8 range (stable sprites)
 const POKEMON_MAX_ID = 898;
@@ -169,6 +170,10 @@ const CatchChallenge: React.FC = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Catch Challenge - Kiremon"
+        description="Thử thách tốc độ ném Pokéball bắt Pokémon. Cạnh tranh trên bảng xếp hạng Kiremon!"
+      />
       <Header
         title="Catch Challenge"
         subtitle="Throw Poké Balls to catch the moving Pokémon!"

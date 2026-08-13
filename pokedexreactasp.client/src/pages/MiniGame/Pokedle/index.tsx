@@ -46,6 +46,7 @@ import {
   FilterChip,
   ClearFilters,
 } from "./index.style";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const MAX_POKEMON_ID = 898;
 const PAGE_SIZE = 30;
@@ -472,9 +473,12 @@ export const Pokedle = () => {
       setIsSearching(false);
     }
   };
-
   return (
     <>
+      <SEOWrapper
+        title="Pokedle - Kiremon"
+        description="Trò chơi đoán Pokémon (Wordle) mỗi ngày! Dùng trí nhớ của bạn để đoán tên Pokémon dựa trên hệ, thế hệ và màu sắc."
+      />
       <Header title={t("games.pokedle", languageId)} backTo="/" />
       <GameContainer>
         <GameCard className="pxl-border">

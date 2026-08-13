@@ -9,6 +9,7 @@ import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
 import { TcgCardFilters, TcgCardListItem } from "@/types/tcg.types";
 import { t } from "@/utils/uiI18n";
 import * as S from "./index.style";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const PAGE_SIZE = 12;
 const DEFAULT_POKEMON = "pikachu";
@@ -284,6 +285,10 @@ const PokeTcg: React.FC = () => {
 
   return (
     <S.Page ref={pageRef} id="tour-tcg-page">
+      <SEOWrapper
+        title={t("tcg.title", languageId) + " - Kiremon"}
+        description="Khám phá bộ sưu tập thẻ bài Pokémon TCG. Tìm kiếm thẻ bài theo tên, độ hiếm, và hệ."
+      />
       <Header
         title={t("tcg.title", languageId)}
         subtitle={t("tcg.subtitle", languageId)}

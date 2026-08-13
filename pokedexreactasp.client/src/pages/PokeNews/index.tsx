@@ -14,6 +14,7 @@ import { useLanguage } from "@/contexts";
 import { t } from "@/utils/uiI18n";
 import { newsService, PokemonNews } from "@/services/news/news.service";
 import * as S from "./index.style";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const PokeNews: React.FC = () => {
   const { languageId } = useLanguage();
@@ -234,6 +235,10 @@ const PokeNews: React.FC = () => {
 
   return (
     <S.Container style={{ marginBottom: navHeight }} ref={pageRef}>
+      <SEOWrapper
+        title={t("news.title", languageId) + " - Kiremon"}
+        description="Cập nhật tin tức mới nhất về thế giới Pokémon, sự kiện, và bản cập nhật."
+      />
       <Header
         title={t("news.title", languageId)}
         subtitle={t("news.subtitle", languageId)}

@@ -21,6 +21,7 @@ import {
   Text,
   TypeIcon,
 } from "@/components/ui";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 import { useAuth, useGlobalContext, useLanguage } from "@/contexts";
 import { collectionService } from "@/services";
 import { CatchAttemptResult, PokeballType } from "@/types/pokemon.enums";
@@ -447,6 +448,40 @@ const DetailPokemon = () => {
 
   return (
     <>
+      <SEOWrapper
+        title={`#${pokemonId || ""} - ${localizedName || name?.toUpperCase()}`}
+        description={`${localizedGenus || "Pokemon"}. ${flavorText?.[0]?.replace(/\n|\f/g, " ") || ""}`}
+        image={sprite}
+        url={`https://kiremon.vercel.app/pokemon/${name}`}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ItemPage",
+          name: localizedName || name,
+          description: flavorText?.[0]?.replace(/\n|\f/g, " ") || "",
+          image: sprite,
+          mainEntity: {
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: `Hệ của ${localizedName || name} là gì?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `${localizedName || name} là Pokemon thuộc hệ ${typeNames?.map((t) => getLocalizedLabel(t, languageId)).join(", ") || ""}.`,
+                },
+              },
+              {
+                "@type": "Question",
+                name: `Chỉ số cơ bản của ${localizedName || name} là bao nhiêu?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `HP: ${stats?.[0]?.base_stat || 0}, Attack: ${stats?.[1]?.base_stat || 0}, Defense: ${stats?.[2]?.base_stat || 0}, Sp. Atk: ${stats?.[3]?.base_stat || 0}, Sp. Def: ${stats?.[4]?.base_stat || 0}, Speed: ${stats?.[5]?.base_stat || 0}`,
+                },
+              },
+            ],
+          },
+        }}
+      />
       <Modal open={isCatching}>
         <T.CatchingModal>
           <T.ImageContainer>

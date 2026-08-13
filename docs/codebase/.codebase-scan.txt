@@ -319,6 +319,16 @@ pokedexreactasp.client\src\pages\Friends\index.tsx:155: // TODO: Replace with ac
 pokedexreactasp.client\src\pages\PCStorage\index.tsx:967: // TODO: persist via API when ready
 
 === GIT RECENT COMMITS (last 20) ===
+ce59379 test: add unit test suites for UserService and AuthService classes
+222f361 fix: update GitHub Actions
+b5ca5c7 feat: implement Pokedle mini-game with daily and unlimited modes
+0126aef feat: implement StatIV minigame with scoring logic and UI components
+d948388 feat: implement mini-games routes, ui translation utility, and header component
+bb99fdc feat: implement application routing with lazy-loaded pages and authentication guards
+ff66bff feat: implement Who's That PokÃ©mon guessing game page and styling
+e4f3eba feat: implement battle simulator hook and initial UI for combat team management
+dbc9175 feat: add battle simulator page with turn-based logic and UI components
+bd67d2a feat: implement battle simulator hook and scaffold core UI pages and codebase documentation
 f72d624 feat: implement PC storage management interface for organizing and viewing user Pokemon
 97d58db test: add unit test coverage for application services and initialize application project structure
 88ca6c8 ci: add GitHub Actions workflow for SonarQube code analysis
@@ -329,51 +339,41 @@ a9d7232 feat: add SonarQube CI workflow for automated code analysis
 0da5b3c feat: add SonarQube CI workflow for automated code analysis
 9f97964 feat: add GitHub Actions workflow for SonarQube Cloud analysis
 27f3ea7 ci: add GitHub Actions workflow for SonarQube analysis
-6cc7b3d feat: integrate SonarCloud analysis workflow and add quality gate badge to README
-7fec81a feat: implement TCG collection management system and wild area exploration mechanics
-ed9ad01 feat: implement card reward global settings administration system
-d733469 feat: implement social authentication service and add password recovery and news pages
-75f497b feat: implement forgot password and email confirmation flows with associated UI components and services
-3aa591d feat: add automated production deployment workflow and implement MailKit-based EmailService infrastructure
-a53d1c6 feat: add EnhancedAbilityTooltip component with styled tooltip and ability details
-ba4af5a feat: implement PC storage management system with drag-and-drop support, box customization, and multi-selection features.
-a2afafd feat: implement PC storage system with box management, drag-and-drop, and TCG collection components.
-9057e76 feat: implement PC storage management system with dedicated UI components and card collection viewer
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
   18 PokedexReactASP.Server/Program.cs
+  15 pokedexreactasp.client/src/routes/index.tsx
   15 pokedexreactasp.client/src/pages/PCStorage/index.tsx
   14 skills-lock.json
   13 PokedexReactASP.Infrastructure/Persistence/PokemonDbContext.cs
   12 PokedexReactASP.Infrastructure/Migrations/PokemonDbContextModelSnapshot.cs
-  12 pokedexreactasp.client/src/routes/index.tsx
   11 pokedexreactasp.client/src/pages/WildArea/index.tsx
   11 pokedexreactasp.client/src/pages/PCStorage/index.style.ts
+  10 .github/workflows/build.yml
+  10 pokedexreactasp.client/src/components/ui/Header/index.tsx
   10 PokedexReactASP.Server/appsettings.example.json
-   9 .github/workflows/build.yml
+   9 pokedexreactasp.client/src/utils/uiI18n.ts
    9 PokedexReactASP.Infrastructure/Services/WildAreaService.cs
    9 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.tsx
    8 pokedexreactasp.client/src/pages/MyPokemon/index.tsx
-   8 pokedexreactasp.client/src/components/ui/Header/index.tsx
    8 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.style.ts
    7 .github/workflows/deploy.yml
    7 pokedexreactasp.client/src/pages/Battle/modules/VSBattle/index.tsx
    7 PokedexReactASP.Server/PokedexReactASP.Server.csproj
    7 pokedexreactasp.client/src/pages/WildArea/index.style.ts
-   7 pokedexreactasp.client/src/components/ui/TourGuide/index.tsx
 
 === MONOREPO SIGNALS ===
 No monorepo signals detected.
 
 === CODE METRICS ===
-Total files scanned: 1002
-Total lines of code: 133575
+Total files scanned: 1005
+Total lines of code: 135218
 
 Files by language:
-  Other: 491
+  Other: 492
   C#: 227
   TypeScript: 177
-  TypeScript/React: 98
+  TypeScript/React: 100
   Python: 6
   JavaScript: 3
 
