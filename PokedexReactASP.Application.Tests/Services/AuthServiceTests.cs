@@ -48,6 +48,8 @@ namespace PokedexReactASP.Application.Tests.Services
             _mockSocialAuthService = new Mock<ISocialAuthService>();
             _mockLogger = new Mock<ILogger<AuthService>>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockRefreshTokenRepo = new Mock<IRepository<RefreshToken>>();
+            _mockUnitOfWork.Setup(u => u.RefreshToken).Returns(mockRefreshTokenRepo.Object);
 
             _emailOptions = Microsoft.Extensions.Options.Options.Create(new EmailSettings { FrontendBaseUrl = "http://localhost:3000" });
             _jwtOptions = Microsoft.Extensions.Options.Options.Create(new JwtSettings { ExpirationMinutes = 60, RefreshTokenExpirationDays = 7 });
@@ -169,10 +171,10 @@ namespace PokedexReactASP.Application.Tests.Services
             } : null; // If any invalid condition, mock FirstOrDefault to return null mimicking EF core where condition
 
             // Simulate EF Core expression filtering
-            _mockUnitOfWork.Setup(u => u.RefreshToken.FirstOrDefaultAsync(
+            var mockRefreshTokenRepo = Mock.Get(_mockUnitOfWork.Object.RefreshToken);
+            mockRefreshTokenRepo.Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<Expression<Func<RefreshToken, bool>>>(),
-                It.IsAny<Func<IQueryable<RefreshToken>, IQueryable<RefreshToken>>>(),
-                false))
+                It.IsAny<bool>()))
                 .ReturnsAsync(dbToken);
 
             if (dbToken == null)
