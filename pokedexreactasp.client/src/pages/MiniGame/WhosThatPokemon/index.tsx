@@ -15,6 +15,7 @@ import {
   ResultMessage,
   ButtonsContainer,
 } from "./index.style";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 // Pokémon gen 1-8 range (stable sprites)
 const POKEMON_MAX_ID = 898;
@@ -99,6 +100,10 @@ const WhosThatPokemon: React.FC = () => {
 
   return (
     <>
+      <SEOWrapper
+        title="Who's That Pokémon? - Kiremon"
+        description="Trò chơi đoán tên Pokémon qua cái bóng (Silhouette). Thử tài trí nhớ của bạn về thế giới Pokémon!"
+      />
       <Header
         title="Who's That Pokémon?"
         subtitle="Guess the Pokémon from its silhouette!"

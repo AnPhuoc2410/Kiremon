@@ -1,43 +1,56 @@
-# CONCERNS
+# Codebase Concerns
 
-## 1) Incomplete Automated Test Coverage
-- Backend unit tests exist (`PokedexReactASP.Application.Tests`) for auth, catch, box, achievement, and user services.
-- Frontend has no Vitest/RTL test runner configured in `package.json`.
-- SonarQube/SonarCloud CI workflows exist but full coverage thresholds are [TODO].
-- Impact: regressions still likely in UI, SignalR, and admin flows without frontend/integration tests.
+## Core Sections (Required)
 
-## 2) High-Churn Frontend Areas
-- `TcgTab.tsx` and `TcgTab.style.ts` are among the most frequently changed files recently.
-- Impact: these files are likely to continue evolving and can break easily without test coverage.
+### 1) Top Risks (Prioritized)
 
-## 3) Configuration Fragility at Startup
-- Backend hard-fails when `DefaultConnection` is absent.
-- Impact: local setup and deployment can fail early if environment config is incomplete.
+| Severity | Concern | Evidence | Impact | Suggested action |
+|----------|---------|----------|--------|------------------|
+| [high/med/low] | [issue] | [file or scan output] | [impact] | [next action] |
 
-## 4) Incomplete Feature Hooks / TODOs
-- Explicit TODO markers remain in production code (e.g., catch streak tracking, shiny charm inventory check, friend gift/pokemon API placeholders).
-- Impact: some features are partially implemented and may expose inconsistent UX.
+### 2) Technical Debt
 
-## 5) Security Gaps vs README Claims
-- README advertises "CSRF prevention" but no `Antiforgery`/`ValidateAntiForgeryToken` middleware was found; mitigation relies on `SameSite` cookies + Bearer tokens.
-- `GlobalPolicy` rate limiter is registered but not applied via `[EnableRateLimiting]` on controllers (only `AuthPolicy` and `WildCatchPolicy` confirmed).
-- `RequireHttpsMetadata = false` on JWT bearer options — acceptable for dev proxy but should be `true` in strict production.
-- No HSTS, CSP, or security headers middleware detected in repo.
-- Scan did not detect `SECURITY.md`, Dependabot, or Snyk configs.
-- [ASK USER] Is there an external security baseline/runbook (secrets rotation, incident response, dependency scanning) maintained outside this repo?
+List the most important debt items only.
 
-## 7) Performance Risks
-- Large static assets in `public/` (e.g. `monastiraki_square.gif` ~12MB) can hurt LCP on pages that load them.
-- In-memory frontend cache (`cacheStore`) does not survive page refresh and is not shared across tabs.
-- Redis fallback to per-instance memory cache can cause cache inconsistency in multi-instance deployments until Redis recovers.
+| Debt item | Why it exists | Where | Risk if ignored | Suggested fix |
+|-----------|---------------|-------|-----------------|---------------|
+| [item] | [reason] | [path] | [risk] | [fix] |
 
-## 6) Documentation Encoding Quality
-- Existing root README shows mojibake/encoding issues in multiple sections.
-- Impact: onboarding readability and trust can be reduced for new contributors.
+### 3) Security Concerns
 
-## Evidence
-- `docs/codebase/.codebase-scan.txt`
-- `PokedexReactASP.Infrastructure/DependencyInjection.cs`
-- `PokedexReactASP.Application/Services/UserService.cs`
-- `pokedexreactasp.client/src/pages/Friends/index.tsx`
-- `README.md`
+| Risk | OWASP category (if applicable) | Evidence | Current mitigation | Gap |
+|------|--------------------------------|----------|--------------------|-----|
+| [risk] | [A01/A03/etc or N/A] | [path] | [what exists] | [what is missing] |
+
+### 4) Performance and Scaling Concerns
+
+| Concern | Evidence | Current symptom | Scaling risk | Suggested improvement |
+|---------|----------|-----------------|-------------|-----------------------|
+| [issue] | [path/metric] | [symptom] | [risk] | [action] |
+
+### 5) Fragile/High-Churn Areas
+
+| Area | Why fragile | Churn signal | Safe change strategy |
+|------|-------------|-------------|----------------------|
+| [path] | [reason] | [recent churn evidence] | [approach] |
+
+### 6) `[ASK USER]` Questions
+
+Add unresolved intent-dependent questions as a numbered list.
+
+1. [ASK USER] [question]
+
+### 7) Evidence
+
+- [scan output section reference]
+- [path/to/code-file]
+- [path/to/config-or-history-evidence]
+
+## Extended Sections (Optional)
+
+Add only when needed:
+
+- Full bug inventory
+- Component-level remediation roadmap
+- Cost/effort estimates by concern
+- Dependency-risk and ownership mapping

@@ -1,29 +1,57 @@
-# TESTING
+# Testing Patterns
 
-## Current State
-- Backend: `PokedexReactASP.Application.Tests` (xUnit) with service-level unit tests for auth, pokemon catch/box, achievements, and user flows.
-- Frontend: no dedicated test runner script in `package.json` (no Vitest/Jest detected).
-- CI: GitHub Actions workflows exist (`build.yml`, `build-image.yml`, `deploy.yml`); SonarQube analysis workflows added in recent commits.
+## Core Sections (Required)
 
-## What Exists Instead
-- Build/lint oriented validation:
-  - Frontend: `npm run build`, `npm run lint`, `npm run format:check`.
-  - Backend: `dotnet build` at solution/project level.
-- API manual exploration is supported via Swagger UI.
+### 1) Test Stack and Commands
 
-## Risks from Current Testing Posture
-- Regression risk is higher around high-churn UI files (notably TCG tab and tour-guide components).
-- Auth/security-sensitive flows (2FA, reset password, external login) rely heavily on manual verification.
-- Friend workflow and game mechanics correctness are not protected by repeatable automated tests.
+- Primary test framework: [NAME + VERSION]
+- Assertion/mocking tools: [TOOLS]
+- Commands:
 
-## Recommended Baseline (next step)
-- Backend: add unit tests for application services and integration tests for controllers.
-- Frontend: add component/integration tests for route-level pages and critical hooks.
-- CI: add mandatory test job before deploy.
+```bash
+[run all tests]
+[run unit tests]
+[run integration/e2e tests]
+[run coverage]
+```
 
-## Evidence
-- `PokedexReactASP.sln`
-- `pokedexreactasp.client/package.json`
-- `docs/codebase/.codebase-scan.txt`
-- `.github/workflows/build-image.yml`
-- `.github/workflows/deploy.yml`
+### 2) Test Layout
+
+- Test file placement pattern: [co-located/tests folder/etc]
+- Naming convention: [pattern]
+- Setup files and where they run: [paths]
+
+### 3) Test Scope Matrix
+
+| Scope | Covered? | Typical target | Notes |
+|-------|----------|----------------|-------|
+| Unit | [yes/no] | [modules/services] | [notes] |
+| Integration | [yes/no] | [API/data boundaries] | [notes] |
+| E2E | [yes/no] | [user flows] | [notes] |
+
+### 4) Mocking and Isolation Strategy
+
+- Main mocking approach: [module/class/network]
+- Isolation guarantees: [what is reset and when]
+- Common failure mode in tests: [short note]
+
+### 5) Coverage and Quality Signals
+
+- Coverage tool + threshold: [value or TODO]
+- Current reported coverage: [value or TODO]
+- Known gaps/flaky areas: [list]
+
+### 6) Evidence
+
+- [path/to/test-config]
+- [path/to/representative-test-file]
+- [path/to/ci-or-coverage-config]
+
+## Extended Sections (Optional)
+
+Add only when needed:
+
+- Framework-specific suite patterns
+- Detailed mock recipes per dependency type
+- Historical flaky test catalog
+- Test performance bottlenecks and optimization ideas

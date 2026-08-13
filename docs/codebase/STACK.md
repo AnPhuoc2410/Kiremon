@@ -1,34 +1,56 @@
-# STACK
+# Technology Stack
 
-## Runtime and Languages
-- Backend: .NET 8 (`net8.0`) with C#.
-- Frontend: React 19 + TypeScript on Vite 7.
-- Database: PostgreSQL via Entity Framework Core + Npgsql.
+## Core Sections (Required)
 
-## Backend Libraries
-- ASP.NET Core Web API + Identity.
-- JWT authentication (`Microsoft.AspNetCore.Authentication.JwtBearer`).
-- SignalR for realtime hubs.
-- Serilog (+ async/file sinks, masking).
-- Swagger / OpenAPI via Swashbuckle.
+### 1) Runtime Summary
 
-## Frontend Libraries
-- Routing: `react-router-dom`.
-- Server state: `@tanstack/react-query`.
-- HTTP: `axios` and native `fetch` (in some services).
-- UI/styling: Emotion, Tailwind 4, Radix UI.
-- Realtime: `@microsoft/signalr`.
-- Optional integrations: Supabase client, OAuth SDKs.
+| Area | Value | Evidence |
+|------|-------|----------|
+| Primary language | [VALUE] | [FILE_PATH] |
+| Runtime + version | [VALUE] | [FILE_PATH] |
+| Package manager | [VALUE] | [FILE_PATH] |
+| Module/build system | [VALUE] | [FILE_PATH] |
 
-## Tooling and Dev Workflow
-- Frontend scripts: `dev`, `build`, `lint`, `format`.
-- Lint/format: ESLint + Prettier + lint-staged + Husky.
-- Containerization: root Dockerfile + compose files, plus dedicated client Dockerfiles.
-- CI/CD: GitHub Actions workflows under `.github/workflows`.
+### 2) Production Frameworks and Dependencies
 
-## Evidence
-- `PokedexReactASP.Server/PokedexReactASP.Server.csproj`
-- `pokedexreactasp.client/package.json`
-- `PokedexReactASP.Infrastructure/DependencyInjection.cs`
-- `PokedexReactASP.Server/Program.cs`
-- `Dockerfile`, `docker-compose.dev.yml`, `.github/workflows/build-image.yml`, `.github/workflows/deploy.yml`
+List only high-impact production dependencies (frameworks, data, transport, auth).
+
+| Dependency | Version | Role in system | Evidence |
+|------------|---------|----------------|----------|
+| [NAME] | [VERSION] | [ROLE] | [FILE_PATH] |
+
+### 3) Development Toolchain
+
+| Tool | Purpose | Evidence |
+|------|---------|----------|
+| [TOOL] | [LINT/FORMAT/TEST/BUILD] | [FILE_PATH] |
+
+### 4) Key Commands
+
+```bash
+[install command]
+[build command]
+[test command]
+[lint command]
+```
+
+### 5) Environment and Config
+
+- Config sources: [LIST FILES]
+- Required env vars: [VAR_1], [VAR_2], [TODO]
+- Deployment/runtime constraints: [SHORT NOTE]
+
+### 6) Evidence
+
+- [path/to/manifest]
+- [path/to/runtime-config]
+- [path/to/build-or-ci-config]
+
+## Extended Sections (Optional)
+
+Add only when needed for complex repos:
+
+- Full dependency taxonomy by category
+- Detailed compiler/runtime flags
+- Environment matrix (dev/stage/prod)
+- Process manager and container runtime details

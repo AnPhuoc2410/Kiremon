@@ -17,6 +17,7 @@ Guidance for using Claude on this production-ready Pokémon project. Keep all ou
 - Quality: Production-ready, SOLID/KISS/DRY, clean architecture; .NET 8 idioms, async/await, cancellation tokens where applicable.
 - C#: Use nullable enable, dependency injection, guard clauses, domain validation, and fluent mappings. Prefer `IReadOnlyCollection` for outputs, avoid static mutable state.
 - React/TS: Strong typing, hooks over classes, no `any`, lean components, lifted state where necessary, and error boundaries for async views.
+- SEO & AIO (AI Optimization): For new pages or major views, use `<SEOWrapper>` to inject meta tags, Open Graph, and JSON-LD schema (FAQPage, ItemPage, VideoGame, etc.) to optimize for search engines, Answer Engines (AEO), and Generative AI (GEO).
 - Testing: Prefer xUnit + FluentAssertions for backend; React Testing Library + Vitest for frontend. Provide test stubs when changing behavior.
 - Errors: Return precise HTTP status codes; never swallow exceptions—log with context and map to safe responses.
 

@@ -23,6 +23,7 @@ import {
   RuleText,
 } from "./index.style";
 import { FlexCenter } from "@/styles";
+import SEOWrapper from "@/components/ui/SEOWrapper";
 
 const STATS = [
   { key: "hp", label: "HP", color: "#FF5959" },
@@ -149,6 +150,10 @@ export const StatIV = () => {
 
   return (
     <>
+      <SEOWrapper
+        title={t("games.statOptimizer", languageId) + " - Kiremon"}
+        description="Trò chơi tối ưu hóa chỉ số (Stat IV). Sắp xếp chỉ số cơ bản của Pokémon một cách tốt nhất để đạt điểm cao."
+      />
       <Header title={t("games.statOptimizer", languageId)} backTo="/" />
       <GameContainer>
         <GameCard className="pxl-border">

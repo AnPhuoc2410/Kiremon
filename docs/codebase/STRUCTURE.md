@@ -1,35 +1,44 @@
-# STRUCTURE
+# Codebase Structure
 
-## Repository Layout
-- `PokedexReactASP.Server/`: API host, controllers, hubs, middleware, startup.
-- `PokedexReactASP.Application/`: business services, DTOs, interfaces, options, mappings.
-- `PokedexReactASP.Infrastructure/`: EF Core context/migrations, repository/UoW, infra services.
-- `PokedexReactASP.Domain/`: entities and enums.
-- `pokedexreactasp.client/`: React app (pages, routes, hooks, services, contexts, styles).
-- `docs/`: functional docs (feature notes, API notes).
+## Core Sections (Required)
 
-## Entry Points
-- Backend entry point: `PokedexReactASP.Server/Program.cs`.
-- Frontend entry points: `pokedexreactasp.client/src/main.tsx` -> `src/App.tsx` -> `src/routes/index.tsx`.
+### 1) Top-Level Map
 
-## API Surface (high-level)
-- `api/auth`: authentication, OAuth/external login, 2FA, password flows.
-- `api/user`: profile and user pokemon management.
-- `api/friend`: friend code + friend request + friend list.
-- `api/pokemon`: pokemon CRUD/search endpoints.
-- Hubs: `/hubs/pokemon`, `/hubs/presence`.
+List only meaningful top-level directories and files.
 
-## Frontend Functional Areas
-- Auth pages: login/register/forgot/reset/confirm email.
-- Core pokemon flows: explore/search/detail/my-pokemon.
-- Social: friends, profile, settings.
-- Game/minigames: who's that pokemon, combat team, type matchup, catch challenge.
-- Market: poke-mart page and related components.
-- Detail tab extensions: evolution, stats, moves, training, sprites, TCG cards.
+| Path | Purpose | Evidence |
+|------|---------|----------|
+| [path/] | [purpose] | [source] |
 
-## Evidence
-- `PokedexReactASP.sln`
-- `PokedexReactASP.Server/Controllers/*.cs`
-- `PokedexReactASP.Server/Hubs/*.cs`
-- `pokedexreactasp.client/src/routes/index.tsx`
-- `pokedexreactasp.client/src/pages/`
+### 2) Entry Points
+
+- Main runtime entry: [FILE]
+- Secondary entry points (worker/cli/jobs): [FILES or NONE]
+- How entry is selected (script/config): [NOTE]
+
+### 3) Module Boundaries
+
+| Boundary | What belongs here | What must not be here |
+|----------|-------------------|------------------------|
+| [module/layer] | [responsibility] | [forbidden logic] |
+
+### 4) Naming and Organization Rules
+
+- File naming pattern: [kebab/camel/Pascal + examples]
+- Directory organization pattern: [feature/layer/domain]
+- Import aliasing or path conventions: [RULE]
+
+### 5) Evidence
+
+- [path/to/root-tree-source]
+- [path/to/entry-config]
+- [path/to/key-module]
+
+## Extended Sections (Optional)
+
+Add only when repository complexity requires it:
+
+- Subdirectory deep maps by feature/layer
+- Middleware/boot order details
+- Generated-vs-source layout boundaries
+- Monorepo workspace-level structure maps

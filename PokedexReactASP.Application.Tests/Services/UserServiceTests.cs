@@ -116,5 +116,179 @@ namespace PokedexReactASP.Application.Tests.Services
             user.AvatarUrl.Should().Be("new.png");
             _mockUserManager.Verify(u => u.UpdateAsync(user), Times.Once);
         }
+
+        [Fact]
+        public async Task ToggleFavoritePokemonAsync_ShouldReturnFalse_WhenPokemonNotFound()
+        {
+            // Arrange
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync((UserPokemon)null);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.ToggleFavoritePokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ToggleFavoritePokemonAsync_ShouldToggleAndReturnTrue_WhenPokemonFound()
+        {
+            // Arrange
+            var pokemon = new UserPokemon { Id = 1, UserId = "1", IsFavorite = false };
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(pokemon);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.ToggleFavoritePokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeTrue();
+            pokemon.IsFavorite.Should().BeTrue();
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePokemonNotesAsync_ShouldReturnFalse_WhenPokemonNotFound()
+        {
+            // Arrange
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync((UserPokemon)null);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.UpdatePokemonNotesAsync("1", 1, "New notes");
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UpdatePokemonNotesAsync_ShouldUpdateNotesAndReturnTrue_WhenPokemonFound()
+        {
+            // Arrange
+            var pokemon = new UserPokemon { Id = 1, UserId = "1", Notes = "Old notes" };
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(pokemon);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.UpdatePokemonNotesAsync("1", 1, "New notes");
+
+            // Assert
+            result.Should().BeTrue();
+            pokemon.Notes.Should().Be("New notes");
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task InteractWithPokemonAsync_ShouldReturnFalse_WhenPokemonNotFound()
+        {
+            // Arrange
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync((UserPokemon)null);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.InteractWithPokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task InteractWithPokemonAsync_ShouldReturnFalse_WhenAlreadyInteractedToday()
+        {
+            // Arrange
+            var pokemon = new UserPokemon { Id = 1, UserId = "1", LastInteractionDate = DateTime.UtcNow };
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(pokemon);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.InteractWithPokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task InteractWithPokemonAsync_ShouldIncreaseFriendshipAndReturnTrue_WhenCanInteract()
+        {
+            // Arrange
+            var pokemon = new UserPokemon { Id = 1, UserId = "1", Friendship = 10, LastInteractionDate = DateTime.UtcNow.AddDays(-1) };
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(pokemon);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.InteractWithPokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeTrue();
+            pokemon.Friendship.Should().Be(11);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task ReleasePokemonAsync_ShouldReturnFalse_WhenPokemonNotFound()
+        {
+            // Arrange
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync((UserPokemon)null);
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+
+            // Act
+            var result = await _service.ReleasePokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ReleasePokemonAsync_ShouldRemovePokemonAndUpdateUserStats_WhenPokemonFound()
+        {
+            // Arrange
+            var pokemon = new UserPokemon { Id = 1, UserId = "1", PokemonApiId = 25, IsShiny = true };
+            var user = new ApplicationUser { Id = "1", PokemonCaught = 5, ShinyPokemonCaught = 2, UniquePokemonCaught = 4 };
+            
+            var remainingPokemon = new List<UserPokemon> 
+            { 
+                new UserPokemon { Id = 2, UserId = "1", PokemonApiId = 1 },
+                new UserPokemon { Id = 3, UserId = "1", PokemonApiId = 4 }
+            };
+
+            var mockUserPokemonRepo = new Mock<IRepository<UserPokemon>>();
+            mockUserPokemonRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(pokemon);
+            
+            mockUserPokemonRepo.Setup(r => r.FindAsync(It.IsAny<Expression<Func<UserPokemon, bool>>>(), It.IsAny<bool>()))
+                .ReturnsAsync(remainingPokemon);
+
+            _mockUnitOfWork.Setup(u => u.UserPokemon).Returns(mockUserPokemonRepo.Object);
+            _mockUserManager.Setup(u => u.FindByIdAsync("1")).ReturnsAsync(user);
+
+            // Act
+            var result = await _service.ReleasePokemonAsync("1", 1);
+
+            // Assert
+            result.Should().BeTrue();
+            mockUserPokemonRepo.Verify(r => r.Remove(pokemon), Times.Once);
+            user.PokemonCaught.Should().Be(4);
+            user.ShinyPokemonCaught.Should().Be(1);
+            user.UniquePokemonCaught.Should().Be(2);
+            _mockUserManager.Verify(u => u.UpdateAsync(user), Times.Once);
+            _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        }
     }
 }
