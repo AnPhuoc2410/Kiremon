@@ -128,7 +128,9 @@ export default function Routes() {
             path="/my-pokemon"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <PCStorage />
+                <ProtectedRoute>
+                  <PCStorage />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -136,7 +138,9 @@ export default function Routes() {
             path="/tcg-management"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <TCGManagement />
+                <ProtectedRoute>
+                  <TCGManagement />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -152,7 +156,9 @@ export default function Routes() {
             path="/games/combat-team"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <CombatTeam />
+                <ProtectedRoute>
+                  <CombatTeam />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -169,7 +175,9 @@ export default function Routes() {
             path="/games/catch-challenge"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <CatchChallenge />
+                <ProtectedRoute>
+                  <CatchChallenge />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -193,7 +201,9 @@ export default function Routes() {
             path="/battle"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <Battle />
+                <ProtectedRoute>
+                  <Battle />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -210,7 +220,9 @@ export default function Routes() {
             path="/wild-area"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <WildArea />
+                <ProtectedRoute>
+                  <WildArea />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -218,7 +230,9 @@ export default function Routes() {
             path="/my-cards"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <MyCards />
+                <ProtectedRoute>
+                  <MyCards />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -226,7 +240,9 @@ export default function Routes() {
             path="/bag"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <Bag />
+                <ProtectedRoute>
+                  <Bag />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -274,7 +290,9 @@ export default function Routes() {
             path="/profile"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <Profile />
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -282,7 +300,9 @@ export default function Routes() {
             path="/settings"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <Settings />
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
               </Suspense>
             }
           />
@@ -290,7 +310,9 @@ export default function Routes() {
             path="/friends"
             element={
               <Suspense fallback={<div>Loading...</div>}>
-                <Friends />
+                <ProtectedRoute>
+                  <Friends />
+                </ProtectedRoute>
               </Suspense>
             }
           />

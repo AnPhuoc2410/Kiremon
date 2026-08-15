@@ -9,7 +9,7 @@ import {
   IconUser,
   IconExternalLink,
 } from "@tabler/icons-react";
-import { Header, Navbar } from "@/components/ui";
+import { Header } from "@/components/ui";
 import { useLanguage } from "@/contexts";
 import { t } from "@/utils/uiI18n";
 import { newsService, PokemonNews } from "@/services/news/news.service";
@@ -576,8 +576,6 @@ const PokeNews: React.FC = () => {
           </S.ModalContent>
         </S.ModalOverlay>
       )}
-
-      <Navbar ref={navRef} />
     </S.Container>
   );
 };

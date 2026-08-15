@@ -50,7 +50,7 @@ interface AuthContextType {
   authData: AuthLoginData | null;
   user: AuthUser | null;
   authLogin: (data: AuthLoginData) => void;
-  authLogout: () => void;
+  authLogout: (reason?: "manual" | "unauthorized") => void;
   updateUser: (updates: Partial<AuthUser>) => void;
   getToken: () => string | null;
 }
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     initializeAuth();
 
     const handleUnauthorizedLogout = () => {
-      authLogout();
+      authLogout("unauthorized");
     };
 
     window.addEventListener("unauthorized-logout", handleUnauthorizedLogout);
@@ -156,7 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const authLogout = () => {
+  const authLogout = (reason: "manual" | "unauthorized" = "manual") => {
+    const hasAuthCookie = !!getCookie("authUser");
+    const wasAuthenticated = isAuthenticated || hasAuthCookie;
+
     // 1. Clear token & cookie first to prevent race condition window
     setMemoryToken(null);
     eraseCookie("authUser");
@@ -167,11 +170,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
 
     // 3. Make API call last
-    axios
-      .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
-      .catch((err) => console.warn("Failed to call revoke on server", err));
+    if (wasAuthenticated) {
+      axios
+        .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
+        .catch((err) => console.warn("Failed to call revoke on server", err));
 
-    toast.success("Đăng xuất thành công", { duration: 2500 });
+      if (reason === "unauthorized") {
+        toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", {
+          duration: 3000,
+        });
+      } else {
+        toast.success("Đăng xuất thành công", { duration: 2500 });
+      }
+    }
+
     navigate("/");
   };
 
