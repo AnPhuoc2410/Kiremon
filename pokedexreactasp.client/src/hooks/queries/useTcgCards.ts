@@ -1,4 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { tcgService } from "@/services/tcg/tcg.service";
 import { TcgCardFilters } from "@/types/tcg.types";
 
@@ -40,6 +44,7 @@ export function useTcgCards(
     enabled: enabled && !!pokemonName,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -51,6 +56,17 @@ export function useTcgCardDetail(cardId: string | null, enabled: boolean) {
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
+}
+
+export function usePrefetchTcgCardDetail() {
+  const queryClient = useQueryClient();
+  return (cardId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: tcgQueryKeys.cardDetail(cardId),
+      queryFn: () => tcgService.getCardById(cardId),
+      staleTime: 10 * 60 * 1000,
+    });
+  };
 }
 
 export function useTcgFacets(pokemonName: string, enabled: boolean) {

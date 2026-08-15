@@ -1,6 +1,12 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { Button, Loading, Text } from "@/components/ui";
-import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
+import {
+  useTcgCardDetail,
+  useTcgCards,
+  useTcgFacets,
+  usePrefetchTcgCardDetail,
+} from "@/hooks/queries";
 import { usePokemonTcgPreview } from "@/hooks/queries/usePokemonTcgPreview";
 import {
   TcgAttack,
@@ -47,6 +53,7 @@ const TcgTab: React.FC<TcgTabProps> = ({
   const facetsQuery = useTcgFacets(pokemonName, enabled);
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
   const previewQuery = usePokemonTcgPreview(pokemonApiId, enabled);
+  const prefetchDetail = usePrefetchTcgCardDetail();
 
   useEffect(() => {
     setPage(1);
@@ -57,6 +64,18 @@ const TcgTab: React.FC<TcgTabProps> = ({
   useEffect(() => {
     setPage(1);
   }, [filters.rarity, filters.regulationMark, filters.subtype]);
+
+  const handleCardClick = (id: string | null) => {
+    if (!("startViewTransition" in document)) {
+      setSelectedCardId(id);
+      return;
+    }
+    (document as any).startViewTransition(() => {
+      flushSync(() => {
+        setSelectedCardId(id);
+      });
+    });
+  };
 
   const totalPages = useMemo(() => {
     const totalCount = cardsQuery.data?.totalCount || 0;
@@ -192,11 +211,24 @@ const TcgTab: React.FC<TcgTabProps> = ({
         </S.EmptyBox>
       ) : (
         <>
-          <S.Grid>
+          <S.Grid
+            style={{
+              opacity:
+                cardsQuery.isFetching && cardsQuery.isPlaceholderData
+                  ? 0.45
+                  : 1,
+              pointerEvents:
+                cardsQuery.isFetching && cardsQuery.isPlaceholderData
+                  ? "none"
+                  : "auto",
+              transition: "opacity 0.2s ease",
+            }}
+          >
             {cards.map((card) => (
               <S.CardItem
                 key={card.id}
-                onClick={() => setSelectedCardId(card.id)}
+                onMouseEnter={() => prefetchDetail(card.id)}
+                onClick={() => handleCardClick(card.id)}
               >
                 <S.CardImage
                   src={
@@ -206,6 +238,12 @@ const TcgTab: React.FC<TcgTabProps> = ({
                   }
                   alt={card.name}
                   loading="lazy"
+                  style={{
+                    viewTransitionName:
+                      selectedCardId === card.id
+                        ? "none"
+                        : `card-image-${card.id}`,
+                  }}
                 />
                 <S.CardMeta>
                   <S.Title>{card.name}</S.Title>
@@ -224,49 +262,37 @@ const TcgTab: React.FC<TcgTabProps> = ({
           </S.Grid>
 
           <S.Paginator>
-            <Button
-              variant="light"
+            <S.PagerButton
+              type="button"
               disabled={page <= 1}
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
             >
-              Prev
-            </Button>
-            <Text>
+              ← Prev
+            </S.PagerButton>
+            <S.PageCount>
               Page {page}/{totalPages}
-            </Text>
-            <Button
-              variant="light"
+            </S.PageCount>
+            <S.PagerButton
+              type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
             >
-              Next
-            </Button>
+              Next →
+            </S.PagerButton>
           </S.Paginator>
         </>
       )}
 
       {selectedCardId && (
-        <S.ModalOverlay onClick={() => setSelectedCardId(null)}>
+        <S.ModalOverlay onClick={() => handleCardClick(null)}>
           <S.ModalContent onClick={(e) => e.stopPropagation()}>
-            <S.ModalHeader>
-              <div>
-                <Text as="h3" variant="light">
-                  {displayCard?.name || "Loading card details..."}
-                </Text>
-                {displayCard?.set && (
-                  <Text as="p" variant="light">
-                    {displayCard.set.series} - {displayCard.set.name}
-                  </Text>
-                )}
-              </div>
-              <S.CloseButton
-                onClick={() => setSelectedCardId(null)}
-                aria-label="Close modal"
-                title="Close"
-              >
-                ×
-              </S.CloseButton>
-            </S.ModalHeader>
+            <S.CloseButton
+              onClick={() => handleCardClick(null)}
+              aria-label="Close modal"
+              title="Close"
+            >
+              ×
+            </S.CloseButton>
 
             {detailQuery.isLoading ? (
               <Loading label="Loading card detail..." />
@@ -287,7 +313,10 @@ const TcgTab: React.FC<TcgTabProps> = ({
                   <S.DetailImage
                     src={detailImageSrc}
                     alt={displayCard.name}
-                    style={tiltStyle}
+                    style={{
+                      ...tiltStyle,
+                      viewTransitionName: `card-image-${displayCard.id}`,
+                    }}
                     onMouseMove={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const px = (e.clientX - rect.left) / rect.width;

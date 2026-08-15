@@ -112,7 +112,9 @@ const StartScreen: React.FC = () => {
             gap: "5px",
           }}
         >
-          <Text variant="outlined">&copy;{new Date().getFullYear()} Sheme</Text>
+          <Text variant="outlined">
+            &copy;{new Date().getFullYear()} Kiremon
+          </Text>
           <Text variant="outlined">
             | Want to contribute?{" "}
             <T.A href="https://github.com/AnPhuoc2410/Kiremon" target="_blank">

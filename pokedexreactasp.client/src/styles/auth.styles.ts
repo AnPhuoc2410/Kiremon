@@ -5,7 +5,27 @@ import { AuthCard as BaseAuthCard } from "./card.styles";
 
 // ============ AUTH PAGE LAYOUT ============
 export const AuthPage = styled(GradientPage)`
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
+  background-image: url("/images/login-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 0;
+  }
+
+  > * {
+    z-index: 1;
+  }
 `;
 
 export const AuthContainer = styled(FlexColumn)`
@@ -15,8 +35,16 @@ export const AuthContainer = styled(FlexColumn)`
   gap: 2px;
 `;
 
-// ============ AUTH CARD (re-export with auth-specific defaults) ============
-export const AuthCard = styled(BaseAuthCard)``;
+export const AuthCard = styled(BaseAuthCard)`
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  border-top: 6px solid ${colors["red-500"]};
+  padding: 40px;
+`;
 
 export const AuthHeader = styled(FlexRow)`
   gap: 12px;
@@ -51,29 +79,40 @@ export const AuthForm = styled.form`
 
 export const AuthInput = styled.input`
   padding: 12px 14px;
-  border-radius: 4px;
-  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.85);
   outline: none;
   font-size: 14px;
   font-family: inherit;
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: ${colors["red-500"]};
+    border-color: ${colors["red-400"]};
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
   }
 `;
 
 export const AuthSubmit = styled.button`
   padding: 12px 14px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: none;
-  background: ${colors["red-600"]};
+  background: linear-gradient(
+    135deg,
+    ${colors["red-500"]} 0%,
+    ${colors["red-600"]} 100%
+  );
   color: white;
-  font-weight: 600;
+  font-weight: bold;
+  font-size: 15px;
   cursor: pointer;
-  transition: transform 120ms ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 
   &:hover {
-    background: ${colors["red-700"]};
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
   }
 
   &:active {
@@ -110,9 +149,9 @@ export const SocialButton = styled.button<{
   $provider?: "google" | "facebook" | "github";
 }>`
   padding: 12px 14px;
-  border-radius: 4px;
-  border: 1px solid #eaeaea;
-  background: white;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.85);
   color: #111111;
   display: flex;
   align-items: center;
@@ -120,13 +159,14 @@ export const SocialButton = styled.button<{
   justify-content: center;
   cursor: pointer;
   font-weight: 600;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
+  transition: all 0.2s ease;
   width: 100%;
+  backdrop-filter: blur(4px);
 
   &:hover {
-    background: #f7f6f3;
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   &:active {

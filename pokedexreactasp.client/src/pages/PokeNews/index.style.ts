@@ -577,3 +577,60 @@ export const ExternalLinkButton = styled.a`
     box-shadow: 2px 2px 0px ${colors["gray-900"]};
   }
 `;
+
+export const PagerContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+`;
+
+export const PagerButton = styled.button`
+  min-height: 40px;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  padding: 0 16px;
+  background: ${colors["red-500"]};
+  color: white;
+  cursor: pointer;
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  box-shadow: inset -4px -4px ${colors["red-600"]};
+  transition:
+    transform 0.16s ease,
+    background-color 0.16s ease,
+    opacity 0.16s ease;
+
+  &:hover:not(:disabled) {
+    background: ${colors["red-400"]};
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 4px 4px ${colors["red-700"]};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: ${colors["gray-200"]};
+    color: ${colors["gray-600"]};
+    box-shadow: inset -4px -4px ${colors["gray-300"]};
+  }
+`;
+
+export const PageCount = styled.span`
+  color: ${colors["gray-900"]};
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  padding: 0 16px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: inset -3px -3px ${colors["gray-200"]};
+`;

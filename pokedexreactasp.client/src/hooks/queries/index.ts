@@ -8,13 +8,23 @@ export {
   useTcgCards,
   useTcgCardDetail,
   useTcgFacets,
+  usePrefetchTcgCardDetail,
   tcgQueryKeys,
 } from "./useTcgCards";
 export { useWildArea, useWildAreas, wildAreaQueryKeys } from "./useWildArea";
 export { useMyTcgCards, myTcgCardsQueryKeys } from "./useMyTcgCards";
-export { useMyInventory, useAddItem, useConsumeItem, useInventoryQueryKeys } from "./useInventory";
+export {
+  useMyInventory,
+  useAddItem,
+  useConsumeItem,
+  useInventoryQueryKeys,
+} from "./useInventory";
 export { useBuyItem } from "./useBuyItem";
-export { useItemCategories, useItemEffectDetails, itemGraphQLQueryKeys } from "./useItemGraphQL";
+export {
+  useItemCategories,
+  useItemEffectDetails,
+  itemGraphQLQueryKeys,
+} from "./useItemGraphQL";
 export {
   usePokemonTcgPreview,
   pokemonTcgPreviewQueryKeys,

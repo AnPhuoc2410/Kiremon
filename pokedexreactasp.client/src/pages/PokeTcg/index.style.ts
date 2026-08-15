@@ -429,24 +429,49 @@ export const Pager = styled.div`
 `;
 
 export const PagerButton = styled.button`
-  min-height: 38px;
-  border: 1px solid ${colors["gray-300"]};
-  border-radius: 9px;
-  padding: 0 14px;
-  background: #ffffff;
+  min-height: 40px;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  padding: 0 16px;
+  background: ${colors["blue-300"]};
   color: ${colors["gray-900"]};
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: inset -4px -4px ${colors["blue-500"]};
+  transition:
+    transform 0.16s ease,
+    background-color 0.16s ease,
+    opacity 0.16s ease;
+
+  &:hover:not(:disabled) {
+    background: ${colors["blue-200"]};
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 4px 4px ${colors["blue-500"]};
+  }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.45;
+    opacity: 0.5;
+    background: ${colors["gray-200"]};
+    box-shadow: inset -4px -4px ${colors["gray-300"]};
   }
 `;
 
 export const PageCount = styled.span`
-  color: ${colors["gray-700"]};
-  font-weight: 700;
+  color: ${colors["gray-900"]};
+  font-weight: 800;
+  padding: 0 16px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: inset -3px -3px ${colors["gray-200"]};
 `;
 
 export const StatePanel = styled.section`
