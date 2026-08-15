@@ -5,7 +5,7 @@ import { AuthCard as BaseAuthCard } from "./card.styles";
 
 // ============ AUTH PAGE LAYOUT ============
 export const AuthPage = styled(GradientPage)`
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
   background-image: url("/images/login-bg.jpg");
   background-size: cover;
   background-position: center;

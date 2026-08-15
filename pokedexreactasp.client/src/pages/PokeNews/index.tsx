@@ -438,63 +438,29 @@ const PokeNews: React.FC = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "16px",
-                  marginTop: "32px",
-                }}
-              >
-                <button
+              <S.PagerContainer>
+                <S.PagerButton
                   disabled={currentPage === 1}
                   onClick={() => {
                     setCurrentPage((prev) => prev - 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  style={{
-                    padding: "8px 16px",
-                    background: currentPage === 1 ? "#e5e7eb" : "#dc0a2d",
-                    color: currentPage === 1 ? "#9ca3af" : "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                    fontWeight: 600,
-                  }}
                 >
                   Previous
-                </button>
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "#4b5563",
-                  }}
-                >
+                </S.PagerButton>
+                <S.PageCount>
                   Page {currentPage} of {totalPages}
-                </span>
-                <button
+                </S.PageCount>
+                <S.PagerButton
                   disabled={currentPage === totalPages}
                   onClick={() => {
                     setCurrentPage((prev) => prev + 1);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  style={{
-                    padding: "8px 16px",
-                    background:
-                      currentPage === totalPages ? "#e5e7eb" : "#dc0a2d",
-                    color: currentPage === totalPages ? "#9ca3af" : "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor:
-                      currentPage === totalPages ? "not-allowed" : "pointer",
-                    fontWeight: 600,
-                  }}
                 >
                   Next
-                </button>
-              </div>
+                </S.PagerButton>
+              </S.PagerContainer>
             )}
           </>
         )}
