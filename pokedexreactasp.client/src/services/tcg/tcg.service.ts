@@ -101,7 +101,9 @@ class TcgService {
     if (filters?.subtype) queryParts.push(`subtypes:"${filters.subtype}"`);
 
     const query = encodeURIComponent(queryParts.join(" "));
-    const url = `${this.baseUrl}cards?q=${query}&page=${page}&pageSize=${pageSize}&orderBy=set.releaseDate,number`;
+    const select =
+      "id,name,number,rarity,regulationMark,supertype,subtypes,images,set";
+    const url = `${this.baseUrl}cards?q=${query}&page=${page}&pageSize=${pageSize}&orderBy=set.releaseDate,number&select=${select}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -163,45 +165,40 @@ class TcgService {
     };
   }
 
-  async preloadFacetsByPokemonName(pokemonName: string): Promise<TcgCardFacets> {
+  async preloadFacetsByPokemonName(
+    pokemonName: string,
+  ): Promise<TcgCardFacets> {
     this.ensureConfigured();
 
     const searchTerm = pokemonName.trim().replace(/"/g, '\\"');
     const query = encodeURIComponent(`name:"${searchTerm}"`);
+    const select = "rarity,regulationMark,subtypes";
+    const url = `${this.baseUrl}cards?q=${query}&pageSize=${FACET_PAGE_SIZE}&select=${select}`;
 
-    let page = 1;
-    let totalCount = 0;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || "Failed to preload TCG facets");
+    }
+
+    const payload: RawCardSearchResponse = await response.json();
+    const cards = payload.data || [];
+
     const raritySet = new Set<string>();
     const regulationSet = new Set<string>();
     const subtypeSet = new Set<string>();
 
-    do {
-      const url = `${this.baseUrl}cards?q=${query}&page=${page}&pageSize=${FACET_PAGE_SIZE}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: this.getHeaders(),
+    cards.forEach((card) => {
+      if (card.rarity) raritySet.add(card.rarity);
+      if (card.regulationMark) regulationSet.add(card.regulationMark);
+      (card.subtypes || []).forEach((subtype: string) => {
+        if (subtype) subtypeSet.add(subtype);
       });
-
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || "Failed to preload TCG facets");
-      }
-
-      const payload: RawCardSearchResponse = await response.json();
-      const cards = payload.data || [];
-      totalCount = payload.totalCount || 0;
-
-      cards.forEach((card) => {
-        if (card.rarity) raritySet.add(card.rarity);
-        if (card.regulationMark) regulationSet.add(card.regulationMark);
-        (card.subtypes || []).forEach((subtype: string) => {
-          if (subtype) subtypeSet.add(subtype);
-        });
-      });
-
-      page += 1;
-      if (cards.length === 0) break;
-    } while ((page - 1) * FACET_PAGE_SIZE < totalCount);
+    });
 
     return {
       rarities: Array.from(raritySet).sort(),

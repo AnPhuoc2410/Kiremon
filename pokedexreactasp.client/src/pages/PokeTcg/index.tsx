@@ -5,7 +5,12 @@ import { useAllPokemon } from "@/components/hooks/usePokeAPI";
 import { Header } from "@/components/ui";
 import { useDebounce } from "@/components/hooks";
 import { useLanguage } from "@/contexts";
-import { useTcgCardDetail, useTcgCards, useTcgFacets } from "@/hooks/queries";
+import {
+  useTcgCardDetail,
+  useTcgCards,
+  useTcgFacets,
+  usePrefetchTcgCardDetail,
+} from "@/hooks/queries";
 import { TcgCardFilters, TcgCardListItem } from "@/types/tcg.types";
 import { t } from "@/utils/uiI18n";
 import * as S from "./index.style";
@@ -60,6 +65,7 @@ const PokeTcg: React.FC = () => {
     !!debouncedPokemonName,
   );
   const detailQuery = useTcgCardDetail(selectedCardId, !!selectedCardId);
+  const prefetchDetail = usePrefetchTcgCardDetail();
 
   const cards = cardsQuery.data?.data || [];
   const selectedSummary = useMemo(
@@ -255,6 +261,7 @@ const PokeTcg: React.FC = () => {
       key={card.id}
       type="button"
       className="tcg-card"
+      onMouseEnter={() => prefetchDetail(card.id)}
       onClick={() => setSelectedCardId(card.id)}
     >
       <S.CardImageWrap>
@@ -440,7 +447,21 @@ const PokeTcg: React.FC = () => {
         </S.StatePanel>
       ) : (
         <>
-          <S.CardGrid>{cards.map(renderCard)}</S.CardGrid>
+          <S.CardGrid
+            style={{
+              opacity:
+                cardsQuery.isFetching && cardsQuery.isPlaceholderData
+                  ? 0.45
+                  : 1,
+              pointerEvents:
+                cardsQuery.isFetching && cardsQuery.isPlaceholderData
+                  ? "none"
+                  : "auto",
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            {cards.map(renderCard)}
+          </S.CardGrid>
           <S.Pager>
             <S.PagerButton
               type="button"

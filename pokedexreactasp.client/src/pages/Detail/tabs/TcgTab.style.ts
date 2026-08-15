@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { colors } from "@/components/utils";
 
 export const Section = styled.div`
   display: grid;
@@ -89,75 +90,147 @@ export const Paginator = styled.div`
   align-items: center;
   justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
+`;
+
+export const PagerButton = styled.button`
+  min-height: 40px;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  padding: 0 16px;
+  background: ${colors["yellow-300"]};
+  color: ${colors["gray-900"]};
+  cursor: pointer;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: inset -4px -4px ${colors["yellow-500"]};
+  transition:
+    transform 0.16s ease,
+    background-color 0.16s ease,
+    opacity 0.16s ease;
+
+  &:hover:not(:disabled) {
+    background: ${colors["yellow-200"]};
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 4px 4px ${colors["yellow-500"]};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: ${colors["gray-200"]};
+    box-shadow: inset -4px -4px ${colors["gray-300"]};
+  }
+`;
+
+export const PageCount = styled.span`
+  color: ${colors["gray-900"]};
+  font-weight: 800;
+  padding: 0 16px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  border: 2px solid ${colors["gray-900"]};
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: inset -3px -3px ${colors["gray-200"]};
+`;
+
+import { keyframes } from "@emotion/react";
+
+const fadeSlideUp = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+`;
+
+const overlayFade = keyframes`
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(6px); }
 `;
 
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(248, 250, 252, 0.85);
   z-index: 3000;
   display: grid;
   place-items: center;
   padding: 20px;
+  animation: ${overlayFade} 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 `;
 
 export const ModalContent = styled.div`
   width: 100%;
-  max-width: 80rem;
+  max-width: 82rem;
   max-height: 85vh;
   overflow: auto;
-  background: rgba(2, 6, 23, 0.9);
+  background: #ffffff;
   border-radius: 16px;
-  border: 1px solid #1e293b;
-  backdrop-filter: blur(12px);
-  padding: 22px;
+  border: 4px solid #020617;
+  padding: 28px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
   position: relative;
+  box-shadow: 12px 12px 0 #020617;
+  animation: ${fadeSlideUp} 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  transform-origin: bottom center;
 
-  * {
-    text-shadow: none !important;
+  &::-webkit-scrollbar {
+    width: 0px;
   }
-`;
-
-export const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  padding-right: 50px;
 `;
 
 export const CloseButton = styled.button`
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 38px;
-  height: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(15, 23, 42, 0.55);
-  color: #f8fafc;
-  border-radius: 999px;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border: 3px solid #020617;
+  background: #f1f5f9;
+  color: #020617;
+  border-radius: 12px;
   cursor: pointer;
   display: grid;
   place-items: center;
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1;
-  transition: background 0.2s ease;
+  font-weight: 900;
+  box-shadow: 4px 4px 0 #020617;
+  transition: all 0.1s ease;
+  z-index: 10;
 
   &:hover {
-    background: rgba(30, 41, 59, 0.8);
+    background: #e2e8f0;
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 #020617;
+  }
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #020617;
   }
 `;
 
 export const DetailLayout = styled.div`
   display: grid;
-  grid-template-columns: 45% 55%;
-  gap: 22px;
+  grid-template-columns: 42% 58%;
+  gap: 32px;
   align-items: start;
 
-  @media (max-width: 860px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 `;
 
@@ -165,82 +238,81 @@ export const CardStage = styled.div`
   display: grid;
   place-items: center;
   perspective: 1400px;
-  min-height: 580px;
+  min-height: 600px;
   position: relative;
+  border: 3px solid #020617;
+  border-radius: 20px;
+  background: #f1f5f9;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.05);
 
-  @media (max-width: 860px) {
+  @media (max-width: 960px) {
     min-height: auto;
+    padding: 30px;
   }
 `;
 
 export const CardGlow = styled.div`
   position: absolute;
-  width: 360px;
-  height: 360px;
+  width: 80%;
+  height: 80%;
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(249, 115, 22, 0.22) 0%,
-    rgba(251, 146, 60, 0.14) 40%,
-    rgba(249, 115, 22, 0) 72%
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 70%
   );
-  filter: blur(18px);
+  filter: blur(24px);
   z-index: 0;
 `;
 
 export const DetailImage = styled.img`
-  width: min(430px, 100%);
-  border-radius: 16px;
-  background: #f9fafb;
+  width: min(440px, 90%);
+  border-radius: 20px;
   box-shadow:
-    0 30px 40px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(249, 115, 22, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
+    0 40px 50px rgba(0, 0, 0, 0.7),
+    0 0 0 2px rgba(255, 255, 255, 0.1);
   transform: rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg))
     scale(var(--scale, 1));
-  transition: transform 200ms ease-in-out;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   z-index: 1;
 `;
 
 export const DetailBlock = styled.div`
   display: grid;
-  gap: 8px;
-  max-height: calc(85vh - 110px);
+  gap: 12px;
+  max-height: calc(85vh - 56px);
   overflow-y: auto;
-  padding-right: 8px;
-  padding-bottom: 2.5rem;
+  padding-right: 12px;
   min-height: 0;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
 `;
 
 export const ScrollArea = styled.div`
   display: grid;
-  gap: 8px;
-  background: rgba(107, 114, 128, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  padding: 14px 14px 2.5rem;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(100, 116, 139, 0.6);
-    border-radius: 999px;
-  }
+  gap: 16px;
+  padding-bottom: 2rem;
 `;
 
 export const InfoChunk = styled.div`
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(30, 41, 59, 0.6);
-  border-radius: 12px;
-  padding: 10px 12px;
+  background: #f8fafc;
+  border: 3px solid #020617;
+  border-radius: 16px;
+  padding: 20px;
   display: grid;
-  gap: 6px;
+  gap: 12px;
+  box-shadow: 4px 4px 0 rgba(2, 6, 23, 1);
 `;
 
 export const AbilityChunk = styled(InfoChunk)`
@@ -250,14 +322,14 @@ export const AbilityChunk = styled(InfoChunk)`
 
 export const ChunkTitle = styled.h4`
   margin: 0;
-  color: #94a3b8;
-  font-size: 0.72rem;
-  font-weight: 700;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  border-bottom: 1px solid #1e293b;
-  padding-bottom: 4px;
-  margin-bottom: 6px;
+  letter-spacing: 0.15em;
+  border-bottom: 2px solid #cbd5e1;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 `;
 
 export const DataRow = styled.div`
@@ -275,36 +347,49 @@ export const StatsRow = styled.div`
 
 export const HpValue = styled.span`
   color: #f43f5e;
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-family: "VT323", monospace;
+  font-weight: 400;
+  line-height: 1;
 `;
 
 export const TypePill = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: 999px;
-  padding: 6px 12px;
-  background: rgba(249, 115, 22, 0.16);
-  color: #fdba74;
-  border: 1px solid rgba(249, 115, 22, 0.35);
-  font-size: 0.8rem;
-  font-weight: 600;
+  border-radius: 8px;
+  padding: 4px 14px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 2px solid #020617;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 export const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 16px;
 `;
 
 export const AttackRow = styled.div`
-  border: 1px solid rgba(30, 41, 59, 0.6);
-  background: rgba(15, 23, 42, 0.45);
-  border-radius: 10px;
-  padding: 12px 10px 10px;
+  border: 2px solid #020617;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
   display: grid;
-  gap: 4px;
+  gap: 8px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 2px 2px 0 rgba(2, 6, 23, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 rgba(2, 6, 23, 1);
+  }
 `;
 
 export const AttackHeader = styled.div`
@@ -315,50 +400,51 @@ export const AttackHeader = styled.div`
 `;
 
 export const AttackName = styled.span`
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 700;
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 800;
 `;
 
 export const AttackDamage = styled.span`
-  color: #fbbf24;
-  font-size: 1rem;
-  font-weight: 800;
+  color: #e11d48;
+  font-size: 1.5rem;
+  font-family: "VT323", monospace;
+  line-height: 1;
 `;
 
 export const AbilityTypeBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 10px;
-  font-weight: 700;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  letter-spacing: 0.1em;
+  background: #fef3c7;
+  color: #b45309;
+  border: 2px solid #d97706;
 `;
 
 export const AttackDescription = styled.p`
   margin: 0;
-  color: #94a3b8;
-  font-size: 0.875rem;
-  line-height: 1.625;
-  margin-top: 0.375rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-top: 6px;
 `;
 
 export const Label = styled.span`
   color: #64748b;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
 `;
 
 export const Value = styled.span`
-  color: #f1f5f9;
-  font-size: 0.875rem;
+  color: #0f172a;
+  font-size: 0.95rem;
   font-weight: 600;
 `;
 
@@ -371,50 +457,55 @@ export const BadgeRow = styled.div`
 export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
-  background: rgba(30, 41, 59, 0.8);
-  color: #cbd5e1;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 6px;
-  font-size: 11px;
-  padding: 2px 8px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 2px solid #020617;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  padding: 4px 10px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 `;
 
 export const LegalBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  background: #064e3b;
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border: 2px solid #022c22;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 export const PremiumTitle = styled.h2`
   margin: 0;
-  font-size: 2.25rem;
-  line-height: 1.1;
-  font-weight: 900;
-  color: #fff;
-  background: linear-gradient(to bottom, #ffffff, #fed7aa);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 3.5rem;
+  line-height: 1;
+  font-weight: 400;
+  color: #020617;
+  font-family: "VT323", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 `;
 
 export const HeaderSub = styled.p`
   margin: 0;
-  color: #34d399;
-  font-size: 0.85rem;
+  color: #3b82f6;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 4px;
 `;
 
 export const DetailText = styled.p`
   margin: 0;
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #475569;
+  font-size: 0.95rem;
   line-height: 1.6;
 `;
 
