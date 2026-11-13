@@ -19,6 +19,8 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly ILogger<ResilientCacheService> _logger;
 
         private static readonly TimeSpan RedisRetryDelay = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan DefaultL1SlidingTtl = TimeSpan.FromMinutes(10);
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private long _redisErrorTicks = 0;
         private int _isCheckingConnection = 0;
 
@@ -122,6 +124,13 @@ namespace PokedexReactASP.Infrastructure.Services
         /// <inheritdoc />
         public async Task<T?> GetAsync<T>(string key)
         {
+            // 1. Fast path: check L1 Memory Cache in-process (sub-0.01ms, zero network & zero deserialization)
+            if (_memoryCache.TryGetValue(key, out T? memoryValue))
+            {
+                return memoryValue;
+            }
+
+            // 2. L1 Cache Miss: check L2 Redis Cache
             if (IsRedisAvailable())
             {
                 try
@@ -129,19 +138,23 @@ namespace PokedexReactASP.Infrastructure.Services
                     var cachedJson = await _distributedCache.GetStringAsync(key);
                     if (!string.IsNullOrEmpty(cachedJson))
                     {
-                        return JsonSerializer.Deserialize<T>(cachedJson);
+                        var value = JsonSerializer.Deserialize<T>(cachedJson, JsonOptions);
+                        if (value != null)
+                        {
+                            // Populate L1 Memory Cache with 10-minute sliding TTL to accelerate subsequent hits
+                            var memoryOptions = new MemoryCacheEntryOptions
+                            {
+                                SlidingExpiration = DefaultL1SlidingTtl
+                            };
+                            _memoryCache.Set(key, value, memoryOptions);
+                        }
+                        return value;
                     }
                 }
                 catch (Exception ex)
                 {
                     HandleRedisException(ex, $"GetStringAsync for key {key}");
                 }
-            }
-
-            // Fallback to Memory Cache
-            if (_memoryCache.TryGetValue(key, out T? value))
-            {
-                return value;
             }
 
             return default;
@@ -152,7 +165,19 @@ namespace PokedexReactASP.Infrastructure.Services
         {
             if (value == null) return;
 
-            var serialized = JsonSerializer.Serialize(value);
+            // Always update L1 Memory Cache immediately
+            var memoryOptions = new MemoryCacheEntryOptions();
+            if (expiration.HasValue)
+            {
+                memoryOptions.AbsoluteExpirationRelativeToNow = expiration.Value;
+            }
+            else
+            {
+                memoryOptions.SlidingExpiration = DefaultL1SlidingTtl;
+            }
+            _memoryCache.Set(key, value, memoryOptions);
+
+            var serialized = JsonSerializer.Serialize(value, JsonOptions);
 
             if (IsRedisAvailable())
             {
@@ -177,14 +202,6 @@ namespace PokedexReactASP.Infrastructure.Services
             {
                 RecordFailedRedisRemoval(key); // Mark as pending retry deletion because Redis contains old/stale data
             }
-
-            // Fallback to Memory Cache
-            var memoryOptions = new MemoryCacheEntryOptions();
-            if (expiration.HasValue)
-            {
-                memoryOptions.AbsoluteExpirationRelativeToNow = expiration.Value;
-            }
-            _memoryCache.Set(key, value, memoryOptions);
         }
 
         /// <inheritdoc />

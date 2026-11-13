@@ -80,9 +80,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
         public string GenerateRefreshToken()
         {
-            var randomNumber = new byte[64];
-            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
+            var randomNumber = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
             return Convert.ToBase64String(randomNumber);
         }
     }

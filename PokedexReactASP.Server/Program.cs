@@ -23,12 +23,13 @@ using Serilog;
 using Masking.Serilog;
 using Prometheus;
 using PokedexReactASP.Server.Extensions;
+using Microsoft.AspNetCore.ResponseCompression;
 
 namespace PokedexReactASP.Server
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             try
             {
@@ -54,6 +55,13 @@ namespace PokedexReactASP.Server
                     .WriteTo.Async(a => a.File("Logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj}{NewLine}{Exception}")));
 
                 builder.Services.AddControllers();
+
+                builder.Services.AddResponseCompression(options =>
+                {
+                    options.EnableForHttps = true;
+                    options.Providers.Add<BrotliCompressionProvider>();
+                    options.Providers.Add<GzipCompressionProvider>();
+                });
 
             builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -332,9 +340,10 @@ namespace PokedexReactASP.Server
 
             var app = builder.Build();
 
+            await IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger);
+            await WildAreaSeeder.SeedAsync(app.Services, app.Logger, app.Environment);
 
-            IdentitySeeder.SeedAsync(app.Services, builder.Configuration, app.Environment.IsDevelopment(), app.Logger).Wait();
-            WildAreaSeeder.SeedAsync(app.Services, app.Logger, app.Environment).Wait();
+            app.UseResponseCompression();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -392,7 +401,7 @@ namespace PokedexReactASP.Server
 
             app.MapFallbackToFile("/index.html");
 
-            app.Run();
+            await app.RunAsync();
             }
             catch (Exception ex)
             {

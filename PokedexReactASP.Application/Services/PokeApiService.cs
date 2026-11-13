@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,11 @@ namespace PokedexReactASP.Application.Services
         private readonly ILogger<PokeApiService> _logger;
         private const string BaseUrl = "https://pokeapi.co/api/v2/";
 
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public PokeApiService(HttpClient httpClient, ILogger<PokeApiService> logger)
         {
             _httpClient = httpClient;
@@ -24,18 +30,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon/{id}");
+                using var response = await _httpClient.GetAsync($"pokemon/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon {PokemonId} from PokeAPI", id);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiPokemon>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiPokemon>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -48,18 +50,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon/{name.ToLower()}");
+                using var response = await _httpClient.GetAsync($"pokemon/{name.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon {PokemonName} from PokeAPI", name);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiPokemon>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiPokemon>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -76,18 +74,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon-species/{id}");
+                using var response = await _httpClient.GetAsync($"pokemon-species/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon species {SpeciesId} from PokeAPI", id);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiSpeciesDetail>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -100,18 +94,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLower()}");
+                using var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon species {SpeciesName} from PokeAPI", name);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiSpeciesDetail>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -124,14 +114,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"move/{id}");
+                using var response = await _httpClient.GetAsync($"move/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiMove>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiMove>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -144,14 +130,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"item/{id}");
+                using var response = await _httpClient.GetAsync($"item/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiItem>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiItem>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -164,14 +146,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"type/{typeName.ToLower()}");
+                using var response = await _httpClient.GetAsync($"type/{typeName.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiType>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiType>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -184,15 +162,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon?limit={limit}&offset={offset}");
+                using var response = await _httpClient.GetAsync($"pokemon?limit={limit}&offset={offset}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return new List<PokeApiPokemonListItem>();
 
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<PokeApiPokemonList>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
+                var result = await response.Content.ReadFromJsonAsync<PokeApiPokemonList>(JsonOptions);
                 return result?.Results ?? new List<PokeApiPokemonListItem>();
             }
             catch (Exception ex)

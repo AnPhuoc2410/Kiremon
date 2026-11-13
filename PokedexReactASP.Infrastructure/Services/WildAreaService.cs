@@ -35,7 +35,6 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly BiomeSpawnCandidateService _candidateService;
         private readonly IMemoryCache _memoryCache;
         private readonly ILogger<WildAreaService> _logger;
-        private readonly Random _random = new();
 
         public WildAreaService(
             PokemonDbContext context,
@@ -372,7 +371,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 return WildSpawnRarity.Common;
             }
 
-            var roll = _random.NextDouble() * totalWeight;
+            var roll = Random.Shared.NextDouble() * totalWeight;
             var running = 0d;
 
             foreach (var rarity in RarityOrder)
@@ -408,10 +407,10 @@ namespace PokedexReactASP.Infrastructure.Services
             var totalWeight = candidates.Sum(x => x.Score > 0 ? x.Score : 0.01);
             if (totalWeight <= 0)
             {
-                return candidates[_random.Next(candidates.Count)];
+                return candidates[Random.Shared.Next(candidates.Count)];
             }
 
-            var roll = _random.NextDouble() * totalWeight;
+            var roll = Random.Shared.NextDouble() * totalWeight;
             var running = 0d;
             foreach (var candidate in candidates)
             {
