@@ -15,7 +15,6 @@ namespace PokedexReactASP.Infrastructure.Services
         private readonly ITcgCardService _tcgCardService;
         private readonly CardRewardSettings _fallbackSettings;
         private readonly ICardRewardAdminService _adminService;
-        private readonly Random _random = new();
 
         private static readonly TcgCardRarityTier[] TierOrder =
         [
@@ -60,7 +59,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 return null;
             }
 
-            var selected = cards[_random.Next(cards.Count)];
+            var selected = cards[Random.Shared.Next(cards.Count)];
             var now = DateTime.UtcNow;
 
             var existing = await _context.UserTcgCards
@@ -116,7 +115,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 return TcgCardRarityTier.Common;
             }
 
-            var roll = _random.NextDouble() * totalWeight;
+            var roll = Random.Shared.NextDouble() * totalWeight;
             var running = 0d;
 
             foreach (var tier in TierOrder)

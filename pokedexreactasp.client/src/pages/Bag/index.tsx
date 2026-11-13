@@ -1,4 +1,4 @@
-import { createRef, useEffect, useMemo, useState } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 
 import {
   Button,
@@ -10,10 +10,7 @@ import {
 } from "@/components/ui";
 import { useCombatTeamActive } from "@/hooks/useCombatTeamActive";
 import { useItemCategories, useMyInventory } from "@/hooks/queries";
-import {
-  InventorySort,
-  MyInventoryQuery,
-} from "@/types/inventory.types";
+import { InventorySort, MyInventoryQuery } from "@/types/inventory.types";
 import {
   getCategoryDisplayName,
   getInventoryCategoryMeta,
@@ -27,7 +24,7 @@ import * as S from "./index.style";
 const DEFAULT_PAGE_SIZE = 30;
 
 const Bag = () => {
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const { activeTeam } = useCombatTeamActive();
 
   const [page, setPage] = useState(1);
@@ -45,8 +42,9 @@ const Bag = () => {
 
   const selectedCategory = useMemo(
     () =>
-      pokeApiCategories.find((category) => category.id === selectedCategoryId) ??
-      null,
+      pokeApiCategories.find(
+        (category) => category.id === selectedCategoryId,
+      ) ?? null,
     [pokeApiCategories, selectedCategoryId],
   );
 
@@ -113,8 +111,7 @@ const Bag = () => {
   };
 
   const isBootstrapping = categoriesLoading;
-  const showItemListOverlay =
-    inventoryQuery.isFetching && items.length > 0;
+  const showItemListOverlay = inventoryQuery.isFetching && items.length > 0;
   const bagIsEmpty =
     categorySummaries.length === 0 &&
     !inventoryQuery.isFetching &&

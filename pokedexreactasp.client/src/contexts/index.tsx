@@ -1,4 +1,10 @@
-import React, { createContext, useState, useContext, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  useMemo,
+} from "react";
 
 import { IPokeSummary, IPokemon, IPokemonType } from "@/types/pokemon";
 import { collectionService } from "@/services";
@@ -34,9 +40,9 @@ export const useGlobalContext = () => {
 export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setGlobalContext] = useState<IState>(initialState);
 
-  const setState = (param: IState) => {
+  const setState = useCallback((param: IState) => {
     setGlobalContext((prev) => ({ ...prev, ...param }));
-  };
+  }, []);
 
   // Function to load pokeSummary from optimized API endpoint
   const refreshPokeSummary = useCallback(async () => {
@@ -59,8 +65,13 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const contextValue = useMemo(
+    () => ({ state, setState, refreshPokeSummary }),
+    [state, setState, refreshPokeSummary],
+  );
+
   return (
-    <GlobalContext.Provider value={{ state, setState, refreshPokeSummary }}>
+    <GlobalContext.Provider value={contextValue}>
       {children}
     </GlobalContext.Provider>
   );

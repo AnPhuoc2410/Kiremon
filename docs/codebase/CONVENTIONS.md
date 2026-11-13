@@ -1,52 +1,41 @@
-# Coding Conventions
+# Codebase Conventions
 
 ## Core Sections (Required)
 
-### 1) Naming Rules
+### 1) Language & C# Conventions
 
-| Item | Rule | Example | Evidence |
-|------|------|---------|----------|
-| Files | [RULE] | [EXAMPLE] | [FILE] |
-| Functions/methods | [RULE] | [EXAMPLE] | [FILE] |
-| Types/interfaces | [RULE] | [EXAMPLE] | [FILE] |
-| Constants/env vars | [RULE] | [EXAMPLE] | [FILE] |
+- **C# Language Version**: C# 12 on .NET 8 runtime.
+- **Nullable Reference Types**: Strictly enabled across all projects (`<Nullable>enable</Nullable>`).
+- **Dependency Injection**: Constructor injection with `private readonly` fields prefixed with an underscore (`_unitOfWork`, `_logger`).
+- **Async Programming**: Async methods must return `Task` or `Task<T>`, accept `CancellationToken` for cancellation support where applicable, and never use blocking calls like `.Wait()` or `.Result`.
+- **String Handling & Helpers**: Shared logic isolated in `PokedexReactASP.Application.Common.Helpers` (`PokemonNameHelper`, `FriendCodeHelper`, `TrainerLevelCalculator`).
 
-### 2) Formatting and Linting
+### 2) Error Handling & Response Conventions
 
-- Formatter: [TOOL + CONFIG FILE]
-- Linter: [TOOL + CONFIG FILE]
-- Most relevant enforced rules: [RULE_1], [RULE_2], [RULE_3]
-- Run commands: [COMMANDS]
+- **Controller Base**: All controllers inherit from `ApiControllerBase` to standardize `CurrentUserId` retrieval and HTTP responses.
+- **Global Middleware**: Uncaught exceptions are intercepted by `ExceptionHandlingMiddleware`, converting them to uniform JSON error structures with appropriate HTTP status codes.
+- **Safe Returns**: Always return specific HTTP codes:
+  - `200 OK` for successful queries.
+  - `401 Unauthorized` when identity claims are missing.
+  - `404 Not Found` when entities do not exist.
+  - `400 Bad Request` for validation failures.
 
-### 3) Import and Module Conventions
+### 3) Database & EF Core Conventions
 
-- Import grouping/order: [RULE]
-- Alias vs relative import policy: [RULE]
-- Public exports/barrel policy: [RULE]
+- **Query Tracking**: Read-only queries must specify `disableTracking: true` (`AsNoTracking()`) to prevent change tracking overhead.
+- **Fluent Configurations**: Relationships, indexes, cascading behaviors, and property limits are defined in `PokemonDbContext.OnModelCreating`.
+- **Eager Loading**: Controlled eager loading via `includes` delegate (`Func<IQueryable<T>, IQueryable<T>>? includes`) in repository methods.
 
-### 4) Error and Logging Conventions
+### 4) Imports & Formatting
 
-- Error strategy by layer: [SHORT SUMMARY]
-- Logging style and required context fields: [SUMMARY]
-- Sensitive-data redaction rules: [SUMMARY]
+- Explicit namespace declarations: `namespace PokedexReactASP.Application.Services { ... }`.
+- System usings placed first, followed by third-party packages, then project namespaces.
+- AutoMapper mappings centralized in `PokedexReactASP.Application.Mappings.MappingProfile`.
 
-### 5) Testing Conventions
+### 5) Evidence
 
-- Test file naming/location rule: [RULE]
-- Mocking strategy norm: [RULE]
-- Coverage expectation: [RULE or TODO]
-
-### 6) Evidence
-
-- [path/to/lint-config]
-- [path/to/format-config]
-- [path/to/representative-source-file]
-
-## Extended Sections (Optional)
-
-Add only for large or inconsistent codebases:
-
-- Layer-specific error handling matrix
-- Language-specific strictness options
-- Repo-specific commit/branching conventions
-- Known convention violations to clean up
+- `PokedexReactASP.Domain/PokedexReactASP.Domain.csproj`
+- `PokedexReactASP.Server/Controllers/ApiControllerBase.cs`
+- `PokedexReactASP.Server/Middleware/ExceptionHandlingMiddleware.cs`
+- `PokedexReactASP.Infrastructure/Repositories/Repository.cs`
+- `PokedexReactASP.Application/Common/Helpers/PokemonNameHelper.cs`

@@ -4,8 +4,6 @@ export const dateFormatter = (params: { value: string | number | Date }) => {
   try {
     let date;
 
-    console.log("params.value:", params.value);
-
     // Handle different types of input
     if (typeof params.value === "string") {
       // Parse ISO string

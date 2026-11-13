@@ -96,6 +96,17 @@ namespace PokedexReactASP.Infrastructure.Services
                 var items = channel.Elements("item").ToList();
                 _logger.LogInformation("Found {Count} news items in feed. Processing...", items.Count);
 
+                // Batch-query all existing news records in a single roundtrip to eliminate N+1 queries
+                var sourceUrls = items
+                    .Select(i => i.Element("link")?.Value?.Trim())
+                    .Where(u => !string.IsNullOrEmpty(u))
+                    .Distinct()
+                    .ToList();
+
+                var existingNewsMap = await _context.PokemonNews
+                    .Where(n => sourceUrls.Contains(n.SourceUrl))
+                    .ToDictionaryAsync(n => n.SourceUrl, cancellationToken);
+
                 XNamespace dc = "http://purl.org/dc/elements/1.1/";
                 XNamespace slash = "http://purl.org/rss/1.0/modules/slash/";
 
@@ -129,7 +140,7 @@ namespace PokedexReactASP.Infrastructure.Services
 
                         // 6. CommentCount
                         var commentsStr = item.Element(slash + "comments")?.Value;
-                        int commentCount = int.TryParse(commentsStr, out var comments) ? comments : new Random().Next(10,100);
+                        int commentCount = int.TryParse(commentsStr, out var comments) ? comments : Random.Shared.Next(10, 100);
 
                         // 7. Summary & ImageUrl
                         var descriptionHtml = item.Element("description")?.Value ?? string.Empty;
@@ -179,16 +190,15 @@ namespace PokedexReactASP.Infrastructure.Services
                             continue;
                         }
 
-                        // Save or Update in database
-                        var existingNews = await _context.PokemonNews
-                            .FirstOrDefaultAsync(n => n.SourceUrl == sourceUrl, cancellationToken);
+                        // Lookup in pre-fetched dictionary instead of executing a SQL query per item
+                        existingNewsMap.TryGetValue(sourceUrl, out var existingNews);
 
                         if (existingNews != null)
                         {
                             existingNews.CommentCount = commentCount;
                             if (existingNews.ViewCount == 0)
                             {
-                                existingNews.ViewCount = new Random().Next(50, 500);
+                                existingNews.ViewCount = Random.Shared.Next(50, 500);
                             }
                             _context.PokemonNews.Update(existingNews);
                             result.Updated++;
@@ -206,7 +216,7 @@ namespace PokedexReactASP.Infrastructure.Services
                                 Category = category,
                                 Author = author,
                                 PublishedDate = publishedDate,
-                                ViewCount = new Random().Next(50, 500),
+                                ViewCount = Random.Shared.Next(50, 500),
                                 CommentCount = commentCount,
                                 CreatedAt = DateTime.UtcNow
                             };

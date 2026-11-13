@@ -1,11 +1,4 @@
-import {
-  createRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -117,7 +110,7 @@ const MoonIcon = () => (
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const WildArea = () => {
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const mapContentRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const keysRef = useRef<KeyMap>({ ...EMPTY_KEYS });

@@ -2,47 +2,38 @@
 
 ## Core Sections (Required)
 
-### 1) Integration Inventory
+### 1) External APIs & Ingestion Services
 
-| System | Type (API/DB/Queue/etc) | Purpose | Auth model | Criticality | Evidence |
-|--------|---------------------------|---------|------------|-------------|----------|
-| [name] | [type] | [purpose] | [auth] | [high/med/low] | [file] |
+| Service | Protocol / Base URL | Purpose | Integration Class | Evidence |
+|---------|---------------------|---------|-------------------|----------|
+| **PokéAPI** | HTTPS (`https://pokeapi.co/api/v2/`) | Ingest Pokémon stats, moves, types, sprites | `PokeApiService.cs` | `Application/Services/PokeApiService.cs:14` |
+| **Pokémon TCG API** | HTTPS (`https://api.pokemontcg.io/v2/`) | Ingest TCG cards, rarities, artwork | `PokemonTcgApiClient.cs` | `Infrastructure/ExternalApis/PokemonTcgApiClient.cs` |
+| **PokéJungle RSS** | HTTPS (`https://pokejungle.net/feed/`) | Fetch latest Pokémon news and articles | `PokemonNewsSyncService.cs` | `Infrastructure/Services/PokemonNewsSyncService.cs` |
+| **Google reCAPTCHA v3** | HTTPS (`https://www.google.com/recaptcha/api/`) | Bot protection for login & registration | `ReCaptchaService.cs` | `Infrastructure/Services/ReCaptchaService.cs` |
+| **OAuth Providers** | HTTPS (Google / Facebook / Microsoft) | Social authentication & single sign-on | `SocialVerifyService.cs` | `Infrastructure/Services/SocialVerifyService.cs` |
+| **IndexNow** | HTTPS (`https://api.indexnow.org/`) | Instant SEO indexation pings for search engines | `IndexNowService.cs` | `Infrastructure/Services/IndexNowService.cs` |
 
-### 2) Data Stores
+### 2) Databases & Infrastructure
 
-| Store | Role | Access layer | Key risk | Evidence |
-|-------|------|--------------|----------|----------|
-| [db/cache/etc] | [role] | [module] | [risk] | [file] |
+| System | Role | Configuration / Connection | Evidence |
+|--------|------|----------------------------|----------|
+| **PostgreSQL** | Primary relational database (Supabase / local) | `ConnectionStrings:DefaultConnection`, pooled `Npgsql.EntityFrameworkCore.PostgreSQL` | `Infrastructure/DependencyInjection.cs:24` |
+| **Redis** | Distributed L2 cache | `ConnectionStrings:Redis`, `Microsoft.Extensions.Caching.StackExchangeRedis` | `Server/Program.cs:130` |
+| **OpenTelemetry OTLP** | Tracing, Metrics, Logs collector (Grafana Alloy) | `OpenTelemetry:OtlpEndpoint` (`http://global_alloy:4317`) | `Server/Extensions/OpenTelemetryExtensions.cs` |
+| **SMTP Server** | Email verification & password resets | `Email:SmtpServer`, `Email:Port` via MailKit | `Infrastructure/Services/EmailService.cs` |
 
-### 3) Secrets and Credentials Handling
+### 3) Authentication & Identity Flow
 
-- Credential sources: [env/secrets manager/config]
-- Hardcoding checks: [result]
-- Rotation or lifecycle notes: [known/unknown]
+- **ASP.NET Core Identity**: User store backed by PostgreSQL (`ApplicationUser` entity inheriting `IdentityUser`).
+- **JWT Bearer Token**: Generated via `TokenService.GenerateJwtToken()` using `HmacSha256`, configured in `Program.cs`.
+- **SignalR Token Authentication**: Extracts `access_token` query parameter on connection handshakes targeting `/hubs` endpoints.
+- **Refresh Token**: Stored in `RefreshTokens` table with expiration tracking and device info.
 
-### 4) Reliability and Failure Behavior
+### 4) Evidence
 
-- Retry/backoff behavior: [implemented/none/partial]
-- Timeout policy: [where configured]
-- Circuit-breaker or fallback behavior: [if any]
-
-### 5) Observability for Integrations
-
-- Logging around external calls: [yes/no + where]
-- Metrics/tracing coverage: [yes/no + where]
-- Missing visibility gaps: [list]
-
-### 6) Evidence
-
-- [path/to/integration-wrapper]
-- [path/to/config-or-env-template]
-- [path/to/monitoring-or-logging-config]
-
-## Extended Sections (Optional)
-
-Add only when needed:
-
-- Endpoint-by-endpoint catalog
-- Auth flow sequence diagrams
-- SLA/SLO per integration
-- Region/failover topology notes
+- `PokedexReactASP.Infrastructure/DependencyInjection.cs`
+- `PokedexReactASP.Infrastructure/Services/TokenService.cs`
+- `PokedexReactASP.Infrastructure/Services/PokemonNewsSyncService.cs`
+- `PokedexReactASP.Infrastructure/ExternalApis/PokemonTcgApiClient.cs`
+- `PokedexReactASP.Server/Program.cs`
+- `PokedexReactASP.Server/Extensions/OpenTelemetryExtensions.cs`

@@ -35,9 +35,11 @@ const REFRESH_BYPASS_URLS = new Set([
 const shouldBypassRefresh = (url?: string): boolean => {
   if (!url) return false;
   const cleanUrl = url.replace(/\?.*$/, "");
-  return Array.from(REFRESH_BYPASS_URLS).some(
-    (bypassUrl) => cleanUrl === bypassUrl || cleanUrl.endsWith(bypassUrl),
-  );
+  if (REFRESH_BYPASS_URLS.has(cleanUrl)) return true;
+  for (const bypassUrl of REFRESH_BYPASS_URLS) {
+    if (cleanUrl.endsWith(bypassUrl)) return true;
+  }
+  return false;
 };
 
 /**

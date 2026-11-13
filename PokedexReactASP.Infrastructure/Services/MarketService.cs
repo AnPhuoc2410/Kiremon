@@ -46,7 +46,7 @@ namespace PokedexReactASP.Infrastructure.Services
                 return Fail("Item not found.");
             }
 
-            var unitCost = apiItem.Cost;
+            var unitCost = apiItem.ResolvedCost;
             if (unitCost <= 0)
             {
                 return Fail("This item is not for sale.");

@@ -1,5 +1,5 @@
 import toast from "react-hot-toast";
-import { useState, createRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useGlobalContext, useAuth, useLanguage } from "@/contexts";
@@ -18,7 +18,7 @@ const Explore = () => {
   const { state, setState, refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated, isInitialized } = useAuth();
   const { languageId } = useLanguage();
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
 
   const [nextUrl, setNextUrl] = useState<string | null>(
     `${POKEMON_API}?limit=20&offset=0`,
@@ -46,19 +46,16 @@ const Explore = () => {
           return;
         }
 
-        const filteredSummary = response.results.map((result: any) => {
-          const summaryIdx =
-            state?.pokeSummary?.findIndex(
-              (el) => el.name === result.name.toUpperCase(),
-            ) || 0;
-          return {
-            name: result.name,
-            url: result.url,
-            id: result.id,
-            types: result.types || [],
-            captured: state?.pokeSummary?.[summaryIdx]?.captured ?? 0,
-          };
-        });
+        const summaryMap = new Map(
+          (state?.pokeSummary || []).map((el) => [el.name, el.captured]),
+        );
+        const filteredSummary = response.results.map((result: any) => ({
+          name: result.name,
+          url: result.url,
+          id: result.id,
+          types: result.types || [],
+          captured: summaryMap.get(result.name.toUpperCase()) ?? 0,
+        }));
 
         setState({ pokemons: [...(state.pokemons || []), ...filteredSummary] });
         const nextStr = (response as any).next as string | null | undefined;
@@ -84,17 +81,13 @@ const Explore = () => {
 
   useEffect(() => {
     if (state.pokemons && state.pokeSummary && state.pokeSummary.length > 0) {
-      const updatedPokemons = state.pokemons.map((pokemon) => {
-        const summaryIdx =
-          state.pokeSummary?.findIndex(
-            (el) => el.name === pokemon.name.toUpperCase(),
-          ) ?? -1;
-        return {
-          ...pokemon,
-          captured:
-            summaryIdx >= 0 ? state.pokeSummary![summaryIdx].captured : 0,
-        };
-      });
+      const summaryMap = new Map(
+        state.pokeSummary.map((el) => [el.name, el.captured]),
+      );
+      const updatedPokemons = state.pokemons.map((pokemon) => ({
+        ...pokemon,
+        captured: summaryMap.get(pokemon.name.toUpperCase()) ?? 0,
+      }));
       setState({ pokemons: updatedPokemons });
     }
   }, [state.pokeSummary]);
@@ -119,7 +112,7 @@ const Explore = () => {
       setShowScrollTop(window.scrollY > 400);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

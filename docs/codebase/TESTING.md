@@ -1,57 +1,45 @@
-# Testing Patterns
+# Testing Strategy
 
 ## Core Sections (Required)
 
-### 1) Test Stack and Commands
+### 1) Test Suites & Execution
 
-- Primary test framework: [NAME + VERSION]
-- Assertion/mocking tools: [TOOLS]
-- Commands:
+- **Test Framework**: xUnit 2.5.3 with FluentAssertions 8.10.0 and Moq 4.20.72.
+- **Test Project**: `PokedexReactASP.Application.Tests/PokedexReactASP.Application.Tests.csproj` (Target .NET 8).
+- **Execution Command**:
+  ```bash
+  dotnet test
+  ```
+- **Current Status**: 38 tests total, 38 passing, 0 failing, 0 skipped (~190ms execution duration).
 
-```bash
-[run all tests]
-[run unit tests]
-[run integration/e2e tests]
-[run coverage]
-```
+### 2) Test Inventory
 
-### 2) Test Layout
+| Test Class | Focus | Test Count | Evidence |
+|------------|-------|------------|----------|
+| `AchievementServiceTests` | User achievement progress, unlocks, notifications | 8 | `Application.Tests/Services/AchievementServiceTests.cs` |
+| `AuthServiceTests` | Login, registration, 2FA, JWT token generation | 13 | `Application.Tests/Services/AuthServiceTests.cs` |
+| `PokemonBoxServiceTests` | PC storage boxes, box reordering, capacity | 4 | `Application.Tests/Services/PokemonBoxServiceTests.cs` |
+| `PokemonCatchServiceTests` | Catch rate calculation, shake count, catch success/failure | 5 | `Application.Tests/Services/PokemonCatchServiceTests.cs` |
+| `UserServiceTests` | Legacy profile & collection tests (pending migration to `UserProfileService`) | 8 | `Application.Tests/Services/UserServiceTests.cs` |
 
-- Test file placement pattern: [co-located/tests folder/etc]
-- Naming convention: [pattern]
-- Setup files and where they run: [paths]
+### 3) Mocking Strategy
 
-### 3) Test Scope Matrix
+- `Mock<IUnitOfWork>`: Mocks repository calls without requiring an in-memory database.
+- `MockIdentityHelpers.MockUserManager<T>()`: Helper simulating ASP.NET Identity `UserManager<ApplicationUser>` behavior.
+- `Mock<IPokemonCacheService>`: Simulates PokeAPI data retrieval to avoid live HTTP network calls in unit tests.
+- `Mock<IPokemonFactoryService>`: Controls RNG generation of stats, shiny flags, and natures for deterministic tests.
 
-| Scope | Covered? | Typical target | Notes |
-|-------|----------|----------------|-------|
-| Unit | [yes/no] | [modules/services] | [notes] |
-| Integration | [yes/no] | [API/data boundaries] | [notes] |
-| E2E | [yes/no] | [user flows] | [notes] |
+### 4) Testing Gaps & Recommendations
 
-### 4) Mocking and Isolation Strategy
+- **Coverage Gaps**:
+  - `PokemonCollectionService`: Read-only queries and aggregation stats lack targeted unit tests.
+  - `UserProfileService`: Relies on legacy `UserServiceTests` rather than dedicated tests.
+  - `ResilientCacheService`: L1/L2 failover and circuit breaker logic lack automated unit/integration tests.
+  - `PokemonNewsSyncService`: RSS parsing and batch upsert logic have no unit tests.
+- **Nullable Warnings**: Several tests contain CS8600/CS8625 warnings due to null arguments in mock setup methods.
 
-- Main mocking approach: [module/class/network]
-- Isolation guarantees: [what is reset and when]
-- Common failure mode in tests: [short note]
+### 5) Evidence
 
-### 5) Coverage and Quality Signals
-
-- Coverage tool + threshold: [value or TODO]
-- Current reported coverage: [value or TODO]
-- Known gaps/flaky areas: [list]
-
-### 6) Evidence
-
-- [path/to/test-config]
-- [path/to/representative-test-file]
-- [path/to/ci-or-coverage-config]
-
-## Extended Sections (Optional)
-
-Add only when needed:
-
-- Framework-specific suite patterns
-- Detailed mock recipes per dependency type
-- Historical flaky test catalog
-- Test performance bottlenecks and optimization ideas
+- `PokedexReactASP.Application.Tests/PokedexReactASP.Application.Tests.csproj`
+- `PokedexReactASP.Application.Tests/Services/`
+- Test run terminal output: `Passed! - Failed: 0, Passed: 38, Skipped: 0, Total: 38`

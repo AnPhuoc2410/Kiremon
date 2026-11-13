@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthLoginData, AuthUser } from "@/types/auth.types";
 import {
@@ -138,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [isAuthenticated]);
 
-  const authLogin = (loginData: AuthLoginData): void => {
+  const authLogin = useCallback((loginData: AuthLoginData): void => {
     if (!loginData?.accessToken || !loginData?.user) {
       console.error("Invalid login data");
       return;
@@ -154,66 +161,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       encodeURIComponent(JSON.stringify(loginData.user)),
       7,
     );
-  };
+  }, []);
 
-  const authLogout = (reason: "manual" | "unauthorized" = "manual") => {
-    const hasAuthCookie = !!getCookie("authUser");
-    const wasAuthenticated = isAuthenticated || hasAuthCookie;
+  const authLogout = useCallback(
+    (reason: "manual" | "unauthorized" = "manual") => {
+      const hasAuthCookie = !!getCookie("authUser");
+      const wasAuthenticated = isAuthenticated || hasAuthCookie;
 
-    // 1. Clear token & cookie first to prevent race condition window
-    setMemoryToken(null);
-    eraseCookie("authUser");
+      // 1. Clear token & cookie first to prevent race condition window
+      setMemoryToken(null);
+      eraseCookie("authUser");
 
-    // 2. Clear state next
-    setIsAuthenticated(false);
-    setAuthData(null);
-    setUser(null);
+      // 2. Clear state next
+      setIsAuthenticated(false);
+      setAuthData(null);
+      setUser(null);
 
-    // 3. Make API call last
-    if (wasAuthenticated) {
-      axios
-        .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
-        .catch((err) => console.warn("Failed to call revoke on server", err));
+      // 3. Make API call last
+      if (wasAuthenticated) {
+        axios
+          .post(`${API_BASE_URL}/auth/revoke`, {}, { withCredentials: true })
+          .catch((err) => console.warn("Failed to call revoke on server", err));
 
-      if (reason === "unauthorized") {
-        toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", {
-          duration: 3000,
-        });
-      } else {
-        toast.success("Đăng xuất thành công", { duration: 2500 });
+        if (reason === "unauthorized") {
+          toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", {
+            duration: 3000,
+          });
+        } else {
+          toast.success("Đăng xuất thành công", { duration: 2500 });
+        }
       }
-    }
 
-    navigate("/");
-  };
+      navigate("/");
+    },
+    [isAuthenticated, navigate],
+  );
 
-  const updateUser = (updates: Partial<AuthUser>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
+  const updateUser = useCallback((updates: Partial<AuthUser>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...updates };
       setCookie("authUser", encodeURIComponent(JSON.stringify(updatedUser)), 7);
-    }
-  };
+      return updatedUser;
+    });
+  }, []);
 
-  const getToken = () => {
+  const getToken = useCallback(() => {
     return getMemoryToken();
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      isAuthenticated,
+      isInitialized,
+      authData,
+      user,
+      authLogin,
+      authLogout,
+      updateUser,
+      getToken,
+    }),
+    [
+      isAuthenticated,
+      isInitialized,
+      authData,
+      user,
+      authLogin,
+      authLogout,
+      updateUser,
+      getToken,
+    ],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        isInitialized,
-        authData,
-        user,
-        authLogin,
-        authLogout,
-        updateUser,
-        getToken,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

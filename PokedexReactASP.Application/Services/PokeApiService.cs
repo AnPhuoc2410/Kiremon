@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,11 @@ namespace PokedexReactASP.Application.Services
         private readonly ILogger<PokeApiService> _logger;
         private const string BaseUrl = "https://pokeapi.co/api/v2/";
 
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public PokeApiService(HttpClient httpClient, ILogger<PokeApiService> logger)
         {
             _httpClient = httpClient;
@@ -24,18 +30,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon/{id}");
+                using var response = await _httpClient.GetAsync($"pokemon/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon {PokemonId} from PokeAPI", id);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiPokemon>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiPokemon>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -48,18 +50,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon/{name.ToLower()}");
+                using var response = await _httpClient.GetAsync($"pokemon/{name.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon {PokemonName} from PokeAPI", name);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiPokemon>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiPokemon>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -76,18 +74,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon-species/{id}");
+                using var response = await _httpClient.GetAsync($"pokemon-species/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon species {SpeciesId} from PokeAPI", id);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiSpeciesDetail>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -100,18 +94,14 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLower()}");
+                using var response = await _httpClient.GetAsync($"pokemon-species/{name.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Failed to fetch Pokemon species {SpeciesName} from PokeAPI", name);
                     return null;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiSpeciesDetail>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiSpeciesDetail>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -124,14 +114,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"move/{id}");
+                using var response = await _httpClient.GetAsync($"move/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiMove>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiMove>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -144,14 +130,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"item/{id}");
+                using var response = await _httpClient.GetAsync($"item/{id}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiItem>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiItem>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -164,14 +146,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"type/{typeName.ToLower()}");
+                using var response = await _httpClient.GetAsync($"type/{typeName.ToLower()}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return null;
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<PokeApiType>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                return await response.Content.ReadFromJsonAsync<PokeApiType>(JsonOptions);
             }
             catch (Exception ex)
             {
@@ -184,15 +162,10 @@ namespace PokedexReactASP.Application.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"pokemon?limit={limit}&offset={offset}");
+                using var response = await _httpClient.GetAsync($"pokemon?limit={limit}&offset={offset}", HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode) return new List<PokeApiPokemonListItem>();
 
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<PokeApiPokemonList>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
+                var result = await response.Content.ReadFromJsonAsync<PokeApiPokemonList>(JsonOptions);
                 return result?.Results ?? new List<PokeApiPokemonListItem>();
             }
             catch (Exception ex)
@@ -282,12 +255,67 @@ namespace PokedexReactASP.Application.Services
         public PokeApiNamedResource? Damage_Class { get; set; }
     }
 
+    public class PokeApiItemPrice
+    {
+        public int? Purchase_Price { get; set; }
+        public int? Sell_Price { get; set; }
+    }
+
     public class PokeApiItem
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Cost { get; set; }
+        public List<PokeApiItemPrice>? Prices { get; set; }
         public PokeApiSprites? Sprites { get; set; }
+
+        public int ResolvedCost
+        {
+            get
+            {
+                if (Cost > 0) return Cost;
+                if (Prices != null && Prices.Count > 0)
+                {
+                    var purchase = Prices.FirstOrDefault(p => p.Purchase_Price.HasValue && p.Purchase_Price.Value > 0)?.Purchase_Price;
+                    if (purchase.HasValue) return purchase.Value;
+                    var sell = Prices.FirstOrDefault(p => p.Sell_Price.HasValue && p.Sell_Price.Value > 0)?.Sell_Price;
+                    if (sell.HasValue) return sell.Value * 2;
+                }
+                return GetDefaultPrice(Name);
+            }
+        }
+
+        private static int GetDefaultPrice(string name) => name.ToLowerInvariant() switch
+        {
+            "poke-ball" => 200,
+            "great-ball" => 600,
+            "ultra-ball" => 1200,
+            "potion" => 200,
+            "super-potion" => 700,
+            "hyper-potion" => 1500,
+            "max-potion" => 2500,
+            "full-restore" => 3000,
+            "revive" => 2000,
+            "antidote" => 200,
+            "paralyze-heal" => 300,
+            "awakening" => 100,
+            "burn-heal" => 300,
+            "ice-heal" => 100,
+            "full-heal" => 400,
+            "escape-rope" => 1000,
+            "repel" => 400,
+            "super-repel" => 700,
+            "max-repel" => 900,
+            "guard-spec" => 700,
+            "dire-hit" => 1000,
+            "x-attack" => 1000,
+            "x-defense" => 1000,
+            "x-speed" => 1000,
+            "x-accuracy" => 1000,
+            "x-special" or "x-sp-atk" => 1000,
+            "x-sp-def" => 1000,
+            _ => 0
+        };
     }
 
     public class PokeApiSpecies
