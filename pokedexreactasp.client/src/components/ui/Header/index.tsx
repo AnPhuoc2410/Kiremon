@@ -379,6 +379,11 @@ const Header: React.FC<HeaderProps> = ({
             title={t("nav.miniGames", languageId)}
             id="tour-nav-games"
           >
+            <Link to="/games">
+              <S.DropdownItem style={{ fontWeight: 800, color: "#0284c7" }}>
+                {t("nav.arcadeHub", languageId)}
+              </S.DropdownItem>
+            </Link>
             <Link to="/games/combat-team">
               <S.DropdownItem>
                 {t("games.combatTeam", languageId)}

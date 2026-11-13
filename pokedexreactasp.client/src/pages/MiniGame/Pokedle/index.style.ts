@@ -87,28 +87,37 @@ export const GuessButton = styled.button`
 
 /* ── Search Modal ───────────────────────────────────────── */
 
-export const SearchModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
+/* modern-web-guidance: <dialog> implementation for Search Modal */
+export const SearchModalDialog = styled.dialog`
+  border: none;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 720px;
+  height: 80vh;
+  padding: 0;
+  background: white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin: auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
 `;
 
 export const SearchModalPanel = styled.div`
   background: white;
-  border-radius: 16px;
   width: 100%;
-  max-width: 700px;
-  height: 80vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 `;
 
 export const SearchModalHeader = styled.div`
@@ -228,33 +237,33 @@ export const TileCell = styled(FlexCenter)<{
   }
 `;
 
-export const WinOverlay = styled(FlexCenter)`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  z-index: 2000;
-`;
-
 const popIn = keyframes`
   from { opacity: 0; transform: scale(0.8) translateY(20px); }
   to   { opacity: 1; transform: scale(1)   translateY(0);    }
 `;
 
-export const WinCard = styled(FlexColumn)`
-  background: white;
-  padding: 40px 48px;
-  border-radius: 20px;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
+/* modern-web-guidance: <dialog> implementation for Win Modal */
+export const WinModalDialog = styled.dialog`
   border: 2px solid #4ade80;
+  border-radius: 20px;
+  padding: 36px 40px;
+  background: white;
   box-shadow:
     0 0 60px rgba(74, 222, 128, 0.35),
     0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: calc(100% - 32px);
+  margin: auto;
+  text-align: center;
+  overscroll-behavior: contain;
   animation: ${popIn} 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  max-width: 380px;
-  width: 90%;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
 
   img {
     width: 150px;
@@ -263,19 +272,18 @@ export const WinCard = styled(FlexColumn)`
   }
 
   h2 {
-    color: #4ade80;
-    margin: 0;
     font-size: 28px;
-  }
-
-  strong {
-    color: ${colors.primary[500]};
-  }
-
-  p {
+    font-weight: 800;
+    color: #15803d;
     margin: 0;
-    color: ${colors.text.secondary};
   }
+`;
+
+export const WinCardContent = styled(FlexColumn)`
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  width: 100%;
 `;
 
 /* ── Filter Bar (inside Search Modal) ───────────────────── */

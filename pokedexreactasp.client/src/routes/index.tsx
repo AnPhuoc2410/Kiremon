@@ -16,6 +16,7 @@ const GenerationsExplore = lazy(() => import("@/pages/Explore/Generations"));
 const GenerationDetail = lazy(() => import("@/pages/Explore/GenerationDetail"));
 const Detail = lazy(() => import("@/pages/Detail"));
 // Mini-game
+const ArcadeHub = lazy(() => import("@/pages/MiniGame/ArcadeHub"));
 const WhosThatPokemon = lazy(() => import("@/pages/MiniGame/WhosThatPokemon"));
 const CombatTeam = lazy(() => import("@/pages/CombatTeam"));
 const TypeMatchup = lazy(() => import("@/pages/MiniGame/TypeMatchup"));
@@ -141,6 +142,22 @@ export default function Routes() {
                 <ProtectedRoute>
                   <TCGManagement />
                 </ProtectedRoute>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/games"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ArcadeHub />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/mini-games"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ArcadeHub />
               </Suspense>
             }
           />

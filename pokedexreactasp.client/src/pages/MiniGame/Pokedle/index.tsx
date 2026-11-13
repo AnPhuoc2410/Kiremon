@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   IconSearch,
   IconX,
@@ -32,9 +32,9 @@ import {
   GridHeader,
   GridRow,
   TileCell,
-  WinOverlay,
-  WinCard,
-  SearchModalOverlay,
+  WinModalDialog,
+  WinCardContent,
+  SearchModalDialog,
   SearchModalPanel,
   SearchModalHeader,
   SearchModalGrid,
@@ -209,6 +209,63 @@ export const Pokedle = () => {
 
   const [guesses, setGuesses] = useState<IGuessResult[]>([]);
   const [gameState, setGameState] = useState<"playing" | "won">("playing");
+
+  const searchDialogRef = useRef<HTMLDialogElement>(null);
+  const winDialogRef = useRef<HTMLDialogElement>(null);
+
+  // modern-web-guidance: Sync <dialog> open state via showModal() / close()
+  useEffect(() => {
+    const dialog = searchDialogRef.current;
+    if (!dialog) return;
+    if (isModalOpen) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    const dialog = winDialogRef.current;
+    if (!dialog) return;
+    if (gameState === "won" && showWinModal) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [gameState, showWinModal]);
+
+  // modern-web-guidance: Light dismiss fallback for browsers without closedby support
+  useEffect(() => {
+    const attachFallback = (
+      dialog: HTMLDialogElement | null,
+      onClose: () => void,
+    ) => {
+      if (!dialog || "closedBy" in HTMLDialogElement.prototype) return;
+      const handleClick = (e: MouseEvent) => {
+        if (e.target !== dialog) return;
+        const rect = dialog.getBoundingClientRect();
+        const inside =
+          rect.top <= e.clientY &&
+          e.clientY <= rect.top + rect.height &&
+          rect.left <= e.clientX &&
+          e.clientX <= rect.left + rect.width;
+        if (!inside) {
+          onClose();
+        }
+      };
+      dialog.addEventListener("click", handleClick);
+      return () => dialog.removeEventListener("click", handleClick);
+    };
+
+    const cleanupSearch = attachFallback(searchDialogRef.current, closeModal);
+    const cleanupWin = attachFallback(winDialogRef.current, () =>
+      setShowWinModal(false),
+    );
+    return () => {
+      cleanupSearch?.();
+      cleanupWin?.();
+    };
+  }, []);
 
   // Load all pokemon names once
   useEffect(() => {
@@ -669,12 +726,17 @@ export const Pokedle = () => {
         </GameCard>
       </GameContainer>
 
-      {/* Win Modal — full screen */}
-      {gameState === "won" && targetPokemon && showWinModal && (
-        <WinOverlay onClick={() => setShowWinModal(false)}>
-          <WinCard className="pxl-border" onClick={(e) => e.stopPropagation()}>
+      {/* Win Modal — modern <dialog> per modern-web-guidance */}
+      <WinModalDialog
+        ref={winDialogRef}
+        aria-labelledby="win-title"
+        onClose={() => setShowWinModal(false)}
+        {...({ closedby: "any" } as any)}
+      >
+        {targetPokemon && (
+          <WinCardContent>
             <IconTrophy size={48} color="#4ade80" />
-            <h2>You got it!</h2>
+            <h2 id="win-title">You got it!</h2>
             <img
               src={targetPokemon.sprites.front_default}
               alt={targetPokemon.name}
@@ -717,126 +779,143 @@ export const Pokedle = () => {
                 </Text>
               </>
             )}
-          </WinCard>
-        </WinOverlay>
-      )}
-      {isModalOpen && (
-        <SearchModalOverlay onClick={closeModal}>
-          <SearchModalPanel onClick={(e) => e.stopPropagation()}>
-            <SearchModalHeader>
-              <Input
-                autoFocus
-                placeholder="Search Pokémon..."
-                value={modalSearch}
-                onChange={(e) => setModalSearch(e.target.value)}
-              />
-              <button
-                onClick={closeModal}
-                aria-label="Close"
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <IconX size={24} />
-              </button>
-            </SearchModalHeader>
+            <form method="dialog" style={{ marginTop: 12 }}>
+              <Button type="submit" variant="light">
+                Close
+              </Button>
+            </form>
+          </WinCardContent>
+        )}
+      </WinModalDialog>
+      {/* Search Modal — modern <dialog> per modern-web-guidance */}
+      <SearchModalDialog
+        ref={searchDialogRef}
+        aria-label="Search Pokémon to guess"
+        onClose={closeModal}
+        {...({ closedby: "any" } as any)}
+      >
+        <SearchModalPanel>
+          <SearchModalHeader>
+            <Input
+              autoFocus
+              placeholder="Search Pokémon..."
+              value={modalSearch}
+              onChange={(e) => setModalSearch(e.target.value)}
+              onKeyDown={(e) => {
+                // modern-web-guidance: IME-safe Enter check
+                if (e.key === "Enter") {
+                  if (e.nativeEvent.isComposing || (e as any).keyCode === 229)
+                    return;
+                  e.preventDefault();
+                  if (displayedItems.length > 0) {
+                    evaluateGuess(displayedItems[0].name);
+                  }
+                }
+              }}
+            />
+            <button
+              onClick={closeModal}
+              aria-label="Close"
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              <IconX size={24} />
+            </button>
+          </SearchModalHeader>
 
-            {/* Gen filter chips */}
-            <FilterBar>
-              <FilterSection>
-                <FilterLabel>Gen</FilterLabel>
-                <FilterChips>
-                  {Object.keys(GEN_RANGES).map((g) => {
-                    const gen = Number(g);
-                    const roman = [
-                      "I",
-                      "II",
-                      "III",
-                      "IV",
-                      "V",
-                      "VI",
-                      "VII",
-                      "VIII",
-                    ][gen - 1];
-                    return (
-                      <FilterChip
-                        key={gen}
-                        isActive={filterGen === gen}
-                        onClick={() =>
-                          setFilterGen(filterGen === gen ? null : gen)
-                        }
-                      >
-                        {roman}
-                      </FilterChip>
-                    );
-                  })}
-                </FilterChips>
-              </FilterSection>
-
-              <FilterSection>
-                <FilterLabel>Type</FilterLabel>
-                <FilterChips>
-                  {POKEMON_TYPES.map((type) => (
+          {/* Gen filter chips */}
+          <FilterBar>
+            <FilterSection>
+              <FilterLabel>Gen</FilterLabel>
+              <FilterChips>
+                {Object.keys(GEN_RANGES).map((g) => {
+                  const gen = Number(g);
+                  const roman = [
+                    "I",
+                    "II",
+                    "III",
+                    "IV",
+                    "V",
+                    "VI",
+                    "VII",
+                    "VIII",
+                  ][gen - 1];
+                  return (
                     <FilterChip
-                      key={type}
-                      isActive={filterType === type}
-                      typeColor={type}
+                      key={gen}
+                      isActive={filterGen === gen}
                       onClick={() =>
-                        setFilterType(filterType === type ? null : type)
+                        setFilterGen(filterGen === gen ? null : gen)
                       }
                     >
-                      {type}
+                      {roman}
                     </FilterChip>
-                  ))}
-                </FilterChips>
-              </FilterSection>
+                  );
+                })}
+              </FilterChips>
+            </FilterSection>
 
-              {(filterGen !== null || filterType !== null || modalSearch) && (
-                <ClearFilters
-                  onClick={() => {
-                    setFilterGen(null);
-                    setFilterType(null);
-                    setModalSearch("");
-                  }}
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <IconFilterOff size={16} /> Clear filters
-                </ClearFilters>
-              )}
-            </FilterBar>
+            <FilterSection>
+              <FilterLabel>Type</FilterLabel>
+              <FilterChips>
+                {POKEMON_TYPES.map((type) => (
+                  <FilterChip
+                    key={type}
+                    isActive={filterType === type}
+                    typeColor={type}
+                    onClick={() =>
+                      setFilterType(filterType === type ? null : type)
+                    }
+                  >
+                    {type}
+                  </FilterChip>
+                ))}
+              </FilterChips>
+            </FilterSection>
 
-            <div
-              id="pokedle-modal-scroll"
-              style={{ overflowY: "auto", flex: 1 }}
-            >
-              <InfiniteScroll
-                dataLength={displayedItems.length}
-                next={loadMoreInModal}
-                hasMore={hasMoreInModal}
-                loader={
-                  <SearchModalGrid>
-                    {Array(8)
-                      .fill(0)
-                      .map((_, i) => (
-                        <SkeletonCard key={`sk-${i}`} />
-                      ))}
-                  </SearchModalGrid>
-                }
-                scrollableTarget="pokedle-modal-scroll"
+            {(filterGen !== null || filterType !== null || modalSearch) && (
+              <ClearFilters
+                onClick={() => {
+                  setFilterGen(null);
+                  setFilterType(null);
+                  setModalSearch("");
+                }}
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
               >
+                <IconFilterOff size={16} /> Clear filters
+              </ClearFilters>
+            )}
+          </FilterBar>
+
+          <div id="pokedle-modal-scroll" style={{ overflowY: "auto", flex: 1 }}>
+            <InfiniteScroll
+              dataLength={displayedItems.length}
+              next={loadMoreInModal}
+              hasMore={hasMoreInModal}
+              loader={
                 <SearchModalGrid>
-                  {displayedItems.map((p) => (
-                    <PokeCard
-                      key={p.id}
-                      pokemonId={p.id}
-                      name={p.name}
-                      onClick={() => evaluateGuess(p.name)}
-                    />
-                  ))}
+                  {Array(8)
+                    .fill(0)
+                    .map((_, i) => (
+                      <SkeletonCard key={`sk-${i}`} />
+                    ))}
                 </SearchModalGrid>
-              </InfiniteScroll>
-            </div>
-          </SearchModalPanel>
-        </SearchModalOverlay>
-      )}
+              }
+              scrollableTarget="pokedle-modal-scroll"
+            >
+              <SearchModalGrid>
+                {displayedItems.map((p) => (
+                  <PokeCard
+                    key={p.id}
+                    pokemonId={p.id}
+                    name={p.name}
+                    onClick={() => evaluateGuess(p.name)}
+                  />
+                ))}
+              </SearchModalGrid>
+            </InfiniteScroll>
+          </div>
+        </SearchModalPanel>
+      </SearchModalDialog>
     </>
   );
 };
