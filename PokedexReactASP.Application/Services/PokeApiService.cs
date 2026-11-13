@@ -255,12 +255,67 @@ namespace PokedexReactASP.Application.Services
         public PokeApiNamedResource? Damage_Class { get; set; }
     }
 
+    public class PokeApiItemPrice
+    {
+        public int? Purchase_Price { get; set; }
+        public int? Sell_Price { get; set; }
+    }
+
     public class PokeApiItem
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Cost { get; set; }
+        public List<PokeApiItemPrice>? Prices { get; set; }
         public PokeApiSprites? Sprites { get; set; }
+
+        public int ResolvedCost
+        {
+            get
+            {
+                if (Cost > 0) return Cost;
+                if (Prices != null && Prices.Count > 0)
+                {
+                    var purchase = Prices.FirstOrDefault(p => p.Purchase_Price.HasValue && p.Purchase_Price.Value > 0)?.Purchase_Price;
+                    if (purchase.HasValue) return purchase.Value;
+                    var sell = Prices.FirstOrDefault(p => p.Sell_Price.HasValue && p.Sell_Price.Value > 0)?.Sell_Price;
+                    if (sell.HasValue) return sell.Value * 2;
+                }
+                return GetDefaultPrice(Name);
+            }
+        }
+
+        private static int GetDefaultPrice(string name) => name.ToLowerInvariant() switch
+        {
+            "poke-ball" => 200,
+            "great-ball" => 600,
+            "ultra-ball" => 1200,
+            "potion" => 200,
+            "super-potion" => 700,
+            "hyper-potion" => 1500,
+            "max-potion" => 2500,
+            "full-restore" => 3000,
+            "revive" => 2000,
+            "antidote" => 200,
+            "paralyze-heal" => 300,
+            "awakening" => 100,
+            "burn-heal" => 300,
+            "ice-heal" => 100,
+            "full-heal" => 400,
+            "escape-rope" => 1000,
+            "repel" => 400,
+            "super-repel" => 700,
+            "max-repel" => 900,
+            "guard-spec" => 700,
+            "dire-hit" => 1000,
+            "x-attack" => 1000,
+            "x-defense" => 1000,
+            "x-speed" => 1000,
+            "x-accuracy" => 1000,
+            "x-special" or "x-sp-atk" => 1000,
+            "x-sp-def" => 1000,
+            _ => 0
+        };
     }
 
     public class PokeApiSpecies

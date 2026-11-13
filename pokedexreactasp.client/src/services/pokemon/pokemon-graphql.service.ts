@@ -105,7 +105,7 @@ export interface PokemonHeldItem {
   item: {
     name: string;
     id: number;
-    cost: number;
+    cost?: number;
     itemnames: Array<{
       name: string;
       language_id: number;
@@ -437,7 +437,6 @@ const GET_POKEMON_DETAIL_QUERY = `
         item {
           name
           id
-          cost
           itemnames {
             name
             language_id
