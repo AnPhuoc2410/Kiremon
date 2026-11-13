@@ -65,6 +65,9 @@
 .agents\skills\high-end-visual-design\SKILL.md
 .agents\skills\minimalist-ui
 .agents\skills\minimalist-ui\SKILL.md
+.agents\skills\modern-web-guidance
+.agents\skills\modern-web-guidance\guides
+.agents\skills\modern-web-guidance\SKILL.md
 .agents\skills\nuget-manager
 .agents\skills\nuget-manager\SKILL.md
 .agents\skills\plan-mode
@@ -95,6 +98,10 @@
 .agents\skills\refactor-method-complexity-reduce\SKILL.md
 .agents\skills\refactor-plan
 .agents\skills\refactor-plan\SKILL.md
+.agents\skills\seo-audit
+.agents\skills\seo-audit\evals
+.agents\skills\seo-audit\references
+.agents\skills\seo-audit\SKILL.md
 .agents\skills\shadcn
 .agents\skills\shadcn\agents
 .agents\skills\shadcn\assets
@@ -165,11 +172,11 @@
 .vs\PokedexReactASP\DesignTimeBuild
 .vs\PokedexReactASP\DesignTimeBuild\.dtbcache.v2
 .vs\PokedexReactASP\FileContentIndex
-.vs\PokedexReactASP\FileContentIndex\6b5bf184-3739-4e1c-8d4c-3a5d28b565f4.vsidx
-.vs\PokedexReactASP\FileContentIndex\ccc7987a-16e6-4e56-a5de-633c220dad43.vsidx
-.vs\PokedexReactASP\FileContentIndex\d568d764-d69f-49c9-82c9-63c79c3c4e4c.vsidx
-.vs\PokedexReactASP\FileContentIndex\d75c61b8-de09-47b0-9f7e-daff8810566b.vsidx
-.vs\PokedexReactASP\FileContentIndex\e292908e-c423-4fb1-8da5-b9bc23065c23.vsidx
+.vs\PokedexReactASP\FileContentIndex\28bfdbd6-9d0a-4e04-a81f-2a74e0568cb3.vsidx
+.vs\PokedexReactASP\FileContentIndex\3f4a821b-aafc-4eef-9352-11b7b41c9594.vsidx
+.vs\PokedexReactASP\FileContentIndex\69d90981-093f-4bb5-a833-14e9ccb6b836.vsidx
+.vs\PokedexReactASP\FileContentIndex\a1049135-3543-41be-8ad4-9d1adecf3012.vsidx
+.vs\PokedexReactASP\FileContentIndex\e228b1c4-5efb-4fc9-96e1-2270036ae475.vsidx
 .vs\PokedexReactASP\v18
 .vs\PokedexReactASP\v18\.futdcache.v2
 .vs\PokedexReactASP\v18\.suo
@@ -177,9 +184,6 @@
 .vs\PokedexReactASP\v18\DocumentLayout.json
 .vs\PokedexReactASP\v18\fileList.bin
 .vs\ProjectEvaluation
-.vs\ProjectEvaluation\pokedexreactasp.metadata.v10.bin
-.vs\ProjectEvaluation\pokedexreactasp.projects.v10.bin
-.vs\ProjectEvaluation\pokedexreactasp.strings.v10.bin
 CLAUDE.md
 CtorFinder
 deploy
@@ -196,10 +200,6 @@ docs\codebase
 docs\codebase\.codebase-scan.txt
 docs\codebase\ARCHITECTURE.md
 docs\codebase\CONCERNS.md
-docs\codebase\CONVENTIONS.md
-docs\codebase\INTEGRATIONS.md
-docs\codebase\STACK.md
-docs\codebase\STRUCTURE.md
 
 === STACK DETECTION (manifest files) ===
 
@@ -319,61 +319,61 @@ pokedexreactasp.client\src\pages\Friends\index.tsx:155: // TODO: Replace with ac
 pokedexreactasp.client\src\pages\PCStorage\index.tsx:967: // TODO: persist via API when ready
 
 === GIT RECENT COMMITS (last 20) ===
+6852dbf feat: add modern web guidance skill and comprehensive guide documentation
+727f6dc feat: implement TCG card display with dedicated service, queries, and modal detail view
+2966fee feat: add styled-components for PokeTcg and PokeNews pages along with new auth styles and PokeNews page component
+7146d48 feat: implement authentication flow and Pokémon news dashboard with sync capabilities
+ac8a226 feat: implement exploration and navigation pages for Pokémon generations, regions, types, market, and search with sitemap integration
+96d4b42 feat: implement RSS news synchronization service with IndexNow integration and fallback logic
+c7d75a8 feat: add eval suite and reference documentation for seo-audit skill
+d1f72d2 feat: add indexNow
+b63253b feat: add index.html with SEO metadata and analytics configuration
+7c06b07 chore: implement SEO, AEO and Google Analytics
 ce59379 test: add unit test suites for UserService and AuthService classes
 222f361 fix: update GitHub Actions
 b5ca5c7 feat: implement Pokedle mini-game with daily and unlimited modes
 0126aef feat: implement StatIV minigame with scoring logic and UI components
 d948388 feat: implement mini-games routes, ui translation utility, and header component
 bb99fdc feat: implement application routing with lazy-loaded pages and authentication guards
-ff66bff feat: implement Who's That PokÃ©mon guessing game page and styling
+ff66bff feat: implement Who's That Pokémon guessing game page and styling
 e4f3eba feat: implement battle simulator hook and initial UI for combat team management
 dbc9175 feat: add battle simulator page with turn-based logic and UI components
 bd67d2a feat: implement battle simulator hook and scaffold core UI pages and codebase documentation
-f72d624 feat: implement PC storage management interface for organizing and viewing user Pokemon
-97d58db test: add unit test coverage for application services and initialize application project structure
-88ca6c8 ci: add GitHub Actions workflow for SonarQube code analysis
-ab3c2fe ci: add SonarQube analysis workflow for build and test coverage reports
-f05d041 feat: initialize unit testing project and configure SonarQube CI pipeline
-a9d7232 feat: add SonarQube CI workflow for automated code analysis
-0106994 feat: implement achievement system, external authentication services, and SonarQube CI integration
-0da5b3c feat: add SonarQube CI workflow for automated code analysis
-9f97964 feat: add GitHub Actions workflow for SonarQube Cloud analysis
-27f3ea7 ci: add GitHub Actions workflow for SonarQube analysis
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
-  18 PokedexReactASP.Server/Program.cs
-  15 pokedexreactasp.client/src/routes/index.tsx
-  15 pokedexreactasp.client/src/pages/PCStorage/index.tsx
-  14 skills-lock.json
-  13 PokedexReactASP.Infrastructure/Persistence/PokemonDbContext.cs
-  12 PokedexReactASP.Infrastructure/Migrations/PokemonDbContextModelSnapshot.cs
-  11 pokedexreactasp.client/src/pages/WildArea/index.tsx
-  11 pokedexreactasp.client/src/pages/PCStorage/index.style.ts
-  10 .github/workflows/build.yml
-  10 pokedexreactasp.client/src/components/ui/Header/index.tsx
-  10 PokedexReactASP.Server/appsettings.example.json
-   9 pokedexreactasp.client/src/utils/uiI18n.ts
-   9 PokedexReactASP.Infrastructure/Services/WildAreaService.cs
-   9 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.tsx
-   8 pokedexreactasp.client/src/pages/MyPokemon/index.tsx
-   8 pokedexreactasp.client/src/pages/Detail/tabs/TcgTab.style.ts
-   7 .github/workflows/deploy.yml
-   7 pokedexreactasp.client/src/pages/Battle/modules/VSBattle/index.tsx
-   7 PokedexReactASP.Server/PokedexReactASP.Server.csproj
-   7 pokedexreactasp.client/src/pages/WildArea/index.style.ts
+   2 pokedexreactasp.client/src/pages/PokeNews/index.tsx
+   2 pokedexreactasp.client/src/styles/auth.styles.ts
+   1 .agents/skills/modern-web-guidance/SKILL.md
+   1 .agents/skills/modern-web-guidance/guides/accessibility/accessibility.md
+   1 .agents/skills/modern-web-guidance/guides/accessibility/accessible-error-announcement.md
+   1 .agents/skills/modern-web-guidance/guides/accessibility/accessible-generated-content.md
+   1 .agents/skills/modern-web-guidance/guides/accessibility/respect-os-text-scale.md
+   1 .agents/skills/modern-web-guidance/guides/built-in-ai/language-detection.md
+   1 .agents/skills/modern-web-guidance/guides/built-in-ai/language-model.md
+   1 .agents/skills/modern-web-guidance/guides/built-in-ai/prompt-api.md
+   1 .agents/skills/modern-web-guidance/guides/built-in-ai/summarizer.md
+   1 .agents/skills/modern-web-guidance/guides/built-in-ai/translator.md
+   1 .agents/skills/modern-web-guidance/guides/css/animate-to-intrinsic-sizes.md
+   1 .agents/skills/modern-web-guidance/guides/css/atrule-support-conditionals.md
+   1 .agents/skills/modern-web-guidance/guides/css/calculate-with-intrinsic-sizes.md
+   1 .agents/skills/modern-web-guidance/guides/css/child-state-based-styling.md
+   1 .agents/skills/modern-web-guidance/guides/css/content-based-styling.md
+   1 .agents/skills/modern-web-guidance/guides/css/css-layout.md
+   1 .agents/skills/modern-web-guidance/guides/css/css.md
+   1 .agents/skills/modern-web-guidance/guides/css/design-token-reactivity.md
 
 === MONOREPO SIGNALS ===
 No monorepo signals detected.
 
 === CODE METRICS ===
-Total files scanned: 1005
-Total lines of code: 135218
+Total files scanned: 1224
+Total lines of code: 136088
 
 Files by language:
-  Other: 492
-  C#: 227
+  Other: 708
+  C#: 229
   TypeScript: 177
-  TypeScript/React: 100
+  TypeScript/React: 101
   Python: 6
   JavaScript: 3
 
