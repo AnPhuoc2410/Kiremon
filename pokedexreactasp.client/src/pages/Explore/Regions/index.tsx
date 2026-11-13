@@ -1,4 +1,4 @@
-import { useState, useEffect, createRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Header, Navbar, Loading } from "@/components/ui";
@@ -48,7 +48,7 @@ const regionDescriptionMap: Record<string, string> = {
 
 const RegionsExplore = () => {
   const navigate = useNavigate();
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const [navHeight, setNavHeight] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [regions, setRegions] = useState<RegionCardData[]>([]);
@@ -56,7 +56,7 @@ const RegionsExplore = () => {
 
   useEffect(() => {
     setNavHeight(navRef.current?.clientHeight as number);
-  }, [navRef]);
+  }, []);
 
   useEffect(() => {
     const fetchRegions = async () => {

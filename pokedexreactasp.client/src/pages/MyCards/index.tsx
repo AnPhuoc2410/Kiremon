@@ -1,4 +1,4 @@
-import { createRef, useMemo, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 
 import { Button, Header, Loading, Navbar, Text } from "@/components/ui";
 import { useMyTcgCards } from "@/hooks/queries";
@@ -13,7 +13,7 @@ import * as S from "./index.style";
 const DEFAULT_PAGE_SIZE = 30;
 
 const MyCards = () => {
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
 
   const [page, setPage] = useState(1);
   const [pokemonApiIdInput, setPokemonApiIdInput] = useState("");

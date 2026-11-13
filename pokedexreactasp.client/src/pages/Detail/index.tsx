@@ -1,12 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  ChangeEvent,
-  createRef,
-  FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link, useParams } from "react-router-dom";
@@ -153,7 +146,7 @@ const DetailPokemon = () => {
 
   const { refreshPokeSummary } = useGlobalContext();
   const { isAuthenticated } = useAuth();
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const navActionLinkStyle = {
     display: "flex",
     width: "100%",

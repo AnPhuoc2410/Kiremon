@@ -9,6 +9,7 @@ import { t } from "@/utils/uiI18n";
 interface INavbar {
   children?: React.ReactNode;
   fadeHeight?: number;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const GradientBakcdrop = styled("div")({
@@ -39,33 +40,31 @@ const InnerNav = styled("div")({
   gap: units.spacing.base,
 });
 
-const Navbar = React.forwardRef<HTMLDivElement, INavbar>(
-  ({ fadeHeight = 124, children }, ref) => {
-    const { languageId } = useLanguage();
+const Navbar = ({ fadeHeight = 124, children, ref }: INavbar) => {
+  const { languageId } = useLanguage();
 
-    return (
-      <GradientBakcdrop
-        style={{
-          height: fadeHeight,
-          background:
-            "linear-gradient(180deg, #FDFDFD 0%, rgba(253, 253, 253, 0) 0.01%, rgba(253, 253, 253, 0.97) 30.37%, #FDFDFD 100%)",
-        }}
-        ref={ref}
-      >
-        <OuterNav>
-          {children}
-          <InnerNav>
-            <NavItem href="/pokemons" label={t("nav.explore", languageId)} />
-            <NavItem
-              href="/my-pokemon"
-              label={t("nav.myPokemon", languageId)}
-              variant="light"
-            />
-          </InnerNav>
-        </OuterNav>
-      </GradientBakcdrop>
-    );
-  },
-);
+  return (
+    <GradientBakcdrop
+      style={{
+        height: fadeHeight,
+        background:
+          "linear-gradient(180deg, #FDFDFD 0%, rgba(253, 253, 253, 0) 0.01%, rgba(253, 253, 253, 0.97) 30.37%, #FDFDFD 100%)",
+      }}
+      ref={ref}
+    >
+      <OuterNav>
+        {children}
+        <InnerNav>
+          <NavItem href="/pokemons" label={t("nav.explore", languageId)} />
+          <NavItem
+            href="/my-pokemon"
+            label={t("nav.myPokemon", languageId)}
+            variant="light"
+          />
+        </InnerNav>
+      </OuterNav>
+    </GradientBakcdrop>
+  );
+};
 
 export default Navbar;

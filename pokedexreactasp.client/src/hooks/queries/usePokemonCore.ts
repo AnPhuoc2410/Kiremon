@@ -596,7 +596,7 @@ export function usePokemonCore(
   const restDetailQuery = useQuery({
     queryKey: ["pokemon", "detail-rest", name],
     queryFn: () => pokemonService.getPokemonDetail(name),
-    enabled: isEnabled && !!name && !detailQuery.data,
+    enabled: isEnabled && !!name && detailQuery.isError,
   });
 
   // Extract speciesId from detail data
@@ -613,7 +613,10 @@ export function usePokemonCore(
   const restSpeciesQuery = useQuery({
     queryKey: ["pokemon", "species-rest", name],
     queryFn: () => speciesService.getPokemonSpecies(name),
-    enabled: isEnabled && !!name && !speciesQuery.data,
+    enabled:
+      isEnabled &&
+      !!name &&
+      (speciesQuery.isError || (detailQuery.isError && !speciesId)),
   });
 
   // Transform data using memoization
@@ -642,11 +645,12 @@ export function usePokemonCore(
   }, [transformedDetail?.pokemonId]);
 
   // Combine loading states
-  const isLoading =
-    (detailQuery.isLoading && restDetailQuery.isLoading) ||
-    (speciesQuery.isLoading && restSpeciesQuery.isLoading);
-  const isDetailLoading = detailQuery.isLoading;
-  const isSpeciesLoading = speciesQuery.isLoading;
+  const isDetailLoading =
+    detailQuery.isLoading || (detailQuery.isError && restDetailQuery.isLoading);
+  const isSpeciesLoading =
+    speciesQuery.isLoading ||
+    (speciesQuery.isError && restSpeciesQuery.isLoading);
+  const isLoading = isDetailLoading || isSpeciesLoading;
 
   return {
     // Raw queries for advanced usage

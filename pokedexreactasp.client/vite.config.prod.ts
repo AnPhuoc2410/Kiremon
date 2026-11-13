@@ -24,18 +24,16 @@ export default (env: Record<string, string>): UserConfig => ({
             if (id.includes("node_modules/@supabase/")) {
               return "vendor-supabase";
             }
-            // Tách các thư viện Animation thuần (GSAP, AnimeJS)
-            if (
-              id.includes("node_modules/gsap/") ||
-              id.includes("node_modules/animejs/")
-            ) {
+            // Tách các thư viện Animation thuần (GSAP)
+            if (id.includes("node_modules/gsap/")) {
               return "vendor-animations";
             }
-            // Tách các thư viện tiện ích (lodash, date-fns)
-            if (
-              id.includes("node_modules/lodash/") ||
-              id.includes("node_modules/date-fns/")
-            ) {
+            // Tách thư viện biểu đồ (Recharts)
+            if (id.includes("node_modules/recharts/")) {
+              return "vendor-charts";
+            }
+            // Tách các thư viện tiện ích (date-fns)
+            if (id.includes("node_modules/date-fns/")) {
               return "vendor-utils";
             }
           }

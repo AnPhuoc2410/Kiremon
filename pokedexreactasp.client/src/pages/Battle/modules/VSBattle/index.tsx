@@ -65,7 +65,7 @@ const VersusBattleModule = ({
   const formattedNickname = pokemonNicknameParam
     ? pokemonNicknameParam.replace(/-/g, " ").toUpperCase()
     : "";
-  const { pokemons } = usePokemonStore();
+  const pokemons = usePokemonStore((state) => state.pokemons);
   const battleLogRef = useRef<HTMLDivElement>(null);
 
   // Load player pokemon as fallback/wild mode target

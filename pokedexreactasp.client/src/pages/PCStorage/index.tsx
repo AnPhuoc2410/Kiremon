@@ -908,6 +908,10 @@ const PCStorage: React.FC = () => {
 
   const handleBoxRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      if (e.nativeEvent.isComposing || (e.nativeEvent as any).keyCode === 229) {
+        return;
+      }
+      e.preventDefault();
       handleSaveBoxRename();
     } else if (e.key === "Escape") {
       setIsEditingBoxName(false);

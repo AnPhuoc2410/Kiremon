@@ -1,4 +1,4 @@
-import { useState, useEffect, createRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import { Header, Navbar, Loading, PokeCard } from "@/components/ui";
@@ -85,7 +85,7 @@ const TypesExplore = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const typeParam = searchParams.get("type");
 
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const { state, setState } = useGlobalContext();
 
   const [navHeight, setNavHeight] = useState<number>(0);

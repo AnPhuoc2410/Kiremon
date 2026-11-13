@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 
 import { StartScreen, NotFoundPage } from "@/pages";
 import { AuthProvider } from "@/contexts";
-import { TourGuide } from "@/components/ui";
+import TourGuide from "@/components/ui/TourGuide";
 
 const PCStorage = lazy(() => import("@/pages/PCStorage"));
 const TCGManagement = lazy(() => import("@/pages/TCGManagement"));

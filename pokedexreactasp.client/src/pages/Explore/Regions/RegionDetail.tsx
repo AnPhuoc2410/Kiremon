@@ -1,7 +1,6 @@
 import {
   useState,
   useEffect,
-  createRef,
   useCallback,
   useRef,
   type RefObject,
@@ -58,7 +57,7 @@ const regionDescriptionMap: Record<string, string> = {
 const RegionDetail = () => {
   const { regionName } = useParams<{ regionName: string }>();
   const navigate = useNavigate();
-  const navRef = createRef<HTMLDivElement>();
+  const navRef = useRef<HTMLDivElement>(null);
   const [navHeight, setNavHeight] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [region, setRegion] = useState<IRegion | null>(null);
