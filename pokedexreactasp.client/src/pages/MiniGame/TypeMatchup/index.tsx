@@ -1,58 +1,71 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Text, Button, Header } from "@/components/ui";
 import TypeIcon from "@/components/ui/Card/TypeIcon";
 import { typesService } from "@/services";
 import { IPokemonType } from "@/types/pokemon";
-import {
-  GameContainer,
-  GameCard,
-  OptionsGrid,
-  OptionButton,
-  ScoreBar,
-} from "./index.style";
 import { sfx } from "@/components/utils/sfx";
 import SEOWrapper from "@/components/ui/SEOWrapper";
+import {
+  GameContainer,
+  ControlBar,
+  ModeButtonGroup,
+  ModeTabBtn,
+  ScoreBar,
+  StatPill,
+  ArenaCard,
+  TimerTrack,
+  TimerFill,
+  MatchupStage,
+  CombatantBox,
+  VsBadge,
+  OptionsGrid,
+  OptionButton,
+  FeedbackBanner,
+} from "./index.style";
 
-const EFFECT_OPTIONS = [2, 1, 0.5, 0];
+const SINGLE_OPTIONS = [2, 1, 0.5, 0];
+const DUAL_OPTIONS = [4, 2, 1, 0.5, 0.25, 0];
 const LEADERBOARD_KEY = "pokegames@typeLeaderboard";
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-const effectLabel = (v: number): string => {
-  if (v === 2) return "Super effective (2×)";
-  if (v === 1) return "Normal (1×)";
-  if (v === 0.5) return "Not very effective (0.5×)";
-  return "No effect (0×)";
+const getEffectLabel = (v: number): string => {
+  if (v === 4) return "Ultra Effective (4×)";
+  if (v === 2) return "Super Effective (2×)";
+  if (v === 1) return "Regular Damage (1×)";
+  if (v === 0.5) return "Not Very Effective (0.5×)";
+  if (v === 0.25) return "Barely Tickles (0.25×)";
+  return "No Effect / Immune (0×)";
 };
 
 const TypeMatchup: React.FC = () => {
   const [types, setTypes] = useState<IPokemonType[]>([]);
+  const [mode, setMode] = useState<"single" | "dual">("single");
+
   const [attacking, setAttacking] = useState<IPokemonType | null>(null);
-  const [defending, setDefending] = useState<IPokemonType | null>(null);
+  const [defendingPrimary, setDefendingPrimary] = useState<IPokemonType | null>(
+    null,
+  );
+  const [defendingSecondary, setDefendingSecondary] =
+    useState<IPokemonType | null>(null);
+
   const [selected, setSelected] = useState<number | null>(null);
-  const [correct, setCorrect] = useState<number | null>(null);
+  const [correctAnswer, setCorrectAnswer] = useState<number | null>(null);
+
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [best, setBest] = useState<number>(() =>
+  const [bestStreak, setBestStreak] = useState<number>(() =>
     Number(localStorage.getItem("pokegames@typeBest") || 0),
   );
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  const maxTime = mode === "dual" ? 16 : 12;
+  const [timeLeft, setTimeLeft] = useState<number>(maxTime);
   const [loading, setLoading] = useState(true);
 
-  const difficulty =
-    (localStorage.getItem("pokegames@difficulty") as
-      | "easy"
-      | "normal"
-      | "hard") || "normal";
-
-  const questionTime = useMemo(
-    () => (difficulty === "easy" ? 18 : difficulty === "hard" ? 8 : 12),
-    [difficulty],
-  );
-
+  // Load all types
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -66,7 +79,10 @@ const TypeMatchup: React.FC = () => {
     load();
   }, []);
 
-  const computeMultiplier = (atk: IPokemonType, defName: string): number => {
+  const computeSingleMultiplier = (
+    atk: IPokemonType,
+    defName: string,
+  ): number => {
     const dr = atk.damageRelations;
     if (!dr) return 1;
     const n = defName.toLowerCase();
@@ -76,164 +92,303 @@ const TypeMatchup: React.FC = () => {
     return 1;
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = useCallback(() => {
     if (!types.length) return;
-    setAttacking(pick(types));
-    setDefending(pick(types));
+
+    const atk = pick(types);
+    const def1 = pick(types);
+    let def2: IPokemonType | null = null;
+
+    if (mode === "dual") {
+      const candidates = types.filter((t) => t.name !== def1.name);
+      def2 = pick(candidates);
+    }
+
+    setAttacking(atk);
+    setDefendingPrimary(def1);
+    setDefendingSecondary(def2);
     setSelected(null);
-    setCorrect(null);
-    setTimeLeft(questionTime);
-  };
+    setCorrectAnswer(null);
+    setTimeLeft(maxTime);
+  }, [types, mode, maxTime]);
 
   useEffect(() => {
-    if (!loading) nextQuestion();
-  }, [loading]);
+    if (!loading && types.length > 0) {
+      nextQuestion();
+    }
+  }, [loading, mode, nextQuestion]);
 
   // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0 || selected !== null) return;
-    const id = setTimeout(() => {
+    const timer = setTimeout(() => {
       setTimeLeft((t) => t - 1);
-      sfx.tick();
+      if (timeLeft <= 4) sfx.tick();
     }, 1000);
-    return () => clearTimeout(id);
+    return () => clearTimeout(timer);
   }, [timeLeft, selected]);
 
-  // Timeout → auto wrong
+  const saveLeaderboard = (finalScore: number) => {
+    try {
+      const list = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+      list.push({
+        score: finalScore,
+        date: new Date().toISOString(),
+        mode,
+      });
+      list.sort((a: any, b: any) => b.score - a.score);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, 20)));
+    } catch {}
+  };
+
+  const handleSelect = useCallback(
+    (chosenOpt: number) => {
+      if (!attacking || !defendingPrimary || selected !== null) return;
+
+      let mult = computeSingleMultiplier(attacking, defendingPrimary.name);
+      if (mode === "dual" && defendingSecondary) {
+        mult *= computeSingleMultiplier(attacking, defendingSecondary.name);
+      }
+
+      setSelected(chosenOpt);
+      setCorrectAnswer(mult);
+      setTotal((t) => t + 1);
+
+      const isRight = chosenOpt === mult;
+      if (isRight) {
+        sfx.success();
+        setScore((s) => s + (mode === "dual" ? 150 : 100));
+        const newStreak = streak + 1;
+        setStreak(newStreak);
+        setBestStreak((b) => {
+          const nb = Math.max(b, newStreak);
+          localStorage.setItem("pokegames@typeBest", String(nb));
+          return nb;
+        });
+      } else {
+        sfx.fail();
+        setStreak(0);
+        saveLeaderboard(score);
+      }
+    },
+    [
+      attacking,
+      defendingPrimary,
+      defendingSecondary,
+      selected,
+      mode,
+      streak,
+      score,
+    ],
+  );
+
+  // Time expired -> counts as wrong
   useEffect(() => {
     if (
       timeLeft === 0 &&
       selected === null &&
       !loading &&
       attacking &&
-      defending
+      defendingPrimary
     ) {
       handleSelect(-1);
     }
-  }, [timeLeft]);
-
-  const saveLeaderboard = (newScore: number) => {
-    try {
-      const list = JSON.parse(
-        localStorage.getItem(LEADERBOARD_KEY) || "[]",
-      ) as Array<{ score: number; date: string; difficulty: string }>;
-      list.push({
-        score: newScore,
-        date: new Date().toISOString(),
-        difficulty,
-      });
-      list.sort((a, b) => b.score - a.score);
-      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, 20)));
-    } catch {}
-  };
-
-  const handleSelect = (opt: number) => {
-    if (!attacking || !defending || selected !== null) return;
-    const mult = computeMultiplier(attacking, defending.name);
-    setSelected(opt);
-    setCorrect(mult);
-    setTotal((t) => t + 1);
-
-    const isRight = opt === mult;
-    if (isRight) {
-      sfx.success();
-      setScore((s) => s + 1);
-      setStreak((s) => s + 1);
-    } else {
-      sfx.fail();
-      setStreak(0);
-      saveLeaderboard(score);
-    }
-
-    setBest((b) => {
-      const nb = Math.max(b, isRight ? streak + 1 : 0);
-      localStorage.setItem("pokegames@typeBest", String(nb));
-      return nb;
-    });
-  };
+  }, [timeLeft, selected, loading, attacking, defendingPrimary, handleSelect]);
 
   const handleReset = () => {
+    sfx.click();
     setScore(0);
     setTotal(0);
     setStreak(0);
     nextQuestion();
   };
 
+  const optionsList = useMemo(
+    () => (mode === "dual" ? DUAL_OPTIONS : SINGLE_OPTIONS),
+    [mode],
+  );
+
+  // Keyboard controls: 1..6 and Space/Enter
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (selected !== null && (e.key === " " || e.key === "Enter")) {
+        e.preventDefault();
+        nextQuestion();
+        return;
+      }
+
+      if (selected === null) {
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= optionsList.length) {
+          e.preventDefault();
+          handleSelect(optionsList[num - 1]);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selected, optionsList, handleSelect, nextQuestion]);
+
+  const pct = Math.max(0, Math.min(100, (timeLeft / maxTime) * 100));
+
   return (
     <>
       <SEOWrapper
         title="Type Matchup Quiz - Kiremon"
-        description="Trò chơi trắc nghiệm hệ Pokémon. Kiểm tra kiến thức của bạn về tính tương khắc hệ (Type Matchup)."
+        description="Luyện tập tương khắc hệ Pokémon chuyên sâu. Hỗ trợ chế độ Hệ Đơn và Hệ Kép (Dual-Type), bấm phím 1-6 cực nhanh!"
       />
       <Header
         title="Type Matchup Quiz"
-        subtitle="How well do you know Pokémon type effectiveness?"
+        subtitle="Master Pokémon damage relations! Single & Dual defending types supported."
         backTo="/"
       />
       <GameContainer>
-        <GameCard className="pxl-border">
-          {loading || !attacking || !defending ? (
-            <Text>Loading...</Text>
+        {/* Controls Bar */}
+        <ControlBar>
+          <ModeButtonGroup>
+            <ModeTabBtn
+              isActive={mode === "single"}
+              onClick={() => {
+                sfx.click();
+                setMode("single");
+              }}
+            >
+              Single Type Defender
+            </ModeTabBtn>
+            <ModeTabBtn
+              isActive={mode === "dual"}
+              onClick={() => {
+                sfx.click();
+                setMode("dual");
+              }}
+            >
+              Dual Type (Pro)
+            </ModeTabBtn>
+          </ModeButtonGroup>
+
+          <ScoreBar>
+            <StatPill variant="fire">
+              🔥 Streak: {streak} (Best: {bestStreak})
+            </StatPill>
+            <StatPill variant="gold">
+              ⭐ {score} pts (
+              {score > 0 && total > 0 ? Math.round((streak / total) * 100) : 0}
+              %)
+            </StatPill>
+            <Button
+              variant="light"
+              onClick={handleReset}
+              style={{ padding: "6px 12px" }}
+            >
+              Reset
+            </Button>
+          </ScoreBar>
+        </ControlBar>
+
+        {/* Main Quiz Arena */}
+        <ArenaCard>
+          {loading || !attacking || !defendingPrimary ? (
+            <div
+              style={{
+                height: 260,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text>Loading Type Data...</Text>
+            </div>
           ) : (
             <>
-              <ScoreBar>
-                <Text as="span">
-                  Score: {score} / {total}
-                </Text>
-                <Text as="span">
-                  Streak: {streak} (Best {best})
-                </Text>
-                <Text as="span">Time: {timeLeft}s</Text>
-                <Button variant="light" onClick={handleReset}>
-                  Reset
-                </Button>
-              </ScoreBar>
+              {/* Timer Bar */}
+              <TimerTrack>
+                <TimerFill pct={pct} isUrgent={timeLeft <= 4} />
+              </TimerTrack>
 
-              <div style={{ marginTop: 12 }}>
-                <Text as="h3">If an attack of type</Text>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    gap: 8,
-                    alignItems: "center",
-                    marginTop: 4,
-                  }}
-                >
+              <Text
+                as="h3"
+                style={{ margin: "4px 0 16px", color: "#475569", fontSize: 16 }}
+              >
+                What happens when this attack hits the target?
+              </Text>
+
+              {/* Matchup Showdown Stage */}
+              <MatchupStage>
+                <CombatantBox role="attack">
+                  <span className="label">⚡ Move Attack</span>
                   <TypeIcon type={attacking.name} />
-                  <Text as="span">hits a</Text>
-                  <TypeIcon type={defending.name} />
-                  <Text as="span">Pokémon, what's the effectiveness?</Text>
-                </div>
-              </div>
+                </CombatantBox>
 
+                <VsBadge>VS</VsBadge>
+
+                <CombatantBox role="defend">
+                  <span className="label">🛡️ Defender Type</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <TypeIcon type={defendingPrimary.name} />
+                    {defendingSecondary && (
+                      <TypeIcon type={defendingSecondary.name} />
+                    )}
+                  </div>
+                </CombatantBox>
+              </MatchupStage>
+
+              {/* Options */}
               <OptionsGrid>
-                {EFFECT_OPTIONS.map((v) => (
+                {optionsList.map((val, idx) => (
                   <OptionButton
-                    key={v}
+                    key={val}
                     onClick={() => {
                       sfx.click();
-                      handleSelect(v);
+                      handleSelect(val);
                     }}
-                    correct={selected !== null && v === correct}
-                    wrong={selected !== null && v === selected && v !== correct}
-                    className="pxl-border"
+                    correct={selected !== null && val === correctAnswer}
+                    wrong={
+                      selected !== null &&
+                      val === selected &&
+                      val !== correctAnswer
+                    }
                     disabled={selected !== null}
                   >
-                    {effectLabel(v)}
+                    <span>{getEffectLabel(val)}</span>
+                    <span className="key-tag">{idx + 1}</span>
                   </OptionButton>
                 ))}
               </OptionsGrid>
 
+              {/* Answer Banner */}
               {selected !== null && (
-                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                  <Button variant="sky" onClick={nextQuestion}>
-                    Next Question
-                  </Button>
-                </div>
+                <>
+                  <FeedbackBanner isCorrect={selected === correctAnswer}>
+                    <Text as="h4" style={{ margin: 0, fontSize: 18 }}>
+                      {selected === correctAnswer
+                        ? "🎉 Correct!"
+                        : "❌ Incorrect!"}{" "}
+                      Effective Multiplier:{" "}
+                      <strong>
+                        {correctAnswer !== null
+                          ? getEffectLabel(correctAnswer)
+                          : ""}
+                      </strong>
+                    </Text>
+                  </FeedbackBanner>
+
+                  <div style={{ marginTop: 16 }}>
+                    <Button variant="sky" onClick={nextQuestion}>
+                      Next Question (Press Space)
+                    </Button>
+                  </div>
+                </>
               )}
             </>
           )}
-        </GameCard>
+        </ArenaCard>
       </GameContainer>
     </>
   );

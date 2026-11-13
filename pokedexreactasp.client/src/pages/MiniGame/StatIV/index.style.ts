@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { colors, units } from "@/components/utils";
-import { CenteredPage, GameCard as BaseGameCard, FlexCenter } from "@/styles";
 
 export const GameContainer = styled.div`
   display: flex;
@@ -8,156 +7,211 @@ export const GameContainer = styled.div`
   align-items: center;
   justify-content: flex-start;
   min-height: calc(100vh - 80px);
-  padding: ${units.spacing.xl};
-  padding-top: ${units.spacing.lg};
-  position: relative;
-`;
-
-export const GameCard = styled(BaseGameCard)`
-  width: 100%;
-  max-width: 1000px;
-  padding: ${units.spacing.lg};
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: ${units.spacing.xl};
-`;
-
-export const RulesContainer = styled.div`
-  padding: ${units.spacing.lg};
-  display: flex;
-  flex-direction: column;
-  gap: ${units.spacing.sm};
-`;
-
-export const RuleTitle = styled.h3`
-  font-size: ${units.fontSize.md};
-  font-weight: 700;
-  color: ${colors["gray-800"]};
-  margin: 0;
-`;
-
-export const RuleText = styled.p`
-  font-size: ${units.fontSize.sm};
-  color: ${colors["gray-600"]};
-  margin: 0;
-  line-height: 1.5;
-`;
-
-export const StatGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: ${units.spacing.lg};
-  width: 100%;
-`;
-
-export const StatCard = styled.div<{ isComplete?: boolean; colorHex?: string }>`
-  background: ${(props) =>
-    props.isComplete ? props.colorHex || colors["blue-500"] : "white"};
-  border: 2px solid
-    ${(props) =>
-      props.isComplete
-        ? props.colorHex || colors["blue-400"]
-        : colors["gray-200"]};
-  border-radius: 12px;
   padding: ${units.spacing.base};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${units.spacing.sm};
-  transition: all 0.2s ease;
+  padding-bottom: ${units.spacing["2xl"]};
   position: relative;
+  width: 100%;
+  max-width: 1020px;
+  margin: 0 auto;
 `;
 
-export const PokemonImage = styled.img`
-  width: 120px;
-  height: 120px;
-  object-fit: contain;
-`;
-
-export const PillContainer = styled.div`
+export const ControlBar = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: ${units.spacing.xs};
+  gap: ${units.spacing.sm};
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  margin-top: ${units.spacing.sm};
+  margin-bottom: ${units.spacing.base};
 `;
 
-export const StatPill = styled.button<{
-  isSelected?: boolean;
-  isDisabled?: boolean;
-  colorHex?: string;
-  isRevealed?: boolean;
-}>`
-  padding: ${units.spacing.xs} ${units.spacing.sm};
-  border-radius: 16px;
-  border: 2px solid
-    ${(props) =>
-      props.isSelected
-        ? props.colorHex || colors["blue-500"]
-        : colors["gray-300"]};
-  background: ${(props) =>
-    props.isSelected ? props.colorHex || colors["blue-500"] : "transparent"};
-  color: ${(props) => (props.isSelected ? "white" : colors["gray-600"])};
-  font-size: ${units.fontSize.sm};
-  font-weight: bold;
-  cursor: ${(props) => (props.isDisabled ? "not-allowed" : "pointer")};
-  opacity: ${(props) =>
-    props.isDisabled && !props.isSelected && !props.isRevealed ? 0.3 : 1};
-  transition: all 0.2s;
+export const StatTray = styled.div`
+  width: 100%;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: ${units.spacing.lg};
+`;
 
-  &:hover {
-    transform: ${(props) => (props.isDisabled ? "none" : "translateY(-2px)")};
-    box-shadow: ${(props) =>
-      props.isDisabled ? "none" : "0 2px 4px rgba(0,0,0,0.1)"};
+export const StatPillList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+`;
+
+export const StatDockPill = styled.button<{
+  colorHex: string;
+  isAssigned: boolean;
+  isActive: boolean;
+}>`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: ${(p) => (p.isAssigned ? "default" : "pointer")};
+  opacity: ${(p) => (p.isAssigned ? 0.35 : 1)};
+  border: 2px solid ${(p) => p.colorHex};
+  background: ${(p) => (p.isActive ? p.colorHex : "#ffffff")};
+  color: ${(p) => (p.isActive ? "#ffffff" : "#1e293b")};
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: ${(p) =>
+    p.isActive ? `0 4px 14px ${p.colorHex}55` : "0 2px 4px rgba(0,0,0,0.04)"};
+
+  &:hover:not(:disabled) {
+    transform: ${(p) => (p.isAssigned ? "none" : "translateY(-2px)")};
+  }
+
+  span.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: ${(p) => (p.isActive ? "#ffffff" : p.colorHex)};
   }
 `;
 
-export const RevealBadge = styled.div`
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  font-size: ${units.fontSize.lg};
-  font-weight: bold;
-  color: white;
-  background: ${colors["indigo-500"]};
-  padding: 8px 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transform: rotate(5deg);
-`;
-
-export const ScoreBoard = styled.div`
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background: white;
-  border: 2px solid ${colors["gray-200"]};
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  padding: ${units.spacing.lg};
+export const PokemonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${units.spacing.base};
   width: 100%;
+
+  @media (max-width: 860px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-export const ScoreItem = styled.div`
+export const PokemonCard = styled.div<{
+  isAssigned: boolean;
+  colorHex?: string;
+}>`
+  background: #ffffff;
+  border-radius: 14px;
+  border: 2px solid
+    ${(p) => (p.isAssigned && p.colorHex ? p.colorHex : "#e2e8f0")};
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${units.spacing.xs};
+  gap: 12px;
+  position: relative;
+  box-shadow: ${(p) =>
+    p.isAssigned && p.colorHex
+      ? `0 6px 16px ${p.colorHex}22`
+      : "0 2px 8px rgba(0,0,0,0.04)"};
+  transition: all 0.2s ease;
 `;
 
-export const ScoreLabel = styled.div`
-  font-size: ${units.fontSize.md};
-  color: ${colors["gray-600"]};
-  font-weight: 600;
+export const PokemonImg = styled.img`
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  user-select: none;
 `;
 
-export const ScoreValue = styled.div<{ highlight?: boolean }>`
-  font-size: ${units.fontSize.xl};
-  font-weight: 800;
-  color: ${(props) =>
-    props.highlight ? colors["green-500"] : colors["gray-800"]};
+export const SlotButton = styled.button<{
+  isAssigned: boolean;
+  colorHex?: string;
+}>`
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px dashed
+    ${(p) => (p.isAssigned && p.colorHex ? p.colorHex : "#94a3b8")};
+  background: ${(p) =>
+    p.isAssigned && p.colorHex ? `${p.colorHex}18` : "#f8fafc"};
+  color: ${(p) => (p.isAssigned && p.colorHex ? "#0f172a" : "#64748b")};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: ${(p) => (p.colorHex ? p.colorHex : "#0284c7")};
+    background: #f0f9ff;
+  }
+`;
+
+export const StatBarList = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+`;
+
+export const StatBarRow = styled.div<{ isTarget: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: ${(p) => (p.isTarget ? "800" : "500")};
+  color: ${(p) => (p.isTarget ? "#0f172a" : "#64748b")};
+
+  span.val {
+    width: 28px;
+    text-align: right;
+  }
+`;
+
+export const BarTrack = styled.div`
+  flex: 1;
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+`;
+
+export const BarFill = styled.div<{
+  widthPct: number;
+  colorHex: string;
+  isTarget: boolean;
+}>`
+  height: 100%;
+  width: ${(p) => p.widthPct}%;
+  background: ${(p) => (p.isTarget ? p.colorHex : "#cbd5e1")};
+  border-radius: 3px;
+`;
+
+/* modern-web-guidance: <dialog> styling */
+export const NativeDialog = styled.dialog`
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  background: #ffffff;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 520px;
+  width: calc(100% - 32px);
+  margin: auto;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+`;
+
+export const ModalContent = styled.div`
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 `;

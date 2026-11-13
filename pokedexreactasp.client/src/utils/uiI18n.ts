@@ -60,6 +60,16 @@ const UI_TRANSLATIONS: Record<string, Record<number, string>> = {
     [LANGUAGE_IDS.ITALIAN]: "Mini Giochi",
     [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "小游戏",
   },
+  "nav.arcadeHub": {
+    [LANGUAGE_IDS.ENGLISH]: "🎮 Arcade Hub",
+    [LANGUAGE_IDS.JAPANESE]: "🎮 アーケードハブ",
+    [LANGUAGE_IDS.KOREAN]: "🎮 아케이드 허브",
+    [LANGUAGE_IDS.FRENCH]: "🎮 Arcade Hub",
+    [LANGUAGE_IDS.GERMAN]: "🎮 Arcade-Hub",
+    [LANGUAGE_IDS.SPANISH]: "🎮 Centro Arcade",
+    [LANGUAGE_IDS.ITALIAN]: "🎮 Sala Giochi",
+    [LANGUAGE_IDS.CHINESE_SIMPLIFIED]: "🎮 游戏中心",
+  },
   "nav.explore": {
     [LANGUAGE_IDS.ENGLISH]: "Explore",
     [LANGUAGE_IDS.JAPANESE]: "探索",
